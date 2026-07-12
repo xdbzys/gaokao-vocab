@@ -39,27 +39,38 @@ jobs:
       - name: Upload APK to Gitee
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
-        run: |
-          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
-          APK_BASE64=$(base64 -w0 "$APK_PATH")
-          APK_SIZE=$(stat -c%s "$APK_PATH")
-          
-          # 获取当前文件SHA
-          RESPONSE=$(curl -s "https://gitee.com/api/v5/repos/xdbzys/app/contents/gaokao-vocab.apk?access_token=$GITEE_TOKEN")
-          SHA=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null)
-          
-          # 上传或更新APK
-          if [ -n "$SHA" ]; then
-            curl -s -X PUT "https://gitee.com/api/v5/repos/xdbzys/app/contents/gaokao-vocab.apk?access_token=$GITEE_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "{\"access_token\":\"$GITEE_TOKEN\",\"content\":\"$APK_BASE64\",\"message\":\"update apk\",\"sha\":\"$SHA\"}"
-          else
-            curl -s -X POST "https://gitee.com/api/v5/repos/xdbzys/app/contents/gaokao-vocab.apk?access_token=$GITEE_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "{\"access_token\":\"$GITEE_TOKEN\",\"content\":\"$APK_BASE64\",\"message\":\"upload apk\"}"
-          fi
-          
-          echo "APK uploaded to Gitee successfully"
+        run: python3 -c "
+import requests, base64, json, sys
+
+TOKEN = '${{ secrets.GITEE_TOKEN }}'
+REPO = 'xdbzys/app'
+APK_PATH = 'android/app/build/outputs/apk/debug/app-debug.apk'
+
+with open(APK_PATH, 'rb') as f:
+    content = base64.b64encode(f.read()).decode()
+
+# Get current SHA
+resp = requests.get(f'https://gitee.com/api/v5/repos/{REPO}/contents/gaokao-vocab.apk',
+    params={'access_token': TOKEN})
+data = resp.json()
+sha = data.get('sha', '')
+
+# Upload
+if sha:
+    r = requests.put(f'https://gitee.com/api/v5/repos/{REPO}/contents/gaokao-vocab.apk',
+        params={'access_token': TOKEN},
+        json={'access_token': TOKEN, 'content': content, 'message': 'auto build apk', 'sha': sha})
+else:
+    r = requests.post(f'https://gitee.com/api/v5/repos/{REPO}/contents/gaokao-vocab.apk',
+        params={'access_token': TOKEN},
+        json={'access_token': TOKEN, 'content': content, 'message': 'auto build apk'})
+
+if r.status_code in (200, 201):
+    print('APK uploaded to Gitee successfully!')
+else:
+    print(f'Upload failed: {r.status_code} {r.text[:200]}')
+    sys.exit(1)
+"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
