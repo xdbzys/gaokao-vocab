@@ -1,6 +1,6 @@
 {
-  "version": "2.3",
-  "versionCode": 13,
-  "updateLog": "v2.3 覆盖安装修复\n1. 修复无法覆盖安装的问题\n2. 统一签名密钥\n3. 蓝色UI优化",
+  "version": "2.4",
+  "versionCode": 14,
+  "updateLog": "v2.4 UI优化+图标更新\n1. 乱序/顺序按钮改为文字标签\n2. 全部/单词/短语按钮居中\n3. UI整体优化（卡片、进度条、按钮）\n4. 更换APP图标",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

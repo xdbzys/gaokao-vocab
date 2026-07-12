@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.3';
-const APP_VERSION_CODE = 13;
+const APP_VERSION = '2.4';
+const APP_VERSION_CODE = 14;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4461,14 +4461,14 @@ function App() {
             </select>
             <span className="progressTag">{index + 1}/{filteredItems.length}</span>
             <button className="iconBtn" onClick={() => { setSettings(s => ({ ...s, shuffleMode: !s.shuffleMode })); saveSettings({ ...settings, shuffleMode: !settings.shuffleMode }); }}>
-              {settings.shuffleMode ? '🔀' : '🔄'}
+              {settings.shuffleMode ? '乱序' : '顺序'}
             </button>
           </div>
 
           {/* 单词/短语分类 */}
-          <div className="posFilterRow" style={{ marginBottom: 6 }}>
+          <div className="typeFilterRow">
             {['全部', 'word', 'phrase'].map(t => (
-              <button key={t} className={`posFilterBtn ${typeFilter === t ? 'active' : ''}`}
+              <button key={t} className={`typeFilterBtn ${typeFilter === t ? 'active' : ''}`}
                 onClick={() => { setTypeFilter(t); setIndex(0); }}>
                 {t === 'word' ? '单词' : t === 'phrase' ? '短语' : '全部'}
               </button>

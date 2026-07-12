@@ -78,8 +78,8 @@ h3 { margin-bottom: 8px; font-size: 16px; font-weight: 600; }
 .learnTop {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .learnTop select {
@@ -89,9 +89,10 @@ h3 { margin-bottom: 8px; font-size: 16px; font-weight: 600; }
   border-radius: 14px;
   background: var(--bg-card);
   color: var(--text);
-  padding: 10px 12px;
+  padding: 11px 14px;
   outline: none;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .learnTop select:focus { border-color: var(--primary); }
@@ -105,16 +106,17 @@ h3 { margin-bottom: 8px; font-size: 16px; font-weight: 600; }
 
 .iconBtn {
   flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--primary);
-  color: white;
+  min-width: 48px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
   display: grid;
   place-items: center;
-  font-size: 16px;
-  padding: 0;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 10px;
+  border: 1px solid var(--primary);
 }
 
 /* ===== 面板 ===== */
@@ -164,33 +166,34 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 .segmented .active {
   background: var(--primary);
   color: white;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
   font-weight: 600;
 }
 
 /* ===== 进度条 ===== */
 .progressBar {
   margin-bottom: 12px;
-  padding: 14px 16px;
-  border-radius: 18px;
+  padding: 16px 18px;
+  border-radius: 20px;
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(59, 130, 246, 0.08);
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.04);
 }
 
 .progressTrack {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--border-light);
+  height: 10px;
+  border-radius: 5px;
+  background: var(--primary-light);
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .progressFill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 5px;
   background: linear-gradient(90deg, var(--primary), var(--primary-dark));
   transition: width 0.4s ease;
+  box-shadow: 0 1px 6px rgba(59, 130, 246, 0.3);
 }
 
 .progressInfo {
@@ -208,11 +211,11 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 20px 16px;
-  border-radius: 24px;
+  padding: 24px 20px;
+  border-radius: 28px;
   background: var(--bg-card);
-  box-shadow: var(--shadow-lg);
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  box-shadow: 0 2px 20px rgba(59, 130, 246, 0.08), 0 8px 30px rgba(0,0,0,0.04);
+  border: 1px solid rgba(59, 130, 246, 0.06);
 }
 
 .cardMeta, .stats {
@@ -267,19 +270,21 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 
 .options button {
   text-align: left;
-  background: var(--bg);
+  background: var(--bg-card);
   border: 1.5px solid var(--border);
-  border-radius: 16px;
-  padding: 14px 16px;
+  border-radius: 18px;
+  padding: 15px 18px;
   font-size: 16px;
   line-height: 1.4;
   color: var(--text);
   font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .options button:hover {
   border-color: var(--primary);
   background: var(--primary-bg);
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.08);
 }
 
 .options .right {
@@ -302,7 +307,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 .answerBox {
   border-radius: 18px;
   background: var(--primary-bg);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.2);
   padding: 16px;
 }
 
@@ -341,7 +346,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   background: var(--primary) !important;
   color: white !important;
   animation: pulse 1.5s ease-in-out infinite;
-  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.35);
 }
 
 @keyframes pulse {
@@ -404,6 +409,32 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   background: var(--bg-card);
 }
 
+/* ===== 筛选居中行 ===== */
+.typeFilterRow {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.typeFilterBtn {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 7px 20px;
+  font-size: 14px;
+  background: var(--border-light);
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  font-weight: 500;
+}
+
+.typeFilterBtn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary-dark);
+  font-weight: 600;
+}
+
 .posFilterRow {
   display: flex;
   gap: 6px;
@@ -429,7 +460,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 .posFilterBtn.active {
   background: var(--primary);
   color: white;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
 }
 
 /* ===== 列表 ===== */
@@ -447,7 +478,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   transition: box-shadow 0.15s, border-color 0.15s;
 }
 
-.listItem:active { border-color: var(--primary); box-shadow: 0 2px 12px rgba(16, 185, 129, 0.12); }
+.listItem:active { border-color: var(--primary); box-shadow: 0 2px 12px rgba(59, 130, 246, 0.12); }
 
 .listItemMain { flex: 1; min-width: 0; }
 
@@ -482,13 +513,14 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 
 .primary, .next {
   width: 100%;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
-  padding: 14px;
-  border-radius: 14px;
+  padding: 15px;
+  border-radius: 16px;
   font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  border: none;
 }
 
 .next { margin-top: auto; }
@@ -502,7 +534,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 .masterBtn {
   background: var(--primary-light);
   color: var(--primary-dark);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.3);
   font-weight: 600;
 }
 
@@ -697,7 +729,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   text-align: center;
   font-size: 13px;
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 
 .fileButton input { display: none; }
@@ -802,7 +834,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   padding: 12px;
   border-radius: 14px;
   background: var(--primary-bg);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .settingsInfo p {
@@ -816,7 +848,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   padding: 14px;
   border-radius: 18px;
   background: var(--primary-bg);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .cloudUpdateSection h3 {
@@ -922,7 +954,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   place-items: center;
   font-size: 28px;
   flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
 }
 
 .meInfo { flex: 1; }
@@ -1054,7 +1086,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 .tabbar .active {
   background: var(--primary);
   color: white;
-  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.35);
 }
 
 .tabIcon { font-size: 18px; line-height: 1; }
