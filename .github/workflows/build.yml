@@ -37,7 +37,7 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug -PMYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} -PMYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }} -PMYAPP_UPLOAD_STORE_FILE=release-key.jks
+          ./gradlew assembleDebug -PMYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} -PMYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }} -PMYAPP_UPLOAD_KEY_ALIAS=${{ secrets.KEY_ALIAS }} -PMYAPP_UPLOAD_STORE_FILE=release-key.jks
 
       - name: Upload APK to Gitee
         env:
