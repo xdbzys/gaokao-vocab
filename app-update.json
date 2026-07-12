@@ -1,6 +1,6 @@
 {
-  "version": "2.2",
-  "versionCode": 12,
-  "updateLog": "v2.2 云更新测试\n1. 验证自动云更新流程\n2. 蓝色UI优化",
+  "version": "2.3",
+  "versionCode": 13,
+  "updateLog": "v2.3 覆盖安装修复\n1. 修复无法覆盖安装的问题\n2. 统一签名密钥\n3. 蓝色UI优化",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
