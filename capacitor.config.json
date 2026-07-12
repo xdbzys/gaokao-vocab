@@ -1,0 +1,8 @@
+{
+  "appId": "com.gaokao.vocab",
+  "appName": "高考词汇背诵",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
