@@ -1,8 +1,9 @@
-name: Build APK
+name: Build & Release APK
 
 on:
   push:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -35,8 +36,33 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload APK to Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          APK_BASE64=$(base64 -w0 "$APK_PATH")
+          APK_SIZE=$(stat -c%s "$APK_PATH")
+          
+          # 获取当前文件SHA
+          RESPONSE=$(curl -s "https://gitee.com/api/v5/repos/xdbzys/app/contents/gaokao-vocab.apk?access_token=$GITEE_TOKEN")
+          SHA=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null)
+          
+          # 上传或更新APK
+          if [ -n "$SHA" ]; then
+            curl -s -X PUT "https://gitee.com/api/v5/repos/xdbzys/app/contents/gaokao-vocab.apk?access_token=$GITEE_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"access_token\":\"$GITEE_TOKEN\",\"content\":\"$APK_BASE64\",\"message\":\"update apk\",\"sha\":\"$SHA\"}"
+          else
+            curl -s -X POST "https://gitee.com/api/v5/repos/xdbzys/app/contents/gaokao-vocab.apk?access_token=$GITEE_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"access_token\":\"$GITEE_TOKEN\",\"content\":\"$APK_BASE64\",\"message\":\"upload apk\"}"
+          fi
+          
+          echo "APK uploaded to Gitee successfully"
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: gaokao-vocab
+          name: gaokao-vocab-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
