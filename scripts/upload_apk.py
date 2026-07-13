@@ -3,100 +3,78 @@ import requests, base64, sys, os, json, time
 TOKEN = os.environ.get('GITEE_TOKEN', '')
 if not TOKEN:
     print("ERROR: GITEE_TOKEN environment variable is not set!")
-    print("Please set GITEE_TOKEN in GitHub Secrets.")
     sys.exit(1)
 
 print(f"TOKEN length: {len(TOKEN)}")
-print(f"TOKEN prefix: {TOKEN[:10]}...")
 
 REPO = 'xdbzys/app'
 APK_PATH = 'android/app/build/outputs/apk/debug/app-debug.apk'
 APK_FILENAME = 'gaokao-vocab.apk'
 
-# Read version from app-update.json
 with open('app-update.json', 'r') as f:
     update_data = json.load(f)
 version = update_data.get('version', '2.5')
 print(f"Building for version: {version}")
 
-# Read APK
 with open(APK_PATH, 'rb') as f:
     content = base64.b64encode(f.read()).decode()
 print(f"APK size: {len(content)} bytes (base64)")
 
-def upload_file(filename, file_content, message, max_retries=3):
-    """Upload a file to Gitee, creating or updating as needed."""
+def gitee_upload(filename, file_content, message):
+    """Upload file to Gitee using Contents API."""
     url = f'https://gitee.com/api/v5/repos/{REPO}/contents/{filename}'
 
-    for attempt in range(max_retries):
-        if attempt > 0:
-            print(f"  Retry {attempt}/{max_retries}...")
-            time.sleep(2)
+    # 1. Get current SHA
+    get_resp = requests.get(url, params={'access_token': TOKEN}, timeout=30)
+    print(f'  GET {filename}: {get_resp.status_code}')
 
-        # Get current SHA
-        resp = requests.get(url, params={'access_token': TOKEN}, timeout=30)
-        print(f'  GET {filename}: status={resp.status_code}')
+    if get_resp.status_code == 401:
+        print(f'  ERROR: 401 Unauthorized - token invalid')
+        return get_resp
 
-        if resp.status_code == 401:
-            print(f'  ERROR: Unauthorized (401). Token may be invalid or expired.')
-            try:
-                print(f'  Response: {resp.json()}')
-            except:
-                print(f'  Response: {resp.text[:200]}')
-            return resp
+    sha = None
+    if get_resp.status_code == 200:
+        sha = get_resp.json().get('sha', '')
+        print(f'  Current SHA: {sha[:16] if sha else "new file"}')
+    elif get_resp.status_code == 404:
+        print(f'  File not found, will create new')
+    else:
+        print(f'  GET error: {get_resp.text[:200]}')
+        return get_resp
 
-        if resp.status_code == 404:
-            # File doesn't exist, create it
-            sha = None
-        elif resp.status_code == 200:
-            data = resp.json()
-            sha = data.get('sha', '')
-            print(f'  Current SHA: {sha[:10] if sha else "None"}...')
-        else:
-            try:
-                print(f'  Response: {resp.json()}')
-            except:
-                print(f'  Response: {resp.text[:200]}')
-            if attempt == max_retries - 1:
-                return resp
-            continue
+    # 2. Upload
+    payload = {
+        'access_token': TOKEN,
+        'content': file_content,
+        'message': message,
+        'branch': 'master'
+    }
+    if sha:
+        payload['sha'] = sha
 
-        # Upload
-        headers = {'Content-Type': 'application/json'}
-        payload = {
-            'access_token': TOKEN,
-            'content': file_content,
-            'message': message
-        }
-        if sha:
-            payload['sha'] = sha
+    if sha:
+        upload_resp = requests.put(url, json=payload, timeout=60)
+    else:
+        upload_resp = requests.post(url, json=payload, timeout=60)
 
-        if sha:
-            r = requests.put(url, headers=headers, json=payload, timeout=60)
-        else:
-            r = requests.post(url, headers=headers, json=payload, timeout=60)
+    print(f'  UPLOAD {filename}: {upload_resp.status_code}')
+    try:
+        resp_json = upload_resp.json()
+        print(f'  Response: {json.dumps(resp_json, ensure_ascii=False)[:300]}')
+    except:
+        print(f'  Response: {upload_resp.text[:200]}')
 
-        print(f'  UPLOAD {filename}: status={r.status_code}')
-        if r.status_code in (200, 201):
-            return r
+    return upload_resp
 
-        try:
-            print(f'  Response: {r.json()}')
-        except:
-            print(f'  Response: {r.text[:200]}')
-
-    return r
-
-# 1. Upload APK
+# Upload APK
 print(f"\nUploading {APK_FILENAME}...")
-r1 = upload_file(APK_FILENAME, content, f'auto build apk v{version}')
-if r1.status_code in (200, 201):
-    print(f'  {APK_FILENAME} uploaded successfully!')
-else:
-    print(f'  {APK_FILENAME} upload failed: {r1.status_code}')
+r1 = gitee_upload(APK_FILENAME, content, f'auto build apk v{version}')
+if r1.status_code not in (200, 201):
+    print(f'  APK upload failed!')
     sys.exit(1)
+print(f'  APK uploaded OK')
 
-# 2. Update app-update.json with correct APK URL and inject feedbackToken
+# Update app-update.json
 update_data['apkUrl'] = f'https://gitee.com/{REPO}/raw/master/{APK_FILENAME}'
 update_data['feedbackToken'] = TOKEN
 with open('app-update.json', 'w') as f:
@@ -106,30 +84,27 @@ with open('app-update.json', 'rb') as f:
     update_content = base64.b64encode(f.read()).decode()
 
 print(f"\nUploading app-update.json...")
-r2 = upload_file('app-update.json', update_content, f'update app-update.json to v{version}')
-if r2.status_code in (200, 201):
-    print(f'  app-update.json uploaded successfully!')
-else:
-    print(f'  app-update.json upload failed: {r2.status_code}')
+r2 = gitee_upload('app-update.json', update_content, f'update app-update.json to v{version}')
+if r2.status_code not in (200, 201):
+    print(f'  app-update.json upload failed!')
     sys.exit(1)
+print(f'  app-update.json uploaded OK')
 
-# 3. Verify upload by fetching the file back
-print("\nVerifying uploads...")
-time.sleep(3)
-
-verify_resp = requests.get(f'https://gitee.com/api/v5/repos/{REPO}/contents/app-update.json', params={'access_token': TOKEN})
-if verify_resp.status_code == 200:
-    verify_data = verify_resp.json()
-    verify_content = base64.b64decode(verify_data.get('content', '')).decode('utf-8')
-    verify_json = json.loads(verify_content)
-    print(f"  Remote version: {verify_json.get('version')}")
-    print(f"  Remote versionCode: {verify_json.get('versionCode')}")
-    if verify_json.get('version') == version:
-        print("  ✓ Version verified!")
+# Verify
+print("\nVerifying upload...")
+time.sleep(5)
+verify = requests.get(f'https://gitee.com/api/v5/repos/{REPO}/contents/app-update.json', params={'access_token': TOKEN})
+if verify.status_code == 200:
+    vdata = verify.json()
+    vcontent = base64.b64decode(vdata.get('content','')).decode('utf-8')
+    vjson = json.loads(vcontent)
+    print(f"  Remote version: {vjson.get('version')}")
+    if vjson.get('version') == version:
+        print("  ✓ Verified!")
     else:
-        print(f"  ✗ Version mismatch! Expected {version}, got {verify_json.get('version')}")
+        print(f"  ✗ Mismatch! Expected {version}")
         sys.exit(1)
 else:
-    print(f"  Warning: Could not verify upload: {verify_resp.status_code}")
+    print(f"  Verify GET failed: {verify.status_code}")
 
-print("\nAll uploads completed!")
+print("\nDone!")
