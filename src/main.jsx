@@ -8,14 +8,16 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.5';
-const APP_VERSION_CODE = 26;
+const APP_VERSION = '2.6';
+const APP_VERSION_CODE = 36;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
 const GITEE_BRANCH = 'master';
 // 使用 Gitee API 获取 JSON（WebView 中 raw 链接会被 302 到 HTML 页面）
 const UPDATE_SERVER_URL = `https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/contents/app-update.json?ref=${GITEE_BRANCH}`;
+// 添加时间戳防止API缓存
+const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_URL}&_t=${Date.now()}`;
 const isNativeApp = !!(window.Capacitor || window.cordova);
 
 try { pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`; } catch {}
@@ -4416,7 +4418,7 @@ function App() {
     setUpdateInfo(null);
     setCloudStatus('正在检查更新...');
     try {
-      const resp = await fetch(UPDATE_SERVER_URL, { cache: 'no-store' });
+      const resp = await fetch(UPDATE_SERVER_URL_CACHE(), { cache: 'no-store' });
       if (!resp.ok) throw new Error(`连接失败（HTTP ${resp.status}），请检查网络`);
       const apiData = await resp.json();
 
