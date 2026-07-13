@@ -8,8 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -36,12 +34,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Inject feedback token
-        run: python3 scripts/inject_token.py "${{ secrets.GITEE_FEEDBACK_TOKEN }}"
-        continue-on-error: true
-
       - name: Build web
-        run: NODE_OPTIONS="--max-old-space-size=4096" npm run build
+        run: npm run build
 
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/release-key.jks
@@ -50,75 +44,21 @@ jobs:
         run: npx cap sync android
 
       - name: Build APK with fixed signature
-        env:
-          GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=512m" -Dorg.gradle.daemon=false'
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace \
+          ./gradlew assembleDebug --stacktrace \
             -PMYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
             -PMYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }} \
             -PMYAPP_UPLOAD_KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
-            -PMYAPP_UPLOAD_STORE_FILE=release-key.jks 2>&1 | tee ../build-log.txt
-          if [ ${PIPESTATUS[0]} -ne 0 ]; then
-            echo "BUILD_FAILED=true" >> $GITHUB_ENV
-            exit 1
-          fi
-
-      - name: Output build log on failure
-        if: failure()
-        run: |
-          echo "## Build Log" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          tail -100 build-log.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat build-log.txt
-
-      - name: Upload app-update.json with token to GitHub
-        if: ${{ secrets.GITEE_FEEDBACK_TOKEN != '' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITEE_FEEDBACK_TOKEN: ${{ secrets.GITEE_FEEDBACK_TOKEN }}
-          GITHUB_RUN_NUMBER: ${{ github.run_number }}
-        run: python3 scripts/upload_to_github.py
-      - name: Restore app-update.json
-        run: git checkout -- app-update.json
+            -PMYAPP_UPLOAD_STORE_FILE=release-key.jks
 
       - name: Upload APK to Gitee
-        id: upload_gitee
-        continue-on-error: true
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
-        run: python3 scripts/upload_apk.py 2>&1 | tee upload-log.txt
-
-      - name: Show upload log on failure
-        if: failure()
-        run: |
-          echo "## Upload Log" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat upload-log.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat upload-log.txt
-
-      - name: Prepare APK for release
-        run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/gaokao-vocab.apk
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.run_number }}
-          name: "Build #${{ github.run_number }}"
-          body: |
-            Auto build from GitHub Actions
-            Run #${{ github.run_number }}
-          files: android/app/build/outputs/apk/debug/gaokao-vocab.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+        run: python3 scripts/upload_apk.py
 
       - name: Upload APK artifact
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gaokao-vocab-apk

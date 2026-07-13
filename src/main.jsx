@@ -14,14 +14,10 @@ const APP_VERSION_CODE = 59;
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
 const GITEE_BRANCH = 'master';
-const GITHUB_OWNER = 'xdbzys';
-const GITHUB_REPO = 'gaokao-vocab';
 // 优先使用 Gitee raw 直链获取 JSON（避免 API base64 解码问题）
 const UPDATE_SERVER_RAW = `https://gitee.com/${GITEE_OWNER}/${GITEE_REPO}/raw/master/app-update.json`;
 // 备用：Gitee API 方式
 const UPDATE_SERVER_API = `https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/contents/app-update.json?ref=${GITEE_BRANCH}`;
-// 备用：GitHub raw（Gitee不可用时）
-const UPDATE_GITHUB_RAW = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/app-update.json`;
 // 添加时间戳防止 CDN 缓存
 const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
 const isNativeApp = !!(window.Capacitor || window.cordova);
@@ -4635,20 +4631,6 @@ function App() {
         } catch (e) { /* API 失败 */ }
       }
 
-      // 方式3: 尝试 GitHub API
-      if (!serverData || !serverData.feedbackToken) {
-        try {
-          const ghResp = await fetch(UPDATE_GITHUB_RAW + '?_t=' + Date.now());
-          if (ghResp.ok) {
-            const ghResult = await ghResp.json();
-            if (ghResult.content && ghResult.encoding === 'base64') {
-              const decoded = decodeURIComponent(escape(atob(ghResult.content)));
-              serverData = JSON.parse(decoded);
-            }
-          }
-        } catch (e) { /* GitHub 失败 */ }
-      }
-
       if (!serverData || !serverData.feedbackToken) {
         setFeedbackStatus('⚠️ 反馈服务暂不可用，请稍后再试');
         return;
@@ -4741,21 +4723,6 @@ function App() {
       throw new Error('API 数据格式无法识别');
     }
 
-    async function fetchFromGitHub() {
-      const url = `${UPDATE_GITHUB_RAW}?_t=${Date.now()}`;
-      console.log('[Update] Trying GitHub API URL:', url);
-      const resp = await fetch(url, { cache: 'no-store' });
-      if (!resp.ok) throw new Error(`GitHub API 连接失败（HTTP ${resp.status}）`);
-      const apiData = await resp.json();
-      if (apiData.content && apiData.encoding === 'base64') {
-        const decoded = decodeURIComponent(escape(atob(apiData.content)));
-        return JSON.parse(decoded);
-      } else if (apiData.versionCode) {
-        return apiData;
-      }
-      throw new Error('GitHub API 数据格式无法识别');
-    }
-
     try {
       let data;
       try {
@@ -4763,14 +4730,8 @@ function App() {
         console.log('[Update] Raw success:', data);
       } catch (rawErr) {
         console.warn('[Update] Raw failed:', rawErr.message);
-        try {
-          data = await fetchFromApi();
-          console.log('[Update] API fallback success:', data);
-        } catch (apiErr) {
-          console.warn('[Update] API failed:', apiErr.message);
-          data = await fetchFromGitHub();
-          console.log('[Update] GitHub fallback success:', data);
-        }
+        data = await fetchFromApi();
+        console.log('[Update] API fallback success:', data);
       }
 
       if (typeof data.versionCode !== 'number') {
@@ -4781,28 +4742,10 @@ function App() {
       let hasUpdate = data.versionCode > APP_VERSION_CODE;
       const changelog = data.changelog || data.updateLog || '';
       let version = data.version || data.versionCode;
-
-      // 如果Gitee返回的版本不比本地新，尝试GitHub源获取更高版本
-      if (!hasUpdate) {
-        try {
-          const githubData = await fetchFromGitHub();
-          console.log('[Update] GitHub check, versionCode:', githubData.versionCode);
-          if (githubData.versionCode > APP_VERSION_CODE && githubData.versionCode > data.versionCode) {
-            data = githubData;
-            hasUpdate = true;
-            version = githubData.version || githubData.versionCode;
-          }
-        } catch (ghErr) {
-          console.warn('[Update] GitHub check failed:', ghErr.message);
-        }
-      }
-
       const finalChangelog = hasUpdate ? (data.changelog || data.updateLog || changelog) : changelog;
       const finalVersion = hasUpdate ? (data.version || data.versionCode) : version;
 
-      // 构建APK下载地址：优先GitHub Release，备用app-update.json中的地址
-      const githubReleaseUrl = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/latest/gaokao-vocab.apk`;
-      const apkUrl = data.apkUrl || data.appUrl || githubReleaseUrl;
+      const apkUrl = data.apkUrl || data.appUrl || '';
 
       if (data.books && Array.isArray(data.books) && !hasUpdate) {
         setUpdateInfo({
