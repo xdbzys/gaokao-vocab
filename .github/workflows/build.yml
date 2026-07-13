@@ -44,7 +44,7 @@ jobs:
           fi
 
       - name: Build web
-        run: npm run build
+        run: NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/release-key.jks
