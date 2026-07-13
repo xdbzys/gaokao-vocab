@@ -4615,7 +4615,7 @@ function App() {
     try {
       let serverData = null;
 
-      // 方式1: 尝试 raw URL
+      // 方式1: 尝试 Gitee raw URL
       try {
         const rawResp = await fetch(UPDATE_SERVER_RAW + '?_t=' + Date.now());
         if (rawResp.ok) serverData = await rawResp.json();
@@ -4633,6 +4633,20 @@ function App() {
             }
           }
         } catch (e) { /* API 失败 */ }
+      }
+
+      // 方式3: 尝试 GitHub API
+      if (!serverData || !serverData.feedbackToken) {
+        try {
+          const ghResp = await fetch(UPDATE_GITHUB_RAW + '?_t=' + Date.now());
+          if (ghResp.ok) {
+            const ghResult = await ghResp.json();
+            if (ghResult.content && ghResult.encoding === 'base64') {
+              const decoded = decodeURIComponent(escape(atob(ghResult.content)));
+              serverData = JSON.parse(decoded);
+            }
+          }
+        } catch (e) { /* GitHub 失败 */ }
       }
 
       if (!serverData || !serverData.feedbackToken) {

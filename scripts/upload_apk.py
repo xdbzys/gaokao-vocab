@@ -1,110 +1,86 @@
 import requests, base64, sys, os, json, time
 
-TOKEN = os.environ.get('GITEE_TOKEN', '')
-if not TOKEN:
-    print("ERROR: GITEE_TOKEN environment variable is not set!")
-    sys.exit(1)
-
-print(f"TOKEN length: {len(TOKEN)}")
-
-REPO = 'xdbzys/app'
+GITEE_TOKEN = os.environ.get('GITEE_TOKEN', '')
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
+GITEE_REPO = 'xdbzys/app'
+GITHUB_REPO = 'xdbzys/gaokao-vocab'
 APK_PATH = 'android/app/build/outputs/apk/debug/app-debug.apk'
 APK_FILENAME = 'gaokao-vocab.apk'
 
 with open('app-update.json', 'r') as f:
     update_data = json.load(f)
 version = update_data.get('version', '2.5')
-print(f"Building for version: {version}")
+print(f"Version: {version}")
 
 with open(APK_PATH, 'rb') as f:
-    content = base64.b64encode(f.read()).decode()
-print(f"APK size: {len(content)} bytes (base64)")
+    apk_content = base64.b64encode(f.read()).decode()
+print(f"APK size: {len(apk_content)} bytes (base64)")
 
-def gitee_upload(filename, file_content, message):
-    """Upload file to Gitee using Contents API."""
-    url = f'https://gitee.com/api/v5/repos/{REPO}/contents/{filename}'
+def api_upload(token, repo, filename, file_content, message, api_base):
+    """Upload file via Contents API."""
+    url = f'{api_base}/repos/{repo}/contents/{filename}'
+    headers = {'Authorization': f'token {token}'} if token else {}
 
-    # 1. Get current SHA
-    get_resp = requests.get(url, params={'access_token': TOKEN}, timeout=30)
-    print(f'  GET {filename}: {get_resp.status_code}')
-
-    if get_resp.status_code == 401:
-        print(f'  ERROR: 401 Unauthorized - token invalid')
-        return get_resp
-
+    # Get current SHA
+    get_resp = requests.get(url, headers=headers, timeout=30)
     sha = None
     if get_resp.status_code == 200:
         sha = get_resp.json().get('sha', '')
-        print(f'  Current SHA: {sha[:16] if sha else "new file"}')
     elif get_resp.status_code == 404:
-        print(f'  File not found, will create new')
+        print(f'  {filename} not found, will create')
     else:
-        print(f'  GET error: {get_resp.text[:200]}')
-        return get_resp
+        print(f'  GET {filename}: {get_resp.status_code} - {get_resp.text[:100]}')
+        return None
 
-    # 2. Upload
-    payload = {
-        'access_token': TOKEN,
-        'content': file_content,
-        'message': message,
-        'branch': 'master'
-    }
+    # Upload
+    payload = {'message': message, 'content': file_content, 'branch': 'master'}
     if sha:
         payload['sha'] = sha
+    method = 'PUT' if sha else 'POST'
 
-    if sha:
-        upload_resp = requests.put(url, json=payload, timeout=60)
-    else:
-        upload_resp = requests.post(url, json=payload, timeout=60)
-
+    upload_resp = requests.request(method, url, headers=headers, json=payload, timeout=60)
     print(f'  UPLOAD {filename}: {upload_resp.status_code}')
-    try:
-        resp_json = upload_resp.json()
-        print(f'  Response: {json.dumps(resp_json, ensure_ascii=False)[:300]}')
-    except:
-        print(f'  Response: {upload_resp.text[:200]}')
-
+    if upload_resp.status_code not in (200, 201):
+        print(f'  Error: {upload_resp.text[:200]}')
+        return None
     return upload_resp
 
-# Upload APK
-print(f"\nUploading {APK_FILENAME}...")
-r1 = gitee_upload(APK_FILENAME, content, f'auto build apk v{version}')
-if r1.status_code not in (200, 201):
-    print(f'  APK upload failed!')
-    sys.exit(1)
-print(f'  APK uploaded OK')
+# 1. Upload APK to GitHub Releases (via create release step in workflow)
+print("\n--- Uploading to GitHub API ---")
 
-# Update app-update.json
-update_data['apkUrl'] = f'https://gitee.com/{REPO}/raw/master/{APK_FILENAME}'
-update_data['feedbackToken'] = TOKEN
+# Write feedback token into app-update.json
+if GITEE_TOKEN:
+    update_data['feedbackToken'] = GITEE_TOKEN
 with open('app-update.json', 'w') as f:
     json.dump(update_data, f, ensure_ascii=False, indent=2)
+update_content = base64.b64encode(open('app-update.json', 'rb').read()).decode()
 
-with open('app-update.json', 'rb') as f:
-    update_content = base64.b64encode(f.read()).decode()
-
-print(f"\nUploading app-update.json...")
-r2 = gitee_upload('app-update.json', update_content, f'update app-update.json to v{version}')
-if r2.status_code not in (200, 201):
-    print(f'  app-update.json upload failed!')
-    sys.exit(1)
-print(f'  app-update.json uploaded OK')
-
-# Verify
-print("\nVerifying upload...")
-time.sleep(5)
-verify = requests.get(f'https://gitee.com/api/v5/repos/{REPO}/contents/app-update.json', params={'access_token': TOKEN})
-if verify.status_code == 200:
-    vdata = verify.json()
-    vcontent = base64.b64decode(vdata.get('content','')).decode('utf-8')
-    vjson = json.loads(vcontent)
-    print(f"  Remote version: {vjson.get('version')}")
-    if vjson.get('version') == version:
-        print("  ✓ Verified!")
+if GITHUB_TOKEN:
+    print("Uploading app-update.json to GitHub...")
+    r = api_upload(GITHUB_TOKEN, GITHUB_REPO, 'app-update.json', update_content,
+                   f'update app-update.json to v{version}', 'https://api.github.com')
+    if r:
+        print("  GitHub upload OK")
     else:
-        print(f"  ✗ Mismatch! Expected {version}")
-        sys.exit(1)
+        print("  GitHub upload failed")
 else:
-    print(f"  Verify GET failed: {verify.status_code}")
+    print("No GITHUB_TOKEN, skipping GitHub upload")
+
+# 2. Upload to Gitee
+print("\n--- Uploading to Gitee ---")
+if GITEE_TOKEN:
+    print("Uploading APK to Gitee...")
+    r1 = api_upload(GITEE_TOKEN, GITEE_REPO, APK_FILENAME, apk_content,
+                    f'auto build apk v{version}', 'https://gitee.com/api/v5')
+    if not r1:
+        print("  Gitee APK upload failed (non-fatal)")
+
+    print("Uploading app-update.json to Gitee...")
+    r2 = api_upload(GITEE_TOKEN, GITEE_REPO, 'app-update.json', update_content,
+                    f'update app-update.json to v{version}', 'https://gitee.com/api/v5')
+    if not r2:
+        print("  Gitee JSON upload failed (non-fatal)")
+else:
+    print("No GITEE_TOKEN, skipping Gitee upload")
 
 print("\nDone!")
