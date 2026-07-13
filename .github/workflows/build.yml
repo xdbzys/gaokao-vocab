@@ -81,9 +81,19 @@ jobs:
         id: upload_gitee
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
-        run: python3 scripts/upload_apk.py
+        run: python3 scripts/upload_apk.py 2>&1 | tee upload-log.txt
+
+      - name: Show upload log on failure
+        if: failure()
+        run: |
+          echo "## Upload Log" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat upload-log.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat upload-log.txt
 
       - name: Upload APK artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gaokao-vocab-apk
