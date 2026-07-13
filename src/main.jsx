@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.4';
-const APP_VERSION_CODE = 14;
+const APP_VERSION = '2.5';
+const APP_VERSION_CODE = 25;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -2934,6 +2934,40 @@ const affixData = {
   ]
 };
 
+// 情景记忆数据：高考高频主题词+语境文章
+const sceneData = [
+  {
+    title: '🌍 环境保护',
+    words: ['environment', 'pollution', 'sustainable', 'climate', 'carbon', 'renewable', 'ecosystem', 'conservation', 'emission', 'biodiversity'],
+    text: 'Environmental protection has become one of the most pressing issues of our time. With climate change accelerating, governments worldwide are implementing policies to reduce carbon emissions and promote renewable energy sources. The Paris Agreement represents a landmark effort to limit global warming to well below 2°C. At the individual level, we can contribute by adopting sustainable lifestyles — reducing waste, recycling, and conserving water. The protection of biodiversity and ecosystems is equally important, as every species plays a vital role in maintaining the balance of nature.'
+  },
+  {
+    title: '🤖 人工智能与科技',
+    words: ['artificial', 'intelligence', 'algorithm', 'automation', 'innovation', 'digital', 'robot', 'data', 'virtual', 'network'],
+    text: 'Artificial intelligence is transforming every aspect of our lives, from healthcare to education. AI-powered systems can now diagnose diseases with remarkable accuracy, personalize learning experiences, and even create art. However, the rapid advancement of automation also raises concerns about job displacement and ethical issues. As we embrace digital innovation, we must ensure that technology serves humanity rather than the other way around. The key lies in developing responsible AI that respects privacy, promotes fairness, and remains under human control.'
+  },
+  {
+    title: '📚 教育成长',
+    words: ['education', 'knowledge', 'curriculum', 'academic', 'graduate', 'scholarship', 'discipline', 'potential', 'inspire', 'achieve'],
+    text: 'Education is not merely the transmission of knowledge but the cultivation of curiosity and critical thinking. A well-rounded curriculum should balance academic rigor with character development. Students who discover their true potential often do so through the guidance of inspiring teachers who go beyond textbooks. The goal of education is not just to help students graduate with good grades, but to equip them with the discipline and resilience needed to navigate life\'s challenges. As Nelson Mandela once said, "Education is the most powerful weapon which you can use to change the world."'
+  },
+  {
+    title: '🏛️ 传统文化',
+    words: ['traditional', 'culture', 'heritage', 'civilization', 'ancestor', 'festival', 'custom', 'ceremony', 'ancient', 'preserve'],
+    text: 'Traditional culture represents the wisdom and values accumulated over thousands of years of civilization. From the Spring Festival to the Mid-Autumn Festival, Chinese customs and ceremonies reflect our ancestors\' deep understanding of nature and human relationships. However, in an increasingly globalized world, many traditional practices are at risk of being forgotten. It is our responsibility to preserve this cultural heritage while adapting it to modern contexts. By learning about our roots, we gain a stronger sense of identity and belonging.'
+  },
+  {
+    title: '💪 健康生活',
+    words: ['health', 'nutrition', 'exercise', 'mental', 'balanced', 'diet', 'psychological', 'physical', 'wellness', 'habit'],
+    text: 'A healthy lifestyle is the foundation of happiness and productivity. Regular physical exercise not only strengthens the body but also boosts mental well-being by releasing endorphins. A balanced diet rich in nutrition provides the energy needed for daily activities. Equally important is psychological health — managing stress, maintaining positive relationships, and getting adequate sleep. Developing good habits early in life pays dividends for decades to come. Remember, health is not just the absence of illness, but a state of complete physical, mental, and social wellness.'
+  },
+  {
+    title: '🌐 社会热点',
+    words: ['globalization', 'diversity', 'equality', 'poverty', 'volunteer', 'community', 'justice', 'opportunity', 'challenge', 'responsibility'],
+    text: 'In an era of globalization, we are more connected than ever before. Issues such as poverty, inequality, and social justice transcend national borders and require collective action. Volunteering in community service not only helps those in need but also broadens our perspective and cultivates empathy. Every individual has the responsibility to contribute to a more just and compassionate society. While the challenges we face are daunting, they also present opportunities for innovation and positive change. As global citizens, we must embrace diversity and work together toward a sustainable future.'
+  }
+];
+
 // 原有核心短语库
 const seedPhrases = [
   ['as a result', '短语', '结果；因此', '高频', ['常放句首或句中作结果状语'], ['as a result 后接句子；as a result of 后接名词/doing'], ['He worked hard. As a result, he passed the exam.']],
@@ -3666,10 +3700,11 @@ function loadSettings() {
       detailMode: 'brief',
       shuffleMode: false,
       autoJump: false,
+      autoJumpDelay: 1500,
       ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')
     };
   } catch {
-    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', detailMode: 'brief', shuffleMode: false, autoJump: false };
+    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500 };
   }
 }
 
@@ -4054,11 +4089,16 @@ const TABS = [
 
 function App() {
   const [books, setBooks] = useState(loadBooks);
-  const [activeBookId, setActiveBookId] = useState(() => {
-    try { return localStorage.getItem('gaokao_active_book') || 'gaokao-core'; }
-    catch { return 'gaokao-core'; }
+  const [activeBookIds, setActiveBookIds] = useState(() => {
+    try { 
+      const saved = localStorage.getItem('gaokao_active_books');
+      return saved ? saved.split(',') : ['gaokao-core']; 
+    }
+    catch { return ['gaokao-core']; }
   });
   const [section, setSection] = useState('learn');
+  const [showBookPicker, setShowBookPicker] = useState(false);
+  const [showBookPicker2, setShowBookPicker2] = useState(false);
   // 词性筛选（替代原来的type筛选）
   const [posFilter, setPosFilter] = useState('全部');
   const [typeFilter, setTypeFilter] = useState('全部');
@@ -4107,7 +4147,16 @@ function App() {
     try { if (!localStorage.getItem('gaokao_first_use')) localStorage.setItem('gaokao_first_use', getToday()); } catch {}
   }, []);
 
-  const activeBook = books.find(b => b.id === activeBookId) || books[0];
+  const activeBook = useMemo(() => {
+    const selected = books.filter(b => activeBookIds.includes(b.id));
+    if (selected.length === 0) return books[0] || { id: 'empty', name: '空', items: [], editable: false };
+    return {
+      id: activeBookIds.join(','),
+      name: selected.length === 1 ? selected[0].name : `${selected.length}个词库`,
+      items: selected.flatMap(b => b.items),
+      editable: false
+    };
+  }, [books, activeBookIds]);
 
   // 全部词汇合并（词根词缀、对比、易错词基于全量词汇）
   const allWords = useMemo(() => {
@@ -4128,18 +4177,27 @@ function App() {
 
   const current = filteredItems[index % Math.max(filteredItems.length, 1)];
 
-  // 问题1：4个选项（1正确+3干扰项）
+  // 问题1：4个选项（1正确+3干扰项）—— 排除易混/同义/反义词干扰
   const options = useMemo(() => {
     if (!current) return [];
     if (practiceMode === 'flashcard') return [];
-    // 从所有词库的合并列表中抽取干扰项，确保有足够的候选
-    const pool = allWords.filter(item => item.id !== current.id);
+    // 从普通词库中抽取干扰项，排除易混/同义/反义/褒贬词库
+    const normalBooks = books.filter(b => 
+      !b.id.includes('synonym') && !b.id.includes('antonym') && 
+      !b.id.includes('confused') && !b.id.includes('dual-sentiment')
+    );
+    const normalWords = normalBooks.flatMap(b => b.items);
+    const pool = normalWords.filter(item => 
+      item.id !== current.id && 
+      item.term !== current.term &&
+      item.meaning !== current.meaning
+    );
     const wrongItems = shuffle(pool).slice(0, 3);
     const values = practiceMode === 'cn-to-en'
       ? [current.term, ...wrongItems.map(i => i.term)]
       : [current.meaning, ...wrongItems.map(i => i.meaning)];
     return shuffle(values);
-  }, [allWords, current, practiceMode]);
+  }, [books, current, practiceMode]);
 
   // 进度统计（按当前词库）
   const progressStats = useMemo(() => {
@@ -4158,12 +4216,26 @@ function App() {
   function updateBooks(next) { setBooks(next); saveCustomBooks(next); }
 
   function switchBook(id) {
-    setActiveBookId(id);
+    if (activeBookIds.includes(id)) {
+      const next = activeBookIds.filter(x => x !== id);
+      if (next.length === 0) next.push('gaokao-core');
+      setActiveBookIds(next);
+      try { localStorage.setItem('gaokao_active_books', next.join(',')); } catch {}
+    } else {
+      const next = [...activeBookIds, id];
+      setActiveBookIds(next);
+      try { localStorage.setItem('gaokao_active_books', next.join(',')); } catch {}
+    }
     setTypeFilter('全部');
     setIndex(0);
     setSessionCorrect(0);
     setSessionTotal(0);
-    try { localStorage.setItem('gaokao_active_book', id); } catch {}
+  }
+  function selectAllBooks() {
+    const allIds = books.map(b => b.id);
+    setActiveBookIds(allIds);
+    try { localStorage.setItem('gaokao_active_books', allIds.join(',')); } catch {}
+    setTypeFilter('全部'); setIndex(0); setSessionCorrect(0); setSessionTotal(0);
   }
 
   function toggleProgress(itemId) {
@@ -4245,7 +4317,7 @@ function App() {
         setTimeout(() => {
           nextCard();
           setAutoJumping(false);
-        }, 1200);
+        }, settings.autoJumpDelay || 1500);
       }
     } else {
       // 答错：加入错词本
@@ -4456,9 +4528,26 @@ function App() {
         <section>
           {/* 顶部栏 */}
           <div className="learnTop">
-            <select value={activeBookId} onChange={e => switchBook(e.target.value)}>
-              {books.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
+            <div className="multiBookSelect" style={{ position: 'relative', flex: 1 }}>
+              <button className="multiBookBtn" onClick={() => setShowBookPicker(!showBookPicker)}>
+                {activeBook.name} ▼
+              </button>
+              {showBookPicker && (
+                <div className="bookPickerDropdown">
+                  <div className="bookPickerActions">
+                    <button onClick={selectAllBooks}>全选</button>
+                    <button onClick={() => { setActiveBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_active_books', 'gaokao-core'); } catch {} }}>重置</button>
+                  </div>
+                  {books.filter(b => !b.id.includes('synonym') && !b.id.includes('antonym') && !b.id.includes('confused') && !b.id.includes('dual-sentiment')).map(b => (
+                    <label key={b.id} className="bookPickerItem">
+                      <input type="checkbox" checked={activeBookIds.includes(b.id)} onChange={() => switchBook(b.id)} />
+                      <span>{b.name}</span>
+                      <span className="bookCount">({b.items.length})</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
             <span className="progressTag">{index + 1}/{filteredItems.length}</span>
             <button className="iconBtn" onClick={() => { setSettings(s => ({ ...s, shuffleMode: !s.shuffleMode })); saveSettings({ ...settings, shuffleMode: !settings.shuffleMode }); }}>
               {settings.shuffleMode ? '乱序' : '顺序'}
@@ -4598,9 +4687,26 @@ function App() {
       {section === 'library' && (
         <section className="panel">
           <div className="libraryHeader">
-            <select value={activeBookId} onChange={e => switchBook(e.target.value)}>
-              {books.map(b => <option key={b.id} value={b.id}>{b.name} ({b.items.length})</option>)}
-            </select>
+            <div className="multiBookSelect" style={{ position: 'relative', flex: 1 }}>
+              <button className="multiBookBtn" onClick={() => setShowBookPicker2(!showBookPicker2)}>
+                {activeBook.name} ▼
+              </button>
+              {showBookPicker2 && (
+                <div className="bookPickerDropdown">
+                  <div className="bookPickerActions">
+                    <button onClick={selectAllBooks}>全选</button>
+                    <button onClick={() => { setActiveBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_active_books', 'gaokao-core'); } catch {} }}>重置</button>
+                  </div>
+                  {books.map(b => (
+                    <label key={b.id} className="bookPickerItem">
+                      <input type="checkbox" checked={activeBookIds.includes(b.id)} onChange={() => switchBook(b.id)} />
+                      <span>{b.name}</span>
+                      <span className="bookCount">({b.items.length})</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
             <button onClick={createBook}>+ 新建</button>
           </div>
           <input className="searchInput" value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索英文、中文、词性..." />
@@ -4669,6 +4775,7 @@ function App() {
             <button className={extendTab === 'affix' ? 'active' : ''} onClick={() => setExtendTab('affix')}>词根词缀</button>
             <button className={extendTab === 'compare' ? 'active' : ''} onClick={() => setExtendTab('compare')}>对比记忆</button>
             <button className={extendTab === 'errors' ? 'active' : ''} onClick={() => setExtendTab('errors')}>易错词</button>
+            <button className={extendTab === 'scene' ? 'active' : ''} onClick={() => setExtendTab('scene')}>情景记忆</button>
           </div>
 
           {/* 词根词缀 */}
@@ -4748,6 +4855,24 @@ function App() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* 情景记忆 */}
+          {extendTab === 'scene' && (
+            <div style={{ marginTop: 16 }}>
+              <p className="muted">通过句子和短文，在真实语境中记忆高考主题词。点击单词可听发音。</p>
+              {sceneData.map((scene, i) => (
+                <div key={i} className="sceneCard">
+                  <h3>{scene.title}</h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                    {scene.words.map((w, j) => (
+                      <span key={j} className="sceneWord" onClick={() => speak(w, settings.speakRate)}>{w}</span>
+                    ))}
+                  </div>
+                  <div className="sceneText">{scene.text}</div>
+                </div>
+              ))}
             </div>
           )}
         </section>
@@ -4884,9 +5009,18 @@ function App() {
             <label>答对后自动跳转下一题
               <select value={settings.autoJump ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, autoJump: v })); saveSettings({ ...settings, autoJump: v }); }}>
                 <option value="off">关闭（手动点下一个）</option>
-                <option value="on">开启（1.2秒后自动跳转）</option>
+                <option value="on">开启</option>
               </select>
             </label>
+            {settings.autoJump && <label>自动跳转延迟
+              <select value={settings.autoJumpDelay || 1500} onChange={e => { const v = parseInt(e.target.value); setSettings(s => ({ ...s, autoJumpDelay: v })); saveSettings({ ...settings, autoJumpDelay: v }); }}>
+                <option value="800">0.8秒</option>
+                <option value="1200">1.2秒</option>
+                <option value="1500">1.5秒</option>
+                <option value="2000">2秒</option>
+                <option value="3000">3秒</option>
+              </select>
+            </label>}
             <div className="settingsInfo">
               <p>首次使用：{firstUseDate}</p>
               <p>今日日期：{todayKey}</p>
