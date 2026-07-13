@@ -53,21 +53,28 @@ jobs:
         run: npx cap sync android
 
       - name: Build APK with fixed signature
+        env:
+          GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=512m" -Dorg.gradle.daemon=false'
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace --info \
+          ./gradlew assembleDebug --no-daemon --stacktrace \
             -PMYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
             -PMYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }} \
             -PMYAPP_UPLOAD_KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
             -PMYAPP_UPLOAD_STORE_FILE=release-key.jks 2>&1 | tee ../build-log.txt
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "BUILD_FAILED=true" >> $GITHUB_ENV
+            exit 1
+          fi
 
       - name: Upload build log (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: build-log
+          name: build-log-failure
           path: build-log.txt
+          retention-days: 3
 
       - name: Upload APK to Gitee
         env:
