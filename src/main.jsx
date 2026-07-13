@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.0';
-const APP_VERSION_CODE = 50;
+const APP_VERSION = '2.8.1';
+const APP_VERSION_CODE = 51;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -3597,12 +3597,6 @@ const builtInBooks = [
     items: makeAllItems(seedDualSentiment, 'phrase')
   },
   {
-    id: 'gaokao-misspelled',
-    name: '常见拼写错误词(35个)',
-    editable: false,
-    items: makeAllItems(seedMisspelled, 'phrase')
-  },
-  {
     id: 'gaokao-confused',
     name: '易混词辨析',
     editable: false,
@@ -4597,26 +4591,52 @@ function App() {
     const title = `[${feedbackType === 'suggest' ? '建议' : 'bug'}] ${feedbackText.slice(0, 30)}...`;
     const body = `反馈类型: ${feedbackType}\n版本: v${APP_VERSION}\n内容: ${feedbackText}\n时间: ${new Date().toLocaleString()}`;
 
-    // 从 app-update.json 获取 token
+    // 从服务端获取 feedbackToken，然后创建 Gitee Issue
     try {
-      const resp = await fetch(UPDATE_SERVER_RAW + '?_t=' + Date.now());
-      const serverData = await resp.json();
-      if (serverData.feedbackToken) {
-        const issueResp = await fetch('https://gitee.com/api/v5/repos/xdbzys/app/issues', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ access_token: serverData.feedbackToken, title, body })
-        });
-        if (issueResp.ok) {
-          setFeedbackStatus('✅ 提交成功！感谢你的反馈');
-          setFeedbackText('');
-          setTimeout(() => { setShowFeedback(false); setFeedbackStatus(''); }, 1500);
-          return;
-        }
+      let serverData = null;
+
+      // 方式1: 尝试 raw URL
+      try {
+        const rawResp = await fetch(UPDATE_SERVER_RAW + '?_t=' + Date.now());
+        if (rawResp.ok) serverData = await rawResp.json();
+      } catch (e) { /* raw 失败 */ }
+
+      // 方式2: 尝试 Gitee API（base64 解码）
+      if (!serverData || !serverData.feedbackToken) {
+        try {
+          const apiResp = await fetch(UPDATE_SERVER_API + '&_t=' + Date.now());
+          if (apiResp.ok) {
+            const apiResult = await apiResp.json();
+            if (apiResult.content && apiResult.encoding === 'base64') {
+              const decoded = decodeURIComponent(escape(atob(apiResult.content)));
+              serverData = JSON.parse(decoded);
+            }
+          }
+        } catch (e) { /* API 失败 */ }
       }
-      setFeedbackStatus('提交失败，请稍后重试');
+
+      if (!serverData || !serverData.feedbackToken) {
+        setFeedbackStatus('⚠️ 反馈服务暂不可用，请稍后再试');
+        return;
+      }
+
+      const issueResp = await fetch('https://gitee.com/api/v5/repos/xdbzys/app/issues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: serverData.feedbackToken, title, body, labels: ['用户反馈'] })
+      });
+
+      if (issueResp.ok) {
+        setFeedbackStatus('✅ 提交成功！感谢你的反馈');
+        setFeedbackText('');
+        setTimeout(() => { setShowFeedback(false); setFeedbackStatus(''); }, 1500);
+      } else {
+        const err = await issueResp.json().catch(() => ({}));
+        setFeedbackStatus(`提交失败: ${err.message || issueResp.status}`);
+      }
     } catch (e) {
-      setFeedbackStatus('网络错误，请稍后重试');
+      console.error('[Feedback] Error:', e);
+      setFeedbackStatus('网络错误，请检查网络后重试');
     }
   }
 
@@ -5162,7 +5182,7 @@ function App() {
           {/* 易错词 */}
           {extendTab === 'errors' && (
             <div className="errorBookList">
-              {['gaokao-misspelled', 'gaokao-familiar-new', 'gaokao-dual-sentiment'].map(bookId => {
+              {['gaokao-familiar-new', 'gaokao-dual-sentiment'].map(bookId => {
                 const b = books.find(bk => bk.id === bookId);
                 if (!b) return null;
                 return (

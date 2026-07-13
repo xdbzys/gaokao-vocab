@@ -1,7 +1,7 @@
 {
-  "version": "2.8.0",
-  "versionCode": 50,
-  "changelog": "v2.8.0 更新公告\n\n【新功能】\n1. 全新底部导航图标（SVG线条风格）\n2. AI智能识别支持多家国内服务商（硅基流动/智谱/阿里/百度）\n3. 扩展页新增拼写纠错（40组常见错误+记忆技巧）\n4. 应用内意见反馈（直接提交，作者即时收到）\n5. 智能分类导入（自动识别词库/拼写内容）\n6. 更灵活的自动跳转设置（11档时间可选）\n7. 情景记忆短文新增中文翻译\n8. 自动检测更新+后台下载\n9. 更新公告展示\n\n【优化】\n- 修复更新检测缓存问题\n- 优化WebView缓存策略\n- 移除Service Worker避免API缓存",
-  "devNotes": "removed Service Worker, SVG tab icons, Gitee token injection via upload script, silent update with blob download",
+  "version": "2.8.1",
+  "versionCode": 51,
+  "changelog": "v2.8.1 更新\n\n【修复】\n1. 修复意见反馈提交失败问题\n2. 移除词库中的常见拼写错误（已在扩展页独立展示）\n3. 背诵选项中不再出现拼写错误词条",
+  "devNotes": "removed gaokao-misspelled from builtInBooks, feedback uses raw+API dual fetch for token",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
