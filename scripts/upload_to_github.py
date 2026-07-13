@@ -1,4 +1,10 @@
-import json, base64, requests, os, sys
+import json, base64, os, sys
+try:
+    from urllib.request import Request, urlopen
+    from urllib.error import URLError, HTTPError
+except ImportError:
+    print("urllib not available")
+    sys.exit(1)
 
 run_number = os.environ.get('GITHUB_RUN_NUMBER', '0')
 github_token = os.environ.get('GH_TOKEN', '')
@@ -24,17 +30,26 @@ content = base64.b64encode(open('app-update.json', 'rb').read()).decode()
 headers = {'Authorization': f'token {github_token}', 'Content-Type': 'application/json'}
 
 # Get SHA
-r = requests.get('https://api.github.com/repos/xdbzys/gaokao-vocab/contents/app-update.json', headers=headers)
-sha = r.json().get('sha', '') if r.ok else ''
+try:
+    req = Request('https://api.github.com/repos/xdbzys/gaokao-vocab/contents/app-update.json', headers=headers)
+    resp = urlopen(req)
+    sha = json.loads(resp.read().decode()).get('sha', '')
+except HTTPError as e:
+    if e.code == 404:
+        sha = ''
+    else:
+        print(f'GET error: {e.code}')
+        sha = ''
 
 # Upload
-payload = {'message': 'ci: update app-update.json', 'content': content, 'branch': 'master'}
-if sha:
-    payload['sha'] = sha
-
-r2 = requests.put('https://api.github.com/repos/xdbzys/gaokao-vocab/contents/app-update.json', headers=headers, json=payload)
-print(f'GitHub upload: {r2.status_code}')
-if r2.ok:
+payload = json.dumps({'message': 'ci: update app-update.json', 'content': content, 'branch': 'master', 'sha': sha}).encode()
+req2 = Request('https://api.github.com/repos/xdbzys/gaokao-vocab/contents/app-update.json', data=payload, headers=headers, method='PUT')
+try:
+    resp2 = urlopen(req2)
+    print(f'GitHub upload: {resp2.status}')
     print('app-update.json uploaded to GitHub')
-else:
-    print(f'Error: {r2.text[:200]}')
+except HTTPError as e:
+    print(f'GitHub upload error: {e.code}')
+    print(e.read().decode()[:200])
+except Exception as e:
+    print(f'GitHub upload failed: {e}')
