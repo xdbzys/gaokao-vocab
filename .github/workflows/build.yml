@@ -56,11 +56,18 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace \
+          ./gradlew assembleDebug --stacktrace --info \
             -PMYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
             -PMYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }} \
             -PMYAPP_UPLOAD_KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
-            -PMYAPP_UPLOAD_STORE_FILE=release-key.jks
+            -PMYAPP_UPLOAD_STORE_FILE=release-key.jks 2>&1 | tee ../build-log.txt
+
+      - name: Upload build log (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build-log.txt
 
       - name: Upload APK to Gitee
         env:
