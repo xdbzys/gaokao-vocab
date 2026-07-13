@@ -1,7 +1,7 @@
 {
-  "version": "2.8.1",
-  "versionCode": 51,
-  "changelog": "v2.8.1 更新\n\n【修复】\n1. 修复意见反馈提交失败问题\n2. 移除词库中的常见拼写错误（已在扩展页独立展示）\n3. 背诵选项中不再出现拼写错误词条",
-  "devNotes": "removed gaokao-misspelled from builtInBooks, feedback uses raw+API dual fetch for token",
+  "version": "2.8.2",
+  "versionCode": 52,
+  "changelog": "v2.8.2 更新\n\n【新功能】\n1. 开屏更新公告（启动时自动展示更新内容）\n2. 设置中可开关是否显示开屏公告\n3. 恢复手动检查更新按钮\n\n【优化】\n- 公告弹窗可点击"不再提示此版本"\n- 公告可跳转去更新",
+  "devNotes": "added showAnnouncement setting, restored manual check update, splash announcement modal",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

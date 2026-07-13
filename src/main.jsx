@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.1';
-const APP_VERSION_CODE = 51;
+const APP_VERSION = '2.8.2';
+const APP_VERSION_CODE = 52;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -3758,10 +3758,11 @@ function loadSettings() {
       shuffleMode: false,
       autoJump: false,
       autoJumpDelay: 1500,
+      showAnnouncement: true,
       ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')
     };
   } catch {
-    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500 };
+    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true };
   }
 }
 
@@ -4246,6 +4247,12 @@ function App() {
   const [apkDownloadProgress, setApkDownloadProgress] = useState(0);
   const [updateChangelog, setUpdateChangelog] = useState('');
   const [updateVersion, setUpdateVersion] = useState('');
+  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+  const [announcementData, setAnnouncementData] = useState(null);
+  const [dismissedVersion, setDismissedVersion] = useState(() => {
+    try { return localStorage.getItem('gaokao_dismissed_version') || ''; }
+    catch { return ''; }
+  });
   const updateCheckDone = useRef(false);
   const [search, setSearch] = useState('');
   const [importText, setImportText] = useState('');
@@ -4753,6 +4760,15 @@ function App() {
           updating: false,
         });
         if (!silent) setCloudStatus(hasUpdate ? `发现新版本 v${version}` : '已是最新版本');
+      }
+
+      // 开屏公告：静默模式下，如果用户开启了公告且未关闭过当前版本
+      if (silent && hasUpdate && settings.showAnnouncement) {
+        const remoteVersion = String(version);
+        if (remoteVersion !== dismissedVersion) {
+          setAnnouncementData({ version: remoteVersion, changelog });
+          setShowAnnouncementModal(true);
+        }
       }
 
       // 静默模式：发现新版本且有APK地址，自动在后台下载
@@ -5433,6 +5449,12 @@ function App() {
                 <option value="8000">8.0秒</option>
               </select>
             </label>}
+            <label>开屏更新公告
+              <select value={settings.showAnnouncement ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, showAnnouncement: v })); saveSettings({ ...settings, showAnnouncement: v }); }}>
+                <option value="on">开启（启动时显示更新公告）</option>
+                <option value="off">关闭</option>
+              </select>
+            </label>
             <div className="settingsInfo">
               <p>首次使用：{firstUseDate}</p>
               <p>今日日期：{todayKey}</p>
@@ -5441,25 +5463,35 @@ function App() {
             </div>
           </div>
 
-          {/* 版本更新提示 - 仅APP端显示 */}
+          {/* 版本更新中心 - 仅APP端显示 */}
           {isNativeApp ? (
-          <div className="cloudUpdateSection" style={{ padding: '10px 16px', minHeight: 'auto' }}>
-            <div className="updateHeader" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: 14, color: '#6b7280' }}>版本更新</h3>
+          <div className="cloudUpdateSection">
+            <div className="updateHeader">
+              <h3>🔄 版本更新</h3>
               <span className="versionBadge">v{APP_VERSION}</span>
             </div>
-            {updateInfo && updateInfo.hasUpdate ? (
-              <div className="updateInfoBox" style={{ background: '#ecfdf5', borderColor: '#6ee7b7', marginTop: 8, padding: '8px 12px', borderRadius: 8 }}>
-                <p className="updateNewVersion" style={{ color: '#059669', fontWeight: 'bold', margin: '0 0 4px 0', fontSize: 13 }}>
-                  新版本 v{updateInfo.version} 可用
-                </p>
+            <p className="muted">点击检查更新，获取最新功能和词库。更新不会丢失任何个人数据。</p>
+            <div className="updateActions">
+              <button className="primary" onClick={() => checkCloudUpdate(false)} disabled={checkingUpdate}>
+                {checkingUpdate ? '检查中...' : '检查更新'}
+              </button>
+            </div>
+            {updateInfo && (
+              <div className="updateInfoBox">
+                {updateInfo.hasUpdate ? (
+                  <>
+                    <p className="updateNewVersion">发现新版本 v{updateInfo.version}</p>
+                    <pre className="updateLog">{updateInfo.changelog || updateInfo.updateLog}</pre>
+                    <button className="primary" onClick={applyUpdate} disabled={updateInfo.updating} style={{ marginTop: 8 }}>
+                      {updateInfo.updating ? '更新中...' : '立即更新'}
+                    </button>
+                  </>
+                ) : (
+                  <p className="updateLatest">已是最新版本</p>
+                )}
               </div>
-            ) : updateInfo && !updateInfo.hasUpdate ? (
-              <p className="updateLatest" style={{ margin: '4px 0 0 0', fontSize: 12, color: '#9ca3af' }}>已是最新版本</p>
-            ) : (
-              <p className="muted" style={{ margin: '4px 0 0 0', fontSize: 12, color: '#9ca3af' }}>自动检测更新中...</p>
             )}
-            {cloudStatus && <p className="status" style={{ marginTop: 4, fontSize: 12 }}>{cloudStatus}</p>}
+            {cloudStatus && <p className="status" style={{ marginTop: 8 }}>{cloudStatus}</p>}
           </div>
           ) : null}
 
@@ -5574,6 +5606,46 @@ function App() {
               })}
             </div>
           </div>
+
+          {/* 开屏公告弹窗 */}
+          {showAnnouncementModal && announcementData && (
+            <div className="modalOverlay" onClick={e => { if (e.target === e.currentTarget) setShowAnnouncementModal(false); }}>
+              <div className="modal" style={{ maxWidth: 400 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <h3 style={{ margin: 0 }}>📢 更新公告</h3>
+                  <button className="closeBtn" onClick={() => setShowAnnouncementModal(false)}>✕</button>
+                </div>
+                <p style={{ color: '#2563eb', fontWeight: 'bold', marginBottom: 8 }}>v{announcementData.version} 已发布</p>
+                <pre style={{
+                  margin: '0 0 16px 0',
+                  padding: '12px 14px',
+                  background: '#f0f7ff',
+                  borderRadius: 10,
+                  fontSize: 13,
+                  lineHeight: 1.7,
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  maxHeight: 300,
+                  overflowY: 'auto',
+                  color: '#374151',
+                  borderLeft: '3px solid #3b82f6',
+                }}>{announcementData.changelog}</pre>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button className="smallBtn" onClick={() => {
+                    localStorage.setItem('gaokao_dismissed_version', announcementData.version);
+                    setDismissedVersion(announcementData.version);
+                    setShowAnnouncementModal(false);
+                  }}>不再提示此版本</button>
+                  <button className="primary" style={{ flex: 1 }} onClick={() => {
+                    setShowAnnouncementModal(false);
+                    setSection('me');
+                    // 触发检查更新以显示更新按钮
+                    checkCloudUpdate(false);
+                  }}>去更新</button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 危险区域 */}
           <div className="dangerSection">
