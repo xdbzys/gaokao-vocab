@@ -37,21 +37,8 @@ jobs:
         run: npm ci
 
       - name: Inject feedback token
-        run: |
-          if [ -n "${{ secrets.GITEE_FEEDBACK_TOKEN }}" ]; then
-            # 注入 token 到 app-update.json（APP 从 GitHub API 读取此文件获取 token）
-            python3 -c "
-import json
-with open('app-update.json', 'r') as f:
-    data = json.load(f)
-data['feedbackToken'] = '${{ secrets.GITEE_FEEDBACK_TOKEN }}'
-with open('app-update.json', 'w') as f:
-    json.dump(data, f, ensure_ascii=False, indent=2)
-print('Feedback token injected into app-update.json')
-"
-          else
-            echo "No GITEE_FEEDBACK_TOKEN secret found, feedback will fallback to email"
-          fi
+        run: python3 scripts/inject_token.py "${{ secrets.GITEE_FEEDBACK_TOKEN }}"
+        continue-on-error: true
 
       - name: Build web
         run: NODE_OPTIONS="--max-old-space-size=4096" npm run build
@@ -92,32 +79,10 @@ print('Feedback token injected into app-update.json')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITEE_FEEDBACK_TOKEN: ${{ secrets.GITEE_FEEDBACK_TOKEN }}
-        run: |
-          python3 -c "
-import json, base64, requests, os
-with open('app-update.json', 'r') as f:
-    data = json.load(f)
-data['feedbackToken'] = os.environ.get('GITEE_FEEDBACK_TOKEN', '')
-data['apkUrl'] = f'https://github.com/xdbzys/gaokao-vocab/releases/download/v{os.environ.get(\"GITHUB_RUN_NUMBER\", \"0\")}/gaokao-vocab.apk'
-with open('app-update.json', 'w') as f:
-    json.dump(data, f, ensure_ascii=False, indent=2)
-content = base64.b64encode(open('app-update.json','rb').read()).decode()
-token = os.environ['GH_TOKEN']
-headers = {'Authorization': f'token {token}', 'Content-Type': 'application/json'}
-# Get SHA
-r = requests.get('https://api.github.com/repos/xdbzys/gaokao-vocab/contents/app-update.json', headers=headers)
-sha = r.json().get('sha', '') if r.ok else ''
-# Upload
-payload = {'message': 'ci: update app-update.json', 'content': content, 'branch': 'master', 'sha': sha}
-r2 = requests.put('https://api.github.com/repos/xdbzys/gaokao-vocab/contents/app-update.json', headers=headers, json=payload)
-print(f'GitHub upload: {r2.status_code}')
-if r2.ok:
-    print('app-update.json with feedbackToken uploaded to GitHub')
-else:
-    print(f'Error: {r2.text[:200]}')
-" 2>&1
-          # Restore app-update.json without token (don't commit secrets to repo)
-          git checkout -- app-update.json
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        run: python3 scripts/upload_to_github.py
+      - name: Restore app-update.json
+        run: git checkout -- app-update.json
 
       - name: Upload APK to Gitee
         id: upload_gitee
