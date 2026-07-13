@@ -4441,7 +4441,7 @@ function App() {
     if (settings.autoSpeak && filteredItems.length > 0) {
       const nextWord = filteredItems[nextIdx];
       if (nextWord && nextWord.term) {
-        setTimeout(() => speak(nextWord.term, settings.speakRate), 300);
+        setTimeout(() => speak(nextWord.term, settings.speakRate), 100);
       }
     }
   }
