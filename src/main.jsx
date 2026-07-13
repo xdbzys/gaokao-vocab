@@ -4802,7 +4802,7 @@ function App() {
 
       // 构建APK下载地址：优先GitHub Release，备用app-update.json中的地址
       const githubReleaseUrl = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/latest/gaokao-vocab.apk`;
-      const fallbackApkUrl = data.apkUrl || data.appUrl || '';
+      const apkUrl = data.apkUrl || data.appUrl || githubReleaseUrl;
 
       if (data.books && Array.isArray(data.books) && !hasUpdate) {
         setUpdateInfo({
@@ -4824,8 +4824,8 @@ function App() {
           versionCode: data.versionCode,
           updateLog: finalChangelog,
           changelog: finalChangelog,
-          apkUrl: githubReleaseUrl || fallbackApkUrl,
-          appUrl: githubReleaseUrl || fallbackApkUrl,
+          apkUrl: apkUrl,
+          appUrl: apkUrl,
           booksData: data.books || null,
           updating: false,
         });

@@ -91,12 +91,14 @@ print('Feedback token injected into app-update.json')
         if: ${{ secrets.GITEE_FEEDBACK_TOKEN != '' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITEE_FEEDBACK_TOKEN: ${{ secrets.GITEE_FEEDBACK_TOKEN }}
         run: |
           python3 -c "
 import json, base64, requests, os
 with open('app-update.json', 'r') as f:
     data = json.load(f)
 data['feedbackToken'] = os.environ.get('GITEE_FEEDBACK_TOKEN', '')
+data['apkUrl'] = f'https://github.com/xdbzys/gaokao-vocab/releases/download/v{os.environ.get(\"GITHUB_RUN_NUMBER\", \"0\")}/gaokao-vocab.apk'
 with open('app-update.json', 'w') as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
 content = base64.b64encode(open('app-update.json','rb').read()).decode()
@@ -116,8 +118,6 @@ else:
 " 2>&1
           # Restore app-update.json without token (don't commit secrets to repo)
           git checkout -- app-update.json
-        env:
-          GITEE_FEEDBACK_TOKEN: ${{ secrets.GITEE_FEEDBACK_TOKEN }}
 
       - name: Upload APK to Gitee
         id: upload_gitee
@@ -141,14 +141,11 @@ else:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest
-          name: "v2.8.2 Build #${{ github.run_number }}"
+          tag_name: v${{ github.run_number }}
+          name: "Build #${{ github.run_number }}"
           body: |
-            ## 高考词汇背诵 v2.8.2
-            ### 新功能
-            - 开屏更新公告
-            - 设置中可开关公告
-            - 恢复手动检查更新按钮
+            Auto build from GitHub Actions
+            Run #${{ github.run_number }}
           files: android/app/build/outputs/apk/debug/gaokao-vocab.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,7 +1,7 @@
 {
   "version": "2.8.8",
   "versionCode": 58,
-  "changelog": "v2.8.8 更新\n\n【优化】\n- 更新检测支持多源对比，更可靠",
+  "changelog": "v2.8.8 更新\n\n【优化】\n- 更新检测支持多源对比\n- 反馈功能可用",
   "devNotes": "test update v2.8.8",
-  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/download/latest/gaokao-vocab.apk"
+  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/download/v58/gaokao-vocab.apk"
 }
