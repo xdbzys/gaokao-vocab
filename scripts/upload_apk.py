@@ -113,4 +113,23 @@ else:
     print(f'  app-update.json upload failed: {r2.status_code}')
     sys.exit(1)
 
+# 3. Verify upload by fetching the file back
+print("\nVerifying uploads...")
+time.sleep(3)
+
+verify_resp = requests.get(f'https://gitee.com/api/v5/repos/{REPO}/contents/app-update.json', params={'access_token': TOKEN})
+if verify_resp.status_code == 200:
+    verify_data = verify_resp.json()
+    verify_content = base64.b64decode(verify_data.get('content', '')).decode('utf-8')
+    verify_json = json.loads(verify_content)
+    print(f"  Remote version: {verify_json.get('version')}")
+    print(f"  Remote versionCode: {verify_json.get('versionCode')}")
+    if verify_json.get('version') == version:
+        print("  ✓ Version verified!")
+    else:
+        print(f"  ✗ Version mismatch! Expected {version}, got {verify_json.get('version')}")
+        sys.exit(1)
+else:
+    print(f"  Warning: Could not verify upload: {verify_resp.status_code}")
+
 print("\nAll uploads completed!")
