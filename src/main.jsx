@@ -14,10 +14,14 @@ const APP_VERSION_CODE = 52;
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
 const GITEE_BRANCH = 'master';
+const GITHUB_OWNER = 'xdbzys';
+const GITHUB_REPO = 'gaokao-vocab';
 // 优先使用 Gitee raw 直链获取 JSON（避免 API base64 解码问题）
 const UPDATE_SERVER_RAW = `https://gitee.com/${GITEE_OWNER}/${GITEE_REPO}/raw/master/app-update.json`;
 // 备用：Gitee API 方式
 const UPDATE_SERVER_API = `https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/contents/app-update.json?ref=${GITEE_BRANCH}`;
+// 备用：GitHub raw（Gitee不可用时）
+const UPDATE_GITHUB_RAW = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/master/app-update.json`;
 // 添加时间戳防止 CDN 缓存
 const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
 const isNativeApp = !!(window.Capacitor || window.cordova);
@@ -4714,6 +4718,14 @@ function App() {
       throw new Error('API 数据格式无法识别');
     }
 
+    async function fetchFromGitHub() {
+      const url = `${UPDATE_GITHUB_RAW}?_t=${Date.now()}`;
+      console.log('[Update] Trying GitHub raw URL:', url);
+      const resp = await fetch(url, { cache: 'no-store' });
+      if (!resp.ok) throw new Error(`GitHub raw 连接失败（HTTP ${resp.status}）`);
+      return await resp.json();
+    }
+
     try {
       let data;
       try {
@@ -4721,8 +4733,14 @@ function App() {
         console.log('[Update] Raw success:', data);
       } catch (rawErr) {
         console.warn('[Update] Raw failed:', rawErr.message);
-        data = await fetchFromApi();
-        console.log('[Update] API fallback success:', data);
+        try {
+          data = await fetchFromApi();
+          console.log('[Update] API fallback success:', data);
+        } catch (apiErr) {
+          console.warn('[Update] API failed:', apiErr.message);
+          data = await fetchFromGitHub();
+          console.log('[Update] GitHub fallback success:', data);
+        }
       }
 
       if (typeof data.versionCode !== 'number') {
@@ -4733,6 +4751,10 @@ function App() {
       const hasUpdate = data.versionCode > APP_VERSION_CODE;
       const changelog = data.changelog || data.updateLog || '';
       const version = data.version || data.versionCode;
+
+      // 构建APK下载地址：优先GitHub Release，备用app-update.json中的地址
+      const githubReleaseUrl = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/v${data.version}-latest/gaokao-vocab.apk`;
+      const fallbackApkUrl = data.apkUrl || data.appUrl || '';
 
       if (data.books && Array.isArray(data.books) && !hasUpdate) {
         setUpdateInfo({
@@ -4754,8 +4776,8 @@ function App() {
           versionCode: data.versionCode,
           updateLog: changelog,
           changelog: changelog,
-          apkUrl: data.apkUrl || '',
-          appUrl: data.appUrl || '',
+          apkUrl: githubReleaseUrl || fallbackApkUrl,
+          appUrl: githubReleaseUrl || fallbackApkUrl,
           booksData: data.books || null,
           updating: false,
         });
