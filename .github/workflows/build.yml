@@ -121,6 +121,7 @@ else:
 
       - name: Upload APK to Gitee
         id: upload_gitee
+        continue-on-error: true
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         run: python3 scripts/upload_apk.py 2>&1 | tee upload-log.txt
