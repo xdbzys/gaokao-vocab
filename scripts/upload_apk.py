@@ -65,8 +65,9 @@ else:
         print(f'  Error: {r1.text[:200]}')
     sys.exit(1)
 
-# 2. Update app-update.json with correct APK URL
+# 2. Update app-update.json with correct APK URL and inject feedbackToken
 update_data['apkUrl'] = f'https://gitee.com/{REPO}/raw/master/{APK_FILENAME}'
+update_data['feedbackToken'] = TOKEN
 with open('app-update.json', 'w') as f:
     json.dump(update_data, f, ensure_ascii=False, indent=2)
 

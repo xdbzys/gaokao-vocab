@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import JSZip from 'jszip';
 import { createWorker } from 'tesseract.js';
@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.7.2';
-const APP_VERSION_CODE = 42;
+const APP_VERSION = '2.8.0';
+const APP_VERSION_CODE = 50;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -2943,32 +2943,38 @@ const sceneData = [
   {
     title: '🌍 环境保护',
     words: ['environment', 'pollution', 'sustainable', 'climate', 'carbon', 'renewable', 'ecosystem', 'conservation', 'emission', 'biodiversity'],
-    text: 'Environmental protection has become one of the most pressing issues of our time. With climate change accelerating, governments worldwide are implementing policies to reduce carbon emissions and promote renewable energy sources. The Paris Agreement represents a landmark effort to limit global warming to well below 2°C. At the individual level, we can contribute by adopting sustainable lifestyles — reducing waste, recycling, and conserving water. The protection of biodiversity and ecosystems is equally important, as every species plays a vital role in maintaining the balance of nature.'
+    text: 'Environmental protection has become one of the most pressing issues of our time. With climate change accelerating, governments worldwide are implementing policies to reduce carbon emissions and promote renewable energy sources. The Paris Agreement represents a landmark effort to limit global warming to well below 2°C. At the individual level, we can contribute by adopting sustainable lifestyles — reducing waste, recycling, and conserving water. The protection of biodiversity and ecosystems is equally important, as every species plays a vital role in maintaining the balance of nature.',
+    textCn: '环境保护已成为我们这个时代最紧迫的问题之一。随着气候变化的加速，各国政府正在实施减少碳排放和推广可再生能源的政策。巴黎协定是一项将全球变暖控制在远低于2°C以下的里程碑式努力。在个人层面，我们可以通过采取可持续的生活方式来做出贡献——减少废物、回收利用和节约用水。保护生物多样性和生态系统同样重要，因为每个物种在维持自然平衡中都发挥着至关重要的作用。'
   },
   {
     title: '🤖 人工智能与科技',
     words: ['artificial', 'intelligence', 'algorithm', 'automation', 'innovation', 'digital', 'robot', 'data', 'virtual', 'network'],
-    text: 'Artificial intelligence is transforming every aspect of our lives, from healthcare to education. AI-powered systems can now diagnose diseases with remarkable accuracy, personalize learning experiences, and even create art. However, the rapid advancement of automation also raises concerns about job displacement and ethical issues. As we embrace digital innovation, we must ensure that technology serves humanity rather than the other way around. The key lies in developing responsible AI that respects privacy, promotes fairness, and remains under human control.'
+    text: 'Artificial intelligence is transforming every aspect of our lives, from healthcare to education. AI-powered systems can now diagnose diseases with remarkable accuracy, personalize learning experiences, and even create art. However, the rapid advancement of automation also raises concerns about job displacement and ethical issues. As we embrace digital innovation, we must ensure that technology serves humanity rather than the other way around. The key lies in developing responsible AI that respects privacy, promotes fairness, and remains under human control.',
+    textCn: '人工智能正在改变我们生活的方方面面，从医疗保健到教育。由人工智能驱动的系统现在已经能够以惊人的精确度诊断疾病、个性化学习体验，甚至创作艺术作品。然而，自动化的快速发展也引发了对就业岗位被取代和伦理问题的担忧。在接受数字化创新的同时，我们必须确保技术服务于人类，而非相反。关键在于开发负责任的人工智能——尊重隐私、促进公平，并始终处于人类的控制之下。'
   },
   {
     title: '📚 教育成长',
     words: ['education', 'knowledge', 'curriculum', 'academic', 'graduate', 'scholarship', 'discipline', 'potential', 'inspire', 'achieve'],
-    text: 'Education is not merely the transmission of knowledge but the cultivation of curiosity and critical thinking. A well-rounded curriculum should balance academic rigor with character development. Students who discover their true potential often do so through the guidance of inspiring teachers who go beyond textbooks. The goal of education is not just to help students graduate with good grades, but to equip them with the discipline and resilience needed to navigate life\'s challenges. As Nelson Mandela once said, "Education is the most powerful weapon which you can use to change the world."'
+    text: 'Education is not merely the transmission of knowledge but the cultivation of curiosity and critical thinking. A well-rounded curriculum should balance academic rigor with character development. Students who discover their true potential often do so through the guidance of inspiring teachers who go beyond textbooks. The goal of education is not just to help students graduate with good grades, but to equip them with the discipline and resilience needed to navigate life\'s challenges. As Nelson Mandela once said, "Education is the most powerful weapon which you can use to change the world."',
+    textCn: '教育不仅是知识的传递，更是好奇心和批判性思维的培养。一个全面的课程体系应该在学术严谨性与品格发展之间取得平衡。那些发现自己真正潜力的学生，往往是在超越课本的启发性教师的引导下做到的。教育的目标不仅仅是帮助学生以优异成绩毕业，更要赋予他们应对人生挑战所需的自律和韧性。正如纳尔逊·曼德拉所说："教育是你可以用来改变世界的最强大的武器。"'
   },
   {
     title: '🏛️ 传统文化',
     words: ['traditional', 'culture', 'heritage', 'civilization', 'ancestor', 'festival', 'custom', 'ceremony', 'ancient', 'preserve'],
-    text: 'Traditional culture represents the wisdom and values accumulated over thousands of years of civilization. From the Spring Festival to the Mid-Autumn Festival, Chinese customs and ceremonies reflect our ancestors\' deep understanding of nature and human relationships. However, in an increasingly globalized world, many traditional practices are at risk of being forgotten. It is our responsibility to preserve this cultural heritage while adapting it to modern contexts. By learning about our roots, we gain a stronger sense of identity and belonging.'
+    text: 'Traditional culture represents the wisdom and values accumulated over thousands of years of civilization. From the Spring Festival to the Mid-Autumn Festival, Chinese customs and ceremonies reflect our ancestors\' deep understanding of nature and human relationships. However, in an increasingly globalized world, many traditional practices are at risk of being forgotten. It is our responsibility to preserve this cultural heritage while adapting it to modern contexts. By learning about our roots, we gain a stronger sense of identity and belonging.',
+    textCn: '传统文化代表了数千年文明积累下来的智慧与价值观。从春节到中秋节，中国的习俗和仪式反映了我们的祖先对自然和人际关系的深刻理解。然而，在日益全球化的世界中，许多传统习俗正面临被遗忘的风险。我们有责任在将这一文化遗产适应现代环境的同时加以保护。通过了解我们的根源，我们获得了更强烈的认同感和归属感。'
   },
   {
     title: '💪 健康生活',
     words: ['health', 'nutrition', 'exercise', 'mental', 'balanced', 'diet', 'psychological', 'physical', 'wellness', 'habit'],
-    text: 'A healthy lifestyle is the foundation of happiness and productivity. Regular physical exercise not only strengthens the body but also boosts mental well-being by releasing endorphins. A balanced diet rich in nutrition provides the energy needed for daily activities. Equally important is psychological health — managing stress, maintaining positive relationships, and getting adequate sleep. Developing good habits early in life pays dividends for decades to come. Remember, health is not just the absence of illness, but a state of complete physical, mental, and social wellness.'
+    text: 'A healthy lifestyle is the foundation of happiness and productivity. Regular physical exercise not only strengthens the body but also boosts mental well-being by releasing endorphins. A balanced diet rich in nutrition provides the energy needed for daily activities. Equally important is psychological health — managing stress, maintaining positive relationships, and getting adequate sleep. Developing good habits early in life pays dividends for decades to come. Remember, health is not just the absence of illness, but a state of complete physical, mental, and social wellness.',
+    textCn: '健康的生活方式是幸福和高效的基础。规律的身体锻炼不仅能强健体魄，还能通过释放内啡肽来促进心理健康。富含营养的均衡饮食为日常活动提供了所需的能量。同样重要的是心理健康——管理压力、保持积极的人际关系以及获得充足的睡眠。尽早养成良好的习惯，将会在未来的数十年中带来丰厚的回报。记住，健康不仅是没有疾病，而是一种身心和社会福祉完全良好的状态。'
   },
   {
     title: '🌐 社会热点',
     words: ['globalization', 'diversity', 'equality', 'poverty', 'volunteer', 'community', 'justice', 'opportunity', 'challenge', 'responsibility'],
-    text: 'In an era of globalization, we are more connected than ever before. Issues such as poverty, inequality, and social justice transcend national borders and require collective action. Volunteering in community service not only helps those in need but also broadens our perspective and cultivates empathy. Every individual has the responsibility to contribute to a more just and compassionate society. While the challenges we face are daunting, they also present opportunities for innovation and positive change. As global citizens, we must embrace diversity and work together toward a sustainable future.'
+    text: 'In an era of globalization, we are more connected than ever before. Issues such as poverty, inequality, and social justice transcend national borders and require collective action. Volunteering in community service not only helps those in need but also broadens our perspective and cultivates empathy. Every individual has the responsibility to contribute to a more just and compassionate society. While the challenges we face are daunting, they also present opportunities for innovation and positive change. As global citizens, we must embrace diversity and work together toward a sustainable future.',
+    textCn: '在全球化的时代，我们比以往任何时候都更加紧密地联系在一起。贫困、不平等和社会正义等问题超越了国界，需要共同应对。参与社区服务的志愿活动不仅帮助有需要的人，还能拓宽我们的视野、培养同理心。每个人都有责任为一个更加公正和富有同情心的社会做出贡献。虽然我们面临的挑战令人畏惧，但它们也为创新和积极变革提供了机遇。作为全球公民，我们必须拥抱多样性，共同努力迈向可持续的未来。'
   }
 ];
 
@@ -3015,6 +3021,15 @@ const spellingData = [
   { correct: 'weird', wrong: 'wierd', tip: 'i 在 e 前（weird 是例外规则中的例外）：wei-rd' },
   { correct: 'writing', wrong: 'writting', tip: 'write 去 e 加 -ing，t 不双写' }
 ];
+
+// 自定义拼写纠错（localStorage 扩展）
+function loadCustomSpelling() {
+  try { return JSON.parse(localStorage.getItem('customSpelling') || '[]'); }
+  catch { return []; }
+}
+function saveCustomSpelling(list) {
+  localStorage.setItem('customSpelling', JSON.stringify(list));
+}
 
 // 原有核心短语库
 const seedPhrases = [
@@ -4231,6 +4246,13 @@ function App() {
   const [cloudStatus, setCloudStatus] = useState('');
   const [updateInfo, setUpdateInfo] = useState(null);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
+  // 静默自动更新相关状态
+  const [downloadedApkUrl, setDownloadedApkUrl] = useState(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [apkDownloadProgress, setApkDownloadProgress] = useState(0);
+  const [updateChangelog, setUpdateChangelog] = useState('');
+  const [updateVersion, setUpdateVersion] = useState('');
+  const updateCheckDone = useRef(false);
   const [search, setSearch] = useState('');
   const [importText, setImportText] = useState('');
   const [importStatus, setImportStatus] = useState('');
@@ -4267,6 +4289,18 @@ function App() {
   // 确保首次使用日期被记录
   useMemo(() => {
     try { if (!localStorage.getItem('gaokao_first_use')) localStorage.setItem('gaokao_first_use', getToday()); } catch {}
+  }, []);
+
+  // APP启动时自动检查更新（仅原生APP且仅首次）
+  useEffect(() => {
+    if (isNativeApp && !updateCheckDone.current) {
+      updateCheckDone.current = true;
+      // 延迟2秒检查，避免影响启动性能
+      const timer = setTimeout(() => {
+        checkCloudUpdate(true); // silent = true
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const activeBook = useMemo(() => {
@@ -4482,6 +4516,67 @@ function App() {
     setImportStatus(`导入成功：${items.length} 条`);
   }
 
+  // 智能分类导入
+  function smartImport() {
+    if (!importText.trim()) { setImportStatus('请先输入文本内容'); return; }
+    const text = importText.toLowerCase();
+
+    // 拼写纠错识别：检测每行是否为 "correct / wrong : tip" 格式
+    const spellingRegex = /(\w+)\s*[\/\-\|,]\s*(\w+)\s*[:：]\s*(.+)/;
+    const lines = importText.split('\n').map(l => l.trim()).filter(Boolean);
+    const spellingLines = lines.filter(l => spellingRegex.test(l));
+    const hasSpellingKeywords = /tip|记忆技巧|拼写|correct|wrong/.test(text);
+    const hasContrastKeywords = /对比|同义词|反义词|辨析/.test(text);
+    const hasRootKeywords = /词根|词缀|前缀|后缀|root/.test(text);
+    const hasContextKeywords = /情景|语境|短文/.test(text);
+
+    // 优先根据格式判断拼写
+    if (spellingLines.length >= Math.max(1, lines.length * 0.5)) {
+      // 批量解析为拼写纠错条目
+      const newSpellingItems = [];
+      for (const line of lines) {
+        const m = line.match(spellingRegex);
+        if (m) {
+          newSpellingItems.push({ correct: m[1], wrong: m[2], tip: m[3].trim() });
+        }
+      }
+      if (newSpellingItems.length > 0) {
+        const existing = loadCustomSpelling();
+        saveCustomSpelling([...existing, ...newSpellingItems]);
+        setImportStatus(`智能分类：识别为拼写纠错扩展，已导入 ${newSpellingItems.length} 条到拼写纠错`);
+        return;
+      }
+    }
+
+    if (hasSpellingKeywords && !hasContrastKeywords && !hasRootKeywords && !hasContextKeywords) {
+      // 有关键词但格式不匹配，尝试解析
+      const newSpellingItems = [];
+      for (const line of lines) {
+        const m = line.match(spellingRegex);
+        if (m) {
+          newSpellingItems.push({ correct: m[1], wrong: m[2], tip: m[3].trim() });
+        }
+      }
+      if (newSpellingItems.length > 0) {
+        const existing = loadCustomSpelling();
+        saveCustomSpelling([...existing, ...newSpellingItems]);
+        setImportStatus(`智能分类：识别为拼写纠错扩展，已导入 ${newSpellingItems.length} 条到拼写纠错`);
+        return;
+      }
+    }
+
+    if (hasRootKeywords && !hasSpellingKeywords && !hasContrastKeywords) {
+      setImportStatus('智能分类：识别为词根词缀内容，暂不支持导入为扩展，已按词库导入');
+    } else if (hasContextKeywords && !hasSpellingKeywords && !hasContrastKeywords) {
+      setImportStatus('智能分类：识别为情景记忆内容，暂不支持导入为扩展，已按词库导入');
+    } else if (hasContrastKeywords && !hasSpellingKeywords) {
+      setImportStatus('智能分类：识别为对比记忆内容，已按词库导入');
+    }
+
+    // 默认：按词库导入
+    addImportedItems(parseImportedText(importText, 'word'));
+  }
+
   async function handleFile(file) {
     try {
       setLastFile(file || null); setImportStatus('正在识别...');
@@ -4495,26 +4590,34 @@ function App() {
     const next = { ...aiConfig, ...patch }; setAiConfig(next); saveAiConfig(next);
   }
 
-  // 反馈保存到本地
-  const FEEDBACK_KEY = 'gaokao_feedback';
-  function saveFeedback(type, text) {
-    try {
-      const list = JSON.parse(localStorage.getItem(FEEDBACK_KEY) || '[]');
-      list.push({ type, text, version: APP_VERSION, time: Date.now() });
-      localStorage.setItem(FEEDBACK_KEY, JSON.stringify(list));
-    } catch (e) {}
-  }
-  function loadFeedback() {
-    try { return JSON.parse(localStorage.getItem(FEEDBACK_KEY) || '[]'); }
-    catch (e) { return []; }
-  }
-
+  // 反馈通过 Gitee Issues 提交
   async function submitFeedback() {
     if (!feedbackText.trim()) { setFeedbackStatus('请填写反馈内容'); return; }
-    saveFeedback(feedbackType, feedbackText);
-    setFeedbackStatus('✅ 提交成功！感谢你的反馈');
-    setFeedbackText('');
-    setTimeout(() => { setShowFeedback(false); setFeedbackStatus(''); }, 1500);
+    setFeedbackStatus('提交中...');
+    const title = `[${feedbackType === 'suggest' ? '建议' : 'bug'}] ${feedbackText.slice(0, 30)}...`;
+    const body = `反馈类型: ${feedbackType}\n版本: v${APP_VERSION}\n内容: ${feedbackText}\n时间: ${new Date().toLocaleString()}`;
+
+    // 从 app-update.json 获取 token
+    try {
+      const resp = await fetch(UPDATE_SERVER_RAW + '?_t=' + Date.now());
+      const serverData = await resp.json();
+      if (serverData.feedbackToken) {
+        const issueResp = await fetch('https://gitee.com/api/v5/repos/xdbzys/app/issues', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: serverData.feedbackToken, title, body })
+        });
+        if (issueResp.ok) {
+          setFeedbackStatus('✅ 提交成功！感谢你的反馈');
+          setFeedbackText('');
+          setTimeout(() => { setShowFeedback(false); setFeedbackStatus(''); }, 1500);
+          return;
+        }
+      }
+      setFeedbackStatus('提交失败，请稍后重试');
+    } catch (e) {
+      setFeedbackStatus('网络错误，请稍后重试');
+    }
   }
 
   async function callAiModel({ text: t = '', file: f = null }) {
@@ -4555,10 +4658,11 @@ function App() {
   }
 
   // 版本更新检查：优先使用 raw 直链，失败则回退到 API
-  async function checkCloudUpdate() {
+  // silent 模式：静默检查，发现更新后自动下载APK，下载完成后弹出安装提示
+  async function checkCloudUpdate(silent = false) {
     setCheckingUpdate(true);
     setUpdateInfo(null);
-    setCloudStatus('正在检查更新...');
+    if (!silent) setCloudStatus('正在检查更新...');
 
     async function fetchFromRaw() {
       const url = `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
@@ -4600,36 +4704,91 @@ function App() {
 
       console.log('[Update] Local versionCode:', APP_VERSION_CODE, 'Remote:', data.versionCode);
       const hasUpdate = data.versionCode > APP_VERSION_CODE;
+      const changelog = data.changelog || data.updateLog || '';
+      const version = data.version || data.versionCode;
 
       if (data.books && Array.isArray(data.books) && !hasUpdate) {
         setUpdateInfo({
           hasUpdate: true,
-          version: data.version || '词库更新',
+          version: version,
           versionCode: APP_VERSION_CODE,
-          updateLog: `词库更新：共 ${data.books.length} 个词库`,
+          updateLog: changelog || `词库更新：共 ${data.books.length} 个词库`,
+          changelog: changelog || `词库更新：共 ${data.books.length} 个词库`,
           apkUrl: '',
           appUrl: '',
           booksData: data.books,
           updating: false,
         });
-        setCloudStatus('发现词库更新');
+        if (!silent) setCloudStatus('发现词库更新');
       } else {
         setUpdateInfo({
           hasUpdate,
-          version: data.version || data.versionCode,
+          version: version,
           versionCode: data.versionCode,
-          updateLog: data.updateLog || '',
+          updateLog: changelog,
+          changelog: changelog,
           apkUrl: data.apkUrl || '',
           appUrl: data.appUrl || '',
           booksData: data.books || null,
           updating: false,
         });
-        setCloudStatus(hasUpdate ? `发现新版本 v${data.version}` : '已是最新版本');
+        if (!silent) setCloudStatus(hasUpdate ? `发现新版本 v${version}` : '已是最新版本');
+      }
+
+      // 静默模式：发现新版本且有APK地址，自动在后台下载
+      if (silent && hasUpdate && (data.apkUrl || data.appUrl)) {
+        const apkUrl = data.apkUrl || data.appUrl;
+        setUpdateVersion(version);
+        setUpdateChangelog(changelog);
+        setApkDownloadProgress(1); // 开始下载
+
+        try {
+          console.log('[Update] 开始静默下载APK:', apkUrl);
+          const resp = await fetch(apkUrl);
+          if (!resp.ok) throw new Error(`下载失败 HTTP ${resp.status}`);
+
+          const contentLength = resp.headers.get('content-length');
+          const total = contentLength ? parseInt(contentLength, 10) : 0;
+          let received = 0;
+
+          const reader = resp.body.getReader();
+          const chunks = [];
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            received += value.length;
+            if (total > 0) {
+              const pct = Math.round(received / total * 100);
+              setApkDownloadProgress(pct);
+            } else {
+              // 无content-length时显示已下载大小
+              setApkDownloadProgress(-received);
+            }
+          }
+
+          const blob = new Blob(chunks, { type: 'application/vnd.android.package-archive' });
+          const blobUrl = URL.createObjectURL(blob);
+          setDownloadedApkUrl(blobUrl);
+          setApkDownloadProgress(100);
+          console.log('[Update] APK下载完成，大小:', (blob.size / 1024 / 1024).toFixed(1), 'MB');
+
+          // 下载完成后弹出安装提示
+          setShowInstallPrompt(true);
+        } catch (dlErr) {
+          console.error('[Update] APK下载失败:', dlErr);
+          setApkDownloadProgress(0);
+          // 下载失败时退回到手动更新方式
+          if (!silent) setCloudStatus(`自动下载失败：${dlErr.message}`);
+        }
       }
     } catch (e) {
       console.error('[Update] Error:', e);
-      setCloudStatus(`检查失败：${e.message}`);
-      setUpdateInfo(null);
+      if (!silent) {
+        setCloudStatus(`检查失败：${e.message}`);
+        setUpdateInfo(null);
+      }
     } finally {
       setCheckingUpdate(false);
     }
@@ -5041,6 +5200,7 @@ function App() {
                     ))}
                   </div>
                   <div className="sceneText">{scene.text}</div>
+                  <div className="sceneTextCn">{scene.textCn}</div>
                 </div>
               ))}
             </div>
@@ -5057,7 +5217,7 @@ function App() {
                 onChange={e => setSpellingSearch(e.target.value)}
               />
               <p className="muted">以下是高考英语中常见的拼写错误对比，蓝色为正确拼写，红色删除线为常见错误。</p>
-              {spellingData
+              {[...spellingData, ...loadCustomSpelling()]
                 .filter(item =>
                   item.correct.toLowerCase().includes(spellingSearch.toLowerCase()) ||
                   item.wrong.toLowerCase().includes(spellingSearch.toLowerCase())
@@ -5148,7 +5308,8 @@ function App() {
 
             <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder="在此粘贴词表文本..." />
             <div className="importActions">
-              <button className="primary" onClick={() => addImportedItems(parseImportedText(importText, 'word'))}>智能预解析并导入</button>
+              <button className="primary" onClick={() => addImportedItems(parseImportedText(importText, 'word'))}>导入到词库</button>
+              <button onClick={smartImport}>智能分类导入</button>
             </div>
             <p className="status">{importStatus || '请先选择或新建自定义词库再导入'}</p>
           </div>
@@ -5260,35 +5421,25 @@ function App() {
             </div>
           </div>
 
-          {/* 版本更新中心 - 仅APP端显示 */}
+          {/* 版本更新提示 - 仅APP端显示 */}
           {isNativeApp ? (
-          <div className="cloudUpdateSection">
-            <div className="updateHeader">
-              <h3>🔄 版本更新</h3>
+          <div className="cloudUpdateSection" style={{ padding: '10px 16px', minHeight: 'auto' }}>
+            <div className="updateHeader" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: 14, color: '#6b7280' }}>版本更新</h3>
               <span className="versionBadge">v{APP_VERSION}</span>
             </div>
-            <p className="muted">点击检查更新，获取最新功能和词库。更新不会丢失任何个人数据。</p>
-            <div className="updateActions">
-              <button className="primary" onClick={checkCloudUpdate} disabled={checkingUpdate}>
-                {checkingUpdate ? '检查中...' : '检查更新'}
-              </button>
-            </div>
-            {updateInfo && (
-              <div className="updateInfoBox">
-                {updateInfo.hasUpdate ? (
-                  <>
-                    <p className="updateNewVersion">发现新版本 v{updateInfo.version}</p>
-                    <pre className="updateLog">{updateInfo.updateLog}</pre>
-                    <button className="primary" onClick={applyUpdate} disabled={updateInfo.updating} style={{ marginTop: 8 }}>
-                      {updateInfo.updating ? '更新中...' : '立即更新'}
-                    </button>
-                  </>
-                ) : (
-                  <p className="updateLatest">已是最新版本</p>
-                )}
+            {updateInfo && updateInfo.hasUpdate ? (
+              <div className="updateInfoBox" style={{ background: '#ecfdf5', borderColor: '#6ee7b7', marginTop: 8, padding: '8px 12px', borderRadius: 8 }}>
+                <p className="updateNewVersion" style={{ color: '#059669', fontWeight: 'bold', margin: '0 0 4px 0', fontSize: 13 }}>
+                  新版本 v{updateInfo.version} 可用
+                </p>
               </div>
+            ) : updateInfo && !updateInfo.hasUpdate ? (
+              <p className="updateLatest" style={{ margin: '4px 0 0 0', fontSize: 12, color: '#9ca3af' }}>已是最新版本</p>
+            ) : (
+              <p className="muted" style={{ margin: '4px 0 0 0', fontSize: 12, color: '#9ca3af' }}>自动检测更新中...</p>
             )}
-            {cloudStatus && <p className="status" style={{ marginTop: 8 }}>{cloudStatus}</p>}
+            {cloudStatus && <p className="status" style={{ marginTop: 4, fontSize: 12 }}>{cloudStatus}</p>}
           </div>
           ) : null}
 
@@ -5404,36 +5555,6 @@ function App() {
             </div>
           </div>
 
-          {/* 反馈记录（仅作者查看） */}
-          <div className="resetSection">
-            <h3>反馈记录 ({loadFeedback().length} 条)</h3>
-            <div className="list">
-              {loadFeedback().length === 0 ? (
-                <p className="muted">暂无反馈</p>
-              ) : (
-                loadFeedback().map((f, i) => (
-                  <div key={i} className="listItem">
-                    <div>
-                      <span className="posTag" style={{ color: f.type === 'bug' ? '#dc2626' : f.type === 'suggest' ? '#2563eb' : '#6b7280', background: (f.type === 'bug' ? '#dc2626' : f.type === 'suggest' ? '#2563eb' : '#6b7280') + '18' }}>
-                        {f.type === 'suggest' ? '建议' : f.type === 'bug' ? 'Bug' : '其他'}
-                      </span>
-                      <p style={{ marginTop: 4 }}>{f.text}</p>
-                      <small>v{f.version} · {new Date(f.time).toLocaleString()}</small>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            {loadFeedback().length > 0 && (
-              <button className="smallBtn dangerGhost" style={{ marginTop: 8 }} onClick={() => {
-                if (confirm('确定清空所有反馈记录吗？')) {
-                  localStorage.removeItem(FEEDBACK_KEY);
-                  setFeedbackStatus('');
-                }
-              }}>清空反馈</button>
-            )}
-          </div>
-
           {/* 危险区域 */}
           <div className="dangerSection">
             <button className="dangerGhost fullWidth" onClick={() => {
@@ -5445,6 +5566,77 @@ function App() {
             }}>清除所有自定义词库</button>
           </div>
         </section>
+      )}
+
+      {/* 自动更新安装弹窗 - 固定在tabbar上方 */}
+      {showInstallPrompt && downloadedApkUrl && (
+        <div style={{
+          position: 'fixed',
+          bottom: '60px',
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+          color: '#fff',
+          padding: '16px 20px',
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.3)',
+          borderTopLeftRadius: '16px',
+          borderTopRightRadius: '16px',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 22 }}>&#128640;</span>
+              <span style={{ fontWeight: 'bold', fontSize: 15 }}>新版本 v{updateVersion} 已准备好</span>
+            </div>
+            <span style={{
+              fontSize: 11,
+              background: 'rgba(34,197,94,0.2)',
+              color: '#4ade80',
+              padding: '2px 8px',
+              borderRadius: 10,
+            }}>
+              {apkDownloadProgress === 100 ? '下载完成' : `下载中 ${apkDownloadProgress > 0 ? apkDownloadProgress + '%' : ''}`}
+            </span>
+          </div>
+          {updateChangelog && (
+            <pre style={{
+              margin: '8px 0 12px 0',
+              padding: '10px 12px',
+              background: 'rgba(255,255,255,0.08)',
+              borderRadius: 8,
+              fontSize: 12,
+              lineHeight: 1.6,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              maxHeight: 150,
+              overflowY: 'auto',
+              color: '#cbd5e1',
+              WebkitOverflowScrolling: 'touch',
+            }}>{updateChangelog}</pre>
+          )}
+          <button
+            onClick={() => {
+              if (downloadedApkUrl) {
+                window.open(downloadedApkUrl, '_blank');
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '12px 0',
+              background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 10,
+              fontSize: 15,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(34,197,94,0.4)',
+            }}
+          >
+            立即安装
+          </button>
+        </div>
       )}
 
       {/* 底部Tab栏（5个） */}
