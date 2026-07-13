@@ -1,7 +1,7 @@
 {
-  "version": "2.8.3",
-  "versionCode": 53,
-  "changelog": "v2.8.3 更新\n\n【新功能】\n1. 背单词界面自动朗读新单词（设置中可开关）\n2. 更新下载改用GitHub Release，更稳定可靠\n\n【优化】\n- 检测更新支持GitHub备用源",
-  "devNotes": "auto-speak on card flip, GitHub Release APK download",
+  "version": "2.8.4",
+  "versionCode": 54,
+  "changelog": "v2.8.4 更新\n\n【优化】\n- 更新检测支持多源对比，更可靠",
+  "devNotes": "test update: version bump only",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/download/latest/gaokao-vocab.apk"
 }
