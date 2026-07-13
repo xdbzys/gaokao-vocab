@@ -34,6 +34,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Inject feedback token
+        run: |
+          if [ -n "${{ secrets.GITEE_FEEDBACK_TOKEN }}" ]; then
+            sed -i 's|__FEEDBACK_TOKEN__|${{ secrets.GITEE_FEEDBACK_TOKEN }}|g' src/main.jsx
+            echo "Feedback token injected"
+          else
+            echo "No GITEE_FEEDBACK_TOKEN secret found, feedback will fallback to email"
+          fi
+
       - name: Build web
         run: npm run build
 

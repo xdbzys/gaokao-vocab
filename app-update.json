@@ -1,1 +1,1 @@
-{"version":"2.7.0","versionCode":40,"updateLog":"v2.7.0 update: 1. new tab icons (SVG style) 2. more auto-jump delay options 3. built-in AI provider presets 4. spelling correction in extend tab 5. feedback feature 6. fix cloud update cache","apkUrl":"https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"}
+{"version":"2.7.1","versionCode":41,"updateLog":"v2.7.1 update: 1. in-app feedback via Gitee API (no external app needed) 2. build-time token injection 3. all v2.7.0 features","apkUrl":"https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"}

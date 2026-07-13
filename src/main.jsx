@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.7.0';
-const APP_VERSION_CODE = 40;
+const APP_VERSION = '2.7.1';
+const APP_VERSION_CODE = 41;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4495,14 +4495,13 @@ function App() {
     const next = { ...aiConfig, ...patch }; setAiConfig(next); saveAiConfig(next);
   }
 
-  // 反馈提交：优先Gitee API，失败则降级到邮件/剪贴板
+  // 反馈提交：直接调用 Gitee API 创建 issue，无需跳转外部应用
   async function submitFeedback() {
     if (!feedbackText.trim()) { setFeedbackStatus('请填写反馈内容'); return; }
     setFeedbackStatus('提交中...');
     const title = `[${feedbackType === 'suggest' ? '建议' : feedbackType === 'bug' ? 'Bug' : '其他'}] ${feedbackText.slice(0, 30)}...`;
     const body = `**反馈类型**: ${feedbackType === 'suggest' ? '功能建议' : feedbackType === 'bug' ? 'Bug反馈' : '其他'}\n**版本**: v${APP_VERSION}\n**内容**: ${feedbackText}\n**时间**: ${new Date().toLocaleString()}`;
 
-    // 方案1: 尝试通过Gitee API创建issue
     try {
       const resp = await fetch('https://gitee.com/api/v5/repos/xdbzys/app/issues', {
         method: 'POST',
@@ -4510,17 +4509,20 @@ function App() {
         body: JSON.stringify({ access_token: '__FEEDBACK_TOKEN__', title, body })
       });
       if (resp.ok) {
-        setFeedbackStatus('提交成功！感谢你的反馈');
+        setFeedbackStatus('✅ 提交成功！感谢你的反馈');
         setFeedbackText('');
-        setTimeout(() => { setShowFeedback(false); setFeedbackStatus(''); }, 1500);
+        setTimeout(() => { setShowFeedback(false); setFeedbackStatus(''); }, 2000);
         return;
       }
-    } catch (e) { /* 降级 */ }
-
-    // 方案2: 生成mailto链接
-    const mailto = `mailto:xdbzys@qq.com?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
-    window.open(mailto, '_blank');
-    setFeedbackStatus('已唤起邮件客户端，请发送邮件反馈');
+      const err = await resp.json().catch(() => ({}));
+      if (resp.status === 401 || (err.message && err.message.includes('401'))) {
+        setFeedbackStatus('⚠️ 反馈通道未配置，请复制内容发送给作者');
+      } else {
+        setFeedbackStatus(`提交失败: ${err.message || resp.status}`);
+      }
+    } catch (e) {
+      setFeedbackStatus('网络错误，请检查网络后重试');
+    }
   }
 
   async function callAiModel({ text: t = '', file: f = null }) {
