@@ -82,7 +82,6 @@ jobs:
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         run: python3 scripts/upload_apk.py
-        continue-on-error: true
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
