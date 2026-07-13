@@ -1295,3 +1295,167 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   border-radius: 10px;
   background: var(--primary-bg);
 }
+
+/* ===== 更新公告弹窗 ===== */
+.updateOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.updateModal {
+  background: var(--bg-card);
+  border-radius: 20px;
+  max-width: 400px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.updateModalHeader {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  padding: 24px 20px 20px;
+  text-align: center;
+  position: relative;
+}
+
+.updateModalIcon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.updateModalTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.updateModalSub {
+  font-size: 13px;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.updateModalVersion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  background: rgba(255,255,255,0.2);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.updateModalBadge {
+  background: #f59e0b;
+  color: white;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.updateModalBody {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.updateModalBody h4 {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.updateModalList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.updateModalList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.updateModalList li:last-child {
+  border-bottom: none;
+}
+
+.updateModalDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+.updateModalFooter {
+  padding: 16px 20px 20px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid var(--border-light);
+}
+
+.updateModalFooter .updateBtnPrimary {
+  flex: 1;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.updateModalFooter .updateBtnPrimary:active {
+  transform: scale(0.97);
+}
+
+.updateModalFooter .updateBtnGhost {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.updateModalFooter .updateBtnGhost:hover {
+  color: var(--text-primary);
+}

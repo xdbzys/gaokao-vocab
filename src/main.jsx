@@ -5671,39 +5671,36 @@ function App() {
 
           {/* 开屏公告弹窗 */}
           {showAnnouncementModal && announcementData && (
-            <div className="modalOverlay" onClick={e => { if (e.target === e.currentTarget) setShowAnnouncementModal(false); }}>
-              <div className="modal" style={{ maxWidth: 400 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <h3 style={{ margin: 0 }}>📢 更新公告</h3>
-                  <button className="closeBtn" onClick={() => setShowAnnouncementModal(false)}>✕</button>
+            <div className="updateOverlay" onClick={e => { if (e.target === e.currentTarget) setShowAnnouncementModal(false); }}>
+              <div className="updateModal">
+                <div className="updateModalHeader">
+                  <div className="updateModalIcon">🚀</div>
+                  <p className="updateModalTitle">发现新版本</p>
+                  <p className="updateModalSub">快来体验最新功能吧</p>
+                  <div className="updateModalVersion">
+                    <span>v{announcementData.version}</span>
+                    <span className="updateModalBadge">NEW</span>
+                  </div>
                 </div>
-                <p style={{ color: '#2563eb', fontWeight: 'bold', marginBottom: 8 }}>v{announcementData.version} 已发布</p>
-                <pre style={{
-                  margin: '0 0 16px 0',
-                  padding: '12px 14px',
-                  background: '#f0f7ff',
-                  borderRadius: 10,
-                  fontSize: 13,
-                  lineHeight: 1.7,
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                  maxHeight: 300,
-                  overflowY: 'auto',
-                  color: '#374151',
-                  borderLeft: '3px solid #3b82f6',
-                }}>{announcementData.changelog}</pre>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button className="smallBtn" onClick={() => {
+                <div className="updateModalBody">
+                  <h4>更新内容</h4>
+                  <ul className="updateModalList">
+                    {(announcementData.changelog || '').split('\n').filter(l => l.trim() && !l.trim().startsWith('v') && !l.trim().startsWith('【')).map((line, i) => (
+                      <li key={i}><span className="updateModalDot" /><span>{line.trim().replace(/^[-\d.]+\s*/, '')}</span></li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="updateModalFooter">
+                  <button className="updateBtnGhost" onClick={() => {
                     localStorage.setItem('gaokao_dismissed_version', announcementData.version);
                     setDismissedVersion(announcementData.version);
                     setShowAnnouncementModal(false);
-                  }}>不再提示此版本</button>
-                  <button className="primary" style={{ flex: 1 }} onClick={() => {
+                  }}>下次再说</button>
+                  <button className="updateBtnPrimary" onClick={() => {
                     setShowAnnouncementModal(false);
                     setSection('me');
-                    // 触发检查更新以显示更新按钮
                     checkCloudUpdate(false);
-                  }}>去更新</button>
+                  }}>立即更新</button>
                 </div>
               </div>
             </div>

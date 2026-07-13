@@ -1,7 +1,7 @@
 {
   "version": "2.8.7",
   "versionCode": 57,
-  "changelog": "v2.8.7 更新\n\n【优化】\n- 修复国内无法检测更新的问题\n- 自动朗读响应更快\n- 开屏更新公告受开关控制",
-  "devNotes": "fix update check for China: use GitHub API instead of raw.githubusercontent",
+  "changelog": "v2.8.7 更新\n\n【优化】\n- 开屏更新公告全新UI设计\n- 更新检测支持多源对比\n- 自动朗读响应更快",
+  "devNotes": "new update announcement UI, multi-source update check",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/download/latest/gaokao-vocab.apk"
 }
