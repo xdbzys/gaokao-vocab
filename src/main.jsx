@@ -5196,6 +5196,10 @@ function App() {
 
 createRoot(document.getElementById('root')).render(<App />);
 
+// Capacitor 应用不需要 Service Worker（资源从 APK 本地加载）
+// 注销已有的 Service Worker 以避免缓存外部 API 请求
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => r.unregister());
+  });
 }
