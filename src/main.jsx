@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.2';
-const APP_VERSION_CODE = 52;
+const APP_VERSION = '2.8.3';
+const APP_VERSION_CODE = 53;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -3763,10 +3763,11 @@ function loadSettings() {
       autoJump: false,
       autoJumpDelay: 1500,
       showAnnouncement: true,
+      autoSpeak: false,
       ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')
     };
   } catch {
-    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true };
+    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: false };
   }
 }
 
@@ -4433,8 +4434,16 @@ function App() {
   }
 
   function nextCard() {
-    setIndex(i => (i + 1) % Math.max(filteredItems.length, 1));
+    const nextIdx = (index + 1) % Math.max(filteredItems.length, 1);
+    setIndex(nextIdx);
     setShowBack(false); setSelected('');
+    // 自动朗读新单词
+    if (settings.autoSpeak && filteredItems.length > 0) {
+      const nextWord = filteredItems[nextIdx];
+      if (nextWord && nextWord.term) {
+        setTimeout(() => speak(nextWord.term, settings.speakRate), 300);
+      }
+    }
   }
 
   function prevCard() {
@@ -5471,6 +5480,12 @@ function App() {
                 <option value="8000">8.0秒</option>
               </select>
             </label>}
+            <label>切换单词自动朗读
+              <select value={settings.autoSpeak ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, autoSpeak: v })); saveSettings({ ...settings, autoSpeak: v }); }}>
+                <option value="on">开启（每个新单词自动发音）</option>
+                <option value="off">关闭</option>
+              </select>
+            </label>
             <label>开屏更新公告
               <select value={settings.showAnnouncement ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, showAnnouncement: v })); saveSettings({ ...settings, showAnnouncement: v }); }}>
                 <option value="on">开启（启动时显示更新公告）</option>

@@ -1,7 +1,7 @@
 {
-  "version": "2.8.2",
-  "versionCode": 52,
-  "changelog": "v2.8.2 更新\n\n【新功能】\n1. 开屏更新公告（启动时自动展示更新内容）\n2. 设置中可开关是否显示开屏公告\n3. 恢复手动检查更新按钮\n\n【优化】\n- 公告弹窗可点击"不再提示此版本"\n- 公告可跳转去更新",
-  "devNotes": "added showAnnouncement setting, restored manual check update, splash announcement modal",
-  "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
+  "version": "2.8.3",
+  "versionCode": 53,
+  "changelog": "v2.8.3 更新\n\n【新功能】\n1. 背单词界面自动朗读新单词（设置中可开关）\n2. 更新下载改用GitHub Release，更稳定可靠\n\n【优化】\n- 检测更新支持GitHub备用源",
+  "devNotes": "auto-speak on card flip, GitHub Release APK download",
+  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/download/latest/gaokao-vocab.apk"
 }
