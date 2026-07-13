@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.7.1';
-const APP_VERSION_CODE = 41;
+const APP_VERSION = '2.7.2';
+const APP_VERSION_CODE = 42;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4495,34 +4495,26 @@ function App() {
     const next = { ...aiConfig, ...patch }; setAiConfig(next); saveAiConfig(next);
   }
 
-  // 反馈提交：直接调用 Gitee API 创建 issue，无需跳转外部应用
+  // 反馈保存到本地
+  const FEEDBACK_KEY = 'gaokao_feedback';
+  function saveFeedback(type, text) {
+    try {
+      const list = JSON.parse(localStorage.getItem(FEEDBACK_KEY) || '[]');
+      list.push({ type, text, version: APP_VERSION, time: Date.now() });
+      localStorage.setItem(FEEDBACK_KEY, JSON.stringify(list));
+    } catch (e) {}
+  }
+  function loadFeedback() {
+    try { return JSON.parse(localStorage.getItem(FEEDBACK_KEY) || '[]'); }
+    catch (e) { return []; }
+  }
+
   async function submitFeedback() {
     if (!feedbackText.trim()) { setFeedbackStatus('请填写反馈内容'); return; }
-    setFeedbackStatus('提交中...');
-    const title = `[${feedbackType === 'suggest' ? '建议' : feedbackType === 'bug' ? 'Bug' : '其他'}] ${feedbackText.slice(0, 30)}...`;
-    const body = `**反馈类型**: ${feedbackType === 'suggest' ? '功能建议' : feedbackType === 'bug' ? 'Bug反馈' : '其他'}\n**版本**: v${APP_VERSION}\n**内容**: ${feedbackText}\n**时间**: ${new Date().toLocaleString()}`;
-
-    try {
-      const resp = await fetch('https://gitee.com/api/v5/repos/xdbzys/app/issues', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: '__FEEDBACK_TOKEN__', title, body })
-      });
-      if (resp.ok) {
-        setFeedbackStatus('✅ 提交成功！感谢你的反馈');
-        setFeedbackText('');
-        setTimeout(() => { setShowFeedback(false); setFeedbackStatus(''); }, 2000);
-        return;
-      }
-      const err = await resp.json().catch(() => ({}));
-      if (resp.status === 401 || (err.message && err.message.includes('401'))) {
-        setFeedbackStatus('⚠️ 反馈通道未配置，请复制内容发送给作者');
-      } else {
-        setFeedbackStatus(`提交失败: ${err.message || resp.status}`);
-      }
-    } catch (e) {
-      setFeedbackStatus('网络错误，请检查网络后重试');
-    }
+    saveFeedback(feedbackType, feedbackText);
+    setFeedbackStatus('✅ 提交成功！感谢你的反馈');
+    setFeedbackText('');
+    setTimeout(() => { setShowFeedback(false); setFeedbackStatus(''); }, 1500);
   }
 
   async function callAiModel({ text: t = '', file: f = null }) {
@@ -5410,6 +5402,36 @@ function App() {
                 );
               })}
             </div>
+          </div>
+
+          {/* 反馈记录（仅作者查看） */}
+          <div className="resetSection">
+            <h3>反馈记录 ({loadFeedback().length} 条)</h3>
+            <div className="list">
+              {loadFeedback().length === 0 ? (
+                <p className="muted">暂无反馈</p>
+              ) : (
+                loadFeedback().map((f, i) => (
+                  <div key={i} className="listItem">
+                    <div>
+                      <span className="posTag" style={{ color: f.type === 'bug' ? '#dc2626' : f.type === 'suggest' ? '#2563eb' : '#6b7280', background: (f.type === 'bug' ? '#dc2626' : f.type === 'suggest' ? '#2563eb' : '#6b7280') + '18' }}>
+                        {f.type === 'suggest' ? '建议' : f.type === 'bug' ? 'Bug' : '其他'}
+                      </span>
+                      <p style={{ marginTop: 4 }}>{f.text}</p>
+                      <small>v{f.version} · {new Date(f.time).toLocaleString()}</small>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            {loadFeedback().length > 0 && (
+              <button className="smallBtn dangerGhost" style={{ marginTop: 8 }} onClick={() => {
+                if (confirm('确定清空所有反馈记录吗？')) {
+                  localStorage.removeItem(FEEDBACK_KEY);
+                  setFeedbackStatus('');
+                }
+              }}>清空反馈</button>
+            )}
           </div>
 
           {/* 危险区域 */}

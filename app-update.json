@@ -1,1 +1,1 @@
-{"version":"2.7.1","versionCode":41,"updateLog":"v2.7.1 update: 1. in-app feedback via Gitee API (no external app needed) 2. build-time token injection 3. all v2.7.0 features","apkUrl":"https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"}
+{"version":"2.7.2","versionCode":42,"updateLog":"v2.7.2 update: 1. feedback saved locally + view in app 2. no external config needed 3. all v2.7.0 features","apkUrl":"https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"}
