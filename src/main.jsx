@@ -4757,9 +4757,27 @@ function App() {
       }
 
       console.log('[Update] Local versionCode:', APP_VERSION_CODE, 'Remote:', data.versionCode);
-      const hasUpdate = data.versionCode > APP_VERSION_CODE;
+      let hasUpdate = data.versionCode > APP_VERSION_CODE;
       const changelog = data.changelog || data.updateLog || '';
-      const version = data.version || data.versionCode;
+      let version = data.version || data.versionCode;
+
+      // 如果Gitee返回的版本不比本地新，尝试GitHub源获取更高版本
+      if (!hasUpdate) {
+        try {
+          const githubData = await fetchFromGitHub();
+          console.log('[Update] GitHub check, versionCode:', githubData.versionCode);
+          if (githubData.versionCode > APP_VERSION_CODE && githubData.versionCode > data.versionCode) {
+            data = githubData;
+            hasUpdate = true;
+            version = githubData.version || githubData.versionCode;
+          }
+        } catch (ghErr) {
+          console.warn('[Update] GitHub check failed:', ghErr.message);
+        }
+      }
+
+      const finalChangelog = hasUpdate ? (data.changelog || data.updateLog || changelog) : changelog;
+      const finalVersion = hasUpdate ? (data.version || data.versionCode) : version;
 
       // 构建APK下载地址：优先GitHub Release，备用app-update.json中的地址
       const githubReleaseUrl = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/latest/gaokao-vocab.apk`;
@@ -4768,10 +4786,10 @@ function App() {
       if (data.books && Array.isArray(data.books) && !hasUpdate) {
         setUpdateInfo({
           hasUpdate: true,
-          version: version,
+          version: finalVersion,
           versionCode: APP_VERSION_CODE,
-          updateLog: changelog || `词库更新：共 ${data.books.length} 个词库`,
-          changelog: changelog || `词库更新：共 ${data.books.length} 个词库`,
+          updateLog: finalChangelog || `词库更新：共 ${data.books.length} 个词库`,
+          changelog: finalChangelog || `词库更新：共 ${data.books.length} 个词库`,
           apkUrl: '',
           appUrl: '',
           booksData: data.books,
@@ -4781,10 +4799,10 @@ function App() {
       } else {
         setUpdateInfo({
           hasUpdate,
-          version: version,
+          version: finalVersion,
           versionCode: data.versionCode,
-          updateLog: changelog,
-          changelog: changelog,
+          updateLog: finalChangelog,
+          changelog: finalChangelog,
           apkUrl: githubReleaseUrl || fallbackApkUrl,
           appUrl: githubReleaseUrl || fallbackApkUrl,
           booksData: data.books || null,
