@@ -1,6 +1,6 @@
 {
-  "version": "2.6",
-  "versionCode": 36,
-  "updateLog": "v2.6 更新\n1. 修复覆盖安装问题（使用签名APK）\n2. 更换APP图标\n3. 优化构建速度（添加Gradle缓存）\n4. 修复云更新检测",
+  "version": "2.6.1",
+  "versionCode": 37,
+  "updateLog": "v2.6.1 更新\n1. 修复云更新检测（改用 raw 直链，避免 base64 解码问题）\n2. 优化更新检测可靠性\n3. 修复覆盖安装问题\n4. 更换APP图标",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

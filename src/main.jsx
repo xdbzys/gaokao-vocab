@@ -8,16 +8,18 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.6';
-const APP_VERSION_CODE = 36;
+const APP_VERSION = '2.6.1';
+const APP_VERSION_CODE = 37;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
 const GITEE_BRANCH = 'master';
-// 使用 Gitee API 获取 JSON（WebView 中 raw 链接会被 302 到 HTML 页面）
-const UPDATE_SERVER_URL = `https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/contents/app-update.json?ref=${GITEE_BRANCH}`;
-// 添加时间戳防止API缓存
-const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_URL}&_t=${Date.now()}`;
+// 优先使用 Gitee raw 直链获取 JSON（避免 API base64 解码问题）
+const UPDATE_SERVER_RAW = `https://gitee.com/${GITEE_OWNER}/${GITEE_REPO}/raw/master/app-update.json`;
+// 备用：Gitee API 方式
+const UPDATE_SERVER_API = `https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/contents/app-update.json?ref=${GITEE_BRANCH}`;
+// 添加时间戳防止 CDN 缓存
+const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
 const isNativeApp = !!(window.Capacitor || window.cordova);
 
 try { pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`; } catch {}
@@ -4412,29 +4414,66 @@ function App() {
     saveDownloadedIds(next);
   }
 
-  // 版本更新检查：从 Gitee raw 拉取 app-update.json
+  // 版本更新检查：优先使用 raw 直链，失败则回退到 API
   async function checkCloudUpdate() {
     setCheckingUpdate(true);
     setUpdateInfo(null);
     setCloudStatus('正在检查更新...');
-    try {
-      const resp = await fetch(UPDATE_SERVER_URL_CACHE(), { cache: 'no-store' });
-      if (!resp.ok) throw new Error(`连接失败（HTTP ${resp.status}），请检查网络`);
-      const apiData = await resp.json();
 
-      // Gitee API 返回 { content: base64, encoding: "base64", ... }
-      let data;
+    async function fetchFromRaw() {
+      const url = `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
+      console.log('[Update] Trying raw URL:', url);
+      const resp = await fetch(url, { cache: 'no-store' });
+      if (!resp.ok) throw new Error(`raw 连接失败（HTTP ${resp.status}）`);
+      return await resp.json();
+    }
+
+    async function fetchFromApi() {
+      const url = `${UPDATE_SERVER_API}&_t=${Date.now()}`;
+      console.log('[Update] Trying API URL:', url);
+      const resp = await fetch(url, { cache: 'no-store' });
+      if (!resp.ok) throw new Error(`API 连接失败（HTTP ${resp.status}）`);
+      const apiData = await resp.json();
       if (apiData.content && apiData.encoding === 'base64') {
         const decoded = decodeURIComponent(escape(atob(apiData.content)));
-        data = JSON.parse(decoded);
+        return JSON.parse(decoded);
       } else if (apiData.versionCode) {
-        data = apiData;
-      } else {
-        throw new Error('数据格式无法识别');
+        return apiData;
+      }
+      throw new Error('API 数据格式无法识别');
+    }
+
+    try {
+      let data;
+      try {
+        data = await fetchFromRaw();
+        console.log('[Update] Raw success:', data);
+      } catch (rawErr) {
+        console.warn('[Update] Raw failed:', rawErr.message);
+        data = await fetchFromApi();
+        console.log('[Update] API fallback success:', data);
       }
 
-      if (typeof data.versionCode === 'number') {
-        const hasUpdate = data.versionCode > APP_VERSION_CODE;
+      if (typeof data.versionCode !== 'number') {
+        throw new Error(`versionCode 无效: ${data.versionCode}`);
+      }
+
+      console.log('[Update] Local versionCode:', APP_VERSION_CODE, 'Remote:', data.versionCode);
+      const hasUpdate = data.versionCode > APP_VERSION_CODE;
+
+      if (data.books && Array.isArray(data.books) && !hasUpdate) {
+        setUpdateInfo({
+          hasUpdate: true,
+          version: data.version || '词库更新',
+          versionCode: APP_VERSION_CODE,
+          updateLog: `词库更新：共 ${data.books.length} 个词库`,
+          apkUrl: '',
+          appUrl: '',
+          booksData: data.books,
+          updating: false,
+        });
+        setCloudStatus('发现词库更新');
+      } else {
         setUpdateInfo({
           hasUpdate,
           version: data.version || data.versionCode,
@@ -4446,21 +4485,9 @@ function App() {
           updating: false,
         });
         setCloudStatus(hasUpdate ? `发现新版本 v${data.version}` : '已是最新版本');
-      } else if (data.books && Array.isArray(data.books)) {
-        setUpdateInfo({
-          hasUpdate: true,
-          version: data.version || '词库更新',
-          versionCode: APP_VERSION_CODE,
-          updateLog: `词库更新：共 ${data.books.length} 个词库`,
-          appUrl: '',
-          booksData: data.books,
-          updating: false,
-        });
-        setCloudStatus('发现词库更新');
-      } else {
-        setCloudStatus('数据格式无法识别');
       }
     } catch (e) {
+      console.error('[Update] Error:', e);
       setCloudStatus(`检查失败：${e.message}`);
       setUpdateInfo(null);
     } finally {
