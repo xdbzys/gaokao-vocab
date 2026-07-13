@@ -68,13 +68,14 @@ jobs:
             exit 1
           fi
 
-      - name: Upload build log (on failure)
+      - name: Output build log on failure
         if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log-failure
-          path: build-log.txt
-          retention-days: 3
+        run: |
+          echo "## Build Log" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -100 build-log.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat build-log.txt
 
       - name: Upload APK to Gitee
         env:
