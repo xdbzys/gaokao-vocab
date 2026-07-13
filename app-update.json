@@ -1,6 +1,6 @@
 {
   "version": "2.5",
-  "versionCode": 25,
+  "versionCode": 26,
   "updateLog": "v2.5 重大更新\n1. 多词库选择+一键全选\n2. 情景记忆（6大主题文章）\n3. 自动关闭可设置延迟时间\n4. 修复选项中出现易混词的问题\n5. 易混/同义/反义/褒贬双性移到扩展tab\n6. UI优化+图标修复",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
