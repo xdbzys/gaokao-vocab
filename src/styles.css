@@ -1089,7 +1089,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   box-shadow: 0 2px 10px rgba(59, 130, 246, 0.35);
 }
 
-.tabIcon { font-size: 18px; line-height: 1; }
+.tabIcon { width: 22px; height: 22px; line-height: 1; display: flex; align-items: center; justify-content: center; }
 
 .tabLabel { font-size: 10px; }
 
@@ -1109,7 +1109,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   h2 { font-size: 22px; }
   .compareTitle { font-size: 22px; }
   .tabbar { gap: 1px; padding: 4px; }
-  .tabIcon { font-size: 16px; }
+  .tabIcon { width: 20px; height: 20px; }
 }
 
 /* ===== 多词库选择 ===== */
@@ -1239,4 +1239,48 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
+}
+
+/* ===== 拼写纠错 ===== */
+.spellingList {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.spellingCard {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  background: var(--bg);
+}
+
+.spellingRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.spellingCorrect {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.spellingWrong {
+  font-size: 15px;
+  color: var(--danger);
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.spellingTip {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--primary-bg);
 }

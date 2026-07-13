@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.6.1';
-const APP_VERSION_CODE = 37;
+const APP_VERSION = '2.7.0';
+const APP_VERSION_CODE = 40;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -2972,6 +2972,50 @@ const sceneData = [
   }
 ];
 
+// 拼写纠错数据：常见高考英语拼写错误
+const spellingData = [
+  { correct: 'receive', wrong: 'recieve', tip: 'i 在 e 前，除了在 c 后：re-cei-ve' },
+  { correct: 'necessary', wrong: 'neccessary', tip: '1个c，2个s：ne-ce-ssa-ry' },
+  { correct: 'accommodation', wrong: 'accomodation', tip: '双c双m：ac-com-mo-da-tion' },
+  { correct: 'embarrass', wrong: 'embarass', tip: '双r双s：em-bar-rass' },
+  { correct: 'occasion', wrong: 'ocassion', tip: '双c单s：oc-ca-sion' },
+  { correct: 'separate', wrong: 'seperate', tip: '中间是 para：se-pa-rate' },
+  { correct: 'definitely', wrong: 'definately', tip: 'finite（有限的）在中间：de-fi-ni-te-ly' },
+  { correct: 'grammar', wrong: 'grammer', tip: '以 -ar 结尾，不是 -er' },
+  { correct: 'believe', wrong: 'beleive', tip: 'i 在 e 前：be-lieve' },
+  { correct: 'occurrence', wrong: 'occurence', tip: 'occur 双写 r 加 -ence' },
+  { correct: 'recommend', wrong: 'reccomend', tip: '1个c，2个m：re-com-mend' },
+  { correct: 'beautiful', wrong: 'beatiful', tip: 'eau 像水，美丽如水：beau-ti-ful' },
+  { correct: 'argument', wrong: 'arguement', tip: 'argue 去 e 加 -ment' },
+  { correct: 'desperate', wrong: 'desparate', tip: 'perate 在中间：des-pe-rate' },
+  { correct: 'foreign', wrong: 'foriegn', tip: 'for + reign（统治），不是 foriegn' },
+  { correct: 'government', wrong: 'goverment', tip: '中间是 govern（治理）：gov-ern-ment' },
+  { correct: 'independent', wrong: 'independant', tip: '以 -ent 结尾，不是 -ant' },
+  { correct: 'intelligence', wrong: 'inteligence', tip: '双写 l：in-tel-li-gence' },
+  { correct: 'library', wrong: 'libary', tip: '中间有 bra：li-bra-ry' },
+  { correct: 'millennium', wrong: 'millenium', tip: '双 l 双 n：mil-len-ni-um' },
+  { correct: 'occurred', wrong: 'occured', tip: 'occur 双写 r 加 -ed' },
+  { correct: 'possession', wrong: 'posession', tip: 'possess 双写 s 加 -ion' },
+  { correct: 'precedent', wrong: 'preceedent', tip: 'precede 只有一个 c，去 e 加 -ent' },
+  { correct: 'proceed', wrong: 'procede', tip: '双 c 双 e：pro-ceed' },
+  { correct: 'privilege', wrong: 'priviledge', tip: '没有 d：pri-vi-lege' },
+  { correct: 'publicly', wrong: 'publically', tip: 'public 直接加 -ly，不要加 -al' },
+  { correct: 'questionnaire', wrong: 'questionaire', tip: '双写 n：ques-tion-naire' },
+  { correct: 'restaurant', wrong: 'restarant', tip: '中间有 aura（气息）：res-tau-rant' },
+  { correct: 'rhythm', wrong: 'rythm', tip: '以 rh- 开头，像 rhyme（韵）' },
+  { correct: 'schedule', wrong: 'schedual', tip: '以 -ule 结尾，不是 -ual' },
+  { correct: 'subtle', wrong: 'subltle', tip: 'b 不发音，不要把 l 放到 b 前面' },
+  { correct: 'succeed', wrong: 'suceed', tip: '双 c 双 s：suc-ceed' },
+  { correct: 'surprise', wrong: 'suprise', tip: 'sur-prise，不要漏掉第一个 r' },
+  { correct: 'threshold', wrong: 'threshhold', tip: '只有一个 h：thresh-old' },
+  { correct: 'tomorrow', wrong: 'tommorow', tip: '1个 m，2个 r：to-mor-row' },
+  { correct: 'truly', wrong: 'truely', tip: 'true 去 e 加 -ly' },
+  { correct: 'until', wrong: 'untill', tip: '只有一个 l' },
+  { correct: 'vacuum', wrong: 'vaccum', tip: '以 -uum 结尾，不是 -cum' },
+  { correct: 'weird', wrong: 'wierd', tip: 'i 在 e 前（weird 是例外规则中的例外）：wei-rd' },
+  { correct: 'writing', wrong: 'writting', tip: 'write 去 e 加 -ing，t 不双写' }
+];
+
 // 原有核心短语库
 const seedPhrases = [
   ['as a result', '短语', '结果；因此', '高频', ['常放句首或句中作结果状语'], ['as a result 后接句子；as a result of 后接名词/doing'], ['He worked hard. As a result, he passed the exam.']],
@@ -3934,11 +3978,31 @@ function parseImportedText(text, defaultType = 'word') {
    八、AI识别功能
    ============================ */
 
+// 内置AI服务商预设
+const AI_PROVIDERS = [
+  { id: 'siliconflow', name: '硅基流动（国内，推荐）', endpoint: 'https://api.siliconflow.cn/v1/chat/completions', model: 'deepseek-ai/DeepSeek-V2.5', keyUrl: 'https://cloud.siliconflow.cn' },
+  { id: 'openai', name: 'OpenAI（需VPN）', endpoint: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini', keyUrl: 'https://platform.openai.com' },
+  { id: 'zhipu', name: '智谱AI（国内）', endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-flash', keyUrl: 'https://open.bigmodel.cn' },
+  { id: 'aliyun', name: '阿里云百炼（国内）', endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen-turbo', keyUrl: 'https://bailian.console.aliyun.com' },
+  { id: 'baidu', name: '百度千帆（国内）', endpoint: 'https://qianfan.baidubce.com/v2/chat/completions', model: 'ernie-speed', keyUrl: 'https://qianfan.cloud.baidu.com' },
+  { id: 'custom', name: '自定义', endpoint: '', model: '', keyUrl: '' },
+];
+
 const AI_CONFIG_KEY = 'aiImportConfig';
 
 function loadAiConfig() {
-  try { return { endpoint: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini', apiKey: '', ...JSON.parse(localStorage.getItem(AI_CONFIG_KEY) || '{}') }; }
-  catch { return { endpoint: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini', apiKey: '' }; }
+  try {
+    const saved = JSON.parse(localStorage.getItem(AI_CONFIG_KEY) || '{}');
+    const defaults = { provider: 'siliconflow', apiKey: '' };
+    const config = { ...defaults, ...saved };
+    // 如果provider不是custom，自动填充endpoint和model
+    const provider = AI_PROVIDERS.find(p => p.id === config.provider);
+    if (provider && config.provider !== 'custom') {
+      config.endpoint = provider.endpoint;
+      config.model = provider.model;
+    }
+    return config;
+  } catch { return { provider: 'siliconflow', apiKey: '', endpoint: AI_PROVIDERS[0].endpoint, model: AI_PROVIDERS[0].model }; }
 }
 
 function saveAiConfig(c) { localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(c)); }
@@ -4082,13 +4146,61 @@ function posColor(pos) {
    十一、主App组件
    ============================ */
 
+const LearnIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+  </svg>
+);
+
+const WrongIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
+const LibraryIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="8" y1="6" x2="21" y2="6" />
+    <line x1="8" y1="12" x2="21" y2="12" />
+    <line x1="8" y1="18" x2="21" y2="18" />
+    <line x1="3" y1="6" x2="3.01" y2="6" />
+    <line x1="3" y1="12" x2="3.01" y2="12" />
+    <line x1="3" y1="18" x2="3.01" y2="18" />
+  </svg>
+);
+
+const ExtendIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7" />
+    <rect x="14" y="3" width="7" height="7" />
+    <rect x="14" y="14" width="7" height="7" />
+    <rect x="3" y="14" width="7" height="7" />
+  </svg>
+);
+
+const ImportIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
+  </svg>
+);
+
+const MeIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
 const TABS = [
-  { id: 'learn', label: '背诵', icon: '📝' },
-  { id: 'wrong', label: '错词本', icon: '🔖' },
-  { id: 'library', label: '词库', icon: '📑' },
-  { id: 'extend', label: '扩展', icon: '🧩' },
-  { id: 'import', label: '导入', icon: '📥' },
-  { id: 'me', label: '我的', icon: '⚙️' },
+  { id: 'learn', label: '背诵', icon: LearnIcon },
+  { id: 'wrong', label: '错词本', icon: WrongIcon },
+  { id: 'library', label: '词库', icon: LibraryIcon },
+  { id: 'extend', label: '扩展', icon: ExtendIcon },
+  { id: 'import', label: '导入', icon: ImportIcon },
+  { id: 'me', label: '我的', icon: MeIcon },
 ];
 
 function App() {
@@ -4134,6 +4246,7 @@ function App() {
   const [affixTab, setAffixTab] = useState('prefix');
   const [compareTab, setCompareTab] = useState('synonym');
   const [compareIndex, setCompareIndex] = useState(0);
+  const [spellingSearch, setSpellingSearch] = useState('');
   // 词库详情
   const [detailItem, setDetailItem] = useState(null);
   // 正确率统计
@@ -4141,6 +4254,11 @@ function App() {
   const [sessionTotal, setSessionTotal] = useState(0);
   // AI配置折叠
   const [showAiBox, setShowAiBox] = useState(false);
+  // 反馈弹窗
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackType, setFeedbackType] = useState('suggest');
+  const [feedbackStatus, setFeedbackStatus] = useState('');
   // 首次使用日期
   const [firstUseDate] = useState(() => {
     try { return localStorage.getItem('gaokao_first_use') || getToday(); }
@@ -4375,6 +4493,34 @@ function App() {
 
   function updateAiConfig(patch) {
     const next = { ...aiConfig, ...patch }; setAiConfig(next); saveAiConfig(next);
+  }
+
+  // 反馈提交：优先Gitee API，失败则降级到邮件/剪贴板
+  async function submitFeedback() {
+    if (!feedbackText.trim()) { setFeedbackStatus('请填写反馈内容'); return; }
+    setFeedbackStatus('提交中...');
+    const title = `[${feedbackType === 'suggest' ? '建议' : feedbackType === 'bug' ? 'Bug' : '其他'}] ${feedbackText.slice(0, 30)}...`;
+    const body = `**反馈类型**: ${feedbackType === 'suggest' ? '功能建议' : feedbackType === 'bug' ? 'Bug反馈' : '其他'}\n**版本**: v${APP_VERSION}\n**内容**: ${feedbackText}\n**时间**: ${new Date().toLocaleString()}`;
+
+    // 方案1: 尝试通过Gitee API创建issue
+    try {
+      const resp = await fetch('https://gitee.com/api/v5/repos/xdbzys/app/issues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: '__FEEDBACK_TOKEN__', title, body })
+      });
+      if (resp.ok) {
+        setFeedbackStatus('提交成功！感谢你的反馈');
+        setFeedbackText('');
+        setTimeout(() => { setShowFeedback(false); setFeedbackStatus(''); }, 1500);
+        return;
+      }
+    } catch (e) { /* 降级 */ }
+
+    // 方案2: 生成mailto链接
+    const mailto = `mailto:xdbzys@qq.com?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+    window.open(mailto, '_blank');
+    setFeedbackStatus('已唤起邮件客户端，请发送邮件反馈');
   }
 
   async function callAiModel({ text: t = '', file: f = null }) {
@@ -4805,6 +4951,7 @@ function App() {
             <button className={extendTab === 'compare' ? 'active' : ''} onClick={() => setExtendTab('compare')}>对比记忆</button>
             <button className={extendTab === 'errors' ? 'active' : ''} onClick={() => setExtendTab('errors')}>易错词</button>
             <button className={extendTab === 'scene' ? 'active' : ''} onClick={() => setExtendTab('scene')}>情景记忆</button>
+            <button className={extendTab === 'spelling' ? 'active' : ''} onClick={() => setExtendTab('spelling')}>拼写纠错</button>
           </div>
 
           {/* 词根词缀 */}
@@ -4904,6 +5051,35 @@ function App() {
               ))}
             </div>
           )}
+
+          {/* 拼写纠错 */}
+          {extendTab === 'spelling' && (
+            <div className="spellingList">
+              <input
+                type="text"
+                className="searchInput"
+                placeholder="搜索拼写单词..."
+                value={spellingSearch}
+                onChange={e => setSpellingSearch(e.target.value)}
+              />
+              <p className="muted">以下是高考英语中常见的拼写错误对比，蓝色为正确拼写，红色删除线为常见错误。</p>
+              {spellingData
+                .filter(item =>
+                  item.correct.toLowerCase().includes(spellingSearch.toLowerCase()) ||
+                  item.wrong.toLowerCase().includes(spellingSearch.toLowerCase())
+                )
+                .map((item, i) => (
+                  <div key={i} className="spellingCard">
+                    <div className="spellingRow">
+                      <span className="spellingCorrect">{item.correct}</span>
+                      <span style={{ color: 'var(--text-tertiary)' }}>/</span>
+                      <span className="spellingWrong">{item.wrong}</span>
+                    </div>
+                    <div className="spellingTip">{item.tip}</div>
+                  </div>
+                ))}
+            </div>
+          )}
         </section>
       )}
 
@@ -4940,9 +5116,35 @@ function App() {
             </button>
             {showAiBox && (
               <div className="aiBox">
-                <input value={aiConfig.endpoint} onChange={e => updateAiConfig({ endpoint: e.target.value })} placeholder="AI接口地址" />
-                <input value={aiConfig.model} onChange={e => updateAiConfig({ model: e.target.value })} placeholder="模型名" />
+                <label style={{marginBottom:4,display:'block',fontSize:13,color:'var(--text-secondary)'}}>选择AI服务商
+                  <select value={aiConfig.provider || 'siliconflow'} onChange={e => {
+                    const pid = e.target.value;
+                    const p = AI_PROVIDERS.find(x => x.id === pid);
+                    if (p) {
+                      if (pid === 'custom') {
+                        updateAiConfig({ provider: pid, endpoint: '', model: '' });
+                      } else {
+                        updateAiConfig({ provider: pid, endpoint: p.endpoint, model: p.model });
+                      }
+                    }
+                  }}>
+                    {AI_PROVIDERS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </label>
+                {aiConfig.provider === 'custom' && (
+                  <>
+                    <input value={aiConfig.endpoint} onChange={e => updateAiConfig({ endpoint: e.target.value })} placeholder="AI接口地址" />
+                    <input value={aiConfig.model} onChange={e => updateAiConfig({ model: e.target.value })} placeholder="模型名" />
+                  </>
+                )}
                 <input type="password" value={aiConfig.apiKey} onChange={e => updateAiConfig({ apiKey: e.target.value })} placeholder="API Key" />
+                {aiConfig.provider !== 'custom' && (
+                  <p className="muted" style={{fontSize:11,margin:'4px 0'}}>
+                    模型: {AI_PROVIDERS.find(p => p.id === aiConfig.provider)?.model}
+                    {' · '}
+                    <a href={AI_PROVIDERS.find(p => p.id === aiConfig.provider)?.keyUrl} target="_blank" rel="noopener noreferrer" style={{color:'var(--primary)'}}>获取Key</a>
+                  </p>
+                )}
                 <div className="importActions">
                   <button onClick={runAiOnText}>AI整理文本</button>
                   <button onClick={runAiOnFile}>AI识别文件</button>
@@ -5043,11 +5245,17 @@ function App() {
             </label>
             {settings.autoJump && <label>自动跳转延迟
               <select value={settings.autoJumpDelay || 1500} onChange={e => { const v = parseInt(e.target.value); setSettings(s => ({ ...s, autoJumpDelay: v })); saveSettings({ ...settings, autoJumpDelay: v }); }}>
+                <option value="500">0.5秒</option>
                 <option value="800">0.8秒</option>
+                <option value="1000">1.0秒</option>
                 <option value="1200">1.2秒</option>
                 <option value="1500">1.5秒</option>
-                <option value="2000">2秒</option>
-                <option value="3000">3秒</option>
+                <option value="2000">2.0秒</option>
+                <option value="2500">2.5秒</option>
+                <option value="3000">3.0秒</option>
+                <option value="4000">4.0秒</option>
+                <option value="5000">5.0秒</option>
+                <option value="8000">8.0秒</option>
               </select>
             </label>}
             <div className="settingsInfo">
@@ -5089,6 +5297,40 @@ function App() {
             {cloudStatus && <p className="status" style={{ marginTop: 8 }}>{cloudStatus}</p>}
           </div>
           ) : null}
+
+          {/* 反馈入口 */}
+          <div className="cloudUpdateSection" style={{ background: '#fef3c7', borderColor: '#fde68a' }}>
+            <h3 style={{ color: '#92400e' }}>💬 反馈建议</h3>
+            <p className="muted">有什么建议或遇到问题？告诉我们，帮助产品更好。</p>
+            <button className="primary" onClick={() => setShowFeedback(true)} style={{ background: '#f59e0b' }}>提交反馈</button>
+          </div>
+
+          {/* 反馈弹窗 */}
+          {showFeedback && (
+            <div className="modalOverlay" onClick={e => { if (e.target === e.currentTarget) setShowFeedback(false); }}>
+              <div className="modal" style={{ maxWidth: 420 }}>
+                <h3>提交反馈</h3>
+                <label style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>反馈类型
+                  <select value={feedbackType} onChange={e => setFeedbackType(e.target.value)} style={{ marginTop: 4 }}>
+                    <option value="suggest">功能建议</option>
+                    <option value="bug">Bug反馈</option>
+                    <option value="other">其他</option>
+                  </select>
+                </label>
+                <textarea
+                  value={feedbackText}
+                  onChange={e => setFeedbackText(e.target.value)}
+                  placeholder="请详细描述你的建议或遇到的问题..."
+                  style={{ minHeight: 120, marginTop: 8 }}
+                />
+                <div className="importActions" style={{ marginTop: 12 }}>
+                  <button className="smallBtn" onClick={() => { setShowFeedback(false); setFeedbackStatus(''); }}>取消</button>
+                  <button className="primary" onClick={submitFeedback}>提交</button>
+                </div>
+                {feedbackStatus && <p className="status" style={{ marginTop: 8 }}>{feedbackStatus}</p>}
+              </div>
+            </div>
+          )}
 
           {/* 词库下载区域 */}
           <div className="downloadSection">
@@ -5185,7 +5427,7 @@ function App() {
       <nav className="tabbar">
         {TABS.map(tab => (
           <button key={tab.id} className={section === tab.id ? 'active' : ''} onClick={() => setSection(tab.id)}>
-            <span className="tabIcon">{tab.icon}</span>
+            <span className="tabIcon"><tab.icon /></span>
             <span className="tabLabel">{tab.label}</span>
           </button>
         ))}
