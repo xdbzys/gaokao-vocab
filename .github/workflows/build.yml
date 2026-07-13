@@ -78,9 +78,11 @@ jobs:
           cat build-log.txt
 
       - name: Upload APK to Gitee
+        id: upload_gitee
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         run: python3 scripts/upload_apk.py
+        continue-on-error: true
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

@@ -1,6 +1,10 @@
 import requests, base64, sys, os, json
 
-TOKEN = os.environ['GITEE_TOKEN']
+TOKEN = os.environ.get('GITEE_TOKEN', '')
+if not TOKEN:
+    print("ERROR: GITEE_TOKEN environment variable is not set!")
+    print("Please set GITEE_TOKEN in GitHub Secrets.")
+    sys.exit(1)
 REPO = 'xdbzys/app'
 APK_PATH = 'android/app/build/outputs/apk/debug/app-debug.apk'
 APK_FILENAME = 'gaokao-vocab.apk'
