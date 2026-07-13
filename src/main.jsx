@@ -4811,8 +4811,8 @@ function App() {
         if (!silent) setCloudStatus(hasUpdate ? `发现新版本 v${version}` : '已是最新版本');
       }
 
-      // 开屏公告：静默模式下发现新版本，始终弹出更新提示（不受showAnnouncement开关限制）
-      if (silent && hasUpdate) {
+      // 开屏公告：静默模式下，如果用户开启了公告且未关闭过当前版本
+      if (silent && hasUpdate && settings.showAnnouncement) {
         const remoteVersion = String(finalVersion);
         if (remoteVersion !== dismissedVersion) {
           setAnnouncementData({ version: remoteVersion, changelog: finalChangelog });
