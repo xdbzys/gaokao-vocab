@@ -21,7 +21,7 @@ const UPDATE_SERVER_RAW = `https://gitee.com/${GITEE_OWNER}/${GITEE_REPO}/raw/ma
 // 备用：Gitee API 方式
 const UPDATE_SERVER_API = `https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/contents/app-update.json?ref=${GITEE_BRANCH}`;
 // 备用：GitHub raw（Gitee不可用时）
-const UPDATE_GITHUB_RAW = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/master/app-update.json`;
+const UPDATE_GITHUB_RAW = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/app-update.json`;
 // 添加时间戳防止 CDN 缓存
 const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
 const isNativeApp = !!(window.Capacitor || window.cordova);
@@ -4729,10 +4729,17 @@ function App() {
 
     async function fetchFromGitHub() {
       const url = `${UPDATE_GITHUB_RAW}?_t=${Date.now()}`;
-      console.log('[Update] Trying GitHub raw URL:', url);
+      console.log('[Update] Trying GitHub API URL:', url);
       const resp = await fetch(url, { cache: 'no-store' });
-      if (!resp.ok) throw new Error(`GitHub raw 连接失败（HTTP ${resp.status}）`);
-      return await resp.json();
+      if (!resp.ok) throw new Error(`GitHub API 连接失败（HTTP ${resp.status}）`);
+      const apiData = await resp.json();
+      if (apiData.content && apiData.encoding === 'base64') {
+        const decoded = decodeURIComponent(escape(atob(apiData.content)));
+        return JSON.parse(decoded);
+      } else if (apiData.versionCode) {
+        return apiData;
+      }
+      throw new Error('GitHub API 数据格式无法识别');
     }
 
     try {
