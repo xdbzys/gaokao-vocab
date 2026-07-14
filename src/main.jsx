@@ -4371,6 +4371,9 @@ function App() {
 
   const current = filteredItems[index % Math.max(filteredItems.length, 1)];
 
+  // 显示用的当前单词：答题后使用锁定的单词，防止 toggleProgress 改变 current 导致显示不匹配
+  const displayCurrent = (selected && lockedCurrent.current) || current;
+
   // 问题1：4个选项（1正确+3干扰项）—— 排除易混/同义/反义词干扰
   const options = useMemo(() => {
     if (!current) return [];
@@ -4470,6 +4473,7 @@ function App() {
     const nextIdx = (index + 1) % Math.max(filteredItems.length, 1);
     setIndex(nextIdx);
     setShowBack(false); setSelected('');
+    lockedCurrent.current = null;
     // 自动朗读新单词
     if (settings.autoSpeak && filteredItems.length > 0) {
       const nextWord = filteredItems[nextIdx];
@@ -4482,6 +4486,7 @@ function App() {
   function prevCard() {
     setIndex(i => (i - 1 + filteredItems.length) % Math.max(filteredItems.length, 1));
     setShowBack(false); setSelected('');
+    lockedCurrent.current = null;
   }
 
   // 错词本操作
@@ -4529,15 +4534,12 @@ function App() {
         setTimeout(() => {
           nextCard();
           setAutoJumping(false);
-          lockedCurrent.current = null;
         }, settings.autoJumpDelay || 1500);
       }
     } else {
       // 答错：加入错词本
       addWrongWord(c);
     }
-    // 在用户下一次点击选项前清除锁定
-    setTimeout(() => { lockedCurrent.current = null; }, 50);
   }
 
   function createBook() {
@@ -5039,15 +5041,15 @@ function App() {
           {current ? (
             <div className="card">
               <div className="cardMeta">
-                <span className="freqTag" style={{ color: freqColor(current.frequency), borderColor: freqColor(current.frequency) }}>{current.frequency}</span>
-                <span className="posTag" style={{ color: posColor(current.pos), background: posColor(current.pos) + '18' }}>{current.pos}</span>
-                {progress[current.id] === 'mastered' && <span className="masteredTag">已掌握</span>}
+                <span className="freqTag" style={{ color: freqColor(displayCurrent.frequency), borderColor: freqColor(displayCurrent.frequency) }}>{displayCurrent.frequency}</span>
+                <span className="posTag" style={{ color: posColor(displayCurrent.pos), background: posColor(displayCurrent.pos) + '18' }}>{displayCurrent.pos}</span>
+                {progress[displayCurrent.id] === 'mastered' && <span className="masteredTag">已掌握</span>}
               </div>
 
               <div className="questionArea">
-                <h2>{practiceMode === 'cn-to-en' ? current.meaning : practiceMode === 'flashcard' ? current.term : current.term}</h2>
-                {practiceMode !== 'cn-to-en' && current.phonetic && <p className="phoneticText">{current.phonetic}</p>}
-                <button className="sound" onClick={() => speak(current.term, settings.speakRate)}>🔊 发音</button>
+                <h2>{practiceMode === 'cn-to-en' ? displayCurrent.meaning : practiceMode === 'flashcard' ? displayCurrent.term : displayCurrent.term}</h2>
+                {practiceMode !== 'cn-to-en' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
+                <button className="sound" onClick={() => speak(displayCurrent.term, settings.speakRate)}>🔊 发音</button>
               </div>
 
               {/* 问题1：4选项答题 - 未回答时显示选项，回答后隐藏 */}
@@ -5069,21 +5071,21 @@ function App() {
               {(showBack || selected) && (
                 <div className="answerBox">
                   {selected && (
-                    <p style={{ fontWeight: 600, marginBottom: 8, color: (practiceMode === 'cn-to-en' ? (lockedCurrent.current?.term ?? current.term) : (lockedCurrent.current?.meaning ?? current.meaning)) === selected ? '#16a34a' : '#dc2626' }}>
-                      {selected === (practiceMode === 'cn-to-en' ? (lockedCurrent.current?.term ?? current.term) : (lockedCurrent.current?.meaning ?? current.meaning)) ? '✅ 回答正确' : `❌ 回答错误（你选了：${selected}）`}
+                    <p style={{ fontWeight: 600, marginBottom: 8, color: (practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning) === selected ? '#16a34a' : '#dc2626' }}>
+                      {selected === (practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning) ? '✅ 回答正确' : `❌ 回答错误（你选了：${selected}）`}
                     </p>
                   )}
-                  <h3>{current.term} &middot; {current.meaning}</h3>
-                  <p className="muted">{current.pos} &middot; {current.source}</p>
+                  <h3>{displayCurrent.term} &middot; {displayCurrent.meaning}</h3>
+                  <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>
                   <div className="points">
-                    {(detailMode === 'brief' ? current.corePoints.slice(0, 2) : current.allPoints).map(p => <p key={p}>• {p}</p>)}
+                    {(detailMode === 'brief' ? displayCurrent.corePoints.slice(0, 2) : displayCurrent.allPoints).map(p => <p key={p}>• {p}</p>)}
                   </div>
-                  {detailMode === 'full' && current.examples.length > 0 && (
-                    <div className="examples">{current.examples.map(e => <p key={e}>{e}</p>)}</div>
+                  {detailMode === 'full' && displayCurrent.examples.length > 0 && (
+                    <div className="examples">{displayCurrent.examples.map(e => <p key={e}>{e}</p>)}</div>
                   )}
                   <div className="answerActions">
-                    <button className="masterBtn" onClick={() => toggleProgress(current.id)}>
-                      {progress[current.id] === 'mastered' ? '取消掌握' : '标记掌握'}
+                    <button className="masterBtn" onClick={() => toggleProgress(displayCurrent.id)}>
+                      {progress[displayCurrent.id] === 'mastered' ? '取消掌握' : '标记掌握'}
                     </button>
                   </div>
                 </div>
