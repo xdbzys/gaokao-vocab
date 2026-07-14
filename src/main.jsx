@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.16';
-const APP_VERSION_CODE = 65;
+const APP_VERSION = '2.8.17';
+const APP_VERSION_CODE = 66;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -1600,7 +1600,6 @@ const seedWords536_社会热点 = [
 
 // 105个必考核心词汇（2021-2025年真题）
 const seedWords105 = [
-  ['原词', 'adj./n./v.', '翻译文中位置', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['翻译文中位置', '高考真题高频出现'], ['原词 frequently appears in gaokao exams.']],
   ['anniversary', 'adj./n./v.', '周年纪念', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['周年纪念', '高考真题高频出现'], ['anniversary frequently appears in gaokao exams.']],
   ['demonstrate', 'adj./n./v.', '展示；证明', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['展示；证明', '高考真题高频出现'], ['demonstrate frequently appears in gaokao exams.']],
   ['inspirational', 'adj./n./v.', '鼓舞人心的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['鼓舞人心的', '高考真题高频出现'], ['inspirational frequently appears in gaokao exams.']],
