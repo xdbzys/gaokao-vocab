@@ -1,7 +1,7 @@
 {
-  "version": "2.8.15",
-  "versionCode": 64,
-  "changelog": "v2.8.15 更新\n\n【修复】\n- 修复答题后选择正确答案可能导致白屏崩溃的bug\n- 修复答题时答案展示区域显示的是下一个单词的bug\n- 锁定答题单词，防止标记掌握后 current 变化导致显示不匹配",
-  "devNotes": "fix white screen crash from lockedCurrent declaration order, fix answer display bug",
+  "version": "2.8.16",
+  "versionCode": 65,
+  "changelog": "v2.8.16 更新\n\n【修复】\n- 修复自动发音播放的不是当前显示单词的bug\n- 修复答题后自动标记已掌握导致显示错误答案的bug\n- 修复答题时答案展示区域显示的是下一个单词的bug",
+  "devNotes": "fix auto-speak wrong word bug using nextCardRef, fix answer display bug",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
