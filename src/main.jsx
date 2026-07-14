@@ -4291,6 +4291,7 @@ function App() {
   const [cloudStatus, setCloudStatus] = useState('');
   const [updateInfo, setUpdateInfo] = useState(null);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [showBrowserFallback, setShowBrowserFallback] = useState(false);
   // 静默自动更新相关状态
   const [downloadedApkUrl, setDownloadedApkUrl] = useState(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
@@ -4995,6 +4996,8 @@ function App() {
       if (!silent) {
         setCloudStatus(`检查失败：${e.message}`);
         setUpdateInfo(null);
+        // 所有线路都失败时，提供浏览器下载回退
+        setShowBrowserFallback(true);
       }
     } finally {
       setCheckingUpdate(false);
@@ -5704,6 +5707,17 @@ function App() {
             {cloudStatus && <p className="status" style={{ marginTop: 8 }}>{cloudStatus}</p>}
           </div>
           ) : null}
+
+          {/* 浏览器下载回退（更新检查所有线路失败时显示） */}
+          {showBrowserFallback && (
+            <div className="cloudUpdateSection" style={{ background: '#fef3c7', borderColor: '#fde68a', marginTop: 12 }}>
+              <h3 style={{ color: '#92400e' }}>📱 网络修复更新</h3>
+              <p className="muted">APP内网络检测失败，点击下方按钮将在浏览器中打开更新页面，下载后安装即可。安装后更新将自动恢复。</p>
+              <button className="primary" onClick={() => {
+                window.open('https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/update.html', '_blank');
+              }} style={{ background: '#f59e0b' }}>在浏览器中更新</button>
+            </div>
+          )}
 
           {/* 反馈入口（仅APP） */}
           {isNativeApp && (
