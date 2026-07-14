@@ -8,7 +8,7 @@ if not TOKEN:
     sys.exit(0)
 
 REPO = 'xdbzys/app'
-APK_FILENAME = 'gaokao-vocab.apk'
+APK_FILENAME = 'app-debug.apk'
 
 # Read version from app-update.json
 with open('app-update.json', 'r') as f:
