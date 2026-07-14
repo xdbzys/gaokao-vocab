@@ -4825,8 +4825,8 @@ function App() {
         if (!silent) setCloudStatus(hasUpdate ? `发现新版本 v${version}` : '已是最新版本');
       }
 
-      // 开屏公告：静默模式下，如果用户开启了公告且未关闭过当前版本
-      if (silent && hasUpdate && settings.showAnnouncement) {
+      // 开屏公告：APP 专属，静默模式下如果用户开启了公告且未关闭过当前版本
+      if (isNativeApp && silent && hasUpdate && settings.showAnnouncement) {
         const remoteVersion = String(finalVersion);
         if (remoteVersion !== dismissedVersion) {
           setAnnouncementData({ version: remoteVersion, changelog: finalChangelog });
@@ -5571,12 +5571,14 @@ function App() {
                 <option value="off">关闭</option>
               </select>
             </label>
-            <label>开屏更新公告
-              <select value={settings.showAnnouncement ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, showAnnouncement: v })); saveSettings({ ...settings, showAnnouncement: v }); }}>
-                <option value="on">开启（启动时显示更新公告）</option>
-                <option value="off">关闭</option>
-              </select>
-            </label>
+            {isNativeApp && (
+              <label>开屏更新公告
+                <select value={settings.showAnnouncement ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, showAnnouncement: v })); saveSettings({ ...settings, showAnnouncement: v }); }}>
+                  <option value="on">开启（启动时显示更新公告）</option>
+                  <option value="off">关闭</option>
+                </select>
+              </label>
+            )}
             <div className="settingsInfo">
               <p>首次使用：{firstUseDate}</p>
               <p>今日日期：{todayKey}</p>
