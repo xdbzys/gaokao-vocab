@@ -16,14 +16,21 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 修复 WebView 缓存问题：确保 fetch 请求不被缓存
         WebView webView = this.bridge.getWebView();
         if (webView != null) {
             WebSettings settings = webView.getSettings();
-            // 禁用 HTTP 缓存，强制每次请求都走网络
             settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-            // 清除已有的缓存数据
             webView.clearCache(true);
+
+            // 修改 User-Agent 为标准浏览器，避免 Gitee 等 CDN 拦截 WebView 请求
+            String originalUA = settings.getUserAgentString();
+            String cleanUA = originalUA
+                .replace("Capacitor/", "")
+                .replace("Capacitor;", ";")
+                .replace(" wv", "")
+                .replaceAll("\\s+", " ")
+                .trim();
+            settings.setUserAgentString(cleanUA);
         }
     }
 }

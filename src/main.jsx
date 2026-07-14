@@ -4815,7 +4815,8 @@ function App() {
     async function fetchFromRaw() {
       const url = `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
       console.log('[Update] Trying raw URL:', url);
-      const resp = await fetch(url, { cache: 'no-store' });
+      // 使用 redirect: 'follow' 确保 WebView 跟随 302 重定向
+      const resp = await fetch(url, { cache: 'no-store', redirect: 'follow', headers: { 'Accept': 'application/json, text/plain, */*' } });
       if (!resp.ok) throw new Error(`raw 连接失败（HTTP ${resp.status}）`);
       return await resp.json();
     }
@@ -4823,7 +4824,14 @@ function App() {
     async function fetchFromApi() {
       const url = `${UPDATE_SERVER_API}&_t=${Date.now()}`;
       console.log('[Update] Trying API URL:', url);
-      const resp = await fetch(url, { cache: 'no-store' });
+      // 添加浏览器标准 headers 避免 Gitee WAF 拦截 WebView 请求
+      const resp = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'zh-CN,zh;q=0.9',
+        }
+      });
       if (!resp.ok) throw new Error(`API 连接失败（HTTP ${resp.status}）`);
       const apiData = await resp.json();
       if (apiData.content && apiData.encoding === 'base64') {
