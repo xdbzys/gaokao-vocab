@@ -8,20 +8,18 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.19';
-const APP_VERSION_CODE = 68;
-// 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
-const GITEE_OWNER = 'xdbzys';
-const GITEE_REPO = 'app';
-const GITEE_BRANCH = 'master';
-// 优先使用 Gitee raw 直链获取 JSON（避免 API base64 解码问题）
-const UPDATE_SERVER_RAW = `https://gitee.com/${GITEE_OWNER}/${GITEE_REPO}/raw/master/app-update.json`;
-// 备用1：GitHub raw（无认证，稳定可靠）
-const UPDATE_SERVER_GITHUB = `https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/app-update.json`;
-// 备用2：Gitee API 方式
-const UPDATE_SERVER_API = `https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/contents/app-update.json?ref=${GITEE_BRANCH}`;
+const APP_VERSION = '2.8.20';
+const APP_VERSION_CODE = 69;
+// 主线路：GitHub Pages（稳定可靠，无认证限制）
+const UPDATE_SERVER_PRIMARY = `https://xdbzys.github.io/gaokao-vocab/app-update.json`;
+// 备用1：GitHub raw
+const UPDATE_SERVER_GITHUB_RAW = `https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/app-update.json`;
+// 备用2：Gitee raw
+const UPDATE_SERVER_GITEE = `https://gitee.com/xdbzys/app/raw/master/app-update.json`;
+// 备用3：Gitee API
+const UPDATE_SERVER_GITEE_API = `https://gitee.com/api/v5/repos/xdbzys/app/contents/app-update.json?ref=master`;
 // 添加时间戳防止 CDN 缓存
-const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
+const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_PRIMARY}?_t=${Date.now()}`;
 const isNativeApp = !!(window.Capacitor || window.cordova);
 
 try { pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`; } catch {}
@@ -4813,46 +4811,51 @@ function App() {
     setUpdateInfo(null);
     if (!silent) setCloudStatus('正在检查更新...');
 
-    async function fetchFromRaw() {
-      const url = `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
-      console.log('[Update] Trying Gitee raw URL:', url);
-      const resp = await fetch(url, { cache: 'no-store' });
-      if (!resp.ok) {
-        // Gitee 失败，尝试 GitHub raw
-        console.warn('[Update] Gitee raw failed, trying GitHub raw');
-        const ghUrl = `${UPDATE_SERVER_GITHUB}?_t=${Date.now()}`;
-        const ghResp = await fetch(ghUrl, { cache: 'no-store' });
-        if (!ghResp.ok) throw new Error(`Gitee and GitHub raw both failed (Gitee HTTP ${resp.status})`);
-        return await ghResp.json();
+    async function fetchUpdateJson() {
+      // 按优先级尝试多个线路
+      const urls = [
+        { name: 'GitHub Pages', url: `${UPDATE_SERVER_PRIMARY}?_t=${Date.now()}` },
+        { name: 'GitHub raw', url: `${UPDATE_SERVER_GITHUB_RAW}?_t=${Date.now()}` },
+        { name: 'Gitee raw', url: `${UPDATE_SERVER_GITEE}?_t=${Date.now()}` },
+      ];
+      for (const { name, url } of urls) {
+        try {
+          console.log(`[Update] Trying ${name}: ${url}`);
+          const resp = await fetch(url, { cache: 'no-store' });
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data.versionCode) {
+              console.log(`[Update] ${name} success: v${data.version}`);
+              return data;
+            }
+          }
+          console.warn(`[Update] ${name} failed: HTTP ${resp.status}`);
+        } catch (e) {
+          console.warn(`[Update] ${name} error: ${e.message}`);
+        }
       }
-      return await resp.json();
-    }
-
-    async function fetchFromApi() {
-      const url = `${UPDATE_SERVER_API}&_t=${Date.now()}`;
-      console.log('[Update] Trying API URL:', url);
-      const resp = await fetch(url, { cache: 'no-store' });
-      if (!resp.ok) throw new Error(`API 连接失败（HTTP ${resp.status}）`);
-      const apiData = await resp.json();
-      if (apiData.content && apiData.encoding === 'base64') {
-        const decoded = decodeURIComponent(escape(atob(apiData.content)));
-        return JSON.parse(decoded);
-      } else if (apiData.versionCode) {
-        return apiData;
+      // 最后尝试 Gitee API
+      try {
+        const apiUrl = `${UPDATE_SERVER_GITEE_API}&_t=${Date.now()}`;
+        console.log('[Update] Trying Gitee API:', apiUrl);
+        const resp = await fetch(apiUrl, { cache: 'no-store' });
+        if (resp.ok) {
+          const apiData = await resp.json();
+          if (apiData.content && apiData.encoding === 'base64') {
+            const decoded = decodeURIComponent(escape(atob(apiData.content)));
+            return JSON.parse(decoded);
+          } else if (apiData.versionCode) {
+            return apiData;
+          }
+        }
+      } catch (e) {
+        console.warn('[Update] Gitee API error:', e.message);
       }
-      throw new Error('API 数据格式无法识别');
+      throw new Error('所有更新线路均失败，请检查网络');
     }
 
     try {
-      let data;
-      try {
-        data = await fetchFromRaw();
-        console.log('[Update] Raw success:', data);
-      } catch (rawErr) {
-        console.warn('[Update] Raw failed:', rawErr.message);
-        data = await fetchFromApi();
-        console.log('[Update] API fallback success:', data);
-      }
+      const data = await fetchUpdateJson();
 
       if (typeof data.versionCode !== 'number') {
         throw new Error(`versionCode 无效: ${data.versionCode}`);
