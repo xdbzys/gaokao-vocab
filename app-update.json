@@ -1,7 +1,7 @@
 {
-  "version": "2.8.17",
-  "versionCode": 66,
-  "changelog": "v2.8.17 更新\n\n【修复】\n- 删除105必考词库中的占位符条目（原词）\n- 修复自动发音播放的不是当前显示单词的bug\n- 修复答题后显示错误答案的bug",
-  "devNotes": "remove placeholder '原词' from seedWords105, fix auto-speak and answer display bugs",
+  "version": "2.8.18",
+  "versionCode": 67,
+  "changelog": "v2.8.18 更新\n\n【修复】\n- 删除105必考词库中的占位符条目\n- 修复自动发音播放错误单词的bug\n\n【优化】\n- 增强导入功能：支持更多编号格式和OCR错误处理\n- 改进无词性标注格式的识别\n- 增强中文释义提取\n- 智能导入支持短语自动识别",
+  "devNotes": "optimize import parsing, fix vocab placeholder, fix auto-speak bug",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

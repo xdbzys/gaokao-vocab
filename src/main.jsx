@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.17';
-const APP_VERSION_CODE = 66;
+const APP_VERSION = '2.8.18';
+const APP_VERSION_CODE = 67;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -3907,12 +3907,24 @@ function collectPosText(text) {
 }
 
 function cleanOcrText(text) {
-  return (text || '').replace(/\r/g, '\n').replace(/["""]/g, '"').replace(/['']/g, "'").replace(/[—–]/g, '-').replace(/：/g, ':').replace(/；/g, ';').replace(/，/g, ',').replace(/。/g, '。').replace(/[|｜]/g, ' ').replace(/\u00a0/g, ' ')
+  return (text || '').replace(/\r/g, '\n')
+    .replace(/["""]/g, '"').replace(/['']/g, "'")
+    .replace(/[—–]/g, '-').replace(/：/g, ':').replace(/；/g, ';')
+    .replace(/，/g, ',').replace(/。/g, '.').replace(/[|｜]/g, ' ')
+    .replace(/\u00a0/g, ' ').replace(/[\u200b-\u200f]/g, '')
     .replace(/\n{2,}/g, '\n').trim();
 }
 
+// 支持多种编号格式：1. / 1) / (1) / [1] / ① / 1、/ 第1 / 1.
+function stripNumberPrefix(line) {
+  return line.replace(/^[\s\d.)、\-\*•·]+/, '').trim();
+}
+
 function isEntryStart(line) {
-  return /^[\s\d.)、-]*[A-Za-z][A-Za-z''-]*(?:\s+[A-Za-z][A-Za-z''-]*){0,6}(\s|$)/.test(line);
+  // 支持英文单词开头、带编号开头、带括号开头
+  const safe = stripNumberPrefix(line);
+  return /^[A-Za-z][A-Za-z''\-]*(?:\s+[A-Za-z][A-Za-z''\-]*){0,6}(\s|[.\/,:;]|$)/.test(safe)
+    || /^\[[A-Za-z][A-Za-z''\-]*\]/.test(safe);
 }
 
 function splitImportRecords(text) {
@@ -3920,7 +3932,7 @@ function splitImportRecords(text) {
   const rows = cleaned.split('\n').map(l => l.trim()).filter(Boolean);
   const records = [];
   rows.forEach(line => {
-    const safe = line.replace(/^[\d.)、\s-]+/, '').trim();
+    const safe = stripNumberPrefix(line);
     if (!safe) return;
     if (isEntryStart(safe) || !records.length) records.push(safe);
     else records[records.length - 1] = `${records[records.length - 1]} ${safe}`;
@@ -3932,8 +3944,9 @@ function extractMeaning(text) {
   const w = text.replace(/^(中文|释义|意思|含义)\s*[:：]?\s*/i, '').trim();
   const fi = w.search(LABEL_REGEX);
   const head = fi >= 0 ? w.slice(0, fi) : w;
-  const chunks = head.match(/[一-龥][一-龥、,，;；\s（）()《》""\-—\/]+/g) || [];
-  const meaning = chunks.join('; ').replace(/\s+/g, '').replace(/[;,，；]+/g, '；').replace(/^；|；$/g, '');
+  // 更宽松的中文匹配：至少包含一个中文字符的词组
+  const chunks = head.match(/[\u4e00-\u9fa5][\u4e00-\u9fa5、,，;；\s（）()《》""\-—\/\.a-zA-Z]*/g) || [];
+  const meaning = chunks.join('；').replace(/\s+/g, '').replace(/^[;；,，\s]+|[;；,，\s]+$/g, '');
   return meaning || '请补充中文意思';
 }
 
@@ -3948,7 +3961,7 @@ function extractPoints(text, meaning) {
   });
   const mi = text.indexOf(meaning.replace(/；/g, ''));
   const tail = mi >= 0 ? text.slice(mi + meaning.length) : text;
-  tail.split(/[;；]/).map(p => p.trim()).filter(p => p && !p.includes(meaning) && p.length > 3 && /[A-Za-z一-龥]/.test(p)).forEach(p => { if (!points.includes(p)) points.push(p); });
+  tail.split(/[;；]/).map(p => p.trim()).filter(p => p && !p.includes(meaning) && p.length > 3 && /[A-Za-z\u4e00-\u9fa5]/.test(p)).forEach(p => { if (!points.includes(p)) points.push(p); });
   return points;
 }
 
@@ -3960,27 +3973,57 @@ function extractExamples(text) {
 
 function parseOneRecord(line, index, defaultType) {
   const frequency = /(高频|中频|低频)/.exec(line)?.[1] || '自定义';
+
+  // 尝试匹配词性
   const posMatch = line.match(POS_REGEX);
   let term = '', pos = '', rest = line;
+
   if (posMatch) {
-    term = line.slice(0, posMatch.index).replace(/^[\d.)、\s-]+/, '').trim();
+    // 有词性标注：term 在词性之前
+    term = line.slice(0, posMatch.index).replace(/^[\d.)、\s\-\\*•·]+/, '').trim();
     pos = collectPosText(line.slice(posMatch.index)) || posMatch[1];
     rest = line.slice(posMatch.index + posMatch[0].length).trim();
   } else {
-    const tm = line.match(/^[\d.)、\s-]*([A-Za-z][A-Za-z''-]*(?:\s+[A-Za-z][A-Za-z''-]*){0,6})/);
-    term = tm?.[1]?.trim() || line.split(/\s+/)[0] || `未命名-${index + 1}`;
-    rest = line.slice(line.indexOf(term) + term.length).trim();
+    // 无词性标注：尝试多种格式
+    // 格式1: 纯英文单词开头
+    const tm = line.match(/^[\d.)、\s\-\\*•·]*([A-Za-z][A-Za-z''\-]*(?:\s+[A-Za-z][A-Za-z''\-]*){0,6})/);
+    if (tm) {
+      term = tm[1].trim();
+      rest = line.slice(line.indexOf(term) + term.length).trim();
+    } else {
+      // 格式2: 第一个空格分隔的词
+      const parts = line.split(/\s+/);
+      term = parts[0] || `未命名-${index + 1}`;
+      rest = parts.slice(1).join(' ');
+    }
   }
+
+  // 清理 term：保留字母、数字、撇号、连字符和空格
   term = term.replace(/[^A-Za-z0-9''\-\s]/g, ' ').replace(/\s+/g, ' ').trim();
   const isPhrase = term.includes(' ') || defaultType === 'phrase';
+
+  // 如果 rest 为空，尝试从原始行重新提取
+  if (!rest && line.includes(term)) {
+    rest = line.slice(line.indexOf(term) + term.length).trim();
+  }
+
   const meaning = extractMeaning(rest);
   const points = extractPoints(rest, meaning);
   const examples = extractExamples(rest);
+
   return {
-    id: `custom-${Date.now()}-${index}-${term}`, type: isPhrase ? 'phrase' : 'word',
-    term, pos: normalizePos(pos, isPhrase), meaning, frequency,
-    corePoints: points.slice(0, 2), allPoints: points.length ? points : ['已自动导入，建议补充完整用法'],
-    examples, phonetic: generatePhonetic(term), notes: '', source: '自定义导入'
+    id: `custom-${Date.now()}-${index}-${term}`,
+    type: isPhrase ? 'phrase' : 'word',
+    term,
+    pos: normalizePos(pos, isPhrase),
+    meaning,
+    frequency,
+    corePoints: points.slice(0, 2),
+    allPoints: points.length ? points : ['已自动导入，建议补充完整用法'],
+    examples,
+    phonetic: generatePhonetic(term),
+    notes: '',
+    source: '自定义导入'
   };
 }
 
@@ -4586,19 +4629,19 @@ function App() {
   function smartImport() {
     if (!importText.trim()) { setImportStatus('请先输入文本内容'); return; }
     const text = importText.toLowerCase();
+    const lines = importText.split('\n').map(l => l.trim()).filter(Boolean);
 
     // 拼写纠错识别：检测每行是否为 "correct / wrong : tip" 格式
     const spellingRegex = /(\w+)\s*[\/\-\|,]\s*(\w+)\s*[:：]\s*(.+)/;
-    const lines = importText.split('\n').map(l => l.trim()).filter(Boolean);
     const spellingLines = lines.filter(l => spellingRegex.test(l));
-    const hasSpellingKeywords = /tip|记忆技巧|拼写|correct|wrong/.test(text);
-    const hasContrastKeywords = /对比|同义词|反义词|辨析/.test(text);
-    const hasRootKeywords = /词根|词缀|前缀|后缀|root/.test(text);
-    const hasContextKeywords = /情景|语境|短文/.test(text);
+    const hasSpellingKeywords = /tip|记忆技巧|拼写|correct|wrong|易错|混淆/.test(text);
+    const hasContrastKeywords = /对比|同义词|反义词|辨析|区别/.test(text);
+    const hasRootKeywords = /词根|词缀|前缀|后缀|root|affix/.test(text);
+    const hasContextKeywords = /情景|语境|短文|阅读|文章/.test(text);
+    const hasPhraseKeywords = /短语|词组|固定搭配|phrasal/.test(text);
 
     // 优先根据格式判断拼写
     if (spellingLines.length >= Math.max(1, lines.length * 0.5)) {
-      // 批量解析为拼写纠错条目
       const newSpellingItems = [];
       for (const line of lines) {
         const m = line.match(spellingRegex);
@@ -4613,9 +4656,12 @@ function App() {
         return;
       }
     }
+
+    // 判断导入类型
+    let importType = 'word';
+    let statusMsg = '';
 
     if (hasSpellingKeywords && !hasContrastKeywords && !hasRootKeywords && !hasContextKeywords) {
-      // 有关键词但格式不匹配，尝试解析
       const newSpellingItems = [];
       for (const line of lines) {
         const m = line.match(spellingRegex);
@@ -4631,16 +4677,25 @@ function App() {
       }
     }
 
-    if (hasRootKeywords && !hasSpellingKeywords && !hasContrastKeywords) {
-      setImportStatus('智能分类：识别为词根词缀内容，暂不支持导入为扩展，已按词库导入');
+    if (hasPhraseKeywords && !hasRootKeywords) {
+      importType = 'phrase';
+      statusMsg = '识别为短语内容，';
+    } else if (hasRootKeywords && !hasSpellingKeywords && !hasContrastKeywords) {
+      statusMsg = '识别为词根词缀内容，';
     } else if (hasContextKeywords && !hasSpellingKeywords && !hasContrastKeywords) {
-      setImportStatus('智能分类：识别为情景记忆内容，暂不支持导入为扩展，已按词库导入');
+      statusMsg = '识别为情景记忆内容，';
     } else if (hasContrastKeywords && !hasSpellingKeywords) {
-      setImportStatus('智能分类：识别为对比记忆内容，已按词库导入');
+      statusMsg = '识别为对比记忆内容，';
     }
 
-    // 默认：按词库导入
-    addImportedItems(parseImportedText(importText, 'word'));
+    // 按词库导入
+    const items = parseImportedText(importText, importType);
+    if (items.length > 0) {
+      addImportedItems(items);
+      setImportStatus(`${statusMsg}已导入 ${items.length} 条到词库`);
+    } else {
+      setImportStatus(`${statusMsg}未能识别到有效词条，请检查格式`);
+    }
   }
 
   async function handleFile(file) {
