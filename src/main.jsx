@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.21';
-const APP_VERSION_CODE = 70;
+const APP_VERSION = '2.8.22';
+const APP_VERSION_CODE = 71;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4841,8 +4841,33 @@ function App() {
         console.log('[Update] Raw success:', data);
       } catch (rawErr) {
         console.warn('[Update] Raw failed:', rawErr.message);
-        data = await fetchFromApi();
-        console.log('[Update] API fallback success:', data);
+        try {
+          data = await fetchFromApi();
+          console.log('[Update] API fallback success:', data);
+        } catch (apiErr) {
+          console.warn('[Update] API failed:', apiErr.message);
+          // 第三回退：GitHub Pages（国内可能需要代理）
+          try {
+            const ghUrl = `https://xdbzys.github.io/gaokao-vocab/app-update.json?_t=${Date.now()}`;
+            console.log('[Update] Trying GitHub Pages:', ghUrl);
+            const ghResp = await fetch(ghUrl, { cache: 'no-store' });
+            if (ghResp.ok) { data = await ghResp.json(); console.log('[Update] GitHub Pages success:', data); }
+            else throw new Error('GitHub Pages HTTP ' + ghResp.status);
+          } catch (ghErr) {
+            console.warn('[Update] GitHub Pages failed:', ghErr.message);
+            // 第四回退：jsdelivr CDN（国内最快）
+            try {
+              const cdnUrl = `https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/app-update.json?_t=${Date.now()}`;
+              console.log('[Update] Trying jsdelivr CDN:', cdnUrl);
+              const cdnResp = await fetch(cdnUrl, { cache: 'no-store' });
+              if (cdnResp.ok) { data = await cdnResp.json(); console.log('[Update] jsdelivr CDN success:', data); }
+              else throw new Error('jsdelivr HTTP ' + cdnResp.status);
+            } catch (cdnErr) {
+              console.warn('[Update] All fallbacks failed');
+              throw new Error('检查更新失败，请检查网络连接后重试');
+            }
+          }
+        }
       }
 
       if (typeof data.versionCode !== 'number') {
