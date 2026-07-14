@@ -8,7 +8,6 @@ if not TOKEN:
     sys.exit(0)
 
 REPO = 'xdbzys/app'
-APK_FILENAME = 'app-debug.apk'
 
 # Read version from app-update.json
 with open('app-update.json', 'r') as f:
@@ -16,10 +15,9 @@ with open('app-update.json', 'r') as f:
 version = update_data.get('version', '2.5')
 print(f"Updating app-update.json for version: {version}")
 
-# Set APK URL to GitHub Release (Gitee API has 1MB limit, APK is too large)
+# 不修改 apkUrl，保持 app-update.json 中的原始值（Gitee URL）
+# 仅添加 webHtmlUrl 用于网页版云更新
 run_number = os.environ.get('GITHUB_RUN_NUMBER', '0')
-update_data['apkUrl'] = f'https://github.com/xdbzys/gaokao-vocab/releases/download/v{run_number}/{APK_FILENAME}'
-# Set web HTML URL for web version cloud update
 update_data['webHtmlUrl'] = f'https://github.com/xdbzys/gaokao-vocab/releases/download/v{run_number}/index.html'
 
 with open('app-update.json', 'w') as f:

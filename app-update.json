@@ -3,5 +3,5 @@
   "versionCode": 62,
   "changelog": "v2.8.13 更新\n\n【修复】\n- 修复答对后自动标记已掌握导致显示错误答案的bug\n- 网页版专属功能与APP分离，APP无变化",
   "devNotes": "fix answer display bug, separate web-only features with isNativeApp",
-  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/download/v77/app-debug.apk"
+  "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
