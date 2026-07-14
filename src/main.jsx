@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.10';
-const APP_VERSION_CODE = 60;
+const APP_VERSION = '2.8.11';
+const APP_VERSION_CODE = 61;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -3602,6 +3602,12 @@ const builtInBooks = [
     editable: false,
     items: makeAllItems(seedConfused, 'phrase')
   },
+  {
+    id: 'mastered-words',
+    name: '已掌握词库',
+    editable: false,
+    items: []
+  },
 ];
 
 /* ============================
@@ -3760,10 +3766,11 @@ function loadSettings() {
       autoJumpDelay: 1500,
       showAnnouncement: true,
       autoSpeak: false,
+      autoMaster: false,
       ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')
     };
   } catch {
-    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: false };
+    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: false, autoMaster: false };
   }
 }
 
@@ -4305,6 +4312,29 @@ function App() {
     }
   }, []);
 
+  // 已掌握词库：根据 progress 动态更新
+  useEffect(() => {
+    const masteredItems = [];
+    builtInBooks.forEach(b => {
+      if (b.id === 'mastered-words') return;
+      b.items.forEach(item => {
+        if (progress[item.id] === 'mastered') {
+          masteredItems.push(item);
+        }
+      });
+    });
+    // 同时检查自定义词库中的已掌握单词
+    books.forEach(b => {
+      if (b.id === 'mastered-words' || builtInBooks.some(bb => bb.id === b.id)) return;
+      b.items.forEach(item => {
+        if (progress[item.id] === 'mastered') {
+          masteredItems.push(item);
+        }
+      });
+    });
+    setBooks(prev => prev.map(b => b.id === 'mastered-words' ? { ...b, items: masteredItems } : b));
+  }, [progress]);
+
   const activeBook = useMemo(() => {
     const selected = books.filter(b => activeBookIds.includes(b.id));
     if (selected.length === 0) return books[0] || { id: 'empty', name: '空', items: [], editable: false };
@@ -4479,6 +4509,10 @@ function App() {
     if (option === right) {
       setSessionCorrect(c => c + 1);
       recordStudy();
+      // 自动标记已掌握（如果开关开启且当前未标记）
+      if (settings.autoMaster && progress[current.id] !== 'mastered') {
+        toggleProgress(current.id);
+      }
       if (settings.autoJump) {
         setAutoJumping(true);
         setTimeout(() => {
@@ -5440,6 +5474,12 @@ function App() {
             <label>发音语速
               <select value={settings.speakRate} onChange={e => { const v = Number(e.target.value); setSettings(s => ({ ...s, speakRate: v })); saveSettings({ ...settings, speakRate: v }); }}>
                 {[0.5, 0.6, 0.78, 0.9, 1.0, 1.2, 1.5].map(r => <option key={r} value={r}>{r}x</option>)}
+              </select>
+            </label>
+            <label>答对后自动标记已掌握
+              <select value={settings.autoMaster ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, autoMaster: v })); saveSettings({ ...settings, autoMaster: v }); }}>
+                <option value="off">关闭（手动标记）</option>
+                <option value="on">开启（答对自动标记，不再出现在背诵页）</option>
               </select>
             </label>
             <label>答对后自动跳转下一题

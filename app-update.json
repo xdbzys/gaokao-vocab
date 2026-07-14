@@ -1,7 +1,7 @@
 {
-  "version": "2.8.10",
-  "versionCode": 60,
-  "changelog": "v2.8.10 更新\n\n【修复】\n- 修复英选中选项出现\"褒义（积极态度）\"等错误选项的问题\n- 为所有褒义词（89条）补充完整中文释义\n- 修复词库中多处重复释义、文字截断等错误\n\n【优化】\n- 更新检测方案恢复为 v2.7.2 的可靠方案",
-  "devNotes": "word meaning fix + sentiment words excluded from options",
+  "version": "2.8.11",
+  "versionCode": 61,
+  "changelog": "v2.8.11 更新\n\n【新增】\n- 答对后自动标记已掌握（设置中可开关）\n- 新增已掌握词库（自动收集所有已掌握单词）\n- 已掌握单词默认不出现在背诵页\n- 打开已掌握词库可单独复习已掌握单词",
+  "devNotes": "auto-master feature with mastered words library",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
