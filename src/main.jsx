@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.11';
-const APP_VERSION_CODE = 61;
+const APP_VERSION = '2.8.12';
+const APP_VERSION_CODE = 62;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4503,28 +4503,36 @@ function App() {
     saveWrongWords([]);
   }
 
+  // 锁定当前显示的单词，防止 toggleProgress 改变 filteredItems 导致 UI 判断错误
+  const lockedCurrent = useRef(null);
+
   function handleSelect(option) {
+    if (!lockedCurrent.current) lockedCurrent.current = current;
+    const c = lockedCurrent.current;
     setSelected(option);
     setSessionTotal(t => t + 1);
-    const right = practiceMode === 'cn-to-en' ? current.term : current.meaning;
+    const right = practiceMode === 'cn-to-en' ? c.term : c.meaning;
     if (option === right) {
-      setSessionCorrect(c => c + 1);
+      setSessionCorrect(co => co + 1);
       recordStudy();
       // 自动标记已掌握（如果开关开启且当前未标记）
-      if (settings.autoMaster && progress[current.id] !== 'mastered') {
-        toggleProgress(current.id);
+      if (settings.autoMaster && progress[c.id] !== 'mastered') {
+        toggleProgress(c.id);
       }
       if (settings.autoJump) {
         setAutoJumping(true);
         setTimeout(() => {
           nextCard();
           setAutoJumping(false);
+          lockedCurrent.current = null;
         }, settings.autoJumpDelay || 1500);
       }
     } else {
       // 答错：加入错词本
-      addWrongWord(current);
+      addWrongWord(c);
     }
+    // 在用户下一次点击选项前清除锁定
+    setTimeout(() => { lockedCurrent.current = null; }, 50);
   }
 
   function createBook() {
@@ -4999,8 +5007,8 @@ function App() {
               {(showBack || selected) && (
                 <div className="answerBox">
                   {selected && (
-                    <p style={{ fontWeight: 600, marginBottom: 8, color: (practiceMode === 'cn-to-en' ? current.term : current.meaning) === selected ? '#16a34a' : '#dc2626' }}>
-                      {selected === (practiceMode === 'cn-to-en' ? current.term : current.meaning) ? '✅ 回答正确' : `❌ 回答错误（你选了：${selected}）`}
+                    <p style={{ fontWeight: 600, marginBottom: 8, color: (practiceMode === 'cn-to-en' ? (lockedCurrent.current?.term ?? current.term) : (lockedCurrent.current?.meaning ?? current.meaning)) === selected ? '#16a34a' : '#dc2626' }}>
+                      {selected === (practiceMode === 'cn-to-en' ? (lockedCurrent.current?.term ?? current.term) : (lockedCurrent.current?.meaning ?? current.meaning)) ? '✅ 回答正确' : `❌ 回答错误（你选了：${selected}）`}
                     </p>
                   )}
                   <h3>{current.term} &middot; {current.meaning}</h3>
