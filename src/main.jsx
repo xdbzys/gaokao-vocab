@@ -4371,6 +4371,8 @@ function App() {
 
   const current = filteredItems[index % Math.max(filteredItems.length, 1)];
 
+  // 锁定当前显示的单词，防止 toggleProgress 改变 filteredItems 导致 UI 判断错误
+  const lockedCurrent = useRef(null);
   // 显示用的当前单词：答题后使用锁定的单词，防止 toggleProgress 改变 current 导致显示不匹配
   const displayCurrent = (selected && lockedCurrent.current) || current;
 
@@ -4512,9 +4514,6 @@ function App() {
     setWrongWords([]);
     saveWrongWords([]);
   }
-
-  // 锁定当前显示的单词，防止 toggleProgress 改变 filteredItems 导致 UI 判断错误
-  const lockedCurrent = useRef(null);
 
   function handleSelect(option) {
     if (!lockedCurrent.current) lockedCurrent.current = current;
