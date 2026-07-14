@@ -8,7 +8,7 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.12';
+const APP_VERSION = '2.8.13';
 const APP_VERSION_CODE = 62;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
@@ -4285,6 +4285,11 @@ function App() {
   const [sessionTotal, setSessionTotal] = useState(0);
   // AI配置折叠
   const [showAiBox, setShowAiBox] = useState(false);
+  // 反馈弹窗（仅APP使用，网页版不渲染）
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackType, setFeedbackType] = useState('suggest');
+  const [feedbackStatus, setFeedbackStatus] = useState('');
 
   // 自定义头像
   const [avatarUrl, setAvatarUrl] = useState(() => {
@@ -4644,7 +4649,62 @@ function App() {
     const next = { ...aiConfig, ...patch }; setAiConfig(next); saveAiConfig(next);
   }
 
-  // 反馈通过 Gitee Issues 提交
+  // 反馈通过 Gitee Issues 提交（仅APP使用）
+  async function submitFeedback() {
+    if (!feedbackText.trim()) { setFeedbackStatus('请填写反馈内容'); return; }
+    setFeedbackStatus('提交中...');
+    const title = `[${feedbackType === 'suggest' ? '建议' : 'bug'}] ${feedbackText.slice(0, 30)}...`;
+    const body = `反馈类型: ${feedbackType}\n版本: v${APP_VERSION}\n内容: ${feedbackText}\n时间: ${new Date().toLocaleString()}`;
+
+    // 从服务端获取 feedbackToken，然后创建 Gitee Issue
+    try {
+      let serverData = null;
+
+      // 方式1: 尝试 Gitee raw URL
+      try {
+        const rawResp = await fetch(UPDATE_SERVER_RAW + '?_t=' + Date.now());
+        if (rawResp.ok) serverData = await rawResp.json();
+      } catch (e) { /* raw 失败 */ }
+
+      // 方式2: 尝试 Gitee API（base64 解码）
+      if (!serverData || !serverData.feedbackToken) {
+        try {
+          const apiResp = await fetch(UPDATE_SERVER_API + '&_t=' + Date.now());
+          if (apiResp.ok) {
+            const apiResult = await apiResp.json();
+            if (apiResult.content && apiResult.encoding === 'base64') {
+              const decoded = decodeURIComponent(escape(atob(apiResult.content)));
+              serverData = JSON.parse(decoded);
+            }
+          }
+        } catch (e) { /* API 失败 */ }
+      }
+
+      if (!serverData || !serverData.feedbackToken) {
+        setFeedbackStatus('⚠️ 反馈服务暂不可用，请稍后再试');
+        return;
+      }
+
+      const issueResp = await fetch('https://gitee.com/api/v5/repos/xdbzys/app/issues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: serverData.feedbackToken, title, body, labels: ['用户反馈'] })
+      });
+
+      if (issueResp.ok) {
+        setFeedbackStatus('✅ 提交成功！感谢你的反馈');
+        setFeedbackText('');
+        setTimeout(() => { setShowFeedback(false); setFeedbackStatus(''); }, 1500);
+      } else {
+        const err = await issueResp.json().catch(() => ({}));
+        setFeedbackStatus(`提交失败: ${err.message || issueResp.status}`);
+      }
+    } catch (e) {
+      console.error('[Feedback] Error:', e);
+      setFeedbackStatus('网络错误，请检查网络后重试');
+    }
+  }
+
   async function callAiModel({ text: t = '', file: f = null }) {
     if (!aiConfig.endpoint || !aiConfig.model || !aiConfig.apiKey) throw new Error('请先配置AI');
     const isImage = f && /\.(png|jpg|jpeg|webp)$/i.test(f.name);
@@ -4914,10 +4974,12 @@ function App() {
       {/* ====== 背诵页 ====== */}
       {section === 'learn' && (
         <section>
-          {/* 专属标识 */}
-          <div style={{ textAlign: 'center', padding: '8px 0 4px', }}>
-            <span style={{ color: '#2563eb', fontWeight: 800, fontSize: 20, letterSpacing: 2, textShadow: '0 1px 4px rgba(37,99,235,0.25)' }}>✦ 李群雁专属 ✦</span>
-          </div>
+          {/* 专属标识（仅网页版） */}
+          {!isNativeApp && (
+            <div style={{ textAlign: 'center', padding: '8px 0 4px', }}>
+              <span style={{ color: '#2563eb', fontWeight: 800, fontSize: 20, letterSpacing: 2, textShadow: '0 1px 4px rgba(37,99,235,0.25)' }}>✦ 李群雁专属 ✦</span>
+            </div>
+          )}
           {/* 顶部栏 */}
           <div className="learnTop">
             <div className="multiBookSelect" style={{ position: 'relative', flex: 1 }}>
@@ -5385,9 +5447,9 @@ function App() {
         <section className="panel mePage">
           {/* 顶部用户信息 */}
           <div className="meHeader">
-            <div className="meAvatar" style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
-              onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = ev => { const url = ev.target.result; setAvatarUrl(url); try { localStorage.setItem('gaokao_avatar', url); } catch {} }; reader.readAsDataURL(file); }; input.click(); }}>
-              {avatarUrl ? <img src={avatarUrl} alt="头像" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} /> : '🎓'}
+            <div className="meAvatar" style={isNativeApp ? {} : { cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+              {...(!isNativeApp ? { onClick: () => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = ev => { const url = ev.target.result; setAvatarUrl(url); try { localStorage.setItem('gaokao_avatar', url); } catch {} }; reader.readAsDataURL(file); }; input.click(); }} : {})}>
+              {!isNativeApp && avatarUrl ? <img src={avatarUrl} alt="头像" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} /> : '🎓'}
             </div>
             <div className="meInfo">
               <h2>高考词汇学习</h2>
@@ -5432,15 +5494,27 @@ function App() {
             <h3>今日学习</h3>
             <div className="ringProgress">
               <svg viewBox="0 0 100 100" className="ringSvg">
-                {/* 爱心形状进度 */}
-                <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
-                  fill="none" stroke="#e5e7eb" strokeWidth="5" />
-                <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
-                  fill="none" stroke="#ef4444" strokeWidth="5"
-                  strokeDasharray="283"
-                  strokeDashoffset={283 * (1 - Math.min(todayCount / Math.max(settings.dailyGoal, 1), 1))}
-                  strokeLinecap="round" />
-                <text x="50" y="48" textAnchor="middle" dy="6" fontSize="18" fill="#111827" fontWeight="bold">{todayCount}</text>
+                {isNativeApp ? (
+                  <>
+                    {/* APP: 圆形进度 */}
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#22c55e" strokeWidth="8"
+                      strokeDasharray={`${Math.min(todayCount / Math.max(settings.dailyGoal, 1), 1) * 264} 264`}
+                      strokeDashoffset="66" strokeLinecap="round" transform="rotate(-90 50 50)" />
+                  </>
+                ) : (
+                  <>
+                    {/* 网页版: 爱心形状进度 */}
+                    <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
+                      fill="none" stroke="#e5e7eb" strokeWidth="5" />
+                    <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
+                      fill="none" stroke="#ef4444" strokeWidth="5"
+                      strokeDasharray="283"
+                      strokeDashoffset={283 * (1 - Math.min(todayCount / Math.max(settings.dailyGoal, 1), 1))}
+                      strokeLinecap="round" />
+                  </>
+                )}
+                <text x="50" y={isNativeApp ? 50 : 48} textAnchor="middle" dy="6" fontSize="18" fill="#111827" fontWeight="bold">{todayCount}</text>
               </svg>
               <div className="ringLabel">/ {settings.dailyGoal} 词</div>
             </div>
@@ -5542,11 +5616,41 @@ function App() {
           </div>
           ) : null}
 
-          {/* 反馈入口 */}
-          <div className="cloudUpdateSection" style={{ background: '#fef3c7', borderColor: '#fde68a' }}>
-            <h3 style={{ color: '#92400e' }}>💬 反馈建议</h3>
-            <p className="muted">有什么建议或遇到问题？告诉我们，帮助产品更好。</p>
-          </div>
+          {/* 反馈入口（仅APP） */}
+          {isNativeApp && (
+            <div className="cloudUpdateSection" style={{ background: '#fef3c7', borderColor: '#fde68a' }}>
+              <h3 style={{ color: '#92400e' }}>💬 反馈建议</h3>
+              <p className="muted">有什么建议或遇到问题？告诉我们，帮助产品更好。</p>
+              <button className="primary" onClick={() => setShowFeedback(true)} style={{ background: '#f59e0b' }}>提交反馈</button>
+            </div>
+          )}
+
+          {/* 反馈弹窗（仅APP） */}
+          {isNativeApp && showFeedback && (
+            <div className="modalOverlay" onClick={e => { if (e.target === e.currentTarget) setShowFeedback(false); }}>
+              <div className="modal" style={{ maxWidth: 420 }}>
+                <h3>提交反馈</h3>
+                <label style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>反馈类型
+                  <select value={feedbackType} onChange={e => setFeedbackType(e.target.value)} style={{ marginTop: 4 }}>
+                    <option value="suggest">功能建议</option>
+                    <option value="bug">Bug反馈</option>
+                    <option value="other">其他</option>
+                  </select>
+                </label>
+                <textarea
+                  value={feedbackText}
+                  onChange={e => setFeedbackText(e.target.value)}
+                  placeholder="请详细描述你的建议或遇到的问题..."
+                  style={{ minHeight: 120, marginTop: 8 }}
+                />
+                <div className="importActions" style={{ marginTop: 12 }}>
+                  <button className="smallBtn" onClick={() => { setShowFeedback(false); setFeedbackStatus(''); }}>取消</button>
+                  <button className="primary" onClick={submitFeedback}>提交</button>
+                </div>
+                {feedbackStatus && <p className="status" style={{ marginTop: 8 }}>{feedbackStatus}</p>}
+              </div>
+            </div>
+          )}
 
           {/* 词库下载区域 */}
           <div className="downloadSection">
