@@ -53,10 +53,25 @@ jobs:
             -PMYAPP_UPLOAD_KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
             -PMYAPP_UPLOAD_STORE_FILE=release-key.jks
 
-      - name: Upload APK to Gitee
+      - name: Upload to Gitee (app-update.json only)
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        continue-on-error: true
         run: python3 scripts/upload_apk.py
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: "Build #${{ github.run_number }}"
+          body: |
+            Auto build from GitHub Actions
+            Run #${{ github.run_number }}
+          files: android/app/build/outputs/apk/debug/gaokao-vocab.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
