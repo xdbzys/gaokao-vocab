@@ -8,15 +8,17 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.18';
-const APP_VERSION_CODE = 67;
+const APP_VERSION = '2.8.19';
+const APP_VERSION_CODE = 68;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
 const GITEE_BRANCH = 'master';
 // 优先使用 Gitee raw 直链获取 JSON（避免 API base64 解码问题）
 const UPDATE_SERVER_RAW = `https://gitee.com/${GITEE_OWNER}/${GITEE_REPO}/raw/master/app-update.json`;
-// 备用：Gitee API 方式
+// 备用1：GitHub raw（无认证，稳定可靠）
+const UPDATE_SERVER_GITHUB = `https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/app-update.json`;
+// 备用2：Gitee API 方式
 const UPDATE_SERVER_API = `https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/contents/app-update.json?ref=${GITEE_BRANCH}`;
 // 添加时间戳防止 CDN 缓存
 const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
@@ -4813,9 +4815,16 @@ function App() {
 
     async function fetchFromRaw() {
       const url = `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
-      console.log('[Update] Trying raw URL:', url);
+      console.log('[Update] Trying Gitee raw URL:', url);
       const resp = await fetch(url, { cache: 'no-store' });
-      if (!resp.ok) throw new Error(`raw 连接失败（HTTP ${resp.status}）`);
+      if (!resp.ok) {
+        // Gitee 失败，尝试 GitHub raw
+        console.warn('[Update] Gitee raw failed, trying GitHub raw');
+        const ghUrl = `${UPDATE_SERVER_GITHUB}?_t=${Date.now()}`;
+        const ghResp = await fetch(ghUrl, { cache: 'no-store' });
+        if (!ghResp.ok) throw new Error(`Gitee and GitHub raw both failed (Gitee HTTP ${resp.status})`);
+        return await ghResp.json();
+      }
       return await resp.json();
     }
 

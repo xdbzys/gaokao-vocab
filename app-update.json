@@ -1,7 +1,7 @@
 {
-  "version": "2.8.18",
-  "versionCode": 67,
-  "changelog": "v2.8.18 更新\n\n【修复】\n- 删除105必考词库中的占位符条目\n- 修复自动发音播放错误单词的bug\n\n【优化】\n- 增强导入功能：支持更多编号格式和OCR错误处理\n- 改进无词性标注格式的识别\n- 增强中文释义提取\n- 智能导入支持短语自动识别",
-  "devNotes": "optimize import parsing, fix vocab placeholder, fix auto-speak bug",
+  "version": "2.8.19",
+  "versionCode": 68,
+  "changelog": "v2.8.19 更新\n\n【修复】\n- 修复更新检查失败问题（HTTP 403）：新增 GitHub raw 备用线路\n- 优化更新检测机制：Gitee 失败时自动切换到 GitHub raw\n\n【优化】\n- 增强导入功能：支持更多编号格式和OCR错误处理\n- 改进无词性标注格式的识别\n- 智能导入支持短语自动识别",
+  "devNotes": "add GitHub raw fallback for update check, fix HTTP 403 error",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
