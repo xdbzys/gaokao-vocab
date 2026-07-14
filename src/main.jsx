@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.13';
-const APP_VERSION_CODE = 62;
+const APP_VERSION = '2.8.14';
+const APP_VERSION_CODE = 63;
 // 内置更新服务器地址（后续部署时修改此处即可，APP和网页版共用此地址）
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';

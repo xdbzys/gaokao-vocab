@@ -1,7 +1,7 @@
 {
-  "version": "2.8.13",
-  "versionCode": 62,
-  "changelog": "v2.8.13 更新\n\n【修复】\n- 修复答对后自动标记已掌握导致显示错误答案的bug\n- 网页版专属功能与APP分离，APP无变化",
-  "devNotes": "fix answer display bug, separate web-only features with isNativeApp",
+  "version": "2.8.14",
+  "versionCode": 63,
+  "changelog": "v2.8.14 更新\n\n【修复】\n- 修复答对后自动标记已掌握导致显示错误答案的bug\n- 修复答题时答案展示区域显示的是下一个单词的bug\n- 锁定答题单词，防止标记掌握后 current 变化导致显示不匹配",
+  "devNotes": "fix answer display bug using displayCurrent/lockedCurrent",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
