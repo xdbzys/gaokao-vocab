@@ -65,11 +65,16 @@ jobs:
         continue-on-error: true
         run: python3 scripts/upload_apk.py
 
+      - name: Rename web HTML for release
+        run: cp dist/index.html "高考词汇背诵.html"
+
       - name: Upload web HTML to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
-          files: dist/index.html
+          files: |
+            dist/index.html
+            高考词汇背诵.html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true

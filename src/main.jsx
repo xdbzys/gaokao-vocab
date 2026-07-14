@@ -4285,11 +4285,7 @@ function App() {
   const [sessionTotal, setSessionTotal] = useState(0);
   // AI配置折叠
   const [showAiBox, setShowAiBox] = useState(false);
-  // 反馈弹窗
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackText, setFeedbackText] = useState('');
-  const [feedbackType, setFeedbackType] = useState('suggest');
-  const [feedbackStatus, setFeedbackStatus] = useState('');
+
   // 自定义头像
   const [avatarUrl, setAvatarUrl] = useState(() => {
     try { return localStorage.getItem('gaokao_avatar') || ''; }
@@ -4641,61 +4637,6 @@ function App() {
   }
 
   // 反馈通过 Gitee Issues 提交
-  async function submitFeedback() {
-    if (!feedbackText.trim()) { setFeedbackStatus('请填写反馈内容'); return; }
-    setFeedbackStatus('提交中...');
-    const title = `[${feedbackType === 'suggest' ? '建议' : 'bug'}] ${feedbackText.slice(0, 30)}...`;
-    const body = `反馈类型: ${feedbackType}\n版本: v${APP_VERSION}\n内容: ${feedbackText}\n时间: ${new Date().toLocaleString()}`;
-
-    // 从服务端获取 feedbackToken，然后创建 Gitee Issue
-    try {
-      let serverData = null;
-
-      // 方式1: 尝试 Gitee raw URL
-      try {
-        const rawResp = await fetch(UPDATE_SERVER_RAW + '?_t=' + Date.now());
-        if (rawResp.ok) serverData = await rawResp.json();
-      } catch (e) { /* raw 失败 */ }
-
-      // 方式2: 尝试 Gitee API（base64 解码）
-      if (!serverData || !serverData.feedbackToken) {
-        try {
-          const apiResp = await fetch(UPDATE_SERVER_API + '&_t=' + Date.now());
-          if (apiResp.ok) {
-            const apiResult = await apiResp.json();
-            if (apiResult.content && apiResult.encoding === 'base64') {
-              const decoded = decodeURIComponent(escape(atob(apiResult.content)));
-              serverData = JSON.parse(decoded);
-            }
-          }
-        } catch (e) { /* API 失败 */ }
-      }
-
-      if (!serverData || !serverData.feedbackToken) {
-        setFeedbackStatus('⚠️ 反馈服务暂不可用，请稍后再试');
-        return;
-      }
-
-      const issueResp = await fetch('https://gitee.com/api/v5/repos/xdbzys/app/issues', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: serverData.feedbackToken, title, body, labels: ['用户反馈'] })
-      });
-
-      if (issueResp.ok) {
-        setFeedbackStatus('✅ 提交成功！感谢你的反馈');
-        setFeedbackText('');
-        setTimeout(() => { setShowFeedback(false); setFeedbackStatus(''); }, 1500);
-      } else {
-        const err = await issueResp.json().catch(() => ({}));
-        setFeedbackStatus(`提交失败: ${err.message || issueResp.status}`);
-      }
-    } catch (e) {
-      console.error('[Feedback] Error:', e);
-      setFeedbackStatus('网络错误，请检查网络后重试');
-    }
-  }
-
   async function callAiModel({ text: t = '', file: f = null }) {
     if (!aiConfig.endpoint || !aiConfig.model || !aiConfig.apiKey) throw new Error('请先配置AI');
     const isImage = f && /\.(png|jpg|jpeg|webp)$/i.test(f.name);
@@ -5597,35 +5538,7 @@ function App() {
           <div className="cloudUpdateSection" style={{ background: '#fef3c7', borderColor: '#fde68a' }}>
             <h3 style={{ color: '#92400e' }}>💬 反馈建议</h3>
             <p className="muted">有什么建议或遇到问题？告诉我们，帮助产品更好。</p>
-            <button className="primary" onClick={() => setShowFeedback(true)} style={{ background: '#f59e0b' }}>提交反馈</button>
           </div>
-
-          {/* 反馈弹窗 */}
-          {showFeedback && (
-            <div className="modalOverlay" onClick={e => { if (e.target === e.currentTarget) setShowFeedback(false); }}>
-              <div className="modal" style={{ maxWidth: 420 }}>
-                <h3>提交反馈</h3>
-                <label style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>反馈类型
-                  <select value={feedbackType} onChange={e => setFeedbackType(e.target.value)} style={{ marginTop: 4 }}>
-                    <option value="suggest">功能建议</option>
-                    <option value="bug">Bug反馈</option>
-                    <option value="other">其他</option>
-                  </select>
-                </label>
-                <textarea
-                  value={feedbackText}
-                  onChange={e => setFeedbackText(e.target.value)}
-                  placeholder="请详细描述你的建议或遇到的问题..."
-                  style={{ minHeight: 120, marginTop: 8 }}
-                />
-                <div className="importActions" style={{ marginTop: 12 }}>
-                  <button className="smallBtn" onClick={() => { setShowFeedback(false); setFeedbackStatus(''); }}>取消</button>
-                  <button className="primary" onClick={submitFeedback}>提交</button>
-                </div>
-                {feedbackStatus && <p className="status" style={{ marginTop: 8 }}>{feedbackStatus}</p>}
-              </div>
-            </div>
-          )}
 
           {/* 词库下载区域 */}
           <div className="downloadSection">
