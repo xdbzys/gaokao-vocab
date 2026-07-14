@@ -58,7 +58,7 @@ jobs:
             -PMYAPP_UPLOAD_KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
             -PMYAPP_UPLOAD_STORE_FILE=release-key.jks
 
-      - name: Upload APK to Gitee via Git push
+      - name: Upload APK + app-update.json to Gitee via Git push
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         continue-on-error: true
@@ -67,19 +67,13 @@ jobs:
           git clone --depth 1 --branch master https://oauth2:${GITEE_TOKEN}@gitee.com/xdbzys/app.git gitee-push 2>/dev/null || git clone --depth 1 https://gitee.com/xdbzys/app.git gitee-push
           cd gitee-push
           cp /home/runner/work/gaokao-vocab/gaokao-vocab/android/app/build/outputs/apk/debug/app-debug.apk gaokao-vocab.apk
+          cp /home/runner/work/gaokao-vocab/gaokao-vocab/app-update.json app-update.json
           git config user.name "ci-bot"
           git config user.email "ci@bot.com"
-          git add gaokao-vocab.apk
+          git add gaokao-vocab.apk app-update.json
           git commit -m "auto update apk v${{ github.run_number }}" || echo "no changes"
           git push origin master 2>&1 | tail -5 || echo "push failed"
-          echo "APK pushed to Gitee"
-
-      - name: Upload to Gitee (app-update.json only)
-        env:
-          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
-          GITHUB_RUN_NUMBER: ${{ github.run_number }}
-        continue-on-error: true
-        run: python3 scripts/upload_apk.py
+          echo "APK and app-update.json pushed to Gitee"
 
       - name: Rename web HTML for release
         run: cp dist/index.html "高考词汇背诵.html"
