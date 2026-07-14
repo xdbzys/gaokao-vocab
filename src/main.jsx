@@ -4290,6 +4290,11 @@ function App() {
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackType, setFeedbackType] = useState('suggest');
   const [feedbackStatus, setFeedbackStatus] = useState('');
+  // 自定义头像
+  const [avatarUrl, setAvatarUrl] = useState(() => {
+    try { return localStorage.getItem('gaokao_avatar') || ''; }
+    catch { return ''; }
+  });
   // 首次使用日期
   const [firstUseDate] = useState(() => {
     try { return localStorage.getItem('gaokao_first_use') || getToday(); }
@@ -4821,6 +4826,28 @@ function App() {
 
       // 静默模式：发现新版本且有APK地址，自动在后台下载
       if (silent && hasUpdate && (data.apkUrl || data.appUrl)) {
+        // 网页版：如果有 webHtmlUrl，静默更新页面内容（保留localStorage）
+        if (!isNativeApp && data.webHtmlUrl) {
+          try {
+            console.log('[Update] 网页版静默更新:', data.webHtmlUrl);
+            const resp = await fetch(data.webHtmlUrl);
+            if (resp.ok) {
+              const newHtml = await resp.text();
+              // 验证新HTML包含有效内容
+              if (newHtml && newHtml.includes('<!doctype') || newHtml.includes('<html')) {
+                console.log('[Update] 网页版更新成功，替换页面内容');
+                document.open();
+                document.write(newHtml);
+                document.close();
+                return;
+              }
+            }
+            console.warn('[Update] 网页版更新下载失败');
+          } catch (webErr) {
+            console.warn('[Update] 网页版更新失败:', webErr);
+          }
+        }
+
         const apkUrl = data.apkUrl || data.appUrl;
         setUpdateVersion(version);
         setUpdateChangelog(changelog);
@@ -4938,6 +4965,10 @@ function App() {
       {/* ====== 背诵页 ====== */}
       {section === 'learn' && (
         <section>
+          {/* 专属标识 */}
+          <div style={{ textAlign: 'center', padding: '8px 0 4px', }}>
+            <span style={{ color: '#2563eb', fontWeight: 800, fontSize: 20, letterSpacing: 2, textShadow: '0 1px 4px rgba(37,99,235,0.25)' }}>✦ 李群雁专属 ✦</span>
+          </div>
           {/* 顶部栏 */}
           <div className="learnTop">
             <div className="multiBookSelect" style={{ position: 'relative', flex: 1 }}>
@@ -5405,7 +5436,10 @@ function App() {
         <section className="panel mePage">
           {/* 顶部用户信息 */}
           <div className="meHeader">
-            <div className="meAvatar">🎓</div>
+            <div className="meAvatar" style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+              onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = ev => { const url = ev.target.result; setAvatarUrl(url); try { localStorage.setItem('gaokao_avatar', url); } catch {} }; reader.readAsDataURL(file); }; input.click(); }}>
+              {avatarUrl ? <img src={avatarUrl} alt="头像" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} /> : '🎓'}
+            </div>
             <div className="meInfo">
               <h2>高考词汇学习</h2>
               <div className="meStats">
@@ -5449,11 +5483,15 @@ function App() {
             <h3>今日学习</h3>
             <div className="ringProgress">
               <svg viewBox="0 0 100 100" className="ringSvg">
-                <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="8" />
-                <circle cx="50" cy="50" r="42" fill="none" stroke="#22c55e" strokeWidth="8"
-                  strokeDasharray={`${Math.min(todayCount / Math.max(settings.dailyGoal, 1), 1) * 264} 264`}
-                  strokeDashoffset="66" strokeLinecap="round" transform="rotate(-90 50 50)" />
-                <text x="50" y="50" textAnchor="middle" dy="6" fontSize="18" fill="#111827" fontWeight="bold">{todayCount}</text>
+                {/* 爱心形状进度 */}
+                <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
+                  fill="none" stroke="#e5e7eb" strokeWidth="5" />
+                <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
+                  fill="none" stroke="#ef4444" strokeWidth="5"
+                  strokeDasharray="283"
+                  strokeDashoffset={283 * (1 - Math.min(todayCount / Math.max(settings.dailyGoal, 1), 1))}
+                  strokeLinecap="round" />
+                <text x="50" y="48" textAnchor="middle" dy="6" fontSize="18" fill="#111827" fontWeight="bold">{todayCount}</text>
               </svg>
               <div className="ringLabel">/ {settings.dailyGoal} 词</div>
             </div>

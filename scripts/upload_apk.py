@@ -19,6 +19,8 @@ print(f"Updating app-update.json for version: {version}")
 # Set APK URL to GitHub Release (Gitee API has 1MB limit, APK is too large)
 run_number = os.environ.get('GITHUB_RUN_NUMBER', '0')
 update_data['apkUrl'] = f'https://github.com/xdbzys/gaokao-vocab/releases/download/v{run_number}/{APK_FILENAME}'
+# Set web HTML URL for web version cloud update
+update_data['webHtmlUrl'] = f'https://github.com/xdbzys/gaokao-vocab/releases/download/v{run_number}/index.html'
 
 with open('app-update.json', 'w') as f:
     json.dump(update_data, f, ensure_ascii=False, indent=2)
