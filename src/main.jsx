@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.30';
-const APP_VERSION_CODE = 79;
+const APP_VERSION = '2.8.31';
+const APP_VERSION_CODE = 80;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4211,6 +4211,13 @@ function posColor(pos) {
   return '#6b7280';
 }
 
+/* 单词状态颜色：错词红色，已掌握蓝色，默认不改变 */
+function wordStatusColor(item, progress, wrongWords) {
+  if (wrongWords.some(w => w.term === item.term)) return '#ef4444';
+  if (progress[item.id] === 'mastered') return '#2563eb';
+  return null; // 返回 null 表示使用默认颜色
+}
+
 /* ============================
    十一、主App组件
    ============================ */
@@ -5218,7 +5225,7 @@ function App() {
               </div>
 
               <div className="questionArea">
-                <h2>{practiceMode === 'cn-to-en' ? displayCurrent.meaning : practiceMode === 'flashcard' ? displayCurrent.term : displayCurrent.term}</h2>
+                <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? displayCurrent.meaning : practiceMode === 'flashcard' ? displayCurrent.term : displayCurrent.term}</h2>
                 {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1.1em', margin: '4px 0' }}>{displayCurrent.pos}</p>}
                 {practiceMode !== 'cn-to-en' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
                 <button className="sound" onClick={() => speak(displayCurrent.term, settings.speakRate)}>🔊 发音</button>
@@ -5294,7 +5301,7 @@ function App() {
                 <article key={item.id} className="listItem" onClick={() => setDetailItem(item)}>
                   <div className="listItemMain">
                     <div className="listItemTitle">
-                      <h3 style={{ color: freqColor(item.frequency) }}>{item.term}</h3>
+                      <h3 style={{ color: '#ef4444' }}>{item.term}</h3>
                       {item.phonetic && <span className="phoneticSmall">{item.phonetic}</span>}
                       {item.pos && <span className="posTag" style={{ color: posColor(item.pos), background: posColor(item.pos) + '18' }}>{item.pos}</span>}
                     </div>
@@ -5352,7 +5359,7 @@ function App() {
               <article key={item.id} className="listItem" onClick={() => setDetailItem(item)}>
                 <div className="listItemMain">
                   <div className="listItemTitle">
-                    <h3 style={{ color: freqColor(item.frequency) }}>{item.term}</h3>
+                    <h3 style={{ color: wordStatusColor(item, progress, wrongWords) || freqColor(item.frequency) }}>{item.term}</h3>
                     {item.phonetic && <span className="phoneticSmall">{item.phonetic}</span>}
                     {item.pos && <span className="posTag" style={{ color: posColor(item.pos), background: posColor(item.pos) + '18' }}>{item.pos}</span>}
                     <span className="freqTag" style={{ color: freqColor(item.frequency), borderColor: freqColor(item.frequency) }}>{item.frequency}</span>
