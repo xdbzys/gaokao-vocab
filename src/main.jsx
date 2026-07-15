@@ -5955,20 +5955,9 @@ function App() {
                   }}>下次再说</button>
                   <button className="updateBtnPrimary" onClick={() => {
                     setShowAnnouncementModal(false);
-                    // 多线路下载：优先 jsdelivr CDN（国内加速），回退 Gitee raw
-                    const version = announcementData?.version || 'latest';
-                    const urls = [
-                      `https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@${version}/gaokao-vocab.apk`,
-                      `https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk`,
-                      announcementData?.apkUrl,
-                      'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk',
-                    ].filter(Boolean);
-                    // 尝试用隐藏 iframe 预加载第一个可用链接，然后打开浏览器
-                    const tryOpen = (idx = 0) => {
-                      if (idx >= urls.length) return;
-                      window.open(urls[idx], '_blank');
-                    };
-                    tryOpen(0);
+                    // 在浏览器中打开下载链接（使用 Gitee raw，国内直接访问）
+                    const url = 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
+                    window.open(url, '_blank');
                   }}>立即更新</button>
                 </div>
               </div>
