@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.32';
-const APP_VERSION_CODE = 81;
+const APP_VERSION = '2.8.33';
+const APP_VERSION_CODE = 82;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -5035,50 +5035,11 @@ function App() {
           }
         }
 
-        const apkUrl = data.apkUrl || data.appUrl;
         setUpdateVersion(version);
         setUpdateChangelog(changelog);
-        setApkDownloadProgress(1); // 开始下载
-
-        try {
-          console.log('[Update] 开始静默下载APK:', apkUrl);
-          const resp = await fetch(apkUrl);
-          if (!resp.ok) throw new Error(`下载失败 HTTP ${resp.status}`);
-
-          const contentLength = resp.headers.get('content-length');
-          const total = contentLength ? parseInt(contentLength, 10) : 0;
-          let received = 0;
-
-          const reader = resp.body.getReader();
-          const chunks = [];
-
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            chunks.push(value);
-            received += value.length;
-            if (total > 0) {
-              const pct = Math.round(received / total * 100);
-              setApkDownloadProgress(pct);
-            } else {
-              // 无content-length时显示已下载大小
-              setApkDownloadProgress(-received);
-            }
-          }
-
-          const blob = new Blob(chunks, { type: 'application/vnd.android.package-archive' });
-          const blobUrl = URL.createObjectURL(blob);
-          setDownloadedApkUrl(blobUrl);
-          setApkDownloadProgress(100);
-          console.log('[Update] APK下载完成，大小:', (blob.size / 1024 / 1024).toFixed(1), 'MB');
-
-          // 下载完成后弹出安装提示
-          setShowInstallPrompt(true);
-        } catch (dlErr) {
-          console.error('[Update] APK下载失败:', dlErr);
-          setApkDownloadProgress(0);
-          // 下载失败时退回到手动更新方式
-          if (!silent) setCloudStatus(`自动下载失败：${dlErr.message}`);
+        // 不再静默下载（Gitee raw 容易被 WAF 拦截），改为提示用户手动下载
+        if (!silent) {
+          setCloudStatus('发现新版本，点击下方按钮前往下载');
         }
       }
     } catch (e) {
@@ -5955,8 +5916,8 @@ function App() {
                   }}>下次再说</button>
                   <button className="updateBtnPrimary" onClick={() => {
                     setShowAnnouncementModal(false);
-                    // 在浏览器中打开下载链接（使用 Gitee raw，国内直接访问）
-                    const url = 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
+                    // 打开 Gitee 文件预览页（避免 raw 被 WAF 拦截），用户可在页面点下载
+                    const url = 'https://gitee.com/xdbzys/app/blob/master/gaokao-vocab.apk';
                     window.open(url, '_blank');
                   }}>立即更新</button>
                 </div>
