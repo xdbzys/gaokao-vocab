@@ -1,7 +1,7 @@
 {
-  "version": "2.8.22",
-  "versionCode": 71,
-  "changelog": "v2.8.22 更新\n\n【修复】\n- 修复更新检查失败问题：新增4条线路自动回退\n- Gitee→Gitee API→GitHub Pages→jsdelivr CDN\n- 修复答题后显示错误答案的bug\n- 修复自动发音播放错误单词的bug\n\n【优化】\n- 增强导入功能识别",
-  "devNotes": "add GitHub Pages and jsdelivr CDN fallback for update check",
+  "version": "2.8.23",
+  "versionCode": 72,
+  "changelog": "v2.8.23 更新\n\n【修复】\n- 删除985核心词库中的语法术语条目noun和verb\n- 修复WebView UA被Gitee WAF拦截导致403\n- 修复答题后显示错误答案的bug\n- 修复自动发音播放错误单词的bug\n\n【优化】\n- 增强导入功能识别",
+  "devNotes": "remove grammar terms from vocab, fix WebView UA",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
