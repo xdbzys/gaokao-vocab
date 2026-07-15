@@ -1,7 +1,7 @@
 {
-  "version": "2.8.29",
-  "versionCode": 78,
-  "changelog": "v2.8.29 更新\n\n【优化】\n- 背诵页和词库页词库选择完全独立互不干扰\n- 上一个按钮优先回到刚刚回答过的单词（仅一次）\n- 英文选中文选项去除词性标记\n\n【修复】\n- 多词库合并/错词本/已掌握词库去重",
-  "devNotes": "separate study/library book selection, prev card remembers last answered",
-  "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
+  "version": "2.8.30",
+  "versionCode": 79,
+  "changelog": "v2.8.30 更新\n\n【优化】\n- 开屏立即更新优先使用 jsdelivr CDN 加速下载\n- 多线路下载回退确保更新可用\n- 背诵页/词库页词库选择独立\n- 上一个按钮记住最近回答的单词\n\n【修复】\n- 英文选中文选项去除词性标记",
+  "devNotes": "multi-cdn download for announcement update",
+  "apkUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk"
 }
