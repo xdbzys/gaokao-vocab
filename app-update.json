@@ -1,7 +1,7 @@
 {
-  "version": "2.8.24",
-  "versionCode": 73,
-  "changelog": "v2.8.24 更新\n\n【优化】\n- 真题词508条全部补充词性标注\n- 易错词35条全部补充词性标注\n- 词性标签为空时不再显示空白标签\n\n【修复】\n- 删除985核心词库中的语法术语noun和verb\n- 修复WebView UA被Gitee拦截导致403",
-  "devNotes": "add pos tags to exam words and misspelled words",
+  "version": "2.8.25",
+  "versionCode": 74,
+  "changelog": "v2.8.25 更新\n\n【优化】\n- 背诵页单词下方显示词性标注\n- 真题词508条+易错词35条全部补充词性\n\n【修复】\n- 删除985核心词库中的语法术语noun和verb\n- 修复WebView UA被Gitee拦截导致403",
+  "devNotes": "show pos tag below word on study page",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

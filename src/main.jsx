@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.24';
-const APP_VERSION_CODE = 73;
+const APP_VERSION = '2.8.25';
+const APP_VERSION_CODE = 74;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -5142,6 +5142,7 @@ function App() {
 
               <div className="questionArea">
                 <h2>{practiceMode === 'cn-to-en' ? displayCurrent.meaning : practiceMode === 'flashcard' ? displayCurrent.term : displayCurrent.term}</h2>
+                {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1.1em', margin: '4px 0' }}>{displayCurrent.pos}</p>}
                 {practiceMode !== 'cn-to-en' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
                 <button className="sound" onClick={() => speak(displayCurrent.term, settings.speakRate)}>🔊 发音</button>
               </div>
