@@ -1,7 +1,7 @@
 {
-  "version": "2.8.27",
-  "versionCode": 76,
-  "changelog": "v2.8.27 更新\n\n【优化】\n- 多词库合并背诵时自动去重，相同单词只出现一次\n- 错词本按单词名去重，同一单词不会重复出现\n- 已掌握词库按单词名去重\n\n【修复】\n- 开屏立即更新直接跳转浏览器下载\n- 背诵页单词下方显示词性标注",
-  "devNotes": "deduplicate words across books in study mode, wrong book, mastered book",
+  "version": "2.8.28",
+  "versionCode": 77,
+  "changelog": "v2.8.28 更新\n\n【修复】\n- 英文选中文模式下选项只显示中文释义，去除n./vt./adj.等词性标记\n- 答题后正确答案也清洗掉词性标记\n\n【优化】\n- 多词库合并背诵时自动去重\n- 错词本和已掌握词库按单词名去重",
+  "devNotes": "strip pos prefix from options in en-to-cn mode",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

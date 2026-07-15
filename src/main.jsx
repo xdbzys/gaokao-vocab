@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.27';
-const APP_VERSION_CODE = 76;
+const APP_VERSION = '2.8.28';
+const APP_VERSION_CODE = 77;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -3963,6 +3963,17 @@ function extractPoints(text, meaning) {
   return points;
 }
 
+/* 从释义中去除词性标记前缀，只保留中文释义部分（用于选项显示） */
+function stripPosPrefix(text) {
+  if (!text) return '';
+  // 去除开头和中间的所有词性标记（如 n. adj. vt. 等）及后续的标点/空格
+  // 格式：词性.+中文（包括多词性如 n.塑料；adj.可塑的 → 塑料；可塑的）
+  return text
+    .replace(/(?:n\.|vt\.|vi\.|v\.|adj\.|adv\.|prep\.|pron\.|conj\.|interj\.|det\.|art\.)[\s.，；;]*/g, '')
+    .replace(/^[,，；;\s]+|[,，；;\s]+$/g, '')
+    .trim();
+}
+
 function extractExamples(text) {
   const m = text.match(/(?:例句|example)\s*[:：]\s*(.+)$/i);
   if (!m) return [];
@@ -5167,7 +5178,9 @@ function App() {
                 <div className="options">
                   {options.map(option => {
                     const right = practiceMode === 'cn-to-en' ? current.term : current.meaning;
-                    return <button key={option} onClick={() => handleSelect(option)}>{option}</button>;
+                    // en-to-cn 模式下选项只显示中文释义，不显示词性标记
+                    const displayOption = practiceMode === 'en-to-cn' ? stripPosPrefix(option) : option;
+                    return <button key={option} onClick={() => handleSelect(option)}>{displayOption}</button>;
                   })}
                 </div>
               )}
@@ -5185,7 +5198,7 @@ function App() {
                       {selected === (practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning) ? '✅ 回答正确' : `❌ 回答错误（你选了：${selected}）`}
                     </p>
                   )}
-                  <h3>{displayCurrent.term} &middot; {displayCurrent.meaning}</h3>
+                  <h3>{displayCurrent.term} &middot; {stripPosPrefix(displayCurrent.meaning)}</h3>
                   <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>
                   <div className="points">
                     {(detailMode === 'brief' ? displayCurrent.corePoints.slice(0, 2) : displayCurrent.allPoints).map(p => <p key={p}>• {p}</p>)}
