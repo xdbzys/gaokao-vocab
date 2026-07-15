@@ -1,7 +1,7 @@
 {
-  "version": "2.8.31",
-  "versionCode": 80,
-  "changelog": "v2.8.31 更新\n\n【优化】\n- 错词本中单词显示红色字体\n- 已掌握单词显示蓝色字体\n\n【修复】\n- 开屏更新改回Gitee直链下载",
-  "devNotes": "revert download to gitee raw",
+  "version": "2.8.32",
+  "versionCode": 81,
+  "changelog": "v2.8.32 更新\n\n【修复】\n- 修复985核心词 speak（pos=待标注→v., meaning=的过去分词→说；讲；发言）\n- 修复985核心词 pence（meaning=penny的复数→便士；penny的复数）\n- 修复105必考词93条全部词性（adj./n./v.→正确词性）\n\n【优化】\n- 错词红色字体，已掌握蓝色字体",
+  "devNotes": "fix speak/pence meanings, fix all 105 exam word pos tags",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
