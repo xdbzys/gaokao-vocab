@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.26';
-const APP_VERSION_CODE = 75;
+const APP_VERSION = '2.8.27';
+const APP_VERSION_CODE = 76;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4359,24 +4359,27 @@ function App() {
     }
   }, []);
 
-  // 已掌握词库：根据 progress 动态更新
+  // 已掌握词库：根据 progress 动态更新，按 term 去重
   useEffect(() => {
+    const seen = new Set();
     const masteredItems = [];
+    const addIfNew = (item) => {
+      if (!seen.has(item.term)) {
+        seen.add(item.term);
+        masteredItems.push(item);
+      }
+    };
     builtInBooks.forEach(b => {
       if (b.id === 'mastered-words') return;
       b.items.forEach(item => {
-        if (progress[item.id] === 'mastered') {
-          masteredItems.push(item);
-        }
+        if (progress[item.id] === 'mastered') addIfNew(item);
       });
     });
     // 同时检查自定义词库中的已掌握单词
     books.forEach(b => {
       if (b.id === 'mastered-words' || builtInBooks.some(bb => bb.id === b.id)) return;
       b.items.forEach(item => {
-        if (progress[item.id] === 'mastered') {
-          masteredItems.push(item);
-        }
+        if (progress[item.id] === 'mastered') addIfNew(item);
       });
     });
     setBooks(prev => prev.map(b => b.id === 'mastered-words' ? { ...b, items: masteredItems } : b));
@@ -4385,10 +4388,21 @@ function App() {
   const activeBook = useMemo(() => {
     const selected = books.filter(b => activeBookIds.includes(b.id));
     if (selected.length === 0) return books[0] || { id: 'empty', name: '空', items: [], editable: false };
+    // 多词库合并时按 term 去重，保留第一个出现的
+    const seen = new Set();
+    const uniqueItems = [];
+    selected.forEach(b => {
+      b.items.forEach(item => {
+        if (!seen.has(item.term)) {
+          seen.add(item.term);
+          uniqueItems.push(item);
+        }
+      });
+    });
     return {
       id: activeBookIds.join(','),
       name: selected.length === 1 ? selected[0].name : `${selected.length}个词库`,
-      items: selected.flatMap(b => b.items),
+      items: uniqueItems,
       editable: false
     };
   }, [books, activeBookIds]);
@@ -4542,7 +4556,8 @@ function App() {
   // 错词本操作
   function addWrongWord(item) {
     setWrongWords(prev => {
-      if (prev.some(w => w.id === item.id)) return prev;
+      // 按 term 去重，避免同一单词在不同词库中的不同 id 重复添加
+      if (prev.some(w => w.term === item.term)) return prev;
       const next = [...prev, { ...item, wrongAt: Date.now() }];
       saveWrongWords(next);
       return next;
