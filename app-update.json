@@ -1,7 +1,7 @@
 {
-  "version": "2.8.28",
-  "versionCode": 77,
-  "changelog": "v2.8.28 更新\n\n【修复】\n- 英文选中文模式下选项只显示中文释义，去除n./vt./adj.等词性标记\n- 答题后正确答案也清洗掉词性标记\n\n【优化】\n- 多词库合并背诵时自动去重\n- 错词本和已掌握词库按单词名去重",
-  "devNotes": "strip pos prefix from options in en-to-cn mode",
+  "version": "2.8.29",
+  "versionCode": 78,
+  "changelog": "v2.8.29 更新\n\n【优化】\n- 背诵页和词库页词库选择完全独立互不干扰\n- 上一个按钮优先回到刚刚回答过的单词（仅一次）\n- 英文选中文选项去除词性标记\n\n【修复】\n- 多词库合并/错词本/已掌握词库去重",
+  "devNotes": "separate study/library book selection, prev card remembers last answered",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

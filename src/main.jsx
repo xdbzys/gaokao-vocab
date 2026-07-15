@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.28';
-const APP_VERSION_CODE = 77;
+const APP_VERSION = '2.8.29';
+const APP_VERSION_CODE = 78;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4274,10 +4274,19 @@ const TABS = [
 
 function App() {
   const [books, setBooks] = useState(loadBooks);
-  const [activeBookIds, setActiveBookIds] = useState(() => {
-    try { 
-      const saved = localStorage.getItem('gaokao_active_books');
-      return saved ? saved.split(',') : ['gaokao-core']; 
+  // 背诵页词库选择（独立）
+  const [studyBookIds, setStudyBookIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('gaokao_study_books');
+      return saved ? saved.split(',') : ['gaokao-core'];
+    }
+    catch { return ['gaokao-core']; }
+  });
+  // 词库页词库选择（独立）
+  const [libraryBookIds, setLibraryBookIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('gaokao_library_books');
+      return saved ? saved.split(',') : ['gaokao-core'];
     }
     catch { return ['gaokao-core']; }
   });
@@ -4396,8 +4405,10 @@ function App() {
     setBooks(prev => prev.map(b => b.id === 'mastered-words' ? { ...b, items: masteredItems } : b));
   }, [progress]);
 
+  // 当前页面对应的词库选择（背诵页和词库页独立）
+  const currentBookIds = section === 'learn' ? studyBookIds : libraryBookIds;
   const activeBook = useMemo(() => {
-    const selected = books.filter(b => activeBookIds.includes(b.id));
+    const selected = books.filter(b => currentBookIds.includes(b.id));
     if (selected.length === 0) return books[0] || { id: 'empty', name: '空', items: [], editable: false };
     // 多词库合并时按 term 去重，保留第一个出现的
     const seen = new Set();
@@ -4411,12 +4422,12 @@ function App() {
       });
     });
     return {
-      id: activeBookIds.join(','),
+      id: currentBookIds.join(','),
       name: selected.length === 1 ? selected[0].name : `${selected.length}个词库`,
       items: uniqueItems,
       editable: false
     };
-  }, [books, activeBookIds]);
+  }, [books, currentBookIds]);
 
   // 全部词汇合并（词根词缀、对比、易错词基于全量词汇）
   const allWords = useMemo(() => {
@@ -4481,27 +4492,47 @@ function App() {
 
   function updateBooks(next) { setBooks(next); saveCustomBooks(next); }
 
-  function switchBook(id) {
-    if (activeBookIds.includes(id)) {
-      const next = activeBookIds.filter(x => x !== id);
+  function switchStudyBook(id) {
+    if (studyBookIds.includes(id)) {
+      const next = studyBookIds.filter(x => x !== id);
       if (next.length === 0) next.push('gaokao-core');
-      setActiveBookIds(next);
-      try { localStorage.setItem('gaokao_active_books', next.join(',')); } catch {}
+      setStudyBookIds(next);
+      try { localStorage.setItem('gaokao_study_books', next.join(',')); } catch {}
     } else {
-      const next = [...activeBookIds, id];
-      setActiveBookIds(next);
-      try { localStorage.setItem('gaokao_active_books', next.join(',')); } catch {}
+      const next = [...studyBookIds, id];
+      setStudyBookIds(next);
+      try { localStorage.setItem('gaokao_study_books', next.join(',')); } catch {}
     }
     setTypeFilter('全部');
     setIndex(0);
     setSessionCorrect(0);
     setSessionTotal(0);
   }
-  function selectAllBooks() {
+  function selectAllStudyBooks() {
     const allIds = books.map(b => b.id);
-    setActiveBookIds(allIds);
-    try { localStorage.setItem('gaokao_active_books', allIds.join(',')); } catch {}
+    setStudyBookIds(allIds);
+    try { localStorage.setItem('gaokao_study_books', allIds.join(',')); } catch {}
     setTypeFilter('全部'); setIndex(0); setSessionCorrect(0); setSessionTotal(0);
+  }
+  function switchLibraryBook(id) {
+    if (libraryBookIds.includes(id)) {
+      const next = libraryBookIds.filter(x => x !== id);
+      if (next.length === 0) next.push('gaokao-core');
+      setLibraryBookIds(next);
+      try { localStorage.setItem('gaokao_library_books', next.join(',')); } catch {}
+    } else {
+      const next = [...libraryBookIds, id];
+      setLibraryBookIds(next);
+      try { localStorage.setItem('gaokao_library_books', next.join(',')); } catch {}
+    }
+    setTypeFilter('全部');
+    setIndex(0);
+  }
+  function selectAllLibraryBooks() {
+    const allIds = books.map(b => b.id);
+    setLibraryBookIds(allIds);
+    try { localStorage.setItem('gaokao_library_books', allIds.join(',')); } catch {}
+    setTypeFilter('全部'); setIndex(0);
   }
 
   function toggleProgress(itemId) {
@@ -4540,6 +4571,8 @@ function App() {
   // 使用 ref 确保异步回调中总是调用最新的 nextCard/prevCard
   const nextCardRef = useRef(() => {});
   const prevCardRef = useRef(() => {});
+  // 记录最近一次回答的单词，用于"上一个"按钮优先回退
+  const lastAnsweredRef = useRef(null);
 
   function nextCard() {
     const nextIdx = (index + 1) % Math.max(filteredItems.length, 1);
@@ -4556,6 +4589,20 @@ function App() {
   }
 
   function prevCard() {
+    // 如果存在最近一次回答的单词，优先跳转回该单词（只生效一次）
+    if (lastAnsweredRef.current) {
+      const { item } = lastAnsweredRef.current;
+      // 在当前的 filteredItems 中查找该单词的新索引（列表可能已变化）
+      const targetIdx = filteredItems.findIndex(it => it.term === item.term);
+      if (targetIdx !== -1 && targetIdx !== index) {
+        setIndex(targetIdx);
+        setShowBack(false); setSelected('');
+        lockedCurrent.current = null;
+        lastAnsweredRef.current = null; // 用完清空，防止连续回退到更前面的
+        return;
+      }
+      lastAnsweredRef.current = null;
+    }
     setIndex(i => (i - 1 + filteredItems.length) % Math.max(filteredItems.length, 1));
     setShowBack(false); setSelected('');
     lockedCurrent.current = null;
@@ -4594,6 +4641,8 @@ function App() {
     const c = lockedCurrent.current;
     setSelected(option);
     setSessionTotal(t => t + 1);
+    // 记录最近一次回答的单词（用于"上一个"回退）
+    lastAnsweredRef.current = { item: c, index };
     const right = practiceMode === 'cn-to-en' ? c.term : c.meaning;
     if (option === right) {
       setSessionCorrect(co => co + 1);
@@ -4619,7 +4668,7 @@ function App() {
     const name = prompt('请输入词库名称', '我的高考词库');
     if (!name) return;
     const nb = { id: `book-${Date.now()}`, name, editable: true, items: [] };
-    updateBooks([...books, nb]); switchBook(nb.id); setSection('library');
+    updateBooks([...books, nb]); switchLibraryBook(nb.id); setSection('library');
   }
 
   function renameBook() {
@@ -4633,7 +4682,9 @@ function App() {
     if (!activeBook.editable) return alert('内置词库不能删除');
     if (!confirm(`确定删除词库「${activeBook.name}」？`)) return;
     const next = books.filter(b => b.id !== activeBook.id);
-    updateBooks(next); switchBook('gaokao-core');
+    updateBooks(next);
+    setStudyBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_study_books', 'gaokao-core'); } catch {}
+    setLibraryBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_library_books', 'gaokao-core'); } catch {}
   }
 
   function deleteItem(itemId) {
@@ -5111,12 +5162,12 @@ function App() {
               {showBookPicker && (
                 <div className="bookPickerDropdown">
                   <div className="bookPickerActions">
-                    <button onClick={selectAllBooks}>全选</button>
-                    <button onClick={() => { setActiveBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_active_books', 'gaokao-core'); } catch {} }}>重置</button>
+                    <button onClick={selectAllStudyBooks}>全选</button>
+                    <button onClick={() => { setStudyBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_study_books', 'gaokao-core'); } catch {} }}>重置</button>
                   </div>
                   {books.filter(b => !b.id.includes('synonym') && !b.id.includes('antonym') && !b.id.includes('confused') && !b.id.includes('dual-sentiment')).map(b => (
                     <label key={b.id} className="bookPickerItem">
-                      <input type="checkbox" checked={activeBookIds.includes(b.id)} onChange={() => switchBook(b.id)} />
+                      <input type="checkbox" checked={studyBookIds.includes(b.id)} onChange={() => switchStudyBook(b.id)} />
                       <span>{b.name}</span>
                       <span className="bookCount">({b.items.length})</span>
                     </label>
@@ -5273,12 +5324,12 @@ function App() {
               {showBookPicker2 && (
                 <div className="bookPickerDropdown">
                   <div className="bookPickerActions">
-                    <button onClick={selectAllBooks}>全选</button>
-                    <button onClick={() => { setActiveBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_active_books', 'gaokao-core'); } catch {} }}>重置</button>
+                    <button onClick={selectAllLibraryBooks}>全选</button>
+                    <button onClick={() => { setLibraryBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_library_books', 'gaokao-core'); } catch {} }}>重置</button>
                   </div>
                   {books.map(b => (
                     <label key={b.id} className="bookPickerItem">
-                      <input type="checkbox" checked={activeBookIds.includes(b.id)} onChange={() => switchBook(b.id)} />
+                      <input type="checkbox" checked={libraryBookIds.includes(b.id)} onChange={() => switchLibraryBook(b.id)} />
                       <span>{b.name}</span>
                       <span className="bookCount">({b.items.length})</span>
                     </label>
@@ -5833,7 +5884,7 @@ function App() {
                     const name = `搜索词库-${new Date().toLocaleDateString()}`;
                     const nb = { id: `net-${Date.now()}`, name, editable: true, items };
                     updateBooks([...books, nb]);
-                    switchBook(nb.id);
+                    switchLibraryBook(nb.id);
                     setImportText('');
                     setImportStatus(`已导入：${name}（${items.length}条），已切换到该词库。`);
                     setSection('learn');
