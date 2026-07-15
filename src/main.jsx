@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.25';
-const APP_VERSION_CODE = 74;
+const APP_VERSION = '2.8.26';
+const APP_VERSION_CODE = 75;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -5869,8 +5869,9 @@ function App() {
                   }}>下次再说</button>
                   <button className="updateBtnPrimary" onClick={() => {
                     setShowAnnouncementModal(false);
-                    setSection('me');
-                    checkCloudUpdate(false);
+                    // 直接在浏览器中打开下载链接
+                    const url = announcementData.apkUrl || 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
+                    window.open(url, '_blank');
                   }}>立即更新</button>
                 </div>
               </div>
