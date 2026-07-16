@@ -1,7 +1,7 @@
 {
-  "version": "2.8.38",
-  "versionCode": 87,
-  "changelog": "v2.8.38 更新\n\n【优化】\n- 错词本背诵模式下，答对不自动掌握、不自动跳转\n- 错词本模式下答错不重复添加错词",
-  "devNotes": "disable autoMaster and autoJump in wrong-words book mode",
-  "apkUrl": "https://gitee.com/xdbzys/app/blob/master/gaokao-vocab.apk"
+  "version": "2.8.39",
+  "versionCode": 88,
+  "changelog": "v2.8.39 更新\n\n【紧急修复】\n- 修复白屏打不开的严重bug\n- 下载链接改为GitHub Release直连，无需验证码",
+  "devNotes": "fix white screen (TDZ), use GitHub Release for direct download",
+  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest"
 }

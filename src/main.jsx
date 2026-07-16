@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.38';
-const APP_VERSION_CODE = 87;
+const APP_VERSION = '2.8.39';
+const APP_VERSION_CODE = 88;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4467,6 +4467,8 @@ function App() {
 
   // 锁定当前显示的单词，防止 toggleProgress 改变 filteredItems 导致 UI 判断错误
   const lockedCurrent = useRef(null);
+  // 临时回退显示的单词（即使被过滤也能回退看到）
+  const [forceShowItem, setForceShowItem] = useState(null);
   // 显示用的当前单词：答题后使用锁定的单词，防止 toggleProgress 改变 current 导致显示不匹配
   const displayCurrent = forceShowItem || (selected && lockedCurrent.current) || current;
 
@@ -4601,8 +4603,6 @@ function App() {
   const prevCardRef = useRef(() => {});
   // 记录最近一次回答的单词，用于"上一个"按钮优先回退
   const lastAnsweredRef = useRef(null);
-  // 临时回退显示的单词（即使被过滤也能回退看到）
-  const [forceShowItem, setForceShowItem] = useState(null);
 
   function nextCard() {
     const nextIdx = (index + 1) % Math.max(filteredItems.length, 1);
@@ -5094,10 +5094,24 @@ function App() {
   async function applyUpdate() {
     if (!updateInfo || !updateInfo.hasUpdate) return;
     setUpdateInfo(prev => ({ ...prev, updating: true }));
-    setCloudStatus('正在打开下载...');
+    setCloudStatus('正在获取下载链接...');
 
     try {
-      const apkUrl = updateInfo.apkUrl || updateInfo.appUrl;
+      // 动态获取 GitHub Release 最新 APK 链接（无需验证码）
+      let apkUrl;
+      try {
+        const resp = await fetch('https://api.github.com/repos/xdbzys/gaokao-vocab/releases/latest');
+        if (resp.ok) {
+          const release = await resp.json();
+          const apkAsset = release.assets?.find(a => a.name.endsWith('.apk'));
+          if (apkAsset) {
+            apkUrl = apkAsset.browser_download_url;
+          }
+        }
+      } catch {}
+
+      // 回退到 app-update.json 中配置的链接
+      if (!apkUrl) apkUrl = updateInfo.apkUrl || updateInfo.appUrl;
       if (!apkUrl) throw new Error('未找到下载地址');
 
       // 直接用系统浏览器下载 APK，最可靠的方案
@@ -5968,11 +5982,24 @@ function App() {
                     setDismissedVersion(announcementData.version);
                     setShowAnnouncementModal(false);
                   }}>下次再说</button>
-                  <button className="updateBtnPrimary" onClick={() => {
+                  <button className="updateBtnPrimary" onClick={async () => {
                     setShowAnnouncementModal(false);
-                    // 打开 Gitee 文件预览页（避免 raw 被 WAF 拦截），用户可在页面点下载
-                    const url = 'https://gitee.com/xdbzys/app/blob/master/gaokao-vocab.apk';
-                    window.open(url, '_blank');
+                    // 动态获取 GitHub Release 最新 APK 链接（无需验证码直接下载）
+                    let url = null;
+                    try {
+                      const resp = await fetch('https://api.github.com/repos/xdbzys/gaokao-vocab/releases/latest');
+                      if (resp.ok) {
+                        const release = await resp.json();
+                        const apkAsset = release.assets?.find(a => a.name.endsWith('.apk'));
+                        if (apkAsset) url = apkAsset.browser_download_url;
+                      }
+                    } catch {}
+                    if (!url) url = 'https://github.com/xdbzys/gaokao-vocab/releases/latest';
+                    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+                      Capacitor.Plugins.Browser.open({ url });
+                    } else {
+                      window.open(url, '_blank');
+                    }
                   }}>立即更新</button>
                 </div>
               </div>
