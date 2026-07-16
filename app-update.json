@@ -1,7 +1,7 @@
 {
-  "version": "2.8.37",
-  "versionCode": 86,
-  "changelog": "v2.8.37 更新\n\n【新增】\n- 添加隐私政策页面（应用商店上架要求）\n- APP内可查看隐私政策",
-  "devNotes": "add privacy policy page",
+  "version": "2.8.38",
+  "versionCode": 87,
+  "changelog": "v2.8.38 更新\n\n【优化】\n- 错词本背诵模式下，答对不自动掌握、不自动跳转\n- 错词本模式下答错不重复添加错词",
+  "devNotes": "disable autoMaster and autoJump in wrong-words book mode",
   "apkUrl": "https://gitee.com/xdbzys/app/blob/master/gaokao-vocab.apk"
 }

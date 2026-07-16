@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.37';
-const APP_VERSION_CODE = 86;
+const APP_VERSION = '2.8.38';
+const APP_VERSION_CODE = 87;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4684,14 +4684,16 @@ function App() {
     // 记录最近一次回答的单词（用于"上一个"回退）
     lastAnsweredRef.current = { item: c, index };
     const right = practiceMode === 'cn-to-en' ? c.term : c.meaning;
+    // 错词本模式下，答对不自动掌握也不自动跳转（优先级最高）
+    const isWrongWordBook = currentBookIds.includes('wrong-words');
     if (option === right) {
       setSessionCorrect(co => co + 1);
       recordStudy();
-      // 自动标记已掌握（如果开关开启且当前未标记）
-      if (settings.autoMaster && progress[c.id] !== 'mastered') {
+      // 自动标记已掌握（仅非错词本模式，且开关开启且当前未标记）
+      if (!isWrongWordBook && settings.autoMaster && progress[c.id] !== 'mastered') {
         toggleProgress(c.id);
       }
-      if (settings.autoJump) {
+      if (!isWrongWordBook && settings.autoJump) {
         setAutoJumping(true);
         setTimeout(() => {
           nextCardRef.current();  // 使用 ref 确保调用最新版本
@@ -4699,8 +4701,8 @@ function App() {
         }, settings.autoJumpDelay || 1500);
       }
     } else {
-      // 答错：加入错词本
-      addWrongWord(c);
+      // 答错：加入错词本（错词本模式下不重复添加）
+      if (!isWrongWordBook) addWrongWord(c);
     }
   }
 
