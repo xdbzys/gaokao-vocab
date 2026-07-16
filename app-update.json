@@ -1,7 +1,7 @@
 {
-  "version": "2.8.33",
-  "versionCode": 82,
-  "changelog": "v2.8.33 更新\n\n【修复】\n- 下载链接改为 Gitee 文件预览页，避免 raw 被 WAF 拦截\n- 去掉静默下载，改为手动前往下载页\n- 修复985核心词 speak/pence 释义\n- 修复105必考词全部词性",
-  "devNotes": "use gitee blob page for download to avoid WAF",
+  "version": "2.8.34",
+  "versionCode": 83,
+  "changelog": "v2.8.34 更新\n\n【优化】\n- 反馈功能改为添加QQ好友3219858871直接反馈\n- 一键唤起QQ添加好友或复制QQ号",
+  "devNotes": "replace gitee issue feedback with QQ friend add",
   "apkUrl": "https://gitee.com/xdbzys/app/blob/master/gaokao-vocab.apk"
 }

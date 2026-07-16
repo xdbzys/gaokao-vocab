@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.33';
-const APP_VERSION_CODE = 82;
+const APP_VERSION = '2.8.34';
+const APP_VERSION_CODE = 83;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -5777,34 +5777,19 @@ function App() {
           {isNativeApp && (
             <div className="cloudUpdateSection" style={{ background: '#fef3c7', borderColor: '#fde68a' }}>
               <h3 style={{ color: '#92400e' }}>💬 反馈建议</h3>
-              <p className="muted">有什么建议或遇到问题？告诉我们，帮助产品更好。</p>
-              <button className="primary" onClick={() => setShowFeedback(true)} style={{ background: '#f59e0b' }}>提交反馈</button>
-            </div>
-          )}
-
-          {/* 反馈弹窗（仅APP） */}
-          {isNativeApp && showFeedback && (
-            <div className="modalOverlay" onClick={e => { if (e.target === e.currentTarget) setShowFeedback(false); }}>
-              <div className="modal" style={{ maxWidth: 420 }}>
-                <h3>提交反馈</h3>
-                <label style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>反馈类型
-                  <select value={feedbackType} onChange={e => setFeedbackType(e.target.value)} style={{ marginTop: 4 }}>
-                    <option value="suggest">功能建议</option>
-                    <option value="bug">Bug反馈</option>
-                    <option value="other">其他</option>
-                  </select>
-                </label>
-                <textarea
-                  value={feedbackText}
-                  onChange={e => setFeedbackText(e.target.value)}
-                  placeholder="请详细描述你的建议或遇到的问题..."
-                  style={{ minHeight: 120, marginTop: 8 }}
-                />
-                <div className="importActions" style={{ marginTop: 12 }}>
-                  <button className="smallBtn" onClick={() => { setShowFeedback(false); setFeedbackStatus(''); }}>取消</button>
-                  <button className="primary" onClick={submitFeedback}>提交</button>
-                </div>
-                {feedbackStatus && <p className="status" style={{ marginTop: 8 }}>{feedbackStatus}</p>}
+              <p className="muted">有什么建议或遇到问题？欢迎添加QQ好友直接反馈，沟通更高效。</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 18, fontWeight: 700, color: '#92400e' }}>QQ: 3219858871</span>
+                <button className="primary" onClick={() => {
+                  // 尝试唤起 QQ 添加好友，失败则复制 QQ 号
+                  const qqUrl = 'mqqapi://card/show_pslcard?src_type=internal&version=1&uin=3219858871&card_type=person&source=qrcode';
+                  window.open(qqUrl, '_blank');
+                  // 同时复制 QQ 号到剪贴板
+                  try { navigator.clipboard?.writeText('3219858871'); } catch {}
+                }} style={{ background: '#f59e0b' }}>添加QQ好友</button>
+                <button className="smallBtn" onClick={() => {
+                  try { navigator.clipboard?.writeText('3219858871'); alert('QQ号已复制：3219858871'); } catch { alert('QQ号：3219858871'); }
+                }}>复制QQ号</button>
               </div>
             </div>
           )}
