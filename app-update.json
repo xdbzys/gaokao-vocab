@@ -1,7 +1,7 @@
 {
-  "version": "2.8.34",
-  "versionCode": 83,
-  "changelog": "v2.8.34 更新\n\n【优化】\n- 反馈功能改为添加QQ好友3219858871直接反馈\n- 一键唤起QQ添加好友或复制QQ号",
-  "devNotes": "replace gitee issue feedback with QQ friend add",
+  "version": "2.8.35",
+  "versionCode": 84,
+  "changelog": "v2.8.35 更新\n\n【新增】\n- 错词本可作为独立词库，在背诵页选中单独复习错词\n- 错词本添加搜索功能\n\n【优化】\n- 背诵页隐藏已掌握与词库页完全独立\n\n【修复】\n- 反馈改为添加QQ好友",
+  "devNotes": "wrong words as book, search wrong words, hide mastered only in learn",
   "apkUrl": "https://gitee.com/xdbzys/app/blob/master/gaokao-vocab.apk"
 }

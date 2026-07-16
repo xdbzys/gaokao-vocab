@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.34';
-const APP_VERSION_CODE = 83;
+const APP_VERSION = '2.8.35';
+const APP_VERSION_CODE = 84;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4415,6 +4415,15 @@ function App() {
   // 当前页面对应的词库选择（背诵页和词库页独立）
   const currentBookIds = section === 'learn' ? studyBookIds : libraryBookIds;
   const activeBook = useMemo(() => {
+    // 如果选中了错词本，单独处理
+    if (currentBookIds.includes('wrong-words')) {
+      return {
+        id: 'wrong-words',
+        name: '错词本',
+        items: wrongWords,
+        editable: false
+      };
+    }
     const selected = books.filter(b => currentBookIds.includes(b.id));
     if (selected.length === 0) return books[0] || { id: 'empty', name: '空', items: [], editable: false };
     // 多词库合并时按 term 去重，保留第一个出现的
@@ -4434,7 +4443,7 @@ function App() {
       items: uniqueItems,
       editable: false
     };
-  }, [books, currentBookIds]);
+  }, [books, currentBookIds, wrongWords]);
 
   // 全部词汇合并（词根词缀、对比、易错词基于全量词汇）
   const allWords = useMemo(() => {
@@ -4445,13 +4454,14 @@ function App() {
     let items = activeBook.items.filter(item => {
       const posOk = posFilter === '全部' || getPosCategory(item.pos) === posFilter;
       const typeOk = typeFilter === '全部' || item.type === typeFilter;
-      const masteredOk = !hideMastered || progress[item.id] !== 'mastered';
+      // 隐藏已掌握只在背诵页生效，词库页不受影响
+      const masteredOk = section !== 'learn' || !hideMastered || progress[item.id] !== 'mastered';
       const searchOk = !search || `${item.term}${item.meaning}${item.pos}`.toLowerCase().includes(search.toLowerCase());
       return posOk && typeOk && masteredOk && searchOk;
     });
     if (settings.shuffleMode) items = shuffle(items);
     return items;
-  }, [activeBook, posFilter, typeFilter, hideMastered, search, settings.shuffleMode, progress]);
+  }, [activeBook, posFilter, typeFilter, hideMastered, search, settings.shuffleMode, progress, section]);
 
   const current = filteredItems[index % Math.max(filteredItems.length, 1)];
 
@@ -4500,15 +4510,26 @@ function App() {
   function updateBooks(next) { setBooks(next); saveCustomBooks(next); }
 
   function switchStudyBook(id) {
-    if (studyBookIds.includes(id)) {
-      const next = studyBookIds.filter(x => x !== id);
-      if (next.length === 0) next.push('gaokao-core');
-      setStudyBookIds(next);
-      try { localStorage.setItem('gaokao_study_books', next.join(',')); } catch {}
+    // 错词本与普通词库互斥：选中错词本时只保留错词本，选中普通词库时移除错词本
+    if (id === 'wrong-words') {
+      if (studyBookIds.includes('wrong-words')) {
+        setStudyBookIds(['gaokao-core']);
+        try { localStorage.setItem('gaokao_study_books', 'gaokao-core'); } catch {}
+      } else {
+        setStudyBookIds(['wrong-words']);
+        try { localStorage.setItem('gaokao_study_books', 'wrong-words'); } catch {}
+      }
     } else {
-      const next = [...studyBookIds, id];
-      setStudyBookIds(next);
-      try { localStorage.setItem('gaokao_study_books', next.join(',')); } catch {}
+      if (studyBookIds.includes(id)) {
+        const next = studyBookIds.filter(x => x !== id && x !== 'wrong-words');
+        if (next.length === 0) next.push('gaokao-core');
+        setStudyBookIds(next);
+        try { localStorage.setItem('gaokao_study_books', next.join(',')); } catch {}
+      } else {
+        const next = [...studyBookIds.filter(x => x !== 'wrong-words'), id];
+        setStudyBookIds(next);
+        try { localStorage.setItem('gaokao_study_books', next.join(',')); } catch {}
+      }
     }
     setTypeFilter('全部');
     setIndex(0);
@@ -5133,6 +5154,14 @@ function App() {
                     <button onClick={selectAllStudyBooks}>全选</button>
                     <button onClick={() => { setStudyBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_study_books', 'gaokao-core'); } catch {} }}>重置</button>
                   </div>
+                  {/* 错词本（单独复习） */}
+                  {wrongWords.length > 0 && (
+                    <label key="wrong-words" className="bookPickerItem" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 8, marginBottom: 4 }}>
+                      <input type="checkbox" checked={studyBookIds.includes('wrong-words')} onChange={() => switchStudyBook('wrong-words')} />
+                      <span style={{ color: '#ef4444', fontWeight: 600 }}>❌ 错词本</span>
+                      <span className="bookCount">({wrongWords.length})</span>
+                    </label>
+                  )}
                   {books.filter(b => !b.id.includes('synonym') && !b.id.includes('antonym') && !b.id.includes('confused') && !b.id.includes('dual-sentiment')).map(b => (
                     <label key={b.id} className="bookPickerItem">
                       <input type="checkbox" checked={studyBookIds.includes(b.id)} onChange={() => switchStudyBook(b.id)} />
@@ -5254,11 +5283,27 @@ function App() {
             {wrongWords.length > 0 && <button className="smallBtn dangerGhost" onClick={clearWrongWords}>清空</button>}
           </div>
           <p className="muted">答错的单词会自动加入这里，方便集中复习。掌握后可移除。</p>
-          {wrongWords.length === 0 ? (
-            <div className="empty" style={{ marginTop: 16 }}>还没有错词，继续加油！</div>
-          ) : (
+          {wrongWords.length > 0 && (
+            <input
+              type="text"
+              placeholder="搜索错词..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ marginTop: 12 }}
+            />
+          )}
+          {(() => {
+            const filteredWrong = wrongWords.filter(item =>
+              !search || `${item.term}${item.meaning}${item.pos}`.toLowerCase().includes(search.toLowerCase())
+            );
+            if (filteredWrong.length === 0) return (
+              <div className="empty" style={{ marginTop: 16 }}>
+                {search ? '没有找到匹配的错词' : '还没有错词，继续加油！'}
+              </div>
+            );
+            return (
             <div className="list">
-              {wrongWords.map(item => (
+              {filteredWrong.map(item => (
                 <article key={item.id} className="listItem" onClick={() => setDetailItem(item)}>
                   <div className="listItemMain">
                     <div className="listItemTitle">
@@ -5277,7 +5322,8 @@ function App() {
                 </article>
               ))}
             </div>
-          )}
+            );
+          })()}
         </section>
       )}
 
