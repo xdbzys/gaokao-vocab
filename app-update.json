@@ -1,7 +1,7 @@
 {
-  "version": "2.8.41",
-  "versionCode": 90,
-  "changelog": "v2.8.41 更新\n\n【修复】\n- 下载链接改为 GitHub Pages 托管，国内访问更稳定\n- 修复官网和APP内下载打不开的问题",
-  "devNotes": "use gh-pages for APK distribution",
-  "apkUrl": "https://xdbzys.github.io/gaokao-vocab/app-debug.apk"
+  "version": "2.8.42",
+  "versionCode": 91,
+  "changelog": "v2.8.42 更新\n\n【修复】\n- 下载链接改为官网同域名，彻底解决404问题",
+  "devNotes": "APK hosted on website repo same domain",
+  "apkUrl": "https://xdbzys.github.io/gaokao-vocab-website/app-debug.apk"
 }
