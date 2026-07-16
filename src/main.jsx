@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.39';
-const APP_VERSION_CODE = 88;
+const APP_VERSION = '2.8.40';
+const APP_VERSION_CODE = 89;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4676,6 +4676,60 @@ function App() {
     saveWrongWords([]);
   }
 
+  // 数据备份：导出所有 localStorage 数据为 JSON 文件
+  function exportData() {
+    const keys = [
+      'gaokao_progress', 'gaokao_settings', 'gaokao_study_log', 'gaokao_downloaded',
+      'gaokao_wrong_words', 'customBooks', 'customSpelling', 'aiImportConfig',
+      'gaokao_study_books', 'gaokao_library_books', 'gaokao_hide_mastered',
+      'gaokao_dismissed_version', 'gaokao_avatar', 'gaokao_first_use'
+    ];
+    const data = {};
+    keys.forEach(k => {
+      const v = localStorage.getItem(k);
+      if (v !== null) data[k] = v;
+    });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gaokao-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('数据已备份，请妥善保存 JSON 文件。');
+  }
+
+  // 数据恢复：从 JSON 文件导入所有数据
+  function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          if (!data || typeof data !== 'object') throw new Error('文件格式错误');
+          let count = 0;
+          Object.entries(data).forEach(([k, v]) => {
+            if (typeof v === 'string') {
+              localStorage.setItem(k, v);
+              count++;
+            }
+          });
+          alert(`成功恢复 ${count} 项数据，页面即将刷新。`);
+          window.location.reload();
+        } catch (err) {
+          alert('恢复失败：' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }
+
   function handleSelect(option) {
     if (!lockedCurrent.current) lockedCurrent.current = current;
     const c = lockedCurrent.current;
@@ -5801,6 +5855,16 @@ function App() {
               <p>今日日期：{todayKey}</p>
               <p>总词库：{books.length} 个</p>
               <p>总词汇量：{books.reduce((s, b) => s + b.items.length, 0)} 条</p>
+            </div>
+          </div>
+
+          {/* 数据备份与恢复 */}
+          <div className="settingsGroup" style={{ marginTop: 16 }}>
+            <h3>数据备份</h3>
+            <p className="muted" style={{ marginBottom: 12 }}>备份学习进度、错词本、设置等数据，更新或换设备后可恢复。</p>
+            <div className="importActions">
+              <button className="smallBtn" onClick={exportData}>📤 备份数据</button>
+              <button className="smallBtn" onClick={importData}>📥 恢复数据</button>
             </div>
           </div>
 
