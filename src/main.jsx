@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.42';
-const APP_VERSION_CODE = 91;
+const APP_VERSION = '2.8.43';
+const APP_VERSION_CODE = 92;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -5152,7 +5152,7 @@ function App() {
 
     try {
       // 使用 GitHub Pages 托管的 APK 链接（国内访问更稳定）
-      const apkUrl = 'https://xdbzys.github.io/gaokao-vocab-website/app-debug.apk';
+      const apkUrl = 'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk';
       if (!apkUrl) throw new Error('未找到下载地址');
 
       // 直接用系统浏览器下载 APK，最可靠的方案
@@ -6036,7 +6036,7 @@ function App() {
                   <button className="updateBtnPrimary" onClick={() => {
                     setShowAnnouncementModal(false);
                     // 使用 GitHub Pages 托管的 APK 链接（国内访问更稳定）
-                    const url = 'https://xdbzys.github.io/gaokao-vocab-website/app-debug.apk';
+                    const url = 'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk';
                     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
                       Capacitor.Plugins.Browser.open({ url });
                     } else {
