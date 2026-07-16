@@ -1,7 +1,7 @@
 {
-  "version": "2.8.40",
-  "versionCode": 89,
-  "changelog": "v2.8.40 更新\n\n【新增】\n- 数据备份与恢复功能：导出/导入学习进度、错词本、设置等\n- 更新APP或换设备时可一键恢复数据\n\n【紧急修复】\n- 修复白屏打不开的严重bug\n- 下载链接改为GitHub Release直连，无需验证码",
-  "devNotes": "add data export/import backup feature",
-  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest"
+  "version": "2.8.41",
+  "versionCode": 90,
+  "changelog": "v2.8.41 更新\n\n【修复】\n- 下载链接改为 GitHub Pages 托管，国内访问更稳定\n- 修复官网和APP内下载打不开的问题",
+  "devNotes": "use gh-pages for APK distribution",
+  "apkUrl": "https://xdbzys.github.io/gaokao-vocab/app-debug.apk"
 }

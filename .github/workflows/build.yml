@@ -111,6 +111,9 @@ jobs:
           name: gaokao-vocab-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
+      - name: Copy APK to dist
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk dist/app-debug.apk
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

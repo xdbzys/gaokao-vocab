@@ -339,9 +339,9 @@
           <span class="badge"><span class="badge-dot"></span> 持续更新</span>
         </div>
         <div class="hero-buttons">
-          <a href="https://github.com/xdbzys/gaokao-vocab/releases/latest" class="btn-primary" target="_blank">
+          <a id="downloadBtn" href="https://github.com/xdbzys/gaokao-vocab/releases/latest" class="btn-primary" target="_blank">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            下载 APK
+            <span id="downloadText">下载 APK</span>
           </a>
           <a href="#features" class="btn-secondary">了解更多</a>
         </div>
@@ -438,9 +438,9 @@
     <div class="download-section">
       <h2>开始你的词汇突破之旅</h2>
       <p>完全免费，无需注册，下载即可使用。支持离线学习，随时随地背单词。</p>
-      <a href="https://github.com/xdbzys/gaokao-vocab/releases/latest" class="btn-primary" target="_blank">
+      <a id="downloadBtn2" href="https://github.com/xdbzys/gaokao-vocab/releases/latest" class="btn-primary" target="_blank">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        立即下载 APK
+        <span id="downloadText2">立即下载 APK</span>
       </a>
       <p class="version-info" id="latestVersion">当前版本加载中... | Android 5.0+ | 约 1.2 MB</p>
     </div>
@@ -453,7 +453,14 @@
   </footer>
 
   <script>
-    // 自动从 app-update.json 读取最新版本号
+    // 固定 APK 直接下载链接（通过 GitHub Pages 分发，国内访问更稳定）
+    const APK_DOWNLOAD_URL = 'https://xdbzys.github.io/gaokao-vocab/app-debug.apk';
+    const btn1 = document.getElementById('downloadBtn');
+    const btn2 = document.getElementById('downloadBtn2');
+    if (btn1) btn1.href = APK_DOWNLOAD_URL;
+    if (btn2) btn2.href = APK_DOWNLOAD_URL;
+
+    // 自动从 app-update.json 读取最新版本号，并更新按钮文字
     fetch('https://xdbzys.github.io/gaokao-vocab/app-update.json')
       .then(r => r.json())
       .then(d => {
@@ -461,6 +468,10 @@
         if (el && d.version) {
           el.textContent = '当前版本 v' + d.version + ' | Android 5.0+ | 约 1.2 MB';
         }
+        const txt1 = document.getElementById('downloadText');
+        const txt2 = document.getElementById('downloadText2');
+        if (txt1 && d.version) txt1.textContent = '下载 APK（v' + d.version + '）';
+        if (txt2 && d.version) txt2.textContent = '立即下载 APK（v' + d.version + '）';
       })
       .catch(() => {});
   </script>

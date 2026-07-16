@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.40';
-const APP_VERSION_CODE = 89;
+const APP_VERSION = '2.8.41';
+const APP_VERSION_CODE = 90;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -5151,21 +5151,8 @@ function App() {
     setCloudStatus('正在获取下载链接...');
 
     try {
-      // 动态获取 GitHub Release 最新 APK 链接（无需验证码）
-      let apkUrl;
-      try {
-        const resp = await fetch('https://api.github.com/repos/xdbzys/gaokao-vocab/releases/latest');
-        if (resp.ok) {
-          const release = await resp.json();
-          const apkAsset = release.assets?.find(a => a.name.endsWith('.apk'));
-          if (apkAsset) {
-            apkUrl = apkAsset.browser_download_url;
-          }
-        }
-      } catch {}
-
-      // 回退到 app-update.json 中配置的链接
-      if (!apkUrl) apkUrl = updateInfo.apkUrl || updateInfo.appUrl;
+      // 使用 GitHub Pages 托管的 APK 链接（国内访问更稳定）
+      const apkUrl = 'https://xdbzys.github.io/gaokao-vocab/app-debug.apk';
       if (!apkUrl) throw new Error('未找到下载地址');
 
       // 直接用系统浏览器下载 APK，最可靠的方案
@@ -6046,19 +6033,10 @@ function App() {
                     setDismissedVersion(announcementData.version);
                     setShowAnnouncementModal(false);
                   }}>下次再说</button>
-                  <button className="updateBtnPrimary" onClick={async () => {
+                  <button className="updateBtnPrimary" onClick={() => {
                     setShowAnnouncementModal(false);
-                    // 动态获取 GitHub Release 最新 APK 链接（无需验证码直接下载）
-                    let url = null;
-                    try {
-                      const resp = await fetch('https://api.github.com/repos/xdbzys/gaokao-vocab/releases/latest');
-                      if (resp.ok) {
-                        const release = await resp.json();
-                        const apkAsset = release.assets?.find(a => a.name.endsWith('.apk'));
-                        if (apkAsset) url = apkAsset.browser_download_url;
-                      }
-                    } catch {}
-                    if (!url) url = 'https://github.com/xdbzys/gaokao-vocab/releases/latest';
+                    // 使用 GitHub Pages 托管的 APK 链接（国内访问更稳定）
+                    const url = 'https://xdbzys.github.io/gaokao-vocab/app-debug.apk';
                     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
                       Capacitor.Plugins.Browser.open({ url });
                     } else {
