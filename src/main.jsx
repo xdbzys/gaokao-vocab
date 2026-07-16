@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.36';
-const APP_VERSION_CODE = 85;
+const APP_VERSION = '2.8.37';
+const APP_VERSION_CODE = 86;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -5851,6 +5851,15 @@ function App() {
               </div>
             </div>
           )}
+
+          {/* 隐私政策 */}
+          <div className="cloudUpdateSection" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+            <h3 style={{ color: '#166534' }}>📋 隐私政策</h3>
+            <p className="muted">本应用不收集任何用户个人信息，所有数据保存在设备本地。</p>
+            <button className="smallBtn" onClick={() => {
+              window.open('https://xdbzys.github.io/gaokao-vocab-website/privacy.html', '_blank');
+            }}>查看隐私政策</button>
+          </div>
 
           {/* 词库下载区域 */}
           <div className="downloadSection">

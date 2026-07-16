@@ -1,7 +1,7 @@
 {
-  "version": "2.8.36",
-  "versionCode": 85,
-  "changelog": "v2.8.36 更新\n\n【修复】\n- 修复\"上一个\"按钮在某些情况下失效的bug\n- 即使单词被隐藏已掌握过滤掉，也能通过\"上一个\"回退查看",
-  "devNotes": "fix prevCard bug with forceShowItem for filtered words",
+  "version": "2.8.37",
+  "versionCode": 86,
+  "changelog": "v2.8.37 更新\n\n【新增】\n- 添加隐私政策页面（应用商店上架要求）\n- APP内可查看隐私政策",
+  "devNotes": "add privacy policy page",
   "apkUrl": "https://gitee.com/xdbzys/app/blob/master/gaokao-vocab.apk"
 }
