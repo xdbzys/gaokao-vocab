@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.35';
-const APP_VERSION_CODE = 84;
+const APP_VERSION = '2.8.36';
+const APP_VERSION_CODE = 85;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4468,7 +4468,7 @@ function App() {
   // 锁定当前显示的单词，防止 toggleProgress 改变 filteredItems 导致 UI 判断错误
   const lockedCurrent = useRef(null);
   // 显示用的当前单词：答题后使用锁定的单词，防止 toggleProgress 改变 current 导致显示不匹配
-  const displayCurrent = (selected && lockedCurrent.current) || current;
+  const displayCurrent = forceShowItem || (selected && lockedCurrent.current) || current;
 
   // 问题1：4个选项（1正确+3干扰项）—— 排除易混/同义/反义词干扰
   const options = useMemo(() => {
@@ -4601,12 +4601,15 @@ function App() {
   const prevCardRef = useRef(() => {});
   // 记录最近一次回答的单词，用于"上一个"按钮优先回退
   const lastAnsweredRef = useRef(null);
+  // 临时回退显示的单词（即使被过滤也能回退看到）
+  const [forceShowItem, setForceShowItem] = useState(null);
 
   function nextCard() {
     const nextIdx = (index + 1) % Math.max(filteredItems.length, 1);
     setIndex(nextIdx);
     setShowBack(false); setSelected('');
     lockedCurrent.current = null;
+    setForceShowItem(null);
     // 自动朗读新单词
     if (settings.autoSpeak && filteredItems.length > 0) {
       const nextWord = filteredItems[nextIdx];
@@ -4620,17 +4623,26 @@ function App() {
     // 如果存在最近一次回答的单词，优先跳转回该单词（只生效一次）
     if (lastAnsweredRef.current) {
       const { item } = lastAnsweredRef.current;
-      // 在当前的 filteredItems 中查找该单词的新索引（列表可能已变化）
+      // 先尝试在 filteredItems 中找到
       const targetIdx = filteredItems.findIndex(it => it.term === item.term);
       if (targetIdx !== -1 && targetIdx !== index) {
         setIndex(targetIdx);
         setShowBack(false); setSelected('');
         lockedCurrent.current = null;
-        lastAnsweredRef.current = null; // 用完清空，防止连续回退到更前面的
+        setForceShowItem(null);
+        lastAnsweredRef.current = null;
         return;
       }
+      // 如果在 filteredItems 中找不到（被隐藏已掌握等过滤掉了），
+      // 强制临时显示该单词
+      setIndex(0); // index 暂时不重要，用 forceShowItem 覆盖显示
+      setShowBack(false); setSelected('');
+      lockedCurrent.current = null;
+      setForceShowItem(item);
       lastAnsweredRef.current = null;
+      return;
     }
+    setForceShowItem(null);
     setIndex(i => (i - 1 + filteredItems.length) % Math.max(filteredItems.length, 1));
     setShowBack(false); setSelected('');
     lockedCurrent.current = null;

@@ -1,7 +1,7 @@
 {
-  "version": "2.8.35",
-  "versionCode": 84,
-  "changelog": "v2.8.35 更新\n\n【新增】\n- 错词本可作为独立词库，在背诵页选中单独复习错词\n- 错词本添加搜索功能\n\n【优化】\n- 背诵页隐藏已掌握与词库页完全独立\n\n【修复】\n- 反馈改为添加QQ好友",
-  "devNotes": "wrong words as book, search wrong words, hide mastered only in learn",
+  "version": "2.8.36",
+  "versionCode": 85,
+  "changelog": "v2.8.36 更新\n\n【修复】\n- 修复\"上一个\"按钮在某些情况下失效的bug\n- 即使单词被隐藏已掌握过滤掉，也能通过\"上一个\"回退查看",
+  "devNotes": "fix prevCard bug with forceShowItem for filtered words",
   "apkUrl": "https://gitee.com/xdbzys/app/blob/master/gaokao-vocab.apk"
 }
