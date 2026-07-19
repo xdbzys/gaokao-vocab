@@ -1,7 +1,7 @@
 {
-  "version": "2.9.1",
-  "versionCode": 101,
-  "changelog": "v2.9.1 更新\n\n【修复】\n- 词库页搜索不再影响背诵页",
-  "devNotes": "search filter only applies to library page",
+  "version": "2.10.0",
+  "versionCode": 110,
+  "changelog": "v2.10.0 大版本更新\n\n【新增】\n- 内置高考3500词词库（3603词，完整考纲词汇）",
+  "devNotes": "add 3500 gaokao vocabulary book",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk"
 }
