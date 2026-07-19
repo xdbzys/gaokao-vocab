@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.10.0';
-const APP_VERSION_CODE = 110;
+const APP_VERSION = '2.10.1';
+const APP_VERSION_CODE = 111;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -8326,7 +8326,7 @@ function App() {
   }
 
   // 数据备份：导出所有 localStorage 数据为 JSON 文件
-  function exportData() {
+  async function exportData() {
     const keys = [
       'gaokao_progress', 'gaokao_settings', 'gaokao_study_log', 'gaokao_downloaded',
       'gaokao_wrong_words', 'customBooks', 'customSpelling', 'aiImportConfig',
@@ -8338,19 +8338,81 @@ function App() {
       const v = localStorage.getItem(k);
       if (v !== null) data[k] = v;
     });
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `gaokao-backup-${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    const msg = '数据已备份！文件名为 gaokao-backup-' + new Date().toISOString().slice(0,10) + '.json\n\n保存位置取决于浏览器设置，通常在：\n- 电脑：浏览器"下载"文件夹\n- 手机：文件管理器的"下载"或"Download"目录\n\n请将此文件保存到安全位置，换设备或更新时可恢复。';
-    alert(msg);
+    const jsonStr = JSON.stringify(data, null, 2);
+    const fileName = `gaokao-backup-${new Date().toISOString().slice(0,10)}.json`;
+
+    // APP端：保存到 Documents/高考词汇备份/ 目录，方便查找
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
+      try {
+        const { Filesystem } = window.Capacitor.Plugins;
+        const dirName = '高考词汇备份';
+        // 先确保目录存在
+        try { await Filesystem.mkdir({ path: dirName, directory: 'Documents' }); } catch {}
+        const result = await Filesystem.writeFile({
+          path: `${dirName}/${fileName}`,
+          data: jsonStr,
+          directory: 'Documents',
+          encoding: 'utf8'
+        });
+        const uri = result.uri || '';
+        const msg = `数据已备份！\n\n保存位置：Documents/${dirName}/${fileName}\n${uri ? '\n完整路径：' + uri : ''}\n\n打开手机"文件管理器" → "Documents" → "高考词汇备份" 即可找到。`;
+        alert(msg);
+      } catch (e) {
+        // Filesystem 失败时回退到浏览器下载
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = fileName; a.click();
+        URL.revokeObjectURL(url);
+        alert(`数据已备份（文件名：${fileName}）\n\n保存到下载目录。如需指定位置，请授予存储权限后重试。\n失败原因：${e.message}`);
+      }
+    } else {
+      // 网页端：浏览器下载
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fileName; a.click();
+      URL.revokeObjectURL(url);
+      alert(`数据已备份！文件名为 ${fileName}\n\n保存位置：浏览器"下载"文件夹\n请将此文件保存到安全位置，换设备或更新时可恢复。`);
+    }
   }
 
   // 数据恢复：从 JSON 文件导入所有数据
-  function importData() {
+  async function importData() {
+    // APP端：优先从 Documents/高考词汇备份/ 读取
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
+      try {
+        const { Filesystem } = window.Capacitor.Plugins;
+        const dirName = '高考词汇备份';
+        const result = await Filesystem.readdir({ path: dirName, directory: 'Documents' });
+        const files = (result.files || []).filter(f => f.name.endsWith('.json')).sort((a, b) => b.name.localeCompare(a.name));
+        if (files.length > 0) {
+          const list = files.map((f, i) => `${i + 1}. ${f.name}`).join('\n');
+          const choice = prompt(`在 Documents/${dirName}/ 中找到以下备份文件：\n\n${list}\n\n请输入序号选择要恢复的文件（留空取消）：`);
+          if (choice === null || choice.trim() === '') return;
+          const idx = parseInt(choice.trim()) - 1;
+          if (idx < 0 || idx >= files.length) { alert('序号无效'); return; }
+          const fileContent = await Filesystem.readFile({
+            path: `${dirName}/${files[idx].name}`,
+            directory: 'Documents',
+            encoding: 'utf8'
+          });
+          const data = JSON.parse(fileContent.data);
+          if (!data || typeof data !== 'object') throw new Error('文件格式错误');
+          let count = 0;
+          Object.entries(data).forEach(([k, v]) => {
+            if (typeof v === 'string') { localStorage.setItem(k, v); count++; }
+          });
+          alert(`成功从 ${files[idx].name} 恢复 ${count} 项数据，页面即将刷新。`);
+          window.location.reload();
+          return;
+        }
+      } catch (e) {
+        if (e.message && e.message.includes('cancel')) return;
+        // 读取失败，回退到文件选择
+      }
+    }
+    // 网页端或读取失败：让用户手动选择文件
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -9443,7 +9505,7 @@ function App() {
           {/* 数据备份与恢复 */}
           <div className="settingsGroup" style={{ marginTop: 16 }}>
             <h3>数据备份</h3>
-            <p className="muted" style={{ marginBottom: 12 }}>备份学习进度、错词本、设置等数据，更新或换设备后可恢复。</p>
+            <p className="muted" style={{ marginBottom: 12 }}>{isNativeApp ? '备份保存到 Documents/高考词汇备份/ 目录，恢复时自动读取。' : '备份学习进度、错词本、设置等数据，更新或换设备后可恢复。'}</p>
             <div className="importActions">
               <button className="smallBtn" onClick={exportData}>📤 备份数据</button>
               <button className="smallBtn" onClick={importData}>📥 恢复数据</button>

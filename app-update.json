@@ -1,7 +1,7 @@
 {
-  "version": "2.10.0",
-  "versionCode": 110,
-  "changelog": "v2.10.0 大版本更新\n\n【新增】\n- 内置高考3500词词库（3603词，完整考纲词汇）",
-  "devNotes": "add 3500 gaokao vocabulary book",
+  "version": "2.10.1",
+  "versionCode": 111,
+  "changelog": "v2.10.1 更新\n\n【优化】\n- 备份数据保存到 Documents/高考词汇备份/ 目录，方便查找\n- 恢复数据时自动列出备份文件，选择恢复",
+  "devNotes": "backup to custom Documents directory",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk"
 }
