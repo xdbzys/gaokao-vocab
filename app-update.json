@@ -1,7 +1,7 @@
 {
-  "version": "2.8.43",
-  "versionCode": 92,
-  "changelog": "v2.8.43 更新\n\n【优化】\n- 下载链接恢复为GitHub Release直连，速度更快",
-  "devNotes": "revert to GitHub Release direct download for speed",
+  "version": "2.9.0",
+  "versionCode": 100,
+  "changelog": "v2.9.0 大版本更新\n\n【新增】\n- APP内添加官网链接\n- 导入功能添加目标词库选择器，未选词库时自动创建新词库\n- 答错单词短时间内不重复出现\n\n【修复】\n- 修复上一个按钮回退选项不匹配的bug\n- 修复导入功能图片/DOCX解析失败\n- 修复导入时一直提示选择词库无法导入\n- 官网版本号改为多来源读取\n\n【优化】\n- 删除智能分类导入（简化流程）\n- 备份数据提示更详细的保存位置",
+  "devNotes": "major update: fix import, add website link, wrong word spacing, prev card options fix",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk"
 }

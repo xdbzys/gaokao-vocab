@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.8.43';
-const APP_VERSION_CODE = 92;
+const APP_VERSION = '2.9.0';
+const APP_VERSION_CODE = 100;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4110,51 +4110,69 @@ function normalizeAiItems(items, defaultType) {
 async function readFileText(file) {
   if (!file) return '';
   const ext = file.name.split('.').pop().toLowerCase();
-  if (ext === 'txt') return file.text();
-  if (ext === 'pptx') return extractPptxText(file);
-  if (ext === 'pdf') return extractPdfText(file);
-  if (ext === 'docx') return extractDocxText(file);
-  if (['png', 'jpg', 'jpeg', 'webp'].includes(ext)) return extractImageText(file);
-  return file.text();
+  try {
+    if (ext === 'txt' || ext === 'csv') return await file.text();
+    if (ext === 'pptx') return await extractPptxText(file);
+    if (ext === 'pdf') return await extractPdfText(file);
+    if (ext === 'docx') return await extractDocxText(file);
+    if (ext === 'doc') throw new Error('不支持旧版 .doc 格式，请用 Word 另存为 .docx 或将内容复制为文本后粘贴导入');
+    if (['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'].includes(ext)) return await extractImageText(file);
+    return await file.text();
+  } catch (e) {
+    throw new Error(`解析文件失败：${e.message}。建议将文件内容复制后粘贴到文本框中导入。`);
+  }
 }
 
 async function extractPptxText(file) {
-  const zip = await JSZip.loadAsync(await file.arrayBuffer());
-  const slides = Object.keys(zip.files).filter(n => n.startsWith('ppt/slides/slide') && n.endsWith('.xml'));
-  const chunks = [];
-  for (const name of slides) {
-    const xml = await zip.files[name].async('text');
-    chunks.push([...xml.matchAll(/<a:t>(.*?)<\/a:t>/g)].map(m => m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')).join(' '));
-  }
-  return cleanOcrText(chunks.join('\n'));
+  try {
+    const zip = await JSZip.loadAsync(await file.arrayBuffer());
+    const slides = Object.keys(zip.files).filter(n => n.startsWith('ppt/slides/slide') && n.endsWith('.xml'));
+    const chunks = [];
+    for (const name of slides) {
+      const xml = await zip.files[name].async('text');
+      chunks.push([...xml.matchAll(/<a:t>(.*?)<\/a:t>/g)].map(m => m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')).join(' '));
+    }
+    return cleanOcrText(chunks.join('\n'));
+  } catch (e) { throw new Error('PPTX 解析失败: ' + e.message); }
 }
 
 async function extractPdfText(file) {
-  const doc = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
-  const pages = [];
-  for (let i = 1; i <= doc.numPages; i++) {
-    const page = await doc.getPage(i);
-    const content = await page.getTextContent();
-    const rows = new Map();
-    content.items.forEach(item => { const y = Math.round(item.transform[5] / 4) * 4; const r = rows.get(y) || []; r.push({ x: item.transform[4], text: item.str }); rows.set(y, r); });
-    pages.push([...rows.entries()].sort((a, b) => b[0] - a[0]).map(([, r]) => r.sort((a, b) => a.x - b.x).map(p => p.text).join(' ').trim()).filter(Boolean).join('\n'));
-  }
-  return cleanOcrText(pages.join('\n'));
+  try {
+    const doc = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+    const pages = [];
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      const rows = new Map();
+      content.items.forEach(item => { const y = Math.round(item.transform[5] / 4) * 4; const r = rows.get(y) || []; r.push({ x: item.transform[4], text: item.str }); rows.set(y, r); });
+      pages.push([...rows.entries()].sort((a, b) => b[0] - a[0]).map(([, r]) => r.sort((a, b) => a.x - b.x).map(p => p.text).join(' ').trim()).filter(Boolean).join('\n'));
+    }
+    return cleanOcrText(pages.join('\n'));
+  } catch (e) { throw new Error('PDF 解析失败: ' + e.message); }
 }
 
 async function extractDocxText(file) {
-  const zip = await JSZip.loadAsync(await file.arrayBuffer());
-  const xml = await zip.files['word/document.xml']?.async('text');
-  if (!xml) return '';
-  return cleanOcrText(xml.replace(/<\/w:p>/g, '\n').replace(/<w:tab\/>/g, '\t').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'"));
+  try {
+    const zip = await JSZip.loadAsync(await file.arrayBuffer());
+    const xml = await zip.files['word/document.xml']?.async('text');
+    if (!xml) throw new Error('DOCX 文件结构异常');
+    return cleanOcrText(xml.replace(/<\/w:p>/g, '\n').replace(/<w:tab\/>/g, '\t').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'"));
+  } catch (e) { throw new Error('DOCX 解析失败: ' + e.message); }
 }
 
 async function extractImageText(file) {
-  const worker = await createWorker('eng+chi_sim');
-  await worker.setParameters({ tessedit_pageseg_mode: '4', preserve_interword_spaces: '1' });
-  const result = await worker.recognize(file);
-  await worker.terminate();
-  return cleanOcrText(result.data.text);
+  try {
+    setImportStatus('正在识别图片文字，可能需要十几秒...');
+    const worker = await createWorker('eng+chi_sim', 1, {
+      workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5',
+      langPath: 'https://cdn.jsdelivr.net/npm/tesseract.js-lang@5',
+    });
+    await worker.setParameters({ tessedit_pageseg_mode: '4', preserve_interword_spaces: '1' });
+    const result = await worker.recognize(file);
+    await worker.terminate();
+    return cleanOcrText(result.data.text);
+  } catch (e) { throw new Error('图片识别失败: ' + e.message + '。建议手动输入或使用AI识别。'); }
 }
 
 /* ============================
@@ -4334,6 +4352,7 @@ function App() {
   const [importText, setImportText] = useState('');
   const [importStatus, setImportStatus] = useState('');
   const [lastFile, setLastFile] = useState(null);
+  const [importTargetBookId, setImportTargetBookId] = useState(null); // 导入目标词库
   const [aiConfig, setAiConfig] = useState(loadAiConfig);
   const [progress, setProgress] = useState(loadProgress);
   const [settings, setSettings] = useState(loadSettings);
@@ -4474,7 +4493,8 @@ function App() {
 
   // 问题1：4个选项（1正确+3干扰项）—— 排除易混/同义/反义词干扰
   const options = useMemo(() => {
-    if (!current) return [];
+    const item = displayCurrent || current;
+    if (!item) return [];
     if (practiceMode === 'flashcard') return [];
     // 从普通词库中抽取干扰项，排除易混/同义/反义/褒贬分类词库
     const normalBooks = books.filter(b => 
@@ -4483,17 +4503,17 @@ function App() {
       !b.id.includes('positive') && !b.id.includes('negative')
     );
     const normalWords = normalBooks.flatMap(b => b.items);
-    const pool = normalWords.filter(item => 
-      item.id !== current.id && 
-      item.term !== current.term &&
-      item.meaning !== current.meaning
+    const pool = normalWords.filter(w => 
+      w.id !== item.id && 
+      w.term !== item.term &&
+      w.meaning !== item.meaning
     );
     const wrongItems = shuffle(pool).slice(0, 3);
     const values = practiceMode === 'cn-to-en'
-      ? [current.term, ...wrongItems.map(i => i.term)]
-      : [current.meaning, ...wrongItems.map(i => i.meaning)];
+      ? [item.term, ...wrongItems.map(i => i.term)]
+      : [item.meaning, ...wrongItems.map(i => i.meaning)];
     return shuffle(values);
-  }, [books, current, practiceMode]);
+  }, [books, displayCurrent, current, practiceMode]);
 
   // 进度统计（按当前词库）
   const progressStats = useMemo(() => {
@@ -4603,9 +4623,23 @@ function App() {
   const prevCardRef = useRef(() => {});
   // 记录最近一次回答的单词，用于"上一个"按钮优先回退
   const lastAnsweredRef = useRef(null);
+  // 最近答错的单词（term），短时间内不重复出现
+  const recentWrongRef = useRef([]);
+  const RECENT_WRONG_WINDOW = 20; // 最近20个单词内不重复出现答错的词
 
   function nextCard() {
-    const nextIdx = (index + 1) % Math.max(filteredItems.length, 1);
+    let nextIdx = (index + 1) % Math.max(filteredItems.length, 1);
+    // 如果下一个单词是最近答错的，跳过（直到找到非答错的或遍历完）
+    if (filteredItems.length > RECENT_WRONG_WINDOW) {
+      const recentWrong = recentWrongRef.current;
+      let tried = 0;
+      while (tried < filteredItems.length) {
+        const item = filteredItems[nextIdx];
+        if (!recentWrong.includes(item.term)) break;
+        nextIdx = (nextIdx + 1) % filteredItems.length;
+        tried++;
+      }
+    }
     setIndex(nextIdx);
     setShowBack(false); setSelected('');
     lockedCurrent.current = null;
@@ -4696,7 +4730,8 @@ function App() {
     a.download = `gaokao-backup-${new Date().toISOString().slice(0,10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    alert('数据已备份，请妥善保存 JSON 文件。');
+    const msg = '数据已备份！文件名为 gaokao-backup-' + new Date().toISOString().slice(0,10) + '.json\n\n保存位置取决于浏览器设置，通常在：\n- 电脑：浏览器"下载"文件夹\n- 手机：文件管理器的"下载"或"Download"目录\n\n请将此文件保存到安全位置，换设备或更新时可恢复。';
+    alert(msg);
   }
 
   // 数据恢复：从 JSON 文件导入所有数据
@@ -4757,6 +4792,10 @@ function App() {
     } else {
       // 答错：加入错词本（错词本模式下不重复添加）
       if (!isWrongWordBook) addWrongWord(c);
+      // 记录到最近答错列表，短时间内不重复出现
+      const rw = recentWrongRef.current;
+      rw.push(c.term);
+      if (rw.length > RECENT_WRONG_WINDOW) rw.shift();
     }
   }
 
@@ -4791,82 +4830,20 @@ function App() {
   }
 
   function addImportedItems(items) {
-    if (!activeBook.editable) { alert('请先新建自定义词库'); return; }
     if (!items.length) { setImportStatus('没有识别到有效词条'); return; }
-    updateBooks(books.map(b => b.id === activeBook.id ? { ...b, items: [...b.items, ...items] } : b));
-    setImportStatus(`导入成功：${items.length} 条`);
-  }
-
-  // 智能分类导入
-  function smartImport() {
-    if (!importText.trim()) { setImportStatus('请先输入文本内容'); return; }
-    const text = importText.toLowerCase();
-    const lines = importText.split('\n').map(l => l.trim()).filter(Boolean);
-
-    // 拼写纠错识别：检测每行是否为 "correct / wrong : tip" 格式
-    const spellingRegex = /(\w+)\s*[\/\-\|,]\s*(\w+)\s*[:：]\s*(.+)/;
-    const spellingLines = lines.filter(l => spellingRegex.test(l));
-    const hasSpellingKeywords = /tip|记忆技巧|拼写|correct|wrong|易错|混淆/.test(text);
-    const hasContrastKeywords = /对比|同义词|反义词|辨析|区别/.test(text);
-    const hasRootKeywords = /词根|词缀|前缀|后缀|root|affix/.test(text);
-    const hasContextKeywords = /情景|语境|短文|阅读|文章/.test(text);
-    const hasPhraseKeywords = /短语|词组|固定搭配|phrasal/.test(text);
-
-    // 优先根据格式判断拼写
-    if (spellingLines.length >= Math.max(1, lines.length * 0.5)) {
-      const newSpellingItems = [];
-      for (const line of lines) {
-        const m = line.match(spellingRegex);
-        if (m) {
-          newSpellingItems.push({ correct: m[1], wrong: m[2], tip: m[3].trim() });
-        }
-      }
-      if (newSpellingItems.length > 0) {
-        const existing = loadCustomSpelling();
-        saveCustomSpelling([...existing, ...newSpellingItems]);
-        setImportStatus(`智能分类：识别为拼写纠错扩展，已导入 ${newSpellingItems.length} 条到拼写纠错`);
-        return;
-      }
-    }
-
-    // 判断导入类型
-    let importType = 'word';
-    let statusMsg = '';
-
-    if (hasSpellingKeywords && !hasContrastKeywords && !hasRootKeywords && !hasContextKeywords) {
-      const newSpellingItems = [];
-      for (const line of lines) {
-        const m = line.match(spellingRegex);
-        if (m) {
-          newSpellingItems.push({ correct: m[1], wrong: m[2], tip: m[3].trim() });
-        }
-      }
-      if (newSpellingItems.length > 0) {
-        const existing = loadCustomSpelling();
-        saveCustomSpelling([...existing, ...newSpellingItems]);
-        setImportStatus(`智能分类：识别为拼写纠错扩展，已导入 ${newSpellingItems.length} 条到拼写纠错`);
-        return;
-      }
-    }
-
-    if (hasPhraseKeywords && !hasRootKeywords) {
-      importType = 'phrase';
-      statusMsg = '识别为短语内容，';
-    } else if (hasRootKeywords && !hasSpellingKeywords && !hasContrastKeywords) {
-      statusMsg = '识别为词根词缀内容，';
-    } else if (hasContextKeywords && !hasSpellingKeywords && !hasContrastKeywords) {
-      statusMsg = '识别为情景记忆内容，';
-    } else if (hasContrastKeywords && !hasSpellingKeywords) {
-      statusMsg = '识别为对比记忆内容，';
-    }
-
-    // 按词库导入
-    const items = parseImportedText(importText, importType);
-    if (items.length > 0) {
-      addImportedItems(items);
-      setImportStatus(`${statusMsg}已导入 ${items.length} 条到词库`);
+    // 优先使用用户选择的目标词库，否则用当前词库
+    const targetId = importTargetBookId || activeBook.id;
+    const targetBook = books.find(b => b.id === targetId);
+    if (!targetBook || !targetBook.editable) {
+      // 自动创建一个新词库
+      const name = `导入词库-${new Date().toLocaleDateString()}`;
+      const nb = { id: `book-${Date.now()}`, name, editable: true, items };
+      updateBooks([...books, nb]);
+      setImportTargetBookId(nb.id);
+      setImportStatus(`自动新建"${name}"并导入 ${items.length} 条`);
     } else {
-      setImportStatus(`${statusMsg}未能识别到有效词条，请检查格式`);
+      updateBooks(books.map(b => b.id === targetId ? { ...b, items: [...b.items, ...items] } : b));
+      setImportStatus(`导入成功：${items.length} 条 → ${targetBook.name}`);
     }
   }
 
@@ -5693,10 +5670,13 @@ function App() {
 
             <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder="在此粘贴词表文本..." />
             <div className="importActions">
+              <select value={importTargetBookId || ''} onChange={e => setImportTargetBookId(e.target.value || null)} style={{ minWidth: 140, marginRight: 8 }}>
+                <option value="">自动创建新词库</option>
+                {books.filter(b => b.editable).map(b => <option key={b.id} value={b.id}>{b.name} ({b.items.length}条)</option>)}
+              </select>
               <button className="primary" onClick={() => addImportedItems(parseImportedText(importText, 'word'))}>导入到词库</button>
-              <button onClick={smartImport}>智能分类导入</button>
             </div>
-            <p className="status">{importStatus || '请先选择或新建自定义词库再导入'}</p>
+            <p className="status">{importStatus || '粘贴或上传文件后点击导入，未选词库时自动创建新词库'}</p>
           </div>
         </section>
       )}
@@ -5926,6 +5906,23 @@ function App() {
             <button className="smallBtn" onClick={() => {
               window.open('https://xdbzys.github.io/gaokao-vocab-website/privacy.html', '_blank');
             }}>查看隐私政策</button>
+          </div>
+
+          {/* 官网 */}
+          <div className="cloudUpdateSection" style={{ background: '#eff6ff', borderColor: '#bfdbfe', marginTop: 12 }}>
+            <h3 style={{ color: '#1d4ed8' }}>🌐 官网</h3>
+            <p className="muted">
+              <a href="https://xdbzys.github.io/gaokao-vocab-website/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>
+                xdbzys.github.io/gaokao-vocab-website
+              </a>
+            </p>
+            <button className="smallBtn" onClick={() => {
+              if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+                Capacitor.Plugins.Browser.open({ url: 'https://xdbzys.github.io/gaokao-vocab-website/' });
+              } else {
+                window.open('https://xdbzys.github.io/gaokao-vocab-website/', '_blank');
+              }
+            }}>访问官网</button>
           </div>
 
           {/* 词库下载区域 */}
