@@ -1,7 +1,7 @@
 {
-  "version": "2.10.2",
-  "versionCode": 112,
-  "changelog": "v2.10.2 更新\n\n【优化】\n- 更新检查优先使用国内CDN，提高检查成功率",
-  "devNotes": "jsdelivr CDN first for update check",
-  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk"
+  "version": "2.10.3",
+  "versionCode": 113,
+  "changelog": "v2.10.3 更新\n\n【修复】\n- 下载链接改为Gitee国内服务器，解决下载打不开的问题",
+  "devNotes": "APK download via Gitee for China access",
+  "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
