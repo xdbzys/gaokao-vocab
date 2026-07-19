@@ -8,8 +8,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.9.0';
-const APP_VERSION_CODE = 100;
+const APP_VERSION = '2.9.1';
+const APP_VERSION_CODE = 101;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -4475,7 +4475,8 @@ function App() {
       const typeOk = typeFilter === '全部' || item.type === typeFilter;
       // 隐藏已掌握只在背诵页生效，词库页不受影响
       const masteredOk = section !== 'learn' || !hideMastered || progress[item.id] !== 'mastered';
-      const searchOk = !search || `${item.term}${item.meaning}${item.pos}`.toLowerCase().includes(search.toLowerCase());
+      // 搜索只在词库页生效，不影响背诵页
+      const searchOk = section === 'learn' || !search || `${item.term}${item.meaning}${item.pos}`.toLowerCase().includes(search.toLowerCase());
       return posOk && typeOk && masteredOk && searchOk;
     });
     if (settings.shuffleMode) items = shuffle(items);
