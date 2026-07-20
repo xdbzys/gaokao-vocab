@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.12.0';
-const APP_VERSION_CODE = 130;
+const APP_VERSION = '2.12.1';
+const APP_VERSION_CODE = 131;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -7608,6 +7608,19 @@ function stripPosPrefix(text) {
     .trim();
 }
 
+// 获取简短释义（用于背诵页选项），只取常见意思
+function getShortMeaning(text) {
+  if (!text) return '';
+  const stripped = stripPosPrefix(text);
+  // 如果去除词性后还是很长，只取第一个主要义项（按中文分号或逗号分隔）
+  if (stripped.length > 12) {
+    // 尝试按中文分号/逗号分隔取第一个义项
+    const first = stripped.split(/[，；;]/)[0].trim();
+    if (first && first.length >= 2) return first;
+  }
+  return stripped;
+}
+
 function extractExamples(text) {
   const m = text.match(/(?:例句|example)\s*[:：]\s*(.+)$/i);
   if (!m) return [];
@@ -9066,7 +9079,7 @@ function App() {
               </div>
 
               <div className="questionArea">
-                <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? displayCurrent.meaning : practiceMode === 'flashcard' ? displayCurrent.term : displayCurrent.term}</h2>
+                <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? getShortMeaning(displayCurrent.meaning) : practiceMode === 'flashcard' ? displayCurrent.term : displayCurrent.term}</h2>
                 {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1.1em', margin: '4px 0' }}>{displayCurrent.pos}</p>}
                 {practiceMode !== 'cn-to-en' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
                 <button className="sound" onClick={() => speak(displayCurrent.term, settings.speakRate)}>🔊 发音</button>
@@ -9077,8 +9090,8 @@ function App() {
                 <div className="options">
                   {options.map(option => {
                     const right = practiceMode === 'cn-to-en' ? current.term : current.meaning;
-                    // en-to-cn 模式下选项只显示中文释义，不显示词性标记
-                    const displayOption = practiceMode === 'en-to-cn' ? stripPosPrefix(option) : option;
+                    // en-to-cn 模式下选项只显示简短中文释义，不显示词性标记和详细义项
+                    const displayOption = practiceMode === 'en-to-cn' ? getShortMeaning(option) : option;
                     return <button key={option} onClick={() => handleSelect(option)}>{displayOption}</button>;
                   })}
                 </div>
@@ -9162,7 +9175,7 @@ function App() {
                       {item.phonetic && <span className="phoneticSmall">{item.phonetic}</span>}
                       {item.pos && <span className="posTag" style={{ color: posColor(item.pos), background: posColor(item.pos) + '18' }}>{item.pos}</span>}
                     </div>
-                    <p>{item.meaning}</p>
+                    <p>{getShortMeaning(item.meaning)}</p>
                     <small>
                       {item.sourceBooks && item.sourceBooks.length > 0
                         ? `词库：${item.sourceBooks.join('、')}`
@@ -9227,7 +9240,7 @@ function App() {
                     {item.pos && <span className="posTag" style={{ color: posColor(item.pos), background: posColor(item.pos) + '18' }}>{item.pos}</span>}
                     <span className="freqTag" style={{ color: freqColor(item.frequency), borderColor: freqColor(item.frequency) }}>{item.frequency}</span>
                   </div>
-                  <p>{item.meaning}</p>
+                  <p>{getShortMeaning(item.meaning)}</p>
                 </div>
                 <div className="listActions" onClick={e => e.stopPropagation()}>
                   <button className="smallBtn" onClick={() => speak(item.term, settings.speakRate)}>🔊</button>
@@ -9345,7 +9358,7 @@ function App() {
                         <article key={item.id} className="listItem">
                           <div>
                             <h3 style={{ color: freqColor(item.frequency) }}>{item.term}</h3>
-                            <p>{item.meaning}</p>
+                            <p>{getShortMeaning(item.meaning)}</p>
                           </div>
                           <div className="listActions">
                             <button className="smallBtn" onClick={() => speak(item.term, settings.speakRate)}>🔊</button>

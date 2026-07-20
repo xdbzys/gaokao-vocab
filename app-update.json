@@ -1,7 +1,7 @@
 {
-  "version": "2.12.0",
-  "versionCode": 130,
-  "changelog": "v2.12.0 大版本更新\n\n【新增】\n- 词库进度管理：可隐藏/显示内置词库（如同义词对比等）\n- 词库进度管理：可删除自定义词库\n- 隐藏的词库不会出现在背诵页和词库页的词库选择列表中\n- 清理不存在的词库时同时清理错词本残留数据",
-  "devNotes": "hide/show built-in books, delete custom books from progress management",
+  "version": "2.12.1",
+  "versionCode": 131,
+  "changelog": "v2.12.1 更新\n\n【优化】\n- 背诵页选项只显示常见中文意思（简短释义）\n- 词库列表只显示简短释义，点开单词查看完整详细释义\n- 答题判断仍基于完整释义，确保准确性",
+  "devNotes": "short meaning in options and list, full meaning in detail modal",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
