@@ -1,7 +1,7 @@
 {
-  "version": "2.11.0",
-  "versionCode": 120,
-  "changelog": "v2.11.0 大版本更新\n\n【新增】\n- 错词本显示来源词库，方便查看在哪个词库答错\n- 跨词库共用已掌握和错词状态\n\n【优化】\n- 已掌握状态改为基于单词本身（term），不同词库中同一单词共用掌握状态\n- 错词本去重并记录多个来源词库\n- 兼容旧数据自动迁移",
-  "devNotes": "term-based progress and wrong words with source book tracking",
+  "version": "2.11.1",
+  "versionCode": 121,
+  "changelog": "v2.11.1 更新\n\n【优化】\n- 3500词释义大幅补全（3182条），使用ECDICT权威词典数据\n- 3500词全部添加音标（3276条）\n- 多词性多义项释义完整覆盖",
+  "devNotes": "enrich 3500 word meanings and add phonetics from ECDICT",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
