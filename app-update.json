@@ -1,7 +1,7 @@
 {
-  "version": "2.10.5",
-  "versionCode": 115,
-  "changelog": "v2.10.5 更新\n\n【优化】\n- 点击下一个/跳过的单词短时间内不重复出现，除非词库内没有新单词了",
-  "devNotes": "skip seen words, only repeat when all words exhausted",
+  "version": "2.11.0",
+  "versionCode": 120,
+  "changelog": "v2.11.0 大版本更新\n\n【新增】\n- 错词本显示来源词库，方便查看在哪个词库答错\n- 跨词库共用已掌握和错词状态\n\n【优化】\n- 已掌握状态改为基于单词本身（term），不同词库中同一单词共用掌握状态\n- 错词本去重并记录多个来源词库\n- 兼容旧数据自动迁移",
+  "devNotes": "term-based progress and wrong words with source book tracking",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
