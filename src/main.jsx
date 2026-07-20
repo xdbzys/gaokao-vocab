@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.11.2';
-const APP_VERSION_CODE = 122;
+const APP_VERSION = '2.11.3';
+const APP_VERSION_CODE = 123;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -8906,23 +8906,36 @@ function App() {
   async function applyUpdate() {
     if (!updateInfo || !updateInfo.hasUpdate) return;
     setUpdateInfo(prev => ({ ...prev, updating: true }));
-    setCloudStatus('正在获取下载链接...');
+    setCloudStatus('正在打开下载页面...');
+
+    // 多个下载源，逐一尝试
+    const downloadSources = [
+      { name: 'Gitee（推荐）', url: 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk' },
+      { name: 'jsdelivr CDN', url: 'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/android/app/build/outputs/apk/debug/app-debug.apk' },
+      { name: 'GitHub', url: 'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk' },
+    ];
 
     try {
-      // 使用 GitHub Pages 托管的 APK 链接（国内访问更稳定）
-      const apkUrl = 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
-      if (!apkUrl) throw new Error('未找到下载地址');
-
-      // 直接用系统浏览器下载 APK，最可靠的方案
+      // 优先尝试 Gitee
+      const apkUrl = downloadSources[0].url;
+      let opened = false;
       if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-        await Capacitor.Plugins.Browser.open({ url: apkUrl });
-      } else {
+        try {
+          await Capacitor.Plugins.Browser.open({ url: apkUrl });
+          opened = true;
+        } catch {}
+      }
+      if (!opened) {
         window.open(apkUrl, '_blank');
       }
-      setCloudStatus('已打开下载页面，下载完成后请安装');
+      // 提示用户：如果打不开，提供其他下载源
+      const altLinks = downloadSources.slice(1).map(s => `${s.name}: ${s.url}`).join('\n');
+      setCloudStatus(`已打开下载页面，下载完成后请安装。\n\n如果页面打不开，请手动复制以下链接到浏览器：\n${altLinks}`);
       setUpdateInfo(prev => ({ ...prev, updating: false }));
     } catch (e) {
-      setCloudStatus(`更新失败：${e.message}`);
+      // 全部失败，显示所有下载链接让用户手动选择
+      const allLinks = downloadSources.map(s => `${s.name}:\n${s.url}`).join('\n\n');
+      setCloudStatus(`自动打开失败，请手动复制以下链接到浏览器下载：\n\n${allLinks}`);
       setUpdateInfo(prev => ({ ...prev, updating: false }));
     }
   }
