@@ -1,7 +1,7 @@
 {
-  "version": "2.11.1",
-  "versionCode": 121,
-  "changelog": "v2.11.1 更新\n\n【优化】\n- 3500词释义大幅补全（3182条），使用ECDICT权威词典数据\n- 3500词全部添加音标（3276条）\n- 多词性多义项释义完整覆盖",
-  "devNotes": "enrich 3500 word meanings and add phonetics from ECDICT",
+  "version": "2.11.2",
+  "versionCode": 122,
+  "changelog": "v2.11.2 更新\n\n【新增】\n- 词库进度管理新增\"清理不存在的词库\"按钮\n- 自动清理已删除词库的残留引用和进度数据",
+  "devNotes": "clean deleted book refs and orphan progress data",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

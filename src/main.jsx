@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.11.1';
-const APP_VERSION_CODE = 121;
+const APP_VERSION = '2.11.2';
+const APP_VERSION_CODE = 122;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -8244,6 +8244,37 @@ function App() {
     });
   }
 
+  // 清理不存在的词库引用：从 studyBookIds/libraryBookIds 中移除已删除的词库 id
+  function cleanDeletedBookRefs() {
+    const allBookIds = books.map(b => b.id);
+    const beforeStudy = studyBookIds.length;
+    const beforeLibrary = libraryBookIds.length;
+    const newStudyIds = studyBookIds.filter(id => allBookIds.includes(id) || id === 'wrong-words');
+    const newLibraryIds = libraryBookIds.filter(id => allBookIds.includes(id));
+    if (newStudyIds.length !== beforeStudy) {
+      setStudyBookIds(newStudyIds);
+      localStorage.setItem('gaokao_study_books', newStudyIds.join(','));
+    }
+    if (newLibraryIds.length !== beforeLibrary) {
+      setLibraryBookIds(newLibraryIds);
+      localStorage.setItem('gaokao_library_books', newLibraryIds.join(','));
+    }
+    // 清理 progress 中不属于任何词库的残留数据
+    const allTerms = new Set();
+    books.forEach(b => b.items.forEach(item => allTerms.add(item.term)));
+    setProgress(prev => {
+      const next = {};
+      let removed = 0;
+      Object.entries(prev).forEach(([term, val]) => {
+        if (allTerms.has(term)) next[term] = val;
+        else removed++;
+      });
+      if (removed > 0) saveProgress(next);
+      return next;
+    });
+    return { study: beforeStudy - newStudyIds.length, library: beforeLibrary - newLibraryIds.length };
+  }
+
   // 记录今日学习
   function recordStudy() {
     const today = getToday();
@@ -9742,6 +9773,13 @@ function App() {
           {/* 每个词库的重置进度 */}
           <div className="resetSection">
             <h3>词库进度管理</h3>
+            <button className="smallBtn" style={{ marginBottom: 12, background: '#f59e0b', color: '#fff' }} onClick={() => {
+              const result = cleanDeletedBookRefs();
+              const msgs = [];
+              if (result.study > 0) msgs.push(`背诵页清理 ${result.study} 个`);
+              if (result.library > 0) msgs.push(`词库页清理 ${result.library} 个`);
+              alert(msgs.length > 0 ? `已清理不存在的词库引用：\n${msgs.join('\n')}` : '没有发现不存在的词库引用');
+            }}>清理不存在的词库</button>
             <div className="list">
               {books.map(b => {
                 const mastered = b.items.filter(i => progress[i.term] === 'mastered').length;
