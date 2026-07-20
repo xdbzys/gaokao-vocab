@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.10.4';
-const APP_VERSION_CODE = 114;
+const APP_VERSION = '2.10.5';
+const APP_VERSION_CODE = 115;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -8242,16 +8242,40 @@ function App() {
   // 最近答错的单词（term），短时间内不重复出现
   const recentWrongRef = useRef([]);
   const RECENT_WRONG_WINDOW = 20; // 最近20个单词内不重复出现答错的词
+  // 最近看到过的单词（term），点击"下一个"/"跳过"后不重复出现
+  const recentSeenRef = useRef([]);
+
+  // 切换词库时清空已看记录
+  useEffect(() => {
+    recentSeenRef.current = [];
+    recentWrongRef.current = [];
+  }, [activeBook.id]);
 
   function nextCard() {
+    // 把当前单词加入"已看"记录
+    if (filteredItems.length > 0) {
+      const currentItem = filteredItems[index % filteredItems.length];
+      if (currentItem && currentItem.term) {
+        const rs = recentSeenRef.current;
+        if (!rs.includes(currentItem.term)) rs.push(currentItem.term);
+        // 动态窗口：最多保留词库60%且不超过50个
+        const maxSeen = Math.min(50, Math.max(3, Math.floor(filteredItems.length * 0.6)));
+        while (rs.length > maxSeen) rs.shift();
+      }
+    }
+
     let nextIdx = (index + 1) % Math.max(filteredItems.length, 1);
-    // 如果下一个单词是最近答错的，跳过（直到找到非答错的或遍历完）
-    if (filteredItems.length > RECENT_WRONG_WINDOW) {
-      const recentWrong = recentWrongRef.current;
+    // 跳过最近已看和答错的单词，除非所有单词都被跳过了
+    if (filteredItems.length > 3) {
+      const rs = recentSeenRef.current;
+      const rw = recentWrongRef.current;
       let tried = 0;
       while (tried < filteredItems.length) {
         const item = filteredItems[nextIdx];
-        if (!recentWrong.includes(item.term)) break;
+        // 检查是否所有单词都在"已看"或"答错"列表中
+        const allSeenOrWrong = filteredItems.every(it => rs.includes(it.term) || rw.includes(it.term));
+        if (allSeenOrWrong) break; // 词库内没有新单词了，允许重复
+        if (!rs.includes(item.term) && !rw.includes(item.term)) break;
         nextIdx = (nextIdx + 1) % filteredItems.length;
         tried++;
       }

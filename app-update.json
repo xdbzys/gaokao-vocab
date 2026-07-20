@@ -1,7 +1,7 @@
 {
-  "version": "2.10.4",
-  "versionCode": 114,
-  "changelog": "v2.10.4 更新\n\n【修复】\n- 备份数据真正保存到 Documents/高考词汇备份/ 目录（需更新到此版本后生效）",
-  "devNotes": "install @capacitor/filesystem plugin for real backup to Documents dir",
+  "version": "2.10.5",
+  "versionCode": 115,
+  "changelog": "v2.10.5 更新\n\n【优化】\n- 点击下一个/跳过的单词短时间内不重复出现，除非词库内没有新单词了",
+  "devNotes": "skip seen words, only repeat when all words exhausted",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
