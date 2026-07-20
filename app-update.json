@@ -1,7 +1,7 @@
 {
-  "version": "2.10.3",
-  "versionCode": 113,
-  "changelog": "v2.10.3 更新\n\n【修复】\n- 下载链接改为Gitee国内服务器，解决下载打不开的问题",
-  "devNotes": "APK download via Gitee for China access",
+  "version": "2.10.4",
+  "versionCode": 114,
+  "changelog": "v2.10.4 更新\n\n【修复】\n- 备份数据真正保存到 Documents/高考词汇备份/ 目录（需更新到此版本后生效）",
+  "devNotes": "install @capacitor/filesystem plugin for real backup to Documents dir",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

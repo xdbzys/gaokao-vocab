@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import JSZip from 'jszip';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { createWorker } from 'tesseract.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import './styles.css';
@@ -8,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.10.3';
-const APP_VERSION_CODE = 113;
+const APP_VERSION = '2.10.4';
+const APP_VERSION_CODE = 114;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -8340,51 +8341,51 @@ function App() {
     });
     const jsonStr = JSON.stringify(data, null, 2);
     const fileName = `gaokao-backup-${new Date().toISOString().slice(0,10)}.json`;
+    const dirName = '高考词汇备份';
 
     // APP端：保存到 Documents/高考词汇备份/ 目录，方便查找
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
+    if (isNativeApp) {
       try {
-        const { Filesystem } = window.Capacitor.Plugins;
-        const dirName = '高考词汇备份';
-        // 先确保目录存在
-        try { await Filesystem.mkdir({ path: dirName, directory: 'Documents' }); } catch {}
+        // 先确保目录存在（已存在则忽略错误）
+        try { await Filesystem.mkdir({ path: dirName, directory: Directory.Documents }); } catch {}
         const result = await Filesystem.writeFile({
           path: `${dirName}/${fileName}`,
           data: jsonStr,
-          directory: 'Documents',
-          encoding: 'utf8'
+          directory: Directory.Documents,
+          encoding: Encoding.UTF8
         });
         const uri = result.uri || '';
         const msg = `数据已备份！\n\n保存位置：Documents/${dirName}/${fileName}\n${uri ? '\n完整路径：' + uri : ''}\n\n打开手机"文件管理器" → "Documents" → "高考词汇备份" 即可找到。`;
         alert(msg);
+        return;
       } catch (e) {
         // Filesystem 失败时回退到浏览器下载
+        console.warn('[Backup] Filesystem failed:', e);
         const blob = new Blob([jsonStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url; a.download = fileName; a.click();
         URL.revokeObjectURL(url);
         alert(`数据已备份（文件名：${fileName}）\n\n保存到下载目录。如需指定位置，请授予存储权限后重试。\n失败原因：${e.message}`);
+        return;
       }
-    } else {
-      // 网页端：浏览器下载
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = fileName; a.click();
-      URL.revokeObjectURL(url);
-      alert(`数据已备份！文件名为 ${fileName}\n\n保存位置：浏览器"下载"文件夹\n请将此文件保存到安全位置，换设备或更新时可恢复。`);
     }
+    // 网页端：浏览器下载
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName; a.click();
+    URL.revokeObjectURL(url);
+    alert(`数据已备份！文件名为 ${fileName}\n\n保存位置：浏览器"下载"文件夹\n请将此文件保存到安全位置，换设备或更新时可恢复。`);
   }
 
   // 数据恢复：从 JSON 文件导入所有数据
   async function importData() {
+    const dirName = '高考词汇备份';
     // APP端：优先从 Documents/高考词汇备份/ 读取
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
+    if (isNativeApp) {
       try {
-        const { Filesystem } = window.Capacitor.Plugins;
-        const dirName = '高考词汇备份';
-        const result = await Filesystem.readdir({ path: dirName, directory: 'Documents' });
+        const result = await Filesystem.readdir({ path: dirName, directory: Directory.Documents });
         const files = (result.files || []).filter(f => f.name.endsWith('.json')).sort((a, b) => b.name.localeCompare(a.name));
         if (files.length > 0) {
           const list = files.map((f, i) => `${i + 1}. ${f.name}`).join('\n');
@@ -8394,8 +8395,8 @@ function App() {
           if (idx < 0 || idx >= files.length) { alert('序号无效'); return; }
           const fileContent = await Filesystem.readFile({
             path: `${dirName}/${files[idx].name}`,
-            directory: 'Documents',
-            encoding: 'utf8'
+            directory: Directory.Documents,
+            encoding: Encoding.UTF8
           });
           const data = JSON.parse(fileContent.data);
           if (!data || typeof data !== 'object') throw new Error('文件格式错误');
@@ -8407,8 +8408,11 @@ function App() {
           window.location.reload();
           return;
         }
+        alert(`Documents/${dirName}/ 中没有找到备份文件。\n\n请先备份数据，或选择其他文件恢复。`);
+        return;
       } catch (e) {
         if (e.message && e.message.includes('cancel')) return;
+        console.warn('[Restore] Filesystem readdir failed:', e);
         // 读取失败，回退到文件选择
       }
     }
