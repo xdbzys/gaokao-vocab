@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.11.3';
-const APP_VERSION_CODE = 123;
+const APP_VERSION = '2.12.0';
+const APP_VERSION_CODE = 130;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -7959,6 +7959,11 @@ function App() {
     try { return localStorage.getItem('gaokao_hide_mastered') !== 'false'; }
     catch { return true; }
   });
+  // 用户隐藏的词库 ID 列表
+  const [hiddenBookIds, setHiddenBookIds] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('gaokao_hidden_books') || '[]'); }
+    catch { return []; }
+  });
   const [practiceMode, setPracticeMode] = useState('en-to-cn');
   const [detailMode, setDetailMode] = useState('brief');
   const [index, setIndex] = useState(0);
@@ -8077,7 +8082,7 @@ function App() {
         editable: false
       };
     }
-    const selected = books.filter(b => currentBookIds.includes(b.id));
+    const selected = books.filter(b => currentBookIds.includes(b.id) && !hiddenBookIds.includes(b.id));
     if (selected.length === 0) return books[0] || { id: 'empty', name: '空', items: [], editable: false };
     // 多词库合并时按 term 去重，保留第一个出现的
     const seen = new Set();
@@ -8270,6 +8275,12 @@ function App() {
         else removed++;
       });
       if (removed > 0) saveProgress(next);
+      return next;
+    });
+    // 清理错词本中不属于任何词库的残留数据
+    setWrongWords(prev => {
+      const next = prev.filter(w => allTerms.has(w.term));
+      if (next.length !== prev.length) saveWrongWords(next);
       return next;
     });
     return { study: beforeStudy - newStudyIds.length, library: beforeLibrary - newLibraryIds.length };
@@ -9002,7 +9013,7 @@ function App() {
                       <span className="bookCount">({wrongWords.length})</span>
                     </label>
                   )}
-                  {books.filter(b => !b.id.includes('synonym') && !b.id.includes('antonym') && !b.id.includes('confused') && !b.id.includes('dual-sentiment')).map(b => (
+                  {books.filter(b => !b.id.includes('synonym') && !b.id.includes('antonym') && !b.id.includes('confused') && !b.id.includes('dual-sentiment') && !hiddenBookIds.includes(b.id)).map(b => (
                     <label key={b.id} className="bookPickerItem">
                       <input type="checkbox" checked={studyBookIds.includes(b.id)} onChange={() => switchStudyBook(b.id)} />
                       <span>{b.name}</span>
@@ -9186,7 +9197,7 @@ function App() {
                     <button onClick={selectAllLibraryBooks}>全选</button>
                     <button onClick={() => { setLibraryBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_library_books', 'gaokao-core'); } catch {} }}>重置</button>
                   </div>
-                  {books.map(b => (
+                  {books.filter(b => !hiddenBookIds.includes(b.id)).map(b => (
                     <label key={b.id} className="bookPickerItem">
                       <input type="checkbox" checked={libraryBookIds.includes(b.id)} onChange={() => switchLibraryBook(b.id)} />
                       <span>{b.name}</span>
@@ -9794,15 +9805,37 @@ function App() {
               alert(msgs.length > 0 ? `已清理不存在的词库引用：\n${msgs.join('\n')}` : '没有发现不存在的词库引用');
             }}>清理不存在的词库</button>
             <div className="list">
-              {books.map(b => {
+              {books.filter(b => b.id !== 'mastered-words' && b.id !== 'wrong-words').map(b => {
                 const mastered = b.items.filter(i => progress[i.term] === 'mastered').length;
+                const isBuiltIn = builtInBooks.some(bb => bb.id === b.id);
+                const isHidden = hiddenBookIds.includes(b.id);
                 return (
-                  <div key={b.id} className="listItem">
+                  <div key={b.id} className="listItem" style={isHidden ? { opacity: 0.5 } : {}}>
                     <div>
-                      <h3>{b.name}</h3>
+                      <h3>{b.name} {isHidden && <small style={{ color: '#999' }}>(已隐藏)</small>}</h3>
                       <small>已掌握 {mastered}/{b.items.length}</small>
                     </div>
-                    <button className="smallBtn dangerGhost" onClick={() => resetBookProgress(b.id)}>重置进度</button>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      <button className="smallBtn dangerGhost" onClick={() => resetBookProgress(b.id)}>重置</button>
+                      {isBuiltIn ? (
+                        <button className="smallBtn" style={{ background: isHidden ? '#2563eb' : '#6b7280', color: '#fff' }} onClick={() => {
+                          const next = isHidden
+                            ? hiddenBookIds.filter(x => x !== b.id)
+                            : [...hiddenBookIds, b.id];
+                          setHiddenBookIds(next);
+                          localStorage.setItem('gaokao_hidden_books', JSON.stringify(next));
+                        }}>{isHidden ? '显示' : '隐藏'}</button>
+                      ) : (
+                        <button className="smallBtn dangerGhost" style={{ color: '#dc2626' }} onClick={() => {
+                          if (!confirm(`确定删除词库「${b.name}」及其进度？`)) return;
+                          const remaining = books.filter(x => x.id !== b.id);
+                          setBooks(remaining);
+                          updateBooks(remaining);
+                          setStudyBookIds(prev => { const n = prev.filter(x => x !== b.id); localStorage.setItem('gaokao_study_books', n.join(',')); return n; });
+                          setLibraryBookIds(prev => { const n = prev.filter(x => x !== b.id); localStorage.setItem('gaokao_library_books', n.join(',')); return n; });
+                        }}>删除词库</button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
