@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.14.0';
-const APP_VERSION_CODE = 150;
+const APP_VERSION = '2.14.1';
+const APP_VERSION_CODE = 151;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -9170,6 +9170,12 @@ function App() {
             <span className="progressTag">{index + 1}/{filteredItems.length}</span>
             <button className="iconBtn" onClick={() => { setSettings(s => ({ ...s, shuffleMode: !s.shuffleMode })); saveSettings({ ...settings, shuffleMode: !settings.shuffleMode }); }}>
               {settings.shuffleMode ? '乱序' : '顺序'}
+            </button>
+            <button className={`iconBtn ${settings.autoMaster ? 'active' : ''}`} style={{ color: settings.autoMaster ? '#16a34a' : undefined }} onClick={() => { const v = !settings.autoMaster; setSettings(s => ({ ...s, autoMaster: v })); saveSettings({ ...settings, autoMaster: v }); }}>
+              {settings.autoMaster ? '✅ 自动掌握' : '⬜ 自动掌握'}
+            </button>
+            <button className={`iconBtn ${settings.autoJump ? 'active' : ''}`} style={{ color: settings.autoJump ? '#2563eb' : undefined }} onClick={() => { const v = !settings.autoJump; setSettings(s => ({ ...s, autoJump: v })); saveSettings({ ...settings, autoJump: v }); }}>
+              {settings.autoJump ? '✅ 自动跳转' : '⬜ 自动跳转'}
             </button>
           </div>
 
