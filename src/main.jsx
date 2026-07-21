@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.12.1';
-const APP_VERSION_CODE = 131;
+const APP_VERSION = '2.13.0';
+const APP_VERSION_CODE = 140;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -2933,6 +2933,75 @@ const affixData = {
     ['scrib/script', '写', 'describe, prescribe, subscribe, scribble, script'],
     ['nov', '新', 'novel, innovation, novice, renovate, novelty'],
     ['sol', '单独', 'solo, solitary, isolate, desolate, soluble'],
+  ]
+};
+
+// 数字与日期词汇数据
+const numberDateData = {
+  months: [
+    { word: 'January', phonetic: '/ˈdʒænjueri/', cn: '一月', abbr: 'Jan.', examples: ['January is the first month of the year.', 'School starts in January.'] },
+    { word: 'February', phonetic: '/ˈfebrueri/', cn: '二月', abbr: 'Feb.', examples: ['February has 28 or 29 days.', 'Valentine\'s Day is in February.'] },
+    { word: 'March', phonetic: '/mɑːrtʃ/', cn: '三月', abbr: 'Mar.', examples: ['March is the beginning of spring.', 'Women\'s Day is on March 8th.'] },
+    { word: 'April', phonetic: '/ˈeɪprəl/', cn: '四月', abbr: 'Apr.', examples: ['April showers bring May flowers.', 'April Fools\' Day is on April 1st.'] },
+    { word: 'May', phonetic: '/meɪ/', cn: '五月', abbr: 'May', examples: ['May Day is on May 1st.', 'We have a holiday in May.'] },
+    { word: 'June', phonetic: '/dʒuːn/', cn: '六月', abbr: 'Jun.', examples: ['Children\'s Day is in June.', 'Summer begins in June.'] },
+    { word: 'July', phonetic: '/dʒuˈlaɪ/', cn: '七月', abbr: 'Jul.', examples: ['Summer vacation starts in July.', 'It is very hot in July.'] },
+    { word: 'August', phonetic: '/ˈɔːɡəst/', cn: '八月', abbr: 'Aug.', examples: ['August is the hottest month.', 'We traveled in August.'] },
+    { word: 'September', phonetic: '/sepˈtembər/', cn: '九月', abbr: 'Sep.', examples: ['School begins in September.', 'September marks the start of autumn.'] },
+    { word: 'October', phonetic: '/ɑːkˈtoʊbər/', cn: '十月', abbr: 'Oct.', examples: ['National Day is on October 1st.', 'October is the tenth month.'] },
+    { word: 'November', phonetic: '/noʊˈvembər/', cn: '十一月', abbr: 'Nov.', examples: ['Thanksgiving is in November.', 'November is usually cold.'] },
+    { word: 'December', phonetic: '/dɪˈsembər/', cn: '十二月', abbr: 'Dec.', examples: ['Christmas is in December.', 'December is the last month of the year.'] },
+  ],
+  weekdays: [
+    { word: 'Monday', phonetic: '/ˈmʌndeɪ/', cn: '星期一', abbr: 'Mon.', examples: ['We have a meeting on Monday.', 'Monday is the first day of the work week.'] },
+    { word: 'Tuesday', phonetic: '/ˈtuːzdeɪ/', cn: '星期二', abbr: 'Tue.', examples: ['I have English class on Tuesday.'] },
+    { word: 'Wednesday', phonetic: '/ˈwenzdeɪ/', cn: '星期三', abbr: 'Wed.', examples: ['Wednesday is in the middle of the week.'] },
+    { word: 'Thursday', phonetic: '/ˈθɜːrzdeɪ/', cn: '星期四', abbr: 'Thu.', examples: ['We have a test on Thursday.'] },
+    { word: 'Friday', phonetic: '/ˈfraɪdeɪ/', cn: '星期五', abbr: 'Fri.', examples: ['Friday is the last day of the school week.'] },
+    { word: 'Saturday', phonetic: '/ˈsætərdeɪ/', cn: '星期六', abbr: 'Sat.', examples: ['I often play sports on Saturday.'] },
+    { word: 'Sunday', phonetic: '/ˈsʌndeɪ/', cn: '星期日', abbr: 'Sun.', examples: ['Sunday is a day of rest.'] },
+  ],
+  seasons: [
+    { word: 'spring', phonetic: '/sprɪŋ/', cn: '春天', examples: ['Spring is the season of new beginnings.', 'Flowers bloom in spring.'] },
+    { word: 'summer', phonetic: '/ˈsʌmər/', cn: '夏天', examples: ['We go swimming in summer.'] },
+    { word: 'autumn', phonetic: '/ˈɔːtəm/', cn: '秋天', examples: ['Leaves fall in autumn.', 'Autumn is harvest season.'] },
+    { word: 'fall', phonetic: '/fɔːl/', cn: '秋天（美式）', examples: ['Fall is the American word for autumn.'] },
+    { word: 'winter', phonetic: '/ˈwɪntər/', cn: '冬天', examples: ['It snows in winter.', 'Winter is the coldest season.'] },
+  ],
+  dateWords: [
+    { word: 'today', phonetic: '/təˈdeɪ/', cn: '今天', examples: ['What day is it today?', 'Today is Monday.'] },
+    { word: 'tomorrow', phonetic: '/təˈmɒroʊ/', cn: '明天', examples: ['See you tomorrow.', 'We will have a meeting tomorrow.'] },
+    { word: 'yesterday', phonetic: '/ˈjestərdeɪ/', cn: '昨天', examples: ['I finished my homework yesterday.'] },
+    { word: 'week', phonetic: '/wiːk/', cn: '周，星期', examples: ['There are seven days in a week.', 'I study five days a week.'] },
+    { word: 'month', phonetic: '/mʌnθ/', cn: '月', examples: ['There are twelve months in a year.'] },
+    { word: 'year', phonetic: '/jɪr/', cn: '年', examples: ['There are 365 days in a year.'] },
+    { word: 'date', phonetic: '/deɪt/', cn: '日期', examples: ['What is the date today?'] },
+    { word: 'calendar', phonetic: '/ˈkæləndər/', cn: '日历', examples: ['Look at the calendar.'] },
+    { word: 'decade', phonetic: '/ˈdekeɪd/', cn: '十年', examples: ['A decade is ten years.'] },
+    { word: 'century', phonetic: '/ˈsentʃəri/', cn: '世纪，百年', examples: ['We live in the 21st century.'] },
+    { word: 'millennium', phonetic: '/mɪˈleniəm/', cn: '千年', examples: ['The new millennium began in 2000.'] },
+  ],
+  numbers: Array.from({ length: 31 }, (_, i) => {
+    const n = i + 1;
+    const cardinal = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+      'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',
+      'twenty-one', 'twenty-two', 'twenty-three', 'twenty-four', 'twenty-five', 'twenty-six', 'twenty-seven', 'twenty-eight', 'twenty-nine', 'thirty', 'thirty-one'][n];
+    const ordinal = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth',
+      'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'twentieth',
+      'twenty-first', 'twenty-second', 'twenty-third', 'twenty-fourth', 'twenty-fifth', 'twenty-sixth', 'twenty-seventh', 'twenty-eighth', 'twenty-ninth', 'thirtieth', 'thirty-first'][n];
+    return { n, cardinal, ordinal };
+  }),
+  extraNumbers: [
+    { cardinal: 'forty', ordinal: 'fortieth', n: 40 },
+    { cardinal: 'fifty', ordinal: 'fiftieth', n: 50 },
+    { cardinal: 'sixty', ordinal: 'sixtieth', n: 60 },
+    { cardinal: 'seventy', ordinal: 'seventieth', n: 70 },
+    { cardinal: 'eighty', ordinal: 'eightieth', n: 80 },
+    { cardinal: 'ninety', ordinal: 'ninetieth', n: 90 },
+    { cardinal: 'hundred', ordinal: 'hundredth', n: 100 },
+    { cardinal: 'thousand', ordinal: 'thousandth', n: 1000 },
+    { cardinal: 'million', ordinal: 'millionth', n: 1000000 },
+    { cardinal: 'billion', ordinal: 'billionth', n: 1000000000 },
   ]
 };
 
@@ -8016,6 +8085,7 @@ function App() {
   const [affixTab, setAffixTab] = useState('prefix');
   const [compareTab, setCompareTab] = useState('synonym');
   const [compareIndex, setCompareIndex] = useState(0);
+  const [numberDateSubTab, setNumberDateSubTab] = useState('months');
   const [spellingSearch, setSpellingSearch] = useState('');
   // 词库详情
   const [detailItem, setDetailItem] = useState(null);
@@ -9136,6 +9206,143 @@ function App() {
           ) : (
             <div className="empty">当前筛选下没有内容，请切换词库或分类。</div>
           )}
+          {/* 数字日期 */}
+          {extendTab === 'numberdate' && (
+            <div style={{ marginTop: 16 }}>
+              <div className="segmented" style={{ marginBottom: 16 }}>
+                {[
+                  { key: 'months', label: '月份' },
+                  { key: 'weekdays', label: '星期' },
+                  { key: 'seasons', label: '季节' },
+                  { key: 'dateWords', label: '日期词汇' },
+                  { key: 'numbers', label: '数字' },
+                ].map(t => (
+                  <button key={t.key} className={numberDateSubTab === t.key ? 'active' : ''} onClick={() => setNumberDateSubTab(t.key)}>{t.label}</button>
+                ))}
+              </div>
+              {/* 月份 */}
+              {numberDateSubTab === 'months' && (
+                <div>
+                  <p className="muted">点击单词可听发音。缩写在日记、书信中常用。</p>
+                  <div className="list">
+                    {numberDateData.months.map((m, i) => (
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                        <div className="listItemMain">
+                          <div className="listItemTitle">
+                            <h3>{m.word}</h3>
+                            <span className="phoneticSmall">{m.phonetic}</span>
+                            <span className="posTag" style={{ color: '#2563eb', background: '#2563eb18' }}>{m.abbr}</span>
+                          </div>
+                          <p style={{ fontWeight: 600, color: '#2563eb' }}>{m.cn}</p>
+                          <div className="points" style={{ marginTop: 4 }}>
+                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* 星期 */}
+              {numberDateSubTab === 'weekdays' && (
+                <div>
+                  <p className="muted">星期一到星期日的英文表达，点击可听发音。</p>
+                  <div className="list">
+                    {numberDateData.weekdays.map((m, i) => (
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                        <div className="listItemMain">
+                          <div className="listItemTitle">
+                            <h3>{m.word}</h3>
+                            <span className="phoneticSmall">{m.phonetic}</span>
+                            <span className="posTag" style={{ color: '#7c3aed', background: '#7c3aed18' }}>{m.abbr}</span>
+                          </div>
+                          <p style={{ fontWeight: 600, color: '#7c3aed' }}>{m.cn}</p>
+                          <div className="points" style={{ marginTop: 4 }}>
+                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* 季节 */}
+              {numberDateSubTab === 'seasons' && (
+                <div>
+                  <p className="muted">四季的英文表达。注意 autumn（英式）和 fall（美式）两种写法。</p>
+                  <div className="list">
+                    {numberDateData.seasons.map((m, i) => (
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                        <div className="listItemMain">
+                          <div className="listItemTitle">
+                            <h3>{m.word}</h3>
+                            <span className="phoneticSmall">{m.phonetic}</span>
+                          </div>
+                          <p style={{ fontWeight: 600, color: '#16a34a' }}>{m.cn}</p>
+                          <div className="points" style={{ marginTop: 4 }}>
+                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* 日期词汇 */}
+              {numberDateSubTab === 'dateWords' && (
+                <div>
+                  <p className="muted">与日期时间相关的高频词汇。</p>
+                  <div className="list">
+                    {numberDateData.dateWords.map((m, i) => (
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                        <div className="listItemMain">
+                          <div className="listItemTitle">
+                            <h3>{m.word}</h3>
+                            <span className="phoneticSmall">{m.phonetic}</span>
+                          </div>
+                          <p style={{ fontWeight: 600, color: '#ea580c' }}>{m.cn}</p>
+                          <div className="points" style={{ marginTop: 4 }}>
+                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* 数字（基数词+序数词） */}
+              {numberDateSubTab === 'numbers' && (
+                <div>
+                  <p className="muted">基数词（one, two...）用于计数，序数词（first, second...）用于表示顺序和日期。点击可听发音。</p>
+                  <div className="list">
+                    {numberDateData.numbers.map(item => (
+                      <div key={item.n} className="listItem" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px' }}>
+                        <div style={{ minWidth: 60, fontSize: '1.2em', fontWeight: 700, color: '#2563eb' }}>{item.n}</div>
+                        <div style={{ flex: 1 }}>
+                          <span style={{ fontWeight: 600, color: '#16a34a', marginRight: 12, cursor: 'pointer' }} onClick={() => speak(item.cardinal, settings.speakRate)}>{item.cardinal}</span>
+                          <span style={{ fontWeight: 600, color: '#ea580c', cursor: 'pointer' }} onClick={() => speak(item.ordinal, settings.speakRate)}>{item.ordinal}</span>
+                        </div>
+                        <div style={{ fontSize: '0.75em', color: 'var(--text-tertiary)' }}>第{item.n}</div>
+                      </div>
+                    ))}
+                    {/* 整十/百/千/百万/十亿 */}
+                    <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--bg-tertiary)', borderRadius: 8 }}>
+                      <p style={{ fontWeight: 600, marginBottom: 8, color: 'var(--text-secondary)' }}>大数字</p>
+                      {numberDateData.extraNumbers.map(item => (
+                        <div key={item.n} className="listItem" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 6, marginBottom: 4 }}>
+                          <div style={{ minWidth: 80, fontSize: '1.1em', fontWeight: 700, color: '#2563eb' }}>{item.n.toLocaleString()}</div>
+                          <div>
+                            <span style={{ fontWeight: 600, color: '#16a34a', marginRight: 12, cursor: 'pointer' }} onClick={() => speak(item.cardinal, settings.speakRate)}>{item.cardinal}</span>
+                            <span style={{ fontWeight: 600, color: '#ea580c', cursor: 'pointer' }} onClick={() => speak(item.ordinal, settings.speakRate)}>{item.ordinal}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </section>
       )}
 
@@ -9290,6 +9497,7 @@ function App() {
             <button className={extendTab === 'errors' ? 'active' : ''} onClick={() => setExtendTab('errors')}>易错词</button>
             <button className={extendTab === 'scene' ? 'active' : ''} onClick={() => setExtendTab('scene')}>情景记忆</button>
             <button className={extendTab === 'spelling' ? 'active' : ''} onClick={() => setExtendTab('spelling')}>拼写纠错</button>
+            <button className={extendTab === 'numberdate' ? 'active' : ''} onClick={() => setExtendTab('numberdate')}>数字日期</button>
           </div>
 
           {/* 词根词缀 */}
