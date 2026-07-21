@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.14.1';
-const APP_VERSION_CODE = 151;
+const APP_VERSION = '2.14.2';
+const APP_VERSION_CODE = 152;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -2767,7 +2767,7 @@ const seedFamiliarNew = [
   ['engage', 'v.', '从事；订婚；吸引', '生义', ['熟词生义', 'engage in research'], ['从事；订婚；吸引', '注意一词多义'], ['engage in research is a common usage.']],
   ['express', 'n.', '快车；快递', '生义', ['熟词生义', 'take the express'], ['快车；快递', '注意一词多义'], ['take the express is a common usage.']],
   ['fail', 'v.', '未能(做某事)；使失望', '生义', ['熟词生义', 'fail to pass'], ['未能(做某事)；使失望', '注意一词多义'], ['fail to pass is a common usage.']],
-  ['observe', 'v.', '遵守(规则)；庆祝', '生义', ['熟词生义', 'observe the rules'], ['遵守(规则)；庆祝', '注意一词多义'], ['observe the rules is a common usage.']],
+  ['observe', 'v.', '遵守(规则)；庆祝(节日)', '生义', ['熟词生义', 'observe the rules / observe Christmas'], ['遵守(规则)；庆祝(节日)', '注意一词多义'], ['observe the rules is a common usage.']],
   ['owe', 'v.', '欠；把...归功于', '生义', ['熟词生义', 'owe success to'], ['欠；把...归功于', '注意一词多义'], ['owe success to is a common usage.']],
   ['plant', 'n.', '工厂；发电厂', '生义', ['熟词生义', 'a power plant'], ['工厂；发电厂', '注意一词多义'], ['a power plant is a common usage.']],
   ['position', 'n.', '立场；职位', '生义', ['熟词生义', 'take a position'], ['立场；职位', '注意一词多义'], ['take a position is a common usage.']],
@@ -2775,7 +2775,6 @@ const seedFamiliarNew = [
   ['read', 'v.', '解读；攻读', '生义', ['熟词生义', 'read one\'s mind'], ['解读；攻读', '注意一词多义'], ['read one\'s mind is a common usage.']],
   ['reason', 'v.', '推理；说服', '生义', ['熟词生义', 'reason with someone'], ['推理；说服', '注意一词多义'], ['reason with someone is a common usage.']],
   ['remain', 'v.', '仍然是；留下', '生义', ['熟词生义', 'remain silent'], ['仍然是；留下', '注意一词多义'], ['remain silent is a common usage.']],
-  ['observe', 'v.', '庆祝(节日)', '生义', ['熟词生义', 'observe Christmas'], ['庆祝(节日)', '注意一词多义'], ['observe Christmas is a common usage.']],
   ['second', 'v.', '赞成；附议', '生义', ['熟词生义', 'second the motion'], ['赞成；附议', '注意一词多义'], ['second the motion is a common usage.']],
   ['sound', 'adj.', '合理的；完好的', '生义', ['熟词生义', 'a sound argument'], ['合理的；完好的', '注意一词多义'], ['a sound argument is a common usage.']],
   ['stand', 'v.', '忍受；代表', '生义', ['熟词生义', 'can\'t stand the noise'], ['忍受；代表', '注意一词多义'], ['can\'t stand the noise is a common usage.']],
@@ -5468,7 +5467,6 @@ const seedWords3500 = [
   ['map', 'n. /mæp/', 'n. 地图, 天体图, 映像；vt. 映射, 绘制...地图, 计划；[计] 实用程序, 映射, 制造自动化协议', '基础', [], [], []],
   ['marathon', 'n. /\'mærәθәn/', 'n. 马拉松, 耐力的考验', '基础', [], [], []],
   ['march', 'v. n. /mɑ:tʃ/', 'n. 三月, 进行, 行军, 步伐, 长途跋涉, 进行曲, 边界；vi. 进军, 前进, 交界；vt. 使行军, 使行进', '基础', [], [], []],
-  ['March', 'n.', '3 月', '基础', [], [], []],
   ['margin', 'n.', '页边空白；差额；余地，余裕；边，边缘', '基础', [], [], []],
   ['mark', 'n. vt. /mɑ:k/', 'n. 标志, 分数, 马克, 痕迹, 斑点, 靶子, 刻度, 记号, 符号, 戳记, 标准, 起跑线；vt. 做标记于, 留意, 打分数, 表明, 标志, 记录；vi. 作记号, 记得分；[计] 标志; 标记; 传号', '基础', [], [], []],
   ['market', 'n. /\'mɑ:kit/', 'n. 市场, 交易, 集市, 推销地区, 行情, 市面, 销路；vt. 在市场上交易, 使上市, 销售；vi. 在市场上买卖', '基础', [], [], []],
@@ -5486,7 +5484,6 @@ const seedWords3500 = [
   ['mature', 'adj. /mә\'tjuә/', 'a. 成熟的, 到期的, 充分考虑的；vt. 使成熟；vi. 成熟, 到期', '基础', [], [], []],
   ['maximum', 'adj. & n. /\'mæksimәn/', 'n. 极点, 最大量, 极大；a. 最高的, 最大的, 最大极限的；[计] 最大值', '基础', [], [], []],
   ['may', 'v. /mei/', 'n. 五月；aux. 愿能, 可以, 愿意', '基础', [], [], []],
-  ['May', 'n.', '5 月', '基础', [], [], []],
   ['maybe', 'adv. /\'meibi:/', 'adv. 也许, 大概；n. 可能性', '基础', [], [], []],
   ['me', 'pron. /mi:/', 'pron. 我', '基础', [], [], []],
   ['meal', 'n. /mi:l/', 'n. 一餐, 膳食, 粗粉；vi. 进餐', '基础', [], [], []],
