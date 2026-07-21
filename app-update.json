@@ -1,7 +1,7 @@
 {
-  "version": "2.14.2",
-  "versionCode": 152,
-  "changelog": "v2.14.2 更新\n\n【修复】\n- 清理词库内重复单词：3500词删除 March/may 重复条目，熟词新义合并 observe 重复释义\n- 3601条唯一单词，无内部重复",
-  "devNotes": "remove duplicate words: March, May, observe",
+  "version": "2.14.3",
+  "versionCode": 153,
+  "changelog": "v2.14.3 更新\n\n【优化】\n- 重构背诵页UI布局：乱序、自动掌握、自动跳转移至独立工具栏\n- 胶囊按钮样式，颜色区分启用/关闭状态\n- 避免按钮过多挤占词库选择空间",
+  "devNotes": "reorganize study page toolbar layout",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

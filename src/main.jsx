@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.14.2';
-const APP_VERSION_CODE = 152;
+const APP_VERSION = '2.14.3';
+const APP_VERSION_CODE = 153;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -9165,15 +9165,37 @@ function App() {
               )}
             </div>
             <span className="progressTag">{index + 1}/{filteredItems.length}</span>
-            <button className="iconBtn" onClick={() => { setSettings(s => ({ ...s, shuffleMode: !s.shuffleMode })); saveSettings({ ...settings, shuffleMode: !settings.shuffleMode }); }}>
-              {settings.shuffleMode ? '乱序' : '顺序'}
-            </button>
-            <button className={`iconBtn ${settings.autoMaster ? 'active' : ''}`} style={{ color: settings.autoMaster ? '#16a34a' : undefined }} onClick={() => { const v = !settings.autoMaster; setSettings(s => ({ ...s, autoMaster: v })); saveSettings({ ...settings, autoMaster: v }); }}>
-              {settings.autoMaster ? '✅ 自动掌握' : '⬜ 自动掌握'}
-            </button>
-            <button className={`iconBtn ${settings.autoJump ? 'active' : ''}`} style={{ color: settings.autoJump ? '#2563eb' : undefined }} onClick={() => { const v = !settings.autoJump; setSettings(s => ({ ...s, autoJump: v })); saveSettings({ ...settings, autoJump: v }); }}>
-              {settings.autoJump ? '✅ 自动跳转' : '⬜ 自动跳转'}
-            </button>
+          </div>
+
+          {/* 背诵模式快捷开关 */}
+          <div style={{ display: 'flex', gap: 6, padding: '0 16px 6px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => { setSettings(s => ({ ...s, shuffleMode: !s.shuffleMode })); saveSettings({ ...settings, shuffleMode: !settings.shuffleMode }); }}
+              style={{
+                padding: '4px 10px', borderRadius: 14, border: '1px solid var(--border)', fontSize: '0.78em',
+                background: settings.shuffleMode ? '#2563eb15' : 'var(--bg-secondary)',
+                color: settings.shuffleMode ? '#2563eb' : 'var(--text-tertiary)',
+                fontWeight: settings.shuffleMode ? 600 : 400,
+              }}
+            >{settings.shuffleMode ? '🔀 乱序' : '📋 顺序'}</button>
+            <button
+              onClick={() => { const v = !settings.autoMaster; setSettings(s => ({ ...s, autoMaster: v })); saveSettings({ ...settings, autoMaster: v }); }}
+              style={{
+                padding: '4px 10px', borderRadius: 14, border: '1px solid var(--border)', fontSize: '0.78em',
+                background: settings.autoMaster ? '#16a34a15' : 'var(--bg-secondary)',
+                color: settings.autoMaster ? '#16a34a' : 'var(--text-tertiary)',
+                fontWeight: settings.autoMaster ? 600 : 400,
+              }}
+            >{settings.autoMaster ? '✅ 自动掌握' : '📝 自动掌握'}</button>
+            <button
+              onClick={() => { const v = !settings.autoJump; setSettings(s => ({ ...s, autoJump: v })); saveSettings({ ...settings, autoJump: v }); }}
+              style={{
+                padding: '4px 10px', borderRadius: 14, border: '1px solid var(--border)', fontSize: '0.78em',
+                background: settings.autoJump ? '#2563eb15' : 'var(--bg-secondary)',
+                color: settings.autoJump ? '#2563eb' : 'var(--text-tertiary)',
+                fontWeight: settings.autoJump ? 600 : 400,
+              }}
+            >{settings.autoJump ? '⏭ 自动跳转' : '⏸ 自动跳转'}</button>
           </div>
 
           {/* 单词/短语分类 */}
