@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.14.3';
-const APP_VERSION_CODE = 153;
+const APP_VERSION = '2.14.4';
+const APP_VERSION_CODE = 154;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -9554,7 +9554,8 @@ function App() {
                   {detailItem.phonetic && <p className="phoneticText">{detailItem.phonetic}</p>}
                   <button className="closeBtn" onClick={() => setDetailItem(null)}>✕</button>
                 </div>
-                <p className="muted">{detailItem.pos} &middot; <span style={{ color: freqColor(detailItem.frequency) }}>{detailItem.frequency}</span></p>
+                {detailItem.pos && <p style={{ color: posColor(detailItem.pos), fontWeight: 600, fontSize: '0.9em', margin: '0 0 8px' }}>{detailItem.pos}</p>}
+                <p className="muted"><span style={{ color: freqColor(detailItem.frequency) }}>{detailItem.frequency}</span></p>
                 <h3>{detailItem.meaning}</h3>
                 <div className="points">
                   {detailItem.allPoints.map(p => <p key={p}>• {p}</p>)}

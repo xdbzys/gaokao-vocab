@@ -1,7 +1,7 @@
 {
-  "version": "2.14.3",
-  "versionCode": 153,
-  "changelog": "v2.14.3 更新\n\n【优化】\n- 重构背诵页UI布局：乱序、自动掌握、自动跳转移至独立工具栏\n- 胶囊按钮样式，颜色区分启用/关闭状态\n- 避免按钮过多挤占词库选择空间",
-  "devNotes": "reorganize study page toolbar layout",
+  "version": "2.14.4",
+  "versionCode": 154,
+  "changelog": "v2.14.4 更新\n\n【优化】\n- 单词详情弹窗中音标和词性分两行显示",
+  "devNotes": "separate phonetic and pos in detail modal",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
