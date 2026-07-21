@@ -1,7 +1,7 @@
 {
-  "version": "2.13.0",
-  "versionCode": 140,
-  "changelog": "v2.13.0 大版本更新\n\n【新增】\n- 扩展页新增\"数字日期\"模块\n- 包含：12个月份（含音标、缩写、例句）\n- 包含：星期一到星期日\n- 包含：四季（spring/summer/autumn/fall/winter）\n- 包含：日期相关高频词汇（today/tomorrow/century等）\n- 包含：基数词和序数词对照（1-31 + 大数字）\n- 所有单词点击可听发音",
-  "devNotes": "add number/date vocabulary section in extend tab",
+  "version": "2.13.1",
+  "versionCode": 141,
+  "changelog": "v2.13.1 更新\n\n【修复】\n- 更新检查改为优先使用GitHub Pages，避免jsdelivr CDN缓存延迟导致更新不及时",
+  "devNotes": "use GitHub Pages as primary update source to avoid jsdelivr CDN cache",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

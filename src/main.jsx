@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.13.0';
-const APP_VERSION_CODE = 140;
+const APP_VERSION = '2.13.1';
+const APP_VERSION_CODE = 141;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -8865,41 +8865,41 @@ function App() {
 
     try {
       let data;
-      // 第一优先：jsdelivr CDN（国内访问最稳定）
+      // 第一优先：GitHub Pages（deploy 后立即生效，无 CDN 缓存延迟）
       try {
-        const cdnUrl = `https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/app-update.json?_t=${Date.now()}`;
-        console.log('[Update] Trying jsdelivr CDN:', cdnUrl);
-        const cdnResp = await fetch(cdnUrl, { cache: 'no-store' });
-        if (cdnResp.ok) { data = await cdnResp.json(); console.log('[Update] jsdelivr CDN success:', data); }
-        else throw new Error('jsdelivr HTTP ' + cdnResp.status);
-      } catch (cdnErr) {
+        const ghUrl = `https://xdbzys.github.io/gaokao-vocab/app-update.json?_t=${Date.now()}`;
+        console.log('[Update] Trying GitHub Pages:', ghUrl);
+        const ghResp = await fetch(ghUrl, { cache: 'no-store' });
+        if (ghResp.ok) { data = await ghResp.json(); console.log('[Update] GitHub Pages success:', data); }
+        else throw new Error('GitHub Pages HTTP ' + ghResp.status);
+      } catch (ghErr) {
+        console.warn('[Update] GitHub Pages failed:', ghErr.message);
+        // 第二回退：jsdelivr CDN
+        try {
+          const cdnUrl = `https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/app-update.json?_t=${Date.now()}`;
+          console.log('[Update] Trying jsdelivr CDN:', cdnUrl);
+          const cdnResp = await fetch(cdnUrl, { cache: 'no-store' });
+          if (cdnResp.ok) { data = await cdnResp.json(); console.log('[Update] jsdelivr CDN success:', data); }
+          else throw new Error('jsdelivr HTTP ' + cdnResp.status);
+        } catch (cdnErr) {
         console.warn('[Update] jsdelivr CDN failed:', cdnErr.message);
-        // 第二回退：Gitee raw
+        // 第三回退：Gitee raw
         try {
           data = await fetchFromRaw();
           console.log('[Update] Raw success:', data);
         } catch (rawErr) {
           console.warn('[Update] Raw failed:', rawErr.message);
-          // 第三回退：Gitee API
+          // 第四回退：Gitee API
           try {
             data = await fetchFromApi();
             console.log('[Update] API fallback success:', data);
           } catch (apiErr) {
             console.warn('[Update] API failed:', apiErr.message);
-            // 第四回退：GitHub Pages
-            try {
-              const ghUrl = `https://xdbzys.github.io/gaokao-vocab/app-update.json?_t=${Date.now()}`;
-              console.log('[Update] Trying GitHub Pages:', ghUrl);
-              const ghResp = await fetch(ghUrl, { cache: 'no-store' });
-              if (ghResp.ok) { data = await ghResp.json(); console.log('[Update] GitHub Pages success:', data); }
-              else throw new Error('GitHub Pages HTTP ' + ghResp.status);
-            } catch (ghErr) {
-              console.warn('[Update] GitHub Pages failed:', ghErr.message);
-              console.warn('[Update] All fallbacks failed');
-              throw new Error('检查更新失败，请检查网络连接后重试');
-            }
+            console.warn('[Update] All fallbacks failed');
+            throw new Error('检查更新失败，请检查网络连接后重试');
           }
         }
+      }
       }
 
       if (typeof data.versionCode !== 'number') {
