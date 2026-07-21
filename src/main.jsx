@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.13.1';
-const APP_VERSION_CODE = 141;
+const APP_VERSION = '2.14.0';
+const APP_VERSION_CODE = 150;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -7616,6 +7616,67 @@ function cleanOcrText(text) {
     .replace(/\n{2,}/g, '\n').trim();
 }
 
+// 提取词干（去掉常见词性后缀），用于词族关联
+function getStem(word) {
+  if (!word || word.length < 3) return word;
+  const suffixes = ['fully', 'fully', 'tion', 'sion', 'ment', 'ness', 'ity', 'ly', 'ful', 'less', 'ous', 'ive', 'able', 'ible', 'al', 'ic', 'er', 'or', 'ist', 'ize', 'ise', 'en', 'ed', 'ing', 'y'];
+  for (const s of suffixes) {
+    if (word.endsWith(s) && word.length > s.length + 2) {
+      let stem = word.slice(0, -s.length);
+      // 处理双写辅音：如 stopped → stop
+      if (/([bcdfghjklmnpqrstvwxz])\1$/.test(stem)) stem = stem.slice(0, -1);
+      // 处理 y → i：如 happiness → happy (stem=happi, 还原为 happy)
+      if (stem.endsWith('i') && !/^[aeiou]/.test(word)) {
+        const withY = stem.slice(0, -1) + 'y';
+        if (withY.length >= 2) return withY;
+      }
+      // 处理 e 还原：如 beautiful → beauty (beauti → beauty)
+      if (stem.endsWith('i') && word.endsWith('ful')) {
+        const withY = stem.slice(0, -1) + 'y';
+        if (withY.length >= 2) return withY;
+      }
+      return stem;
+    }
+  }
+  return word;
+}
+
+// 查找词族：与给定单词同一词根的不同形式
+function findWordFamily(term, items) {
+  const seen = new Set([term]);
+  const related = [];
+  const termStem = getStem(term);
+
+  // 收集当前词库中所有有效的 term
+  const termSet = new Set(items.map(i => i.term));
+
+  for (const item of items) {
+    if (item.term === term || seen.has(item.term)) continue;
+    const otherStem = getStem(item.term);
+    // 匹配规则：
+    // 1. 当前词是另一个词的词干（如 success → successful）
+    // 2. 两个词共享同一个词干（如 successful 和 successfully）
+    // 3. 另一个词是当前词的词干（如 successful → success）
+    if (item.term.startsWith(term) || term.startsWith(item.term) ||
+        otherStem === term || otherStem === termStem ||
+        termStem === item.term || termStem === otherStem) {
+      related.push(item);
+      seen.add(item.term);
+    }
+  }
+
+  // 按词性分组排序
+  const posOrder = { 'n.': 1, 'v.': 2, 'adj.': 3, 'adv.': 4 };
+  related.sort((a, b) => {
+    const oa = posOrder[a.pos] || 99;
+    const ob = posOrder[b.pos] || 99;
+    if (oa !== ob) return oa - ob;
+    return a.term.localeCompare(b.term);
+  });
+
+  return related.slice(0, 12); // 最多显示12个关联词
+}
+
 // 支持多种编号格式：1. / 1) / (1) / [1] / ① / 1、/ 第1 / 1.
 function stripNumberPrefix(line) {
   return line.replace(/^[\s\d.)、\-\*•·]+/, '').trim();
@@ -9476,6 +9537,24 @@ function App() {
                 {detailItem.examples.length > 0 && (
                   <div className="examples">{detailItem.examples.map(e => <p key={e}>{e}</p>)}</div>
                 )}
+                {/* 关联词族 */}
+                {(() => {
+                  const family = findWordFamily(detailItem.term, allWords);
+                  if (family.length === 0) return null;
+                  return (
+                    <div style={{ marginTop: 16, padding: '12px', background: 'var(--bg-tertiary)', borderRadius: 10 }}>
+                      <p style={{ fontWeight: 700, fontSize: '0.9em', color: 'var(--text-secondary)', marginBottom: 8 }}>🔗 关联词族</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {family.map(item => (
+                          <button key={item.id} className="smallBtn" style={{ fontSize: '0.85em', background: 'var(--bg-secondary)' }}
+                            onClick={() => setDetailItem(item)}>
+                            {item.term} <small style={{ color: 'var(--text-tertiary)' }}>{item.pos}</small>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
                 <div className="modalActions">
                   <button onClick={() => speak(detailItem.term, settings.speakRate)}>🔊 发音</button>
                   <button className="masterBtn" onClick={() => { toggleProgress(detailItem); setDetailItem({...detailItem}); }}>

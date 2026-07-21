@@ -1,7 +1,7 @@
 {
-  "version": "2.13.1",
-  "versionCode": 141,
-  "changelog": "v2.13.1 更新\n\n【修复】\n- 更新检查改为优先使用GitHub Pages，避免jsdelivr CDN缓存延迟导致更新不及时",
-  "devNotes": "use GitHub Pages as primary update source to avoid jsdelivr CDN cache",
+  "version": "2.14.0",
+  "versionCode": 150,
+  "changelog": "v2.14.0 大版本更新\n\n【新增】\n- 单词详情弹窗新增\"关联词族\"功能\n- 自动识别同一词根的名词、动词、形容词、副词等不同形式\n- 点击关联词可直接跳转查看详情\n- 支持 success→successful→successfully、succeed 等词族关联\n- 支持 beauty→beautiful→beautifully 等变形关联",
+  "devNotes": "word family association system in detail modal",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
