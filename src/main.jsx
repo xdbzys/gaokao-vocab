@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.14.4';
-const APP_VERSION_CODE = 154;
+const APP_VERSION = '2.14.5';
+const APP_VERSION_CODE = 155;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -7428,16 +7428,20 @@ function loadProgress() {
     const raw = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
     // 兼容旧数据：如果 key 包含 '-' 说明是旧的 item.id 格式，尝试转换为 term-based
     const hasOldKeys = Object.keys(raw).some(k => k.includes('-'));
-    if (hasOldKeys) {
+    // 检查是否有非小写 key（旧数据大小写敏感迁移）
+    const hasMixedCase = Object.keys(raw).some(k => k !== k.toLowerCase());
+    if (hasOldKeys || hasMixedCase) {
       const converted = {};
       Object.entries(raw).forEach(([k, v]) => {
+        let key = k;
         if (k.includes('-')) {
           // 旧格式 key 如 "word-0-abandon"，提取 term（最后一个 '-' 之后的部分）
           const term = k.split('-').pop();
-          if (term) converted[term] = v;
-        } else {
-          converted[k] = v;
+          if (term) key = term;
         }
+        // 统一转为小写，确保大小写不敏感匹配
+        key = key.toLowerCase();
+        converted[key] = v;
       });
       // 保存转换后的数据
       localStorage.setItem(PROGRESS_KEY, JSON.stringify(converted));
@@ -7648,7 +7652,7 @@ function findWordFamily(term, items) {
   const termSet = new Set(items.map(i => i.term));
 
   for (const item of items) {
-    if (item.term === term || seen.has(item.term)) continue;
+    if (termKey(item.term) === termKey(term) || seen.has(termKey(item.term))) continue;
     const otherStem = getStem(item.term);
     // 匹配规则：
     // 1. 当前词是另一个词的词干（如 success → successful）
@@ -7974,6 +7978,21 @@ function speak(text, rate) {
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
+// 基于种子的稳定洗牌，相同种子产生相同顺序，避免进度更新时顺序跳变
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 16807 + 0) % 2147483647;
+    const j = s % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// 标准化 term key（小写），确保不同词库中大小写变体被视为同一单词
+function termKey(term) { return (term || '').toLowerCase(); }
+
 /* ============================
    十、彩色标注工具
    ============================ */
@@ -8005,8 +8024,8 @@ function posColor(pos) {
 
 /* 单词状态颜色：错词红色，已掌握蓝色，默认不改变 */
 function wordStatusColor(item, progress, wrongWords) {
-  if (wrongWords.some(w => w.term === item.term)) return '#ef4444';
-  if (progress[item.term] === 'mastered') return '#2563eb';
+  if (wrongWords.some(w => termKey(w.term) === termKey(item.term))) return '#ef4444';
+  if (progress[termKey(item.term)] === 'mastered') return '#2563eb';
   return null; // 返回 null 表示使用默认颜色
 }
 
@@ -8127,6 +8146,7 @@ function App() {
     catch { return ''; }
   });
   const updateCheckDone = useRef(false);
+  const shuffleSeedRef = useRef(Date.now()); // 洗牌种子：仅词库变化时更新，进度变化时保持稳定
   const [search, setSearch] = useState('');
   const [importText, setImportText] = useState('');
   const [importStatus, setImportStatus] = useState('');
@@ -8198,14 +8218,14 @@ function App() {
     builtInBooks.forEach(b => {
       if (b.id === 'mastered-words') return;
       b.items.forEach(item => {
-        if (progress[item.term] === 'mastered') addIfNew(item);
+        if (progress[termKey(item.term)] === 'mastered') addIfNew(item);
       });
     });
     // 同时检查自定义词库中的已掌握单词
     books.forEach(b => {
       if (b.id === 'mastered-words' || builtInBooks.some(bb => bb.id === b.id)) return;
       b.items.forEach(item => {
-        if (progress[item.term] === 'mastered') addIfNew(item);
+        if (progress[termKey(item.term)] === 'mastered') addIfNew(item);
       });
     });
     setBooks(prev => prev.map(b => b.id === 'mastered-words' ? { ...b, items: masteredItems } : b));
@@ -8225,24 +8245,27 @@ function App() {
     }
     const selected = books.filter(b => currentBookIds.includes(b.id) && !hiddenBookIds.includes(b.id));
     if (selected.length === 0) return books[0] || { id: 'empty', name: '空', items: [], editable: false };
-    // 多词库合并时按 term 去重，保留第一个出现的
+    // 多词库合并时按 term 去重（大小写不敏感），保留第一个出现的
     const seen = new Set();
     const uniqueItems = [];
     selected.forEach(b => {
       b.items.forEach(item => {
-        if (!seen.has(item.term)) {
-          seen.add(item.term);
+        const key = termKey(item.term);
+        if (!seen.has(key)) {
+          seen.add(key);
           uniqueItems.push(item);
         }
       });
     });
+    // 词库变化时更新洗牌种子
+    shuffleSeedRef.current = Date.now();
     return {
       id: currentBookIds.join(','),
       name: selected.length === 1 ? selected[0].name : `${selected.length}个词库`,
       items: uniqueItems,
       editable: false
     };
-  }, [books, currentBookIds, wrongWords]);
+  }, [books, currentBookIds, wrongWords, hiddenBookIds]);
 
   // 全部词汇合并（词根词缀、对比、易错词基于全量词汇）
   const allWords = useMemo(() => {
@@ -8253,13 +8276,14 @@ function App() {
     let items = activeBook.items.filter(item => {
       const posOk = posFilter === '全部' || getPosCategory(item.pos) === posFilter;
       const typeOk = typeFilter === '全部' || item.type === typeFilter;
-      // 隐藏已掌握只在背诵页生效，词库页不受影响
-      const masteredOk = section !== 'learn' || !hideMastered || progress[item.term] !== 'mastered';
+      // 隐藏已掌握只在背诵页生效，词库页不受影响（大小写不敏感）
+      const masteredOk = section !== 'learn' || !hideMastered || progress[termKey(item.term)] !== 'mastered';
       // 搜索只在词库页生效，不影响背诵页
       const searchOk = section === 'learn' || !search || `${item.term}${item.meaning}${item.pos}`.toLowerCase().includes(search.toLowerCase());
       return posOk && typeOk && masteredOk && searchOk;
     });
-    if (settings.shuffleMode) items = shuffle(items);
+    // 使用稳定种子洗牌，避免进度变化时顺序跳变
+    if (settings.shuffleMode) items = seededShuffle(items, shuffleSeedRef.current);
     return items;
   }, [activeBook, posFilter, typeFilter, hideMastered, search, settings.shuffleMode, progress, section]);
 
@@ -8300,7 +8324,7 @@ function App() {
   const progressStats = useMemo(() => {
     const bookItems = activeBook.items;
     const total = bookItems.length;
-    const mastered = bookItems.filter(i => progress[i.term] === 'mastered').length;
+    const mastered = bookItems.filter(i => progress[termKey(i.term)] === 'mastered').length;
     return { total, mastered, remaining: total - mastered };
   }, [activeBook, progress]);
 
@@ -8367,11 +8391,11 @@ function App() {
   }
 
   function toggleProgress(item) {
-    const term = item.term;
+    const key = termKey(item.term);
     setProgress(prev => {
       const next = { ...prev };
-      if (next[term] === 'mastered') delete next[term];
-      else next[term] = 'mastered';
+      if (next[key] === 'mastered') delete next[key];
+      else next[key] = 'mastered';
       saveProgress(next);
       return next;
     });
@@ -8532,7 +8556,7 @@ function App() {
   function addWrongWord(item) {
     const sourceBook = activeBook.name || '未知词库';
     setWrongWords(prev => {
-      const existingIdx = prev.findIndex(w => w.term === item.term);
+      const existingIdx = prev.findIndex(w => termKey(w.term) === termKey(item.term));
       if (existingIdx !== -1) {
         // 已存在：追加来源词库（去重）
         const existing = prev[existingIdx];
@@ -8701,7 +8725,7 @@ function App() {
       setSessionCorrect(co => co + 1);
       recordStudy();
       // 自动标记已掌握（仅非错词本模式，且开关开启且当前未标记）
-      if (!isWrongWordBook && settings.autoMaster && progress[c.term] !== 'mastered') {
+      if (!isWrongWordBook && settings.autoMaster && progress[termKey(c.term)] !== 'mastered') {
         toggleProgress(c);
       }
       if (!isWrongWordBook && settings.autoJump) {
@@ -9231,7 +9255,7 @@ function App() {
               <div className="cardMeta">
                 <span className="freqTag" style={{ color: freqColor(displayCurrent.frequency), borderColor: freqColor(displayCurrent.frequency) }}>{displayCurrent.frequency}</span>
                 {displayCurrent.pos && <span className="posTag" style={{ color: posColor(displayCurrent.pos), background: posColor(displayCurrent.pos) + '18' }}>{displayCurrent.pos}</span>}
-                {progress[displayCurrent.term] === 'mastered' && <span className="masteredTag">已掌握</span>}
+                {progress[termKey(displayCurrent.term)] === 'mastered' && <span className="masteredTag">已掌握</span>}
               </div>
 
               <div className="questionArea">
@@ -9276,7 +9300,7 @@ function App() {
                   )}
                   <div className="answerActions">
                     <button className="masterBtn" onClick={() => toggleProgress(displayCurrent)}>
-                      {progress[displayCurrent.term] === 'mastered' ? '取消掌握' : '标记掌握'}
+                      {progress[termKey(displayCurrent.term)] === 'mastered' ? '取消掌握' : '标记掌握'}
                     </button>
                   </div>
                 </div>
@@ -9537,8 +9561,8 @@ function App() {
                 </div>
                 <div className="listActions" onClick={e => e.stopPropagation()}>
                   <button className="smallBtn" onClick={() => speak(item.term, settings.speakRate)}>🔊</button>
-                  <button className={`smallBtn ${progress[item.term] === 'mastered' ? 'masterBtn' : ''}`} onClick={() => toggleProgress(item)}>
-                    {progress[item.term] === 'mastered' ? '已掌握' : '未掌握'}
+                  <button className={`smallBtn ${progress[termKey(item.term)] === 'mastered' ? 'masterBtn' : ''}`} onClick={() => toggleProgress(item)}>
+                    {progress[termKey(item.term)] === 'mastered' ? '已掌握' : '未掌握'}
                   </button>
                   {activeBook.editable && <button className="smallBtn dangerGhost" onClick={() => deleteItem(item.id)}>删</button>}
                 </div>
@@ -9584,7 +9608,7 @@ function App() {
                 <div className="modalActions">
                   <button onClick={() => speak(detailItem.term, settings.speakRate)}>🔊 发音</button>
                   <button className="masterBtn" onClick={() => { toggleProgress(detailItem); setDetailItem({...detailItem}); }}>
-                    {progress[detailItem.term] === 'mastered' ? '取消掌握' : '标记掌握'}
+                    {progress[termKey(detailItem.term)] === 'mastered' ? '取消掌握' : '标记掌握'}
                   </button>
                 </div>
               </div>
@@ -10132,7 +10156,7 @@ function App() {
             }}>清理不存在的词库</button>
             <div className="list">
               {books.filter(b => b.id !== 'mastered-words' && b.id !== 'wrong-words').map(b => {
-                const mastered = b.items.filter(i => progress[i.term] === 'mastered').length;
+                const mastered = b.items.filter(i => progress[termKey(i.term)] === 'mastered').length;
                 const isBuiltIn = builtInBooks.some(bb => bb.id === b.id);
                 const isHidden = hiddenBookIds.includes(b.id);
                 return (
