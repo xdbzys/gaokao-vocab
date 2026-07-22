@@ -9,8 +9,8 @@ import './styles.css';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.14.5';
-const APP_VERSION_CODE = 155;
+const APP_VERSION = '2.14.6';
+const APP_VERSION_CODE = 156;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -9316,143 +9316,6 @@ function App() {
           ) : (
             <div className="empty">当前筛选下没有内容，请切换词库或分类。</div>
           )}
-          {/* 数字日期 */}
-          {extendTab === 'numberdate' && (
-            <div style={{ marginTop: 16 }}>
-              <div className="segmented" style={{ marginBottom: 16 }}>
-                {[
-                  { key: 'months', label: '月份' },
-                  { key: 'weekdays', label: '星期' },
-                  { key: 'seasons', label: '季节' },
-                  { key: 'dateWords', label: '日期词汇' },
-                  { key: 'numbers', label: '数字' },
-                ].map(t => (
-                  <button key={t.key} className={numberDateSubTab === t.key ? 'active' : ''} onClick={() => setNumberDateSubTab(t.key)}>{t.label}</button>
-                ))}
-              </div>
-              {/* 月份 */}
-              {numberDateSubTab === 'months' && (
-                <div>
-                  <p className="muted">点击单词可听发音。缩写在日记、书信中常用。</p>
-                  <div className="list">
-                    {numberDateData.months.map((m, i) => (
-                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
-                        <div className="listItemMain">
-                          <div className="listItemTitle">
-                            <h3>{m.word}</h3>
-                            <span className="phoneticSmall">{m.phonetic}</span>
-                            <span className="posTag" style={{ color: '#2563eb', background: '#2563eb18' }}>{m.abbr}</span>
-                          </div>
-                          <p style={{ fontWeight: 600, color: '#2563eb' }}>{m.cn}</p>
-                          <div className="points" style={{ marginTop: 4 }}>
-                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {/* 星期 */}
-              {numberDateSubTab === 'weekdays' && (
-                <div>
-                  <p className="muted">星期一到星期日的英文表达，点击可听发音。</p>
-                  <div className="list">
-                    {numberDateData.weekdays.map((m, i) => (
-                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
-                        <div className="listItemMain">
-                          <div className="listItemTitle">
-                            <h3>{m.word}</h3>
-                            <span className="phoneticSmall">{m.phonetic}</span>
-                            <span className="posTag" style={{ color: '#7c3aed', background: '#7c3aed18' }}>{m.abbr}</span>
-                          </div>
-                          <p style={{ fontWeight: 600, color: '#7c3aed' }}>{m.cn}</p>
-                          <div className="points" style={{ marginTop: 4 }}>
-                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {/* 季节 */}
-              {numberDateSubTab === 'seasons' && (
-                <div>
-                  <p className="muted">四季的英文表达。注意 autumn（英式）和 fall（美式）两种写法。</p>
-                  <div className="list">
-                    {numberDateData.seasons.map((m, i) => (
-                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
-                        <div className="listItemMain">
-                          <div className="listItemTitle">
-                            <h3>{m.word}</h3>
-                            <span className="phoneticSmall">{m.phonetic}</span>
-                          </div>
-                          <p style={{ fontWeight: 600, color: '#16a34a' }}>{m.cn}</p>
-                          <div className="points" style={{ marginTop: 4 }}>
-                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {/* 日期词汇 */}
-              {numberDateSubTab === 'dateWords' && (
-                <div>
-                  <p className="muted">与日期时间相关的高频词汇。</p>
-                  <div className="list">
-                    {numberDateData.dateWords.map((m, i) => (
-                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
-                        <div className="listItemMain">
-                          <div className="listItemTitle">
-                            <h3>{m.word}</h3>
-                            <span className="phoneticSmall">{m.phonetic}</span>
-                          </div>
-                          <p style={{ fontWeight: 600, color: '#ea580c' }}>{m.cn}</p>
-                          <div className="points" style={{ marginTop: 4 }}>
-                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {/* 数字（基数词+序数词） */}
-              {numberDateSubTab === 'numbers' && (
-                <div>
-                  <p className="muted">基数词（one, two...）用于计数，序数词（first, second...）用于表示顺序和日期。点击可听发音。</p>
-                  <div className="list">
-                    {numberDateData.numbers.map(item => (
-                      <div key={item.n} className="listItem" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px' }}>
-                        <div style={{ minWidth: 60, fontSize: '1.2em', fontWeight: 700, color: '#2563eb' }}>{item.n}</div>
-                        <div style={{ flex: 1 }}>
-                          <span style={{ fontWeight: 600, color: '#16a34a', marginRight: 12, cursor: 'pointer' }} onClick={() => speak(item.cardinal, settings.speakRate)}>{item.cardinal}</span>
-                          <span style={{ fontWeight: 600, color: '#ea580c', cursor: 'pointer' }} onClick={() => speak(item.ordinal, settings.speakRate)}>{item.ordinal}</span>
-                        </div>
-                        <div style={{ fontSize: '0.75em', color: 'var(--text-tertiary)' }}>第{item.n}</div>
-                      </div>
-                    ))}
-                    {/* 整十/百/千/百万/十亿 */}
-                    <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--bg-tertiary)', borderRadius: 8 }}>
-                      <p style={{ fontWeight: 600, marginBottom: 8, color: 'var(--text-secondary)' }}>大数字</p>
-                      {numberDateData.extraNumbers.map(item => (
-                        <div key={item.n} className="listItem" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 6, marginBottom: 4 }}>
-                          <div style={{ minWidth: 80, fontSize: '1.1em', fontWeight: 700, color: '#2563eb' }}>{item.n.toLocaleString()}</div>
-                          <div>
-                            <span style={{ fontWeight: 600, color: '#16a34a', marginRight: 12, cursor: 'pointer' }} onClick={() => speak(item.cardinal, settings.speakRate)}>{item.cardinal}</span>
-                            <span style={{ fontWeight: 600, color: '#ea580c', cursor: 'pointer' }} onClick={() => speak(item.ordinal, settings.speakRate)}>{item.ordinal}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </section>
       )}
 
@@ -9612,6 +9475,143 @@ function App() {
                   </button>
                 </div>
               </div>
+            </div>
+          )}
+          {/* 数字日期 */}
+          {extendTab === 'numberdate' && (
+            <div style={{ marginTop: 16 }}>
+              <div className="segmented" style={{ marginBottom: 16 }}>
+                {[
+                  { key: 'months', label: '月份' },
+                  { key: 'weekdays', label: '星期' },
+                  { key: 'seasons', label: '季节' },
+                  { key: 'dateWords', label: '日期词汇' },
+                  { key: 'numbers', label: '数字' },
+                ].map(t => (
+                  <button key={t.key} className={numberDateSubTab === t.key ? 'active' : ''} onClick={() => setNumberDateSubTab(t.key)}>{t.label}</button>
+                ))}
+              </div>
+              {/* 月份 */}
+              {numberDateSubTab === 'months' && (
+                <div>
+                  <p className="muted">点击单词可听发音。缩写在日记、书信中常用。</p>
+                  <div className="list">
+                    {numberDateData.months.map((m, i) => (
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                        <div className="listItemMain">
+                          <div className="listItemTitle">
+                            <h3>{m.word}</h3>
+                            <span className="phoneticSmall">{m.phonetic}</span>
+                            <span className="posTag" style={{ color: '#2563eb', background: '#2563eb18' }}>{m.abbr}</span>
+                          </div>
+                          <p style={{ fontWeight: 600, color: '#2563eb' }}>{m.cn}</p>
+                          <div className="points" style={{ marginTop: 4 }}>
+                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* 星期 */}
+              {numberDateSubTab === 'weekdays' && (
+                <div>
+                  <p className="muted">星期一到星期日的英文表达，点击可听发音。</p>
+                  <div className="list">
+                    {numberDateData.weekdays.map((m, i) => (
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                        <div className="listItemMain">
+                          <div className="listItemTitle">
+                            <h3>{m.word}</h3>
+                            <span className="phoneticSmall">{m.phonetic}</span>
+                            <span className="posTag" style={{ color: '#7c3aed', background: '#7c3aed18' }}>{m.abbr}</span>
+                          </div>
+                          <p style={{ fontWeight: 600, color: '#7c3aed' }}>{m.cn}</p>
+                          <div className="points" style={{ marginTop: 4 }}>
+                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* 季节 */}
+              {numberDateSubTab === 'seasons' && (
+                <div>
+                  <p className="muted">四季的英文表达。注意 autumn（英式）和 fall（美式）两种写法。</p>
+                  <div className="list">
+                    {numberDateData.seasons.map((m, i) => (
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                        <div className="listItemMain">
+                          <div className="listItemTitle">
+                            <h3>{m.word}</h3>
+                            <span className="phoneticSmall">{m.phonetic}</span>
+                          </div>
+                          <p style={{ fontWeight: 600, color: '#16a34a' }}>{m.cn}</p>
+                          <div className="points" style={{ marginTop: 4 }}>
+                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* 日期词汇 */}
+              {numberDateSubTab === 'dateWords' && (
+                <div>
+                  <p className="muted">与日期时间相关的高频词汇。</p>
+                  <div className="list">
+                    {numberDateData.dateWords.map((m, i) => (
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                        <div className="listItemMain">
+                          <div className="listItemTitle">
+                            <h3>{m.word}</h3>
+                            <span className="phoneticSmall">{m.phonetic}</span>
+                          </div>
+                          <p style={{ fontWeight: 600, color: '#ea580c' }}>{m.cn}</p>
+                          <div className="points" style={{ marginTop: 4 }}>
+                            {m.examples.map((ex, j) => <p key={j} style={{ fontSize: '0.85em' }}>• {ex}</p>)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* 数字（基数词+序数词） */}
+              {numberDateSubTab === 'numbers' && (
+                <div>
+                  <p className="muted">基数词（one, two...）用于计数，序数词（first, second...）用于表示顺序和日期。点击可听发音。</p>
+                  <div className="list">
+                    {numberDateData.numbers.map(item => (
+                      <div key={item.n} className="listItem" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px' }}>
+                        <div style={{ minWidth: 60, fontSize: '1.2em', fontWeight: 700, color: '#2563eb' }}>{item.n}</div>
+                        <div style={{ flex: 1 }}>
+                          <span style={{ fontWeight: 600, color: '#16a34a', marginRight: 12, cursor: 'pointer' }} onClick={() => speak(item.cardinal, settings.speakRate)}>{item.cardinal}</span>
+                          <span style={{ fontWeight: 600, color: '#ea580c', cursor: 'pointer' }} onClick={() => speak(item.ordinal, settings.speakRate)}>{item.ordinal}</span>
+                        </div>
+                        <div style={{ fontSize: '0.75em', color: 'var(--text-tertiary)' }}>第{item.n}</div>
+                      </div>
+                    ))}
+                    {/* 整十/百/千/百万/十亿 */}
+                    <div style={{ marginTop: 12, padding: '8px 12px', background: 'var(--bg-tertiary)', borderRadius: 8 }}>
+                      <p style={{ fontWeight: 600, marginBottom: 8, color: 'var(--text-secondary)' }}>大数字</p>
+                      {numberDateData.extraNumbers.map(item => (
+                        <div key={item.n} className="listItem" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 6, marginBottom: 4 }}>
+                          <div style={{ minWidth: 80, fontSize: '1.1em', fontWeight: 700, color: '#2563eb' }}>{item.n.toLocaleString()}</div>
+                          <div>
+                            <span style={{ fontWeight: 600, color: '#16a34a', marginRight: 12, cursor: 'pointer' }} onClick={() => speak(item.cardinal, settings.speakRate)}>{item.cardinal}</span>
+                            <span style={{ fontWeight: 600, color: '#ea580c', cursor: 'pointer' }} onClick={() => speak(item.ordinal, settings.speakRate)}>{item.ordinal}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </section>

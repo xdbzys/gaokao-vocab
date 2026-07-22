@@ -1,7 +1,7 @@
 {
-  "version": "2.14.5",
-  "versionCode": 155,
-  "changelog": "v2.14.5 更新\n\n【修复】\n- 全面修复已掌握单词重复出现的问题\n- 所有 term 匹配改为大小写不敏感，确保 March/march 等视为同一单词\n- 洗牌顺序改为稳定种子，不再因进度更新而跳变\n- 旧数据自动迁移为小写 key，兼容历史版本",
-  "devNotes": "case-insensitive term matching, stable shuffle, progress migration",
+  "version": "2.14.6",
+  "versionCode": 156,
+  "changelog": "v2.14.6 更新\n\n【修复】\n- 数字日期模块从背诵页移到扩展页，点击不再跳转背诵页",
+  "devNotes": "move numberdate content from learn section to extend section",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
