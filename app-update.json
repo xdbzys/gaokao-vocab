@@ -1,7 +1,7 @@
 {
-  "version": "2.14.6",
-  "versionCode": 156,
-  "changelog": "v2.14.6 更新\n\n【修复】\n- 数字日期模块从背诵页移到扩展页，点击不再跳转背诵页",
-  "devNotes": "move numberdate content from learn section to extend section",
+  "version": "2.14.7",
+  "versionCode": 157,
+  "changelog": "v2.14.7 更新\n\n【修复】\n- 数字日期内容正确显示在扩展页\n- 背诵模式可切换（英文选中文/中文选英文/闪卡）\n- 点击立即更新不再导致界面膨胀\n- 背诵页中文选项过滤无效释义和重复项\n【优化】\n- 词库页懒加载，打开词库不再卡顿",
+  "devNotes": "fix numberdate display, mode switching, UI expansion, option filtering, lazy loading",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

@@ -545,6 +545,8 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   font-size: 14px;
   line-height: 1.6;
   white-space: pre-line;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .points p, .examples p {
@@ -849,6 +851,8 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   border-radius: 18px;
   background: var(--primary-bg);
   border: 1px solid rgba(59, 130, 246, 0.2);
+  overflow: hidden;
+  word-break: break-all;
 }
 
 .cloudUpdateSection h3 {
@@ -902,6 +906,8 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   border-radius: 14px;
   background: var(--bg-card);
   border: 1px solid var(--border);
+  overflow: hidden;
+  word-break: break-all;
 }
 
 .updateNewVersion {
@@ -919,6 +925,8 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   padding: 8px;
   border-radius: 8px;
   white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: break-word;
   margin: 0;
 }
 
