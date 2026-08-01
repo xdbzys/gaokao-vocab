@@ -1111,33 +1111,149 @@ const wordEnrichmentData = {
   },
 };
 
-// 算法生成派生词（作为手动数据的补充）
+// 常见词根中文释义表（用于算法生成派生词时补充中文）
+const baseWordMeanings = {
+  act: '行动', adapt: '适应', adjust: '调整', admit: '承认', adopt: '采纳',
+  advance: '前进', affect: '影响', agree: '同意', allow: '允许', amaze: '惊讶',
+  analyze: '分析', announce: '宣布', apply: '申请', approach: '接近', argue: '争论',
+  arrange: '安排', assess: '评估', assign: '分配', assist: '协助', assume: '假设',
+  attach: '附上', attempt: '尝试', attract: '吸引', avoid: '避免', aware: '意识到的',
+  balance: '平衡', behave: '表现', believe: '相信', belong: '属于', benefit: '受益',
+  calculate: '计算', cancel: '取消', capture: '捕获', celebrate: '庆祝', challenge: '挑战',
+  change: '改变', charge: '收费', choose: '选择', circulate: '循环', classify: '分类',
+  collect: '收集', combine: '结合', comfort: '安慰', command: '命令', communicate: '交流',
+  compare: '比较', compete: '竞争', complain: '抱怨', complete: '完成', compose: '组成',
+  concern: '关心', conclude: '得出结论', conduct: '进行', confess: '坦白', confirm: '确认',
+  confront: '面对', connect: '连接', consider: '考虑', consist: '组成', construct: '建造',
+  consume: '消耗', contain: '包含', contest: '竞争', continue: '继续', contribute: '贡献',
+  control: '控制', converse: '交谈', convince: '说服', correct: '纠正', create: '创造',
+  cultivate: '培养', decide: '决定', declare: '宣布', decline: '下降', decorate: '装饰',
+  decrease: '减少', defend: '保卫', define: '定义', delay: '延迟', deliver: '递送',
+  demand: '要求', demonstrate: '证明', depend: '依赖', describe: '描述', deserve: '应得',
+  design: '设计', desire: '渴望', destroy: '破坏', determine: '决定', develop: '发展',
+  devote: '奉献', differ: '不同', direct: '指导', disappear: '消失', disappoint: '使失望',
+  discover: '发现', discuss: '讨论', display: '展示', distinguish: '区分', distribute: '分配',
+  disturb: '打扰', divide: '划分', dominate: '支配', doubt: '怀疑', earn: '赚取',
+  educate: '教育', effect: '效果', elect: '选举', emerge: '出现', employ: '雇用',
+  encourage: '鼓励', endure: '忍受', engage: '参与', enjoy: '享受', ensure: '确保',
+  enter: '进入', entertain: '娱乐', equip: '装备', establish: '建立', estimate: '估计',
+  evaluate: '评估', examine: '检查', exceed: '超过', exchange: '交换', exist: '存在',
+  expand: '扩展', expect: '期待', experience: '经历', experiment: '实验', explain: '解释',
+  explore: '探索', expose: '暴露', express: '表达', extend: '延伸', fail: '失败',
+  fancy: '想象', fascinate: '迷住', favor: '偏爱', fear: '害怕', figure: '计算',
+  finance: '资助', finish: '完成', fix: '修理', fluctuate: '波动', focus: '集中',
+  follow: '跟随', forbid: '禁止', forecast: '预测', forgive: '原谅', form: '形成',
+  found: '建立', free: '释放', freeze: '冻结', frighten: '惊吓', function: '运作',
+  gain: '获得', gather: '聚集', generate: '产生', govern: '统治', graduate: '毕业',
+  grasp: '掌握', grow: '增长', guarantee: '保证', guess: '猜测', guide: '引导',
+  handle: '处理', happen: '发生', harm: '伤害', hate: '讨厌', heal: '治愈',
+  hesitate: '犹豫', hide: '隐藏', highlight: '强调', hire: '雇佣', hope: '希望',
+  hunt: '搜寻', identify: '识别', ignore: '忽视', imagine: '想象', imitate: '模仿',
+  impact: '影响', imply: '暗示', import: '进口', impose: '强加', improve: '改善',
+  include: '包含', increase: '增加', indicate: '指示', influence: '影响', inform: '通知',
+  inherit: '继承', injure: '伤害', insist: '坚持', inspire: '激励', instruct: '指导',
+  intend: '打算', interest: '兴趣', interpret: '解释', interrupt: '打断', interview: '面试',
+  introduce: '介绍', invade: '入侵', invent: '发明', invest: '投资', invite: '邀请',
+  involve: '涉及', isolate: '隔离', join: '加入', judge: '判断', justify: '证明正当',
+  keep: '保持', kill: '杀死', know: '知道', lack: '缺乏', last: '持续',
+  launch: '发射', lead: '引导', learn: '学习', lend: '借出', limit: '限制',
+  link: '连接', listen: '听', live: '生活', locate: '定位', long: '渴望',
+  look: '看', lose: '失去', maintain: '维持', manage: '管理', manufacture: '制造',
+  mark: '标记', marry: '结婚', master: '掌握', matter: '要紧', mean: '意味着',
+  measure: '测量', meet: '遇见', mention: '提及', mind: '介意', miss: '错过',
+  misunderstand: '误解', mix: '混合', modify: '修改', monitor: '监控', move: '移动',
+  multiply: '相乘', name: '命名', need: '需要', neglect: '忽视', negotiate: '谈判',
+  note: '注意', notice: '注意', observe: '观察', obtain: '获得', occupy: '占据',
+  occur: '发生', offer: '提供', open: '打开', operate: '操作', oppose: '反对',
+  organize: '组织', originate: '起源', overcome: '克服', owe: '欠', own: '拥有',
+  pack: '打包', participate: '参与', pass: '通过', perform: '执行', permit: '允许',
+  persist: '坚持', persuade: '说服', pick: '挑选', plan: '计划', please: '取悦',
+  possess: '拥有', postpone: '推迟', practice: '练习', predict: '预测', prefer: '偏爱',
+  prepare: '准备', present: '呈现', preserve: '保存', pretend: '假装', prevent: '阻止',
+  produce: '生产', progress: '进步', prohibit: '禁止', promise: '承诺', promote: '促进',
+  propose: '提议', protect: '保护', prove: '证明', provide: '提供', publish: '出版',
+  punish: '惩罚', purchase: '购买', pursue: '追求', puzzle: '使困惑', qualify: '使合格',
+  question: '质疑', quit: '放弃', quote: '引用', race: '比赛', raise: '提高',
+  range: '范围', reach: '到达', react: '反应', read: '阅读', realize: '意识到',
+  reason: '推理', recall: '回忆', receive: '收到', recognize: '认出', recommend: '推荐',
+  record: '记录', recover: '恢复', recycle: '回收', reduce: '减少', reflect: '反思',
+  reform: '改革', refuse: '拒绝', regard: '看待', regret: '后悔', regulate: '管理',
+  reject: '拒绝', relate: '联系', relax: '放松', release: '释放', rely: '依赖',
+  remain: '保持', remember: '记得', remind: '提醒', remove: '移除', renew: '更新',
+  repair: '修理', repeat: '重复', replace: '替换', reply: '回复', report: '报告',
+  represent: '代表', require: '需要', research: '研究', resist: '抵抗', resolve: '解决',
+  respond: '回应', rest: '休息', restore: '恢复', restrict: '限制', result: '导致',
+  retire: '退休', return: '返回', reveal: '揭示', review: '回顾', revolution: '革命',
+  reward: '奖励', rid: '摆脱', ride: '骑', rise: '上升', risk: '冒险',
+  rob: '抢劫', ruin: '毁坏', rule: '统治', run: '跑', sacrifice: '牺牲',
+  satisfy: '满足', save: '节省', say: '说', scan: '扫描', scare: '惊吓',
+  schedule: '安排', search: '搜索', secure: '保护', see: '看见', seek: '寻找',
+  select: '选择', sell: '卖', send: '发送', separate: '分离', serve: '服务',
+  settle: '解决', share: '分享', shock: '震惊', shoot: '射击', show: '展示',
+  shrink: '缩小', signal: '发信号', sign: '签署', simplify: '简化', sit: '坐',
+  sleep: '睡觉', slow: '减慢', solve: '解决', sort: '分类', sound: '听起来',
+  source: '来源', speak: '说', specify: '指定', spend: '花费', spread: '传播',
+  stand: '站立', start: '开始', stay: '停留', steal: '偷', steer: '引导',
+  stimulate: '刺激', stop: '停止', store: '储存', strengthen: '加强', stress: '强调',
+  strike: '打击', struggle: '挣扎', study: '研究', submit: '提交', succeed: '成功',
+  suffer: '遭受', suggest: '建议', suit: '适合', supply: '供应', support: '支持',
+  suppose: '假设', surround: '包围', survey: '调查', survive: '幸存', suspect: '怀疑',
+  sustain: '维持', swallow: '吞咽', swap: '交换', talk: '谈话', taste: '品尝',
+  teach: '教', tend: '倾向', test: '测试', thank: '感谢', think: '思考',
+  threaten: '威胁', throw: '扔', train: '训练', transform: '转变', translate: '翻译',
+  transport: '运输', travel: '旅行', treat: '对待', trust: '信任', try: '尝试',
+  turn: '转动', understand: '理解', undertake: '承担', unite: '联合', update: '更新',
+  use: '使用', utilize: '利用', vary: '变化', view: '观看', visit: '访问',
+  vote: '投票', wait: '等待', wake: '醒来', walk: '走', wander: '漫步',
+  want: '想要', warm: '温暖', warn: '警告', waste: '浪费', watch: '观看',
+  weaken: '减弱', wear: '穿戴', weigh: '称重', welcome: '欢迎', win: '获胜',
+  wish: '希望', withdraw: '撤回', wonder: '想知道', work: '工作', worry: '担心',
+  wrap: '包裹', write: '写', wrong: '冤枉',
+};
+
+// 算法生成派生词（作为手动数据的补充，含中文释义）
 function generateDerivatives(word) {
   if (!word || word.length < 3) return [];
   const w = word.toLowerCase();
+  const baseMeaning = baseWordMeanings[w] || '';
   const results = [];
+
+  // 后缀中文释义映射
+  const suffixCnMap = {
+    'tion': '行为；状态', 'sion': '行为；状态', 'ment': '行为；结果',
+    'ness': '性质；状态', 'ity': '性质；状态', 'able': '可…的', 'ible': '可…的',
+    'ful': '充满…的', 'less': '无…的', 'ous': '有…特性的', 'ive': '有…倾向的',
+    'al': '与…有关的', 'ly': '…地', 'er': '做…的人/物', 'or': '做…的人/物',
+    'ist': '从事…的人', 'ary': '与…有关的', 'ery': '…场所', 'age': '行为；状态',
+    'ure': '行为；结果', 'ize': '使…化', 'ise': '使…化', 'ify': '使…化',
+    'en': '使…变得', 'ish': '有点…的', 'hood': '时期；状态', 'ship': '关系；身份',
+    'dom': '领域；状态', 'ism': '主义；学说', 'y': '有…特性的',
+  };
+
   const suffixRules = [
-    { suffix: 'tion', add: ['tion', 'sion'], type: 'n.' },
-    { suffix: 'sion', add: ['sion'], type: 'n.' },
-    { suffix: 'ment', add: ['ment'], type: 'n.' },
-    { suffix: 'ness', add: ['ness'], type: 'n.' },
-    { suffix: 'ity', add: ['ity'], type: 'n.' },
-    { suffix: 'able', add: ['able', 'ible'], type: 'adj.' },
-    { suffix: 'ful', add: ['ful'], type: 'adj.' },
-    { suffix: 'less', add: ['less'], type: 'adj.' },
-    { suffix: 'ous', add: ['ous'], type: 'adj.' },
-    { suffix: 'ive', add: ['ive'], type: 'adj.' },
-    { suffix: 'al', add: ['al'], type: 'adj.' },
-    { suffix: 'ly', add: ['ly'], type: 'adv.' },
-    { suffix: 'er', add: ['er', 'or'], type: 'n.' },
-    { suffix: 'ist', add: ['ist'], type: 'n.' },
+    { suffix: 'tion', type: 'n.' },
+    { suffix: 'sion', type: 'n.' },
+    { suffix: 'ment', type: 'n.' },
+    { suffix: 'ness', type: 'n.' },
+    { suffix: 'ity', type: 'n.' },
+    { suffix: 'able', type: 'adj.' },
+    { suffix: 'ful', type: 'adj.' },
+    { suffix: 'less', type: 'adj.' },
+    { suffix: 'ous', type: 'adj.' },
+    { suffix: 'ive', type: 'adj.' },
+    { suffix: 'al', type: 'adj.' },
+    { suffix: 'ly', type: 'adv.' },
+    { suffix: 'er', type: 'n.' },
+    { suffix: 'ist', type: 'n.' },
   ];
   // 检查是否已有后缀，若有则生成去掉后缀的形式
   for (const rule of suffixRules) {
     if (w.endsWith(rule.suffix)) {
       const base = w.slice(0, -rule.suffix.length);
       if (base.length >= 2) {
-        results.push(`${base} (${rule.type} 去后缀)`);
+        const baseM = baseWordMeanings[base] || '';
+        const cnPart = baseM ? ` ${baseM}` : '';
+        results.push(`${base} ${rule.type}${cnPart}`);
       }
     }
   }
@@ -1157,7 +1273,17 @@ function generateDerivatives(word) {
   for (const cs of commonSuffixes) {
     const derived = w + cs.suffix;
     if (derived !== w && !results.some(r => r.startsWith(derived))) {
-      results.push(`${derived} (${cs.label})`);
+      const cnSuffix = suffixCnMap[cs.suffix] || '';
+      // 组合中文释义：词根义 + 后缀义
+      let cnMeaning = '';
+      if (baseMeaning && cnSuffix) {
+        cnMeaning = ` ${baseMeaning}${cnSuffix}`;
+      } else if (baseMeaning) {
+        cnMeaning = ` ${baseMeaning}`;
+      } else if (cnSuffix) {
+        cnMeaning = ` ${cnSuffix}`;
+      }
+      results.push(`${derived} ${cs.label}${cnMeaning}`);
     }
   }
   return results.slice(0, 6);

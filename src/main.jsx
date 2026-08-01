@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.16.0';
-const APP_VERSION_CODE = 159;
+const APP_VERSION = '2.17.0';
+const APP_VERSION_CODE = 160;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -3042,6 +3042,66 @@ const sceneData = [
     words: ['globalization', 'diversity', 'equality', 'poverty', 'volunteer', 'community', 'justice', 'opportunity', 'challenge', 'responsibility'],
     text: 'In an era of globalization, we are more connected than ever before. Issues such as poverty, inequality, and social justice transcend national borders and require collective action. Volunteering in community service not only helps those in need but also broadens our perspective and cultivates empathy. Every individual has the responsibility to contribute to a more just and compassionate society. While the challenges we face are daunting, they also present opportunities for innovation and positive change. As global citizens, we must embrace diversity and work together toward a sustainable future.',
     textCn: '在全球化的时代，我们比以往任何时候都更加紧密地联系在一起。贫困、不平等和社会正义等问题超越了国界，需要共同应对。参与社区服务的志愿活动不仅帮助有需要的人，还能拓宽我们的视野、培养同理心。每个人都有责任为一个更加公正和富有同情心的社会做出贡献。虽然我们面临的挑战令人畏惧，但它们也为创新和积极变革提供了机遇。作为全球公民，我们必须拥抱多样性，共同努力迈向可持续的未来。'
+  },
+  {
+    title: '🌊 海洋微塑料污染（2025全国一卷D篇）',
+    words: ['microplastic', 'ocean', 'contaminate', 'filter', 'solution', 'research', 'particle', 'tap', 'reduce', 'chemical'],
+    text: 'Microplastics have been found in tap water around the world, posing a potential threat to human health. Chinese researchers have developed an innovative method to significantly reduce microplastic contamination in drinking water. By using a specialized filtration system, they can remove over 90% of plastic particles from tap water. This breakthrough offers a practical solution to a global environmental challenge. The research team emphasizes that while filtering is important, the ultimate solution lies in reducing plastic waste at its source. Every piece of plastic that ends up in the ocean eventually breaks down into particles that contaminate our food chain.',
+    textCn: '全球自来水中都发现了微塑料，对人体健康构成潜在威胁。中国研究人员开发了一种创新方法，可显著减少饮用水中的微塑料污染。通过使用专门的过滤系统，他们能去除自来水中90%以上的塑料颗粒。这一突破为全球环境挑战提供了实用解决方案。研究团队强调，虽然过滤很重要，但最终解决方案在于从源头减少塑料废物。每一块进入海洋的塑料最终都会分解成污染我们食物链的颗粒。'
+  },
+  {
+    title: '🚲 绿色出行与城市宜居（2023新课标I卷A篇）',
+    words: ['bicycle', 'commute', 'emission', 'sustainable', 'infrastructure', 'convenient', 'rental', 'guide', 'explore', 'carbon'],
+    text: 'Amsterdam is famous for its bicycle-friendly infrastructure, where cycling is not just a hobby but a way of life. The city offers extensive bike rental services and professional tour guides for visitors who wish to explore the city on two wheels. Commuting by bicycle produces zero carbon emissions, making it one of the most sustainable forms of transportation. Cities around the world are now following this model, building dedicated bike lanes and offering public bike-sharing programs. Studies show that walkable and bike-friendly cities not only reduce pollution but also improve residents\' physical and mental health. The shift toward green transportation is an essential step in creating livable urban environments.',
+    textCn: '阿姆斯特丹以其自行车友好型基础设施而闻名，在那里骑行不仅仅是一种爱好，更是一种生活方式。该市为希望骑车探索城市的游客提供广泛的自行车租赁服务和专业导游。骑自行车通勤产生零碳排放，是最可持续的交通方式之一。世界各地的城市正在效仿这一模式，建设专用自行车道并提供公共自行车共享项目。研究表明，适宜步行和骑行的城市不仅减少了污染，还改善了居民的身心健康。向绿色交通的转变是创造宜居城市环境的关键一步。'
+  },
+  {
+    title: '🍽️ 食物浪费与节约（2022新高考I卷B篇）',
+    words: ['waste', 'consume', 'portion', 'leftover', 'ingredient', 'scrape', 'discard', 'nutrition', 'resource', 'awareness'],
+    text: 'Every day, tons of food are wasted in restaurants and households around the world. In many restaurants, customers order more than they can consume, and the leftovers are simply discarded. However, some innovative chefs are turning ingredient scraps into delicious dishes, demonstrating that so-called "waste" can be transformed into culinary treasures. Raising awareness about food waste is crucial, as producing food requires enormous amounts of water, land, and energy. Simple habits like ordering appropriate portions, saving leftovers, and composting can make a significant difference. Reducing food waste is not only an ethical obligation but also an environmental necessity.',
+    textCn: '每天，世界各地的餐厅和家庭浪费成吨的食物。在许多餐厅中，顾客点的食物超过了他们能消费的量，剩菜被直接丢弃。然而，一些富有创意的厨师正在将食材边角料变成美味佳肴，证明所谓的"废物"可以转化为烹饪珍宝。提高对食物浪费的认识至关重要，因为生产食物需要大量的水、土地和能源。点适量的菜、保存剩菜和堆肥等简单习惯就能产生显著影响。减少食物浪费不仅是道德义务，更是环境需要。'
+  },
+  {
+    title: '🏥 中医文化走向世界（2024新课标I卷B篇）',
+    words: ['traditional', 'acupuncture', 'veterinary', 'combine', 'treatment', 'needle', 'therapy', 'effective', 'recovery', 'cultural'],
+    text: 'In a small town in the United States, a veterinarian named Dr. Smith has been combining traditional Chinese acupuncture with Western medicine to treat animals. When a dog suffered from a severe spinal injury that conventional treatment could not cure, Dr. Smith turned to acupuncture. After several sessions of needle therapy, the dog showed remarkable recovery. This case demonstrates how traditional Chinese medicine, with thousands of years of history, is gaining recognition worldwide. The combination of Eastern and Western approaches offers patients — both human and animal — more effective treatment options. It also reflects growing cultural exchange and mutual respect between different medical traditions.',
+    textCn: '在美国的一个小镇上，一位名叫史密斯博士的兽医一直在将中医针灸与西医结合治疗动物。当一只狗遭受常规治疗无法治愈的严重脊柱损伤时，史密斯博士转向了针灸。经过几次针刺治疗后，这只狗显示出了显著的恢复。这一案例展示了拥有数千年历史的中医正在全球范围内获得认可。东西方方法的结合为患者——无论是人类还是动物——提供了更有效的治疗选择。它也反映了不同医学传统之间日益增长的文化交流和相互尊重。'
+  },
+  {
+    title: '📖 纸质阅读与数字阅读（2024新课标I卷C篇）',
+    words: ['print', 'digital', 'screen', 'comprehension', 'retain', 'focus', 'device', 'audiobook', 'absorb', 'preference'],
+    text: 'As digital devices become ubiquitous, a debate has emerged: is reading on a screen as effective as reading a physical book? Research suggests that readers tend to comprehend and retain information better when reading print materials. The tactile experience of turning pages helps create spatial memory that aids recall. Digital reading, while convenient and portable, often leads to skimming and multitasking, which can reduce focus and absorption of content. Audiobooks offer yet another mode, allowing listeners to absorb stories during commutes. However, for deep learning and critical analysis, print books remain the preferred medium. The key is understanding that different formats serve different purposes in our reading lives.',
+    textCn: '随着数字设备的普及，一个争议出现了：在屏幕上阅读是否和阅读实体书一样有效？研究表明，读者在阅读印刷材料时往往能更好地理解和记忆信息。翻页的触觉体验有助于创造辅助回忆的空间记忆。数字阅读虽然方便且便于携带，但往往导致浏览和多任务处理，从而降低注意力和内容吸收。有声书提供了另一种模式，让听众可以在通勤时吸收故事。然而，对于深度学习和批判性分析，印刷书籍仍然是首选媒介。关键在于理解不同的格式在我们的阅读生活中有不同的用途。'
+  },
+  {
+    title: '🌱 城市花园与生态农业（2023新课标II卷B篇）',
+    words: ['urban', 'garden', 'sprout', 'seed', 'cultivate', 'harvest', 'organic', 'community', 'volunteer', 'transform'],
+    text: 'In a low-income neighborhood, a teacher named Abby Jaramillo started the Urban Sprouts project, transforming empty schoolyards into thriving gardens. Students learned to cultivate vegetables from seeds, harvest organic produce, and cook nutritious meals with their crops. The project not only provided fresh food to families but also taught children valuable lessons about patience, responsibility, and environmental stewardship. Urban farming initiatives like this are springing up in cities worldwide, converting unused spaces into productive green areas. They strengthen community bonds as volunteers work side by side, sharing knowledge and resources. These gardens prove that even in concrete jungles, nature can flourish and nourish both body and soul.',
+    textCn: '在一个低收入社区，一位名叫艾比·哈拉米洛的教师发起了"城市新芽"项目，将空置的校园变成了生机勃勃的花园。学生们学习从种子开始种植蔬菜、收获有机农产品，并用自己种的作物烹饪营养餐。该项目不仅为家庭提供了新鲜食物，还教会了孩子们关于耐心、责任和环境保护的宝贵课程。像这样的城市农业倡议正在世界各地的城市中涌现，将未使用的空间转化为多产的绿色区域。志愿者们并肩工作、分享知识和资源，增强了社区纽带。这些花园证明，即使在钢筋水泥的丛林中，自然也能茁壮成长，滋养身心。'
+  },
+  {
+    title: '🤝 志愿服务与教育关怀（2025全国二卷B篇）',
+    words: ['volunteer', 'hospital', 'tutor', 'patient', 'dedicate', 'compassion', 'disadvantaged', 'inspire', 'resilience', 'commitment'],
+    text: 'Kathy Ho dedicated her life to teaching children in a hospital setting, where young patients often miss months of school due to serious illnesses. As a hospital teacher, she adapted lessons to each child\'s condition, sometimes teaching at bedside or between treatments. Her compassion and commitment ensured that no child fell behind academically while fighting for their health. Kathy\'s story reminds us that education is not confined to traditional classrooms. Volunteers like her bridge critical gaps in society, providing support to the most disadvantaged. Their selfless dedication inspires us to look beyond our own circumstances and find meaning in serving others. True resilience emerges when communities rally around those who need help most.',
+    textCn: '凯西·何将自己的一生奉献给了在医院环境中教学，那里的年幼患者因重病常常缺课数月。作为一名医院教师，她根据每个孩子的病情调整课程，有时在病床旁或治疗间隙进行教学。她的同情心和奉献精神确保了没有孩子在与疾病抗争的同时在学业上掉队。凯西的故事提醒我们，教育不局限于传统课堂。像她这样的志愿者弥合了社会中的关键缺口，为最弱势的群体提供支持。他们无私的奉献激励我们超越自身境遇，在服务他人中找到意义。当社区团结在那些最需要帮助的人周围时，真正的韧性就会出现。'
+  },
+  {
+    title: '🌳 热带雨林保护（2020新高考II卷D篇）',
+    words: ['rainforest', 'tropical', 'species', 'medicine', 'deforest', 'biodiversity', 'habitat', 'indigenous', 'conserve', 'irreplaceable'],
+    text: 'Tropical rainforests are often called the world\'s largest pharmacy, as over a quarter of modern medicines originate from rainforest plants. Yet these irreplaceable ecosystems are disappearing at an alarming rate due to deforestation. Each hectare of rainforest contains hundreds of tree species and supports countless animals, insects, and microorganisms. Indigenous communities who have lived in harmony with these forests for centuries possess invaluable knowledge about medicinal plants. When we destroy rainforests for timber and agriculture, we lose not only biodiversity but also potential cures for diseases. Conservation efforts must balance economic development with the preservation of these vital habitats. The survival of the rainforest is ultimately tied to our own.',
+    textCn: '热带雨林常被称为世界最大的药房，因为超过四分之一的现代药物源自雨林植物。然而，这些不可替代的生态系统正以惊人的速度因森林砍伐而消失。每公顷雨林包含数百个树种，支撑着无数的动物、昆虫和微生物。与这些森林和谐共处了数百年的原住民社区拥有关于药用植物的宝贵知识。当我们为木材和农业破坏雨林时，我们失去的不仅是生物多样性，还有潜在的治疗疾病的药物。保护工作必须在经济发展与这些重要栖息地的保护之间取得平衡。雨林的存续最终与我们自己的生存息息相关。'
+  },
+  {
+    title: '👵 老年人健康与社会关怀（2022新高考I卷C篇）',
+    words: ['elderly', 'aging', 'physical', 'mental', 'companionship', 'isolated', 'program', 'engage', 'wellbeing', 'dignity'],
+    text: 'As populations age worldwide, caring for the elderly has become a pressing social issue. Many seniors live isolated lives, which can lead to both physical decline and mental health problems. Innovative programs have emerged to address this challenge: community centers offer group activities, volunteers provide regular companionship visits, and technology classes help seniors connect with family online. Studies show that elderly individuals who stay socially engaged maintain better cognitive function and physical health. Simple acts — a conversation, a walk together, a shared meal — can dramatically improve their wellbeing. A society\'s greatness is measured not only by its economic success but by how it treats its most vulnerable members with dignity and respect.',
+    textCn: '随着全球人口老龄化，关爱老年人已成为一个紧迫的社会问题。许多老年人过着孤独的生活，这可能导致身体衰退和心理健康问题。创新项目应运而生以应对这一挑战：社区中心提供集体活动，志愿者定期提供陪伴探访，技术课程帮助老年人在线与家人联系。研究表明，保持社交活动的老年人在认知功能和身体健康方面维持得更好。简单的行为——一次对话、一起散步、一顿共享的饭菜——就能极大地改善他们的福祉。一个社会的伟大不仅以其经济成功来衡量，还取决于它如何以尊严和尊重对待最弱势的成员。'
+  },
+  {
+    title: '🔬 科学探索与创新精神',
+    words: ['experiment', 'hypothesis', 'evidence', 'innovative', 'breakthrough', 'discover', 'methodology', 'analyze', 'conclusion', 'persist'],
+    text: 'Scientific progress relies on the persistent spirit of inquiry. When John Todd set out to build an "eco-machine" to clean polluted water, many doubted his hypothesis. Yet through years of experimentation, he demonstrated that natural ecosystems could be engineered to purify water without chemicals. His methodology involved combining plants, bacteria, and aquatic organisms in a series of tanks that mimic natural wetland processes. The breakthrough came after numerous failed attempts — each failure providing valuable evidence that refined the next experiment. This story illustrates that scientific discovery is rarely a straight line. It requires the courage to challenge conventional wisdom, the patience to analyze unexpected results, and the persistence to continue despite setbacks. Every great innovation begins with a simple question: "What if?"',
+    textCn: '科学的进步依赖于持续不断的探索精神。当约翰·托德着手建造一台"生态机器"来净化污水时，许多人质疑他的假说。然而经过多年的实验，他证明了自然生态系统可以被工程化来无化学物质地净化水。他的方法涉及在一系列模拟自然湿地过程的水箱中组合植物、细菌和水生生物。突破出现在无数次失败尝试之后——每一次失败都提供了宝贵的证据来改进下一次实验。这个故事说明科学发现很少是一条直线。它需要挑战传统智慧的勇气、分析意外结果的耐心，以及尽管遭遇挫折仍坚持继续的毅力。每一项伟大的创新都始于一个简单的问题："如果……会怎样？"'
   }
 ];
 

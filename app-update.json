@@ -1,7 +1,7 @@
 {
-  "version": "2.16.0",
-  "versionCode": 159,
-  "changelog": "v2.16.0 更新\n\n【优化】\n- 近义词、反义词全面补充中文翻译（覆盖450+词条）\n- 闪卡模式显示全部考点：常考要点、词组搭配、派生词、近义词、反义词\n- 首页功能按钮改为2列对称网格布局，更美观\n- 移除错词本红色叉号图标",
-  "devNotes": "add Chinese translations to synonyms/antonyms, enhance flashcard mode with full enrichment data, symmetrical button grid, remove wrong-words icon",
+  "version": "2.17.0",
+  "versionCode": 160,
+  "changelog": "v2.17.0 更新\n\n【优化】\n- 算法自动生成的派生词全面补充中文释义（覆盖400+词根）\n- 情景记忆大幅扩充：新增10篇高考真题主题文章\n  · 2025全国一卷D篇：海洋微塑料污染\n  · 2023新课标I卷A篇：绿色出行与城市宜居\n  · 2022新高考I卷B篇：食物浪费与节约\n  · 2024新课标I卷B篇：中医文化走向世界\n  · 2024新课标I卷C篇：纸质阅读与数字阅读\n  · 2023新课标II卷B篇：城市花园与生态农业\n  · 2025全国二卷B篇：志愿服务与教育关怀\n  · 2020新高考II卷D篇：热带雨林保护\n  · 2022新高考I卷C篇：老年人健康与社会关怀\n  · 科学探索与创新精神",
+  "devNotes": "add Chinese translations to algorithm-generated derivatives, enrich scene memory with 10 gaokao exam-based articles",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
