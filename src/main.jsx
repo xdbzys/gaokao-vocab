@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.17.0';
-const APP_VERSION_CODE = 160;
+const APP_VERSION = '2.18.0';
+const APP_VERSION_CODE = 161;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -2754,6 +2754,7 @@ const seedTopic = [
 
 // 熟词生义
 const seedFamiliarNew = [
+  // 原有30个
   ['address', 'n.', '地址；v. 解决(问题)', '生义', ['熟词生义', 'address the problem'], ['地址；v. 解决(问题)', '注意一词多义'], ['address the problem is a common usage.']],
   ['accommodate', 'v.', '容纳；提供住宿；适应', '生义', ['熟词生义', 'accommodate 500 guests'], ['容纳；提供住宿；适应', '注意一词多义'], ['accommodate 500 guests is a common usage.']],
   ['affect', 'v.', '影响；感动；假装', '生义', ['熟词生义', 'affect an accent'], ['影响；感动；假装', '注意一词多义'], ['affect an accent is a common usage.']],
@@ -2781,7 +2782,152 @@ const seedFamiliarNew = [
   ['stand', 'v.', '忍受；代表', '生义', ['熟词生义', 'can\'t stand the noise'], ['忍受；代表', '注意一词多义'], ['can\'t stand the noise is a common usage.']],
   ['tap', 'v.', '开发；利用', '生义', ['熟词生义', 'tap natural resources'], ['开发；利用', '注意一词多义'], ['tap natural resources is a common usage.']],
   ['term', 'n.', '学期；术语；条款', '生义', ['熟词生义', 'in terms of'], ['学期；术语；条款', '注意一词多义'], ['in terms of is a common usage.']],
-  ['walk', 'n.', '职业；阶层', '生义', ['熟词生义', 'people from all walks of life'], ['职业；阶层', '注意一词多义'], ['people from all walks of life is a common usage.']]
+  ['walk', 'n.', '职业；阶层', '生义', ['熟词生义', 'people from all walks of life'], ['职业；阶层', '注意一词多义'], ['people from all walks of life is a common usage.']],
+  // 新增：高考高频熟词生义
+  ['absorb', 'v.', '吸收；理解；承受(打击)', '生义', ['熟词生义', 'absorb the cost'], ['吸收；理解；承受(打击)', '注意一词多义'], ['The company absorbed the increased costs.']],
+  ['admit', 'v.', '承认；准许进入；可容纳', '生义', ['熟词生义', 'admit 500 people'], ['承认；准许进入；可容纳', '注意一词多义'], ['The hall admits 500 people.']],
+  ['advance', 'n./v.', '预付款；提前；进步', '生义', ['熟词生义', 'in advance'], ['预付款；提前；进步', '注意一词多义'], ['Please pay in advance.']],
+  ['approach', 'n.', '方法；途径；接近', '生义', ['熟词生义', 'a new approach to'], ['方法；途径；接近', '注意一词多义'], ['We need a new approach to the problem.']],
+  ['argue', 'v.', '争论；主张；说服', '生义', ['熟词生义', 'argue sb into doing'], ['争论；主张；说服', '注意一词多义'], ['She argued him into changing his mind.']],
+  ['attend', 'v.', '出席；照料；处理', '生义', ['熟词生义', 'attend to a patient'], ['出席；照料；处理', '注意一词多义'], ['The nurse attended to the patient.']],
+  ['balance', 'n.', '余额；平衡', '生义', ['熟词生义', 'bank balance'], ['余额；平衡', '注意一词多义'], ['Check your account balance.']],
+  ['bear', 'v.', '承担；忍受；生育；带有', '生义', ['熟词生义', 'bear in mind'], ['承担；忍受；生育；带有', '注意一词多义'], ['Bear in mind that deadlines are strict.']],
+  ['beat', 'v.', '打败；跳动；搅拌', '生义', ['熟词生义', 'beat the eggs'], ['打败；跳动；搅拌', '注意一词多义'], ['Beat the eggs before adding flour.']],
+  ['block', 'n./v.', '街区；阻塞；一批', '生义', ['熟词生义', 'a block of tickets'], ['街区；阻塞；一批', '注意一词多义'], ['I bought a block of tickets.']],
+  ['board', 'n./v.', '木板；委员会；上(车/船)', '生义', ['熟词生义', 'board the train'], ['木板；委员会；上(车/船)', '注意一词多义'], ['Passengers boarded the train.']],
+  ['break', 'n.', '休息；机会；裂口', '生义', ['熟词生义', 'take a break'], ['休息；机会；裂口', '注意一词多义'], ['Let\'s take a coffee break.']],
+  ['breed', 'v./n.', '繁殖；品种；培育', '生义', ['熟词生义', 'a rare breed'], ['繁殖；品种；培育', '注意一词多义'], ['These dogs are a rare breed.']],
+  ['capital', 'n.', '首都；资本；大写字母', '生义', ['熟词生义', 'capital letter'], ['首都；资本；大写字母', '注意一词多义'], ['Write your name in capital letters.']],
+  ['catch', 'v.', '抓住；理解；赶上；感染', '生义', ['熟词生义', 'catch a cold / catch on'], ['抓住；理解；赶上；感染', '注意一词多义'], ['I didn\'t catch what you said.']],
+  ['channel', 'n.', '频道；渠道；海峡', '生义', ['熟词生义', 'diplomatic channels'], ['频道；渠道；海峡', '注意一词多义'], ['The news spread through official channels.']],
+  ['charge', 'v./n.', '收费；充电；指控；负责', '生义', ['熟词生义', 'in charge of'], ['收费；充电；指控；负责', '注意一词多义'], ['She is in charge of the project.']],
+  ['claim', 'v.', '声称；索取；认领', '生义', ['熟词生义', 'claim luggage'], ['声称；索取；认领', '注意一词多义'], ['Passengers should claim their luggage.']],
+  ['class', 'n.', '班级；阶级；种类；优秀', '生义', ['熟词生义', 'world-class'], ['班级；阶级；种类；优秀', '注意一词多义'], ['He showed real class in the match.']],
+  ['climate', 'n.', '气候；风气；氛围', '生义', ['熟词生义', 'a climate of fear'], ['气候；风气；氛围', '注意一词多义'], ['There is a climate of distrust in the office.']],
+  ['commit', 'v.', '犯罪；承诺；投入', '生义', ['熟词生义', 'commit oneself to'], ['犯罪；承诺；投入', '注意一词多义'], ['He committed himself to the project.']],
+  ['compose', 'v.', '创作；组成；使平静', '生义', ['熟词生义', 'compose oneself'], ['创作；组成；使平静', '注意一词多义'], ['She composed herself before speaking.']],
+  ['deliver', 'v.', '递送；发表(演讲)；履行', '生义', ['熟词生义', 'deliver a speech'], ['递送；发表(演讲)；履行', '注意一词多义'], ['The mayor delivered a speech.']],
+  ['discipline', 'n./v.', '纪律；学科；训练', '生义', ['熟词生义', 'academic discipline'], ['纪律；学科；训练', '注意一词多义'], ['Sociology is a broad discipline.']],
+  ['drive', 'v./n.', '驾驶；驱使；动力；运动', '生义', ['熟词生义', 'a sales drive'], ['驾驶；驱使；动力；运动', '注意一词多义'], ['Hunger drove him to steal.']],
+  ['employ', 'v.', '雇用；使用；利用', '生义', ['熟词生义', 'employ a method'], ['雇用；使用；利用', '注意一词多义'], ['She employed a new teaching method.']],
+  ['enterprise', 'n.', '企业；事业心；项目', '生义', ['熟词生义', 'a joint enterprise'], ['企业；事业心；项目', '注意一词多义'], ['He showed great enterprise.']],
+  ['escape', 'v./n.', '逃跑；逃避；被忘记', '生义', ['熟词生义', 'escape memory'], ['逃跑；逃避；被忘记', '注意一词多义'], ['His name escapes me.']],
+  ['establish', 'v.', '建立；确立；证实', '生义', ['熟词生义', 'establish the truth'], ['建立；确立；证实', '注意一词多义'], ['Scientists established the truth of the theory.']],
+  ['even', 'adj./adv.', '平坦的；甚至；恰好', '生义', ['熟词生义', 'even chance'], ['平坦的；甚至；恰好', '注意一词多义'], ['The ground is even here.']],
+  ['exit', 'n./v.', '出口；退出；离开', '生义', ['熟词生义', 'exit the market'], ['出口；退出；离开', '注意一词多义'], ['The company exited the market.']],
+  ['fair', 'adj./n.', '公平的；集市；博览会', '生义', ['熟词生义', 'trade fair'], ['公平的；集市；博览会', '注意一词多义'], ['They met at the trade fair.']],
+  ['field', 'n.', '田野；领域；球场；(电/磁)场', '生义', ['熟词生义', 'magnetic field'], ['田野；领域；球场；(电/磁)场', '注意一词多义'], ['She works in the medical field.']],
+  ['figure', 'n./v.', '数字；人物；计算；理解', '生义', ['熟词生义', 'figure out'], ['数字；人物；计算；理解', '注意一词多义'], ['I can\'t figure out the answer.']],
+  ['fire', 'v.', '解雇；开火；激发', '生义', ['熟词生义', 'fire an employee'], ['解雇；开火；激发', '注意一词多义'], ['He was fired for being late.']],
+  ['flat', 'adj./n.', '平坦的；公寓；平淡的', '生义', ['熟词生义', 'a new flat'], ['平坦的；公寓；平淡的', '注意一词多义'], ['They live in a new flat.']],
+  ['follow', 'v.', '跟随；遵循；理解', '生义', ['熟词生义', 'follow the argument'], ['跟随；遵循；理解', '注意一词多义'], ['I don\'t quite follow your logic.']],
+  ['force', 'n./v.', '力量；武力；强迫', '生义', ['熟词生义', 'in force'], ['力量；武力；强迫', '注意一词多义'], ['The rules are in force.']],
+  ['form', 'n./v.', '表格；形式；养成', '生义', ['熟词生义', 'fill in a form'], ['表格；形式；养成', '注意一词多义'], ['Please fill in this form.']],
+  ['freeze', 'v.', '结冰；冻结(资产)；呆住', '生义', ['熟词生义', 'freeze assets'], ['结冰；冻结(资产)；呆住', '注意一词多义'], ['The government froze the bank accounts.']],
+  ['fresh', 'adj.', '新鲜的；新颖的；(水)淡的', '生义', ['熟词生义', 'fresh water'], ['新鲜的；新颖的；(水)淡的', '注意一词多义'], ['Fish live in fresh water.']],
+  ['game', 'n.', '游戏；猎物；比赛', '生义', ['熟词生义', 'big game'], ['游戏；猎物；比赛', '注意一词多义'], ['He hunted big game in Africa.']],
+  ['gift', 'n.', '礼物；天赋', '生义', ['熟词生义', 'a gift for music'], ['礼物；天赋', '注意一词多义'], ['She has a gift for languages.']],
+  ['grill', 'v./n.', '烤；盘问', '生义', ['熟词生义', 'grill a suspect'], ['烤；盘问', '注意一词多义'], ['The police grilled the suspect.']],
+  ['harbor', 'n./v.', '港口；怀有(念头)', '生义', ['熟词生义', 'harbor doubts'], ['港口；怀有(念头)', '注意一词多义'], ['He harbored doubts about the plan.']],
+  ['heavy', 'adj.', '重的；大量的；严重的', '生义', ['熟词生义', 'heavy rain'], ['重的；大量的；严重的', '注意一词多义'], ['There was heavy rain last night.']],
+  ['hit', 'v./n.', '打击；碰撞；成功', '生义', ['熟词生义', 'a hit song'], ['打击；碰撞；成功', '注意一词多义'], ['The song was a big hit.']],
+  ['hold', 'v.', '握住；举行；容纳；持有', '生义', ['熟词生义', 'hold a meeting'], ['握住；举行；容纳；持有', '注意一词多义'], ['The room can hold 100 people.']],
+  ['introduce', 'v.', '介绍；推行；引入', '生义', ['熟词生义', 'introduce a bill'], ['介绍；推行；引入', '注意一词多义'], ['The government introduced new laws.']],
+  ['iron', 'n./v.', '铁；熨斗；熨烫', '生义', ['熟词生义', 'iron a shirt'], ['铁；熨斗；熨烫', '注意一词多义'], ['She ironed her shirt.']],
+  ['kill', 'v.', '杀死；消磨(时间)；终止', '生义', ['熟词生义', 'kill time'], ['杀死；消磨(时间)；终止', '注意一词多义'], ['We killed time at the cafe.']],
+  ['labour', 'n./v.', '劳动；劳工；努力', '生义', ['熟词生义', 'labour market'], ['劳动；劳工；努力', '注意一词多义'], ['The labour market is competitive.']],
+  ['last', 'v./adj.', '持续；最后的', '生义', ['熟词生义', 'last for hours'], ['持续；最后的', '注意一词多义'], ['The meeting lasted two hours.']],
+  ['lay', 'v.', '放置；产卵；铺设', '生义', ['熟词生义', 'lay eggs'], ['放置；产卵；铺设', '注意一词多义'], ['Birds lay eggs in spring.']],
+  ['lecture', 'n./v.', '讲座；训斥', '生义', ['熟词生义', 'give a lecture'], ['讲座；训斥', '注意一词多义'], ['His father lectured him on responsibility.']],
+  ['letter', 'n.', '字母；信件；证书', '生义', ['熟词生义', 'capital letter'], ['字母；信件；证书', '注意一词多义'], ['The word has five letters.']],
+  ['live', 'v./adj.', '居住；现场的；直播的', '生义', ['熟词生义', 'live broadcast'], ['居住；现场的；直播的', '注意一词多义'], ['It was a live broadcast.']],
+  ['match', 'n./v.', '比赛；火柴；匹配', '生义', ['熟词生义', 'a perfect match'], ['比赛；火柴；匹配', '注意一词多义'], ['The curtains match the sofa.']],
+  ['mean', 'v./adj.', '意味着；吝啬的；平均的', '生义', ['熟词生义', 'mean temperature'], ['意味着；吝啬的；平均的', '注意一词多义'], ['The mean temperature is 20°C.']],
+  ['meet', 'v.', '遇见；满足；支付', '生义', ['熟词生义', 'meet the cost'], ['遇见；满足；支付', '注意一词多义'], ['The company met all the costs.']],
+  ['mine', 'pron./n.', '我的；矿；地雷', '生义', ['熟词生义', 'a coal mine'], ['我的；矿；地雷', '注意一词多义'], ['He works in a coal mine.']],
+  ['mount', 'v.', '登上；增加； mounting', '生义', ['熟词生义', 'mount pressure'], ['登上；增加', '注意一词多义'], ['Pressure mounted on the team.']],
+  ['novel', 'n./adj.', '小说；新颖的', '生义', ['熟词生义', 'a novel idea'], ['小说；新颖的', '注意一词多义'], ['That\'s a novel approach.']],
+  ['note', 'n./v.', '笔记；纸币；注意', '生义', ['熟词生义', 'a bank note'], ['笔记；纸币；注意', '注意一词多义'], ['He paid with a bank note.']],
+  ['nurse', 'n./v.', '护士；精心照料', '生义', ['熟词生义', 'nurse a grudge'], ['护士；精心照料', '注意一词多义'], ['She nursed her father back to health.']],
+  ['object', 'n./v.', '物体；反对', '生义', ['熟词生义', 'object to the plan'], ['物体；反对', '注意一词多义'], ['They objected to the proposal.']],
+  ['open', 'adj./v.', '开放的；坦诚的；未解决的', '生义', ['熟词生义', 'an open question'], ['开放的；坦诚的；未解决的', '注意一词多义'], ['The matter remains open.']],
+  ['order', 'n./v.', '顺序；订单；命令；秩序', '生义', ['熟词生义', 'place an order'], ['顺序；订单；命令；秩序', '注意一词多义'], ['The police restored order.']],
+  ['pack', 'v./n.', '打包；一群/组', '生义', ['熟词生义', 'a pack of wolves'], ['打包；一群/组', '注意一词多义'], ['A pack of wolves roamed the forest.']],
+  ['park', 'n./v.', '公园；停车', '生义', ['熟词生义', 'park the car'], ['公园；停车', '注意一词多义'], ['You can\'t park here.']],
+  ['part', 'n./v.', '部分；角色；分开', '生义', ['熟词生义', 'play a part in'], ['部分；角色；分开', '注意一词多义'], ['She played a key part in the project.']],
+  ['passage', 'n.', '通道；段落；航行', '生义', ['熟词生义', 'a passage from the book'], ['通道；段落；航行', '注意一词多义'], ['Read the passage carefully.']],
+  ['period', 'n.', '时期；课时；句号', '生义', ['熟词生义', 'a period of time'], ['时期；课时；句号', '注意一词多义'], ['We had three periods of math.']],
+  ['piece', 'n.', '块/片；篇/首；硬币', '生义', ['熟词生义', 'a piece of music'], ['块/片；篇/首；硬币', '注意一词多义'], ['She played a beautiful piece.']],
+  ['pipe', 'n.', '管子；烟斗', '生义', ['熟词生义', 'a water pipe'], ['管子；烟斗', '注意一词多义'], ['The water pipe burst.']],
+  ['pool', 'n.', '水池；资源库；台球', '生义', ['熟词生义', 'a talent pool'], ['水池；资源库；台球', '注意一词多义'], ['We drew from a pool of candidates.']],
+  ['practice', 'n.', '练习；惯例；业务', '生义', ['熟词生义', 'common practice'], ['练习；惯例；业务', '注意一词多义'], ['It is common practice in China.']],
+  ['present', 'n./v.', '礼物；目前；呈现；介绍', '生义', ['熟词生义', 'present the findings'], ['礼物；目前；呈现；介绍', '注意一词多义'], ['She presented the research findings.']],
+  ['press', 'v./n.', '按；新闻界；熨烫', '生义', ['熟词生义', 'press conference'], ['按；新闻界；熨烫', '注意一词多义'], ['The press reported the event.']],
+  ['produce', 'v./n.', '生产；农产品', '生义', ['熟词生义', 'fresh produce'], ['生产；农产品', '注意一词多义'], ['The store sells fresh produce.']],
+  ['promise', 'n./v.', '承诺；前途；迹象', '生义', ['熟词生义', 'show promise'], ['承诺；前途；迹象', '注意一词多义'], ['The young player shows promise.']],
+  ['prove', 'v.', '证明；结果是', '生义', ['熟词生义', 'prove to be'], ['证明；结果是', '注意一词多义'], ['The plan proved to be successful.']],
+  ['raise', 'v.', '举起；筹集；饲养；提出', '生义', ['熟词生义', 'raise funds'], ['举起；筹集；饲养；提出', '注意一词多义'], ['They raised money for charity.']],
+  ['rate', 'n./v.', '比率；价格；评价', '生义', ['熟词生义', 'at the rate of'], ['比率；价格；评价', '注意一词多义'], ['The birth rate is declining.']],
+  ['respect', 'n./v.', '尊重；方面；关于', '生义', ['熟词生义', 'in some respects'], ['尊重；方面；关于', '注意一词多义'], ['In some respects, he is right.']],
+  ['rest', 'n./v.', '休息；剩余部分；依赖', '生义', ['熟词生义', 'the rest of'], ['休息；剩余部分；依赖', '注意一词多义'], ['The rest of the class went home.']],
+  ['review', 'n./v.', '评论；回顾；复习', '生义', ['熟词生义', 'book review'], ['评论；回顾；复习', '注意一词多义'], ['She wrote a review of the film.']],
+  ['role', 'n.', '角色；作用；职能', '生义', ['熟词生义', 'play a role in'], ['角色；作用；职能', '注意一词多义'], ['Technology plays a key role.']],
+  ['room', 'n.', '房间；空间；余地', '生义', ['熟词生义', 'no room for'], ['房间；空间；余地', '注意一词多义'], ['There is room for improvement.']],
+  ['rough', 'adj.', '粗糙的；粗略的；艰难的', '生义', ['熟词生义', 'a rough estimate'], ['粗糙的；粗略的；艰难的', '注意一词多义'], ['Give me a rough estimate.']],
+  ['row', 'n./v.', '一排；划船；争吵', '生义', ['熟词生义', 'in a row'], ['一排；划船；争吵', '注意一词多义'], ['Three days in a row.']],
+  ['rush', 'v./n.', '冲；匆忙；急需', '生义', ['熟词生义', 'rush hour'], ['冲；匆忙；急需', '注意一词多义'], ['Traffic was heavy during rush hour.']],
+  ['save', 'v.', '拯救；储存；节省', '生义', ['熟词生义', 'save energy'], ['拯救；储存；节省', '注意一词多义'], ['Turn off lights to save energy.']],
+  ['say', 'v./n.', '说；假设；发言权', '生义', ['熟词生义', 'have a say'], ['说；假设；发言权', '注意一词多义'], ['Everyone should have a say.']],
+  ['school', 'n.', '学校；学派；鱼群', '生义', ['熟词生义', 'a school of fish'], ['学校；学派；鱼群', '注意一词多义'], ['A school of fish swam by.']],
+  ['score', 'n./v.', '分数；二十；乐谱', '生义', ['熟词生义', 'a score of years'], ['分数；二十；乐谱', '注意一词多义'], ['He bought three score eggs.']],
+  ['screen', 'n./v.', '屏幕；筛子；审查', '生义', ['熟词生义', 'screen passengers'], ['屏幕；筛子；审查', '注意一词多义'], ['All passengers were screened.']],
+  ['seal', 'n./v.', '海豹；印章；密封', '生义', ['熟词生义', 'seal an envelope'], ['海豹；印章；密封', '注意一词多义'], ['Seal the envelope before sending.']],
+  ['seat', 'n./v.', '座位；所在地；就座', '生义', ['熟词生义', 'be seated'], ['座位；所在地；就座', '注意一词多义'], ['Please be seated.']],
+  ['serve', 'v.', '服务；供应；适合', '生义', ['熟词生义', 'serve sb right'], ['服务；供应；适合', '注意一词多义'], ['It serves him right.']],
+  ['set', 'v./n.', '放置；设置；一套/组', '生义', ['熟词生义', 'a set of rules'], ['放置；设置；一套/组', '注意一词多义'], ['Follow the set of rules.']],
+  ['shadow', 'n./v.', '影子；阴影；跟踪', '生义', ['熟词生义', 'shadow a suspect'], ['影子；阴影；跟踪', '注意一词多义'], ['The detective shadowed the suspect.']],
+  ['sharp', 'adj.', '锋利的；急剧的；敏锐的', '生义', ['熟词生义', 'a sharp drop'], ['锋利的；急剧的；敏锐的', '注意一词多义'], ['There was a sharp drop in sales.']],
+  ['shoot', 'v.', '射击；拍摄；芽', '生义', ['熟词生义', 'shoot a film'], ['射击；拍摄；芽', '注意一词多义'], ['They are shooting a film.']],
+  ['short', 'adj.', '短的；不足的；简略的', '生义', ['熟词生义', 'be short of'], ['短的；不足的；简略的', '注意一词多义'], ['We are short of funds.']],
+  ['shoulder', 'n./v.', '肩膀；承担', '生义', ['熟词生义', 'shoulder responsibility'], ['肩膀；承担', '注意一词多义'], ['He shouldered the responsibility.']],
+  ['show', 'n./v.', '表演；展览；迹象', '生义', ['熟词生义', 'a trade show'], ['表演；展览；迹象', '注意一词多义'], ['They attended the trade show.']],
+  ['sign', 'n./v.', '标志；迹象；签署', '生义', ['熟词生义', 'sign a contract'], ['标志；迹象；签署', '注意一词多义'], ['Both parties signed the contract.']],
+  ['soil', 'n./v.', '土壤；弄脏', '生义', ['熟词生义', 'soil one\'s clothes'], ['土壤；弄脏', '注意一词多义'], ['The child soiled his clothes.']],
+  ['space', 'n.', '空间；太空；间隔', '生义', ['熟词生义', 'outer space'], ['空间；太空；间隔', '注意一词多义'], ['Astronauts explore outer space.']],
+  ['spring', 'n./v.', '春天；泉水；弹簧；跳', '生义', ['熟词生义', 'hot spring'], ['春天；泉水；弹簧；跳', '注意一词多义'], ['They bathed in the hot spring.']],
+  ['square', 'n./adj.', '广场；正方形；公平的', '生义', ['熟词生义', 'a fair and square'], ['广场；正方形；公平的', '注意一词多义'], ['He won fair and square.']],
+  ['stage', 'n.', '舞台；阶段', '生义', ['熟词生义', 'at this stage'], ['舞台；阶段', '注意一词多义'], ['We are at an early stage.']],
+  ['stamp', 'n./v.', '邮票；跺脚；盖章', '生义', ['熟词生义', 'stamp a document'], ['邮票；跺脚；盖章', '注意一词多义'], ['The officer stamped the passport.']],
+  ['state', 'n./v.', '状态；州；陈述', '生义', ['熟词生义', 'state of mind'], ['状态；州；陈述', '注意一词多义'], ['His state of mind is worrying.']],
+  ['stock', 'n.', '库存；股票；家畜', '生义', ['熟词生义', 'in stock'], ['库存；股票；家畜', '注意一词多义'], ['The item is out of stock.']],
+  ['strike', 'v./n.', '打；罢工；突然想到', '生义', ['熟词生义', 'strike sb as odd'], ['打；罢工；突然想到', '注意一词多义'], ['It struck me as strange.']],
+  ['subject', 'n./adj.', '科目；主题；易遭受的', '生义', ['熟词生义', 'subject to change'], ['科目；主题；易遭受的', '注意一词多义'], ['Prices are subject to change.']],
+  ['succeed', 'v.', '成功；继承', '生义', ['熟词生义', 'succeed to the throne'], ['成功；继承', '注意一词多义'], ['He succeeded his father as king.']],
+  ['suit', 'n./v.', '西装；诉讼；适合', '生义', ['熟词生义', 'file a suit'], ['西装；诉讼；适合', '注意一词多义'], ['He filed a suit against the company.']],
+  ['supply', 'n./v.', '供应；补给品', '生义', ['熟词生义', 'medical supplies'], ['供应；补给品', '注意一词多义'], ['They sent medical supplies.']],
+  ['survey', 'n./v.', '调查；审视；测量', '生义', ['熟词生义', 'survey the area'], ['调查；审视；测量', '注意一词多义'], ['They surveyed the damage.']],
+  ['swallow', 'v./n.', '吞咽；燕子', '生义', ['熟词生义', 'swallow one\'s pride'], ['吞咽；燕子', '注意一词多义'], ['He swallowed his pride and apologized.']],
+  ['tackle', 'v./n.', '处理；用具；拦截', '生义', ['熟词生义', 'tackle a problem'], ['处理；用具；拦截', '注意一词多义'], ['We must tackle the problem now.']],
+  ['tear', 'n./v.', '眼泪；撕裂', '生义', ['熟词生义', 'tear apart'], ['眼泪；撕裂', '注意一词多义'], ['She tore the letter apart.']],
+  ['tell', 'v.', '告诉；辨别；泄密', '生义', ['熟词生义', 'tell the difference'], ['告诉；辨别；泄密', '注意一词多义'], ['Can you tell the difference?']],
+  ['tie', 'n./v.', '领带；联系；平局', '生义', ['熟词生义', 'family ties'], ['领带；联系；平局', '注意一词多义'], ['The game ended in a tie.']],
+  ['touch', 'n./v.', '触摸；感动；少许', '生义', ['熟词生义', 'a touch of humor'], ['触摸；感动；少许', '注意一词多义'], ['Add a touch of salt.']],
+  ['track', 'n./v.', '跑道；足迹；跟踪', '生义', ['熟词生义', 'keep track of'], ['跑道；足迹；跟踪', '注意一词多义'], ['Keep track of your expenses.']],
+  ['train', 'n./v.', '火车；训练', '生义', ['熟词生义', 'train employees'], ['火车；训练', '注意一词多义'], ['They trained the new staff.']],
+  ['transport', 'n./v.', '交通；运输；流放', '生义', ['熟词生义', 'public transport'], ['交通；运输', '注意一词多义'], ['Public transport is convenient.']],
+  ['treat', 'v./n.', '对待；治疗；款待', '生义', ['熟词生义', 'treat yourself'], ['对待；治疗；款待', '注意一词多义'], ['Let me treat you to dinner.']],
+  ['undergo', 'v.', '经历；承受', '生义', ['熟词生义', 'undergo surgery'], ['经历；承受', '注意一词多义'], ['He underwent surgery yesterday.']],
+  ['undertake', 'v.', '承担；从事；承诺', '生义', ['熟词生义', 'undertake a task'], ['承担；从事；承诺', '注意一词多义'], ['She undertook the research project.']],
+  ['uniform', 'n./adj.', '制服；统一的', '生义', ['熟词生义', 'uniform style'], ['制服；统一的', '注意一词多义'], ['The houses have a uniform style.']],
+  ['value', 'n./v.', '价值；估价；重视', '生义', ['熟词生义', 'value friendship'], ['价值；估价；重视', '注意一词多义'], ['I value our friendship.']],
+  ['volume', 'n.', '音量；体积；卷/册', '生义', ['熟词生义', 'a volume of poetry'], ['音量；体积；卷/册', '注意一词多义'], ['He bought Volume 2 of the series.']],
+  ['warm', 'v./adj.', '温暖的；加热；热心的', '生义', ['熟词生义', 'warm up'], ['温暖的；加热；热心的', '注意一词多义'], ['The players warmed up.']],
+  ['watch', 'n./v.', '手表；观看；看守', '生义', ['熟词生义', 'keep watch'], ['手表；观看；看守', '注意一词多义'], ['The guard kept watch all night.']],
+  ['weigh', 'v.', '称重；权衡；有影响', '生义', ['熟词生义', 'weigh the options'], ['称重；权衡；有影响', '注意一词多义'], ['We must weigh all the options.']],
+  ['will', 'n.', '遗嘱；意志；意愿', '生义', ['熟词生义', 'make a will'], ['遗嘱；意志；意愿', '注意一词多义'], ['He made a will before he died.']],
+  ['wind', 'n./v.', '风；蜿蜒；缠绕', '生义', ['熟词生义', 'wind a clock'], ['风；蜿蜒；缠绕', '注意一词多义'], ['The river winds through the valley.']],
+  ['work', 'n./v.', '工作；作品；运转', '生义', ['熟词生义', 'a work of art'], ['工作；作品；运转', '注意一词多义'], ['The machine doesn\'t work.']],
+  ['wound', 'n./v.', '伤口；伤害', '生义', ['熟词生义', 'a deep wound'], ['伤口；伤害', '注意一词多义'], ['The knife wounded his arm.']],
 ];
 
 // 褒贬双性词
@@ -7324,7 +7470,7 @@ const builtInBooks = [
   },
   {
     id: 'gaokao-familiar-new',
-    name: '熟词生义(30个)',
+    name: '熟词生义(150个)',
     editable: false,
     items: makeAllItems(seedFamiliarNew, 'phrase')
   },
@@ -8227,6 +8373,7 @@ function App() {
   const [compareIndex, setCompareIndex] = useState(0);
   const [numberDateSubTab, setNumberDateSubTab] = useState('months');
   const [spellingSearch, setSpellingSearch] = useState('');
+  const [scenePage, setScenePage] = useState(0);
   // 词库详情
   const [detailItem, setDetailItem] = useState(null);
   // 正确率统计
@@ -9405,7 +9552,10 @@ function App() {
                         <div className="points" style={{ marginTop: 8 }}>
                           <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>🌿 派生词</p>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {enrichment.derivatives.map((d, i) => <span key={i} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13 }}>{d}</span>)}
+                            {enrichment.derivatives.map((d, i) => {
+                              const derivWord = d.split(' ')[0];
+                              return <span key={i} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => speak(derivWord, settings.speakRate)}>{d}</span>;
+                            })}
                           </div>
                         </div>
                       )}
@@ -9642,7 +9792,10 @@ function App() {
                   <div className="detailSection detailDerivatives">
                     <p className="detailSectionTitle">🌿 派生词</p>
                     <div className="detailTagWrap">
-                      {enrichment.derivatives.map((d, i) => <span key={i} className="detailDerivTag">{d}</span>)}
+                      {enrichment.derivatives.map((d, i) => {
+                        const derivWord = d.split(' ')[0];
+                        return <span key={i} className="detailDerivTag" style={{ cursor: 'pointer' }} onClick={() => speak(derivWord, settings.speakRate)}>{d}</span>;
+                      })}
                     </div>
                   </div>
                 )}
@@ -9771,23 +9924,25 @@ function App() {
           )}
 
           {/* 易错词 */}
-          {extendTab === 'errors' && (
+          {extendTab === 'errors' && (() => {
+            const errorBooks = ['gaokao-familiar-new', 'gaokao-dual-sentiment'];
+            return (
             <div className="errorBookList">
-              {['gaokao-familiar-new', 'gaokao-dual-sentiment'].map(bookId => {
+              {errorBooks.map(bookId => {
                 const b = books.find(bk => bk.id === bookId);
                 if (!b) return null;
                 return (
                   <div key={bookId} className="errorSection">
                     <h3 className="errorSectionTitle">{b.name}</h3>
                     <div className="list">
-                      {b.items.slice(0, 30).map(item => (
-                        <article key={item.id} className="listItem">
+                      {b.items.map(item => (
+                        <article key={item.id} className="listItem" onClick={() => setDetailItem(item)}>
                           <div>
                             <h3 style={{ color: freqColor(item.frequency) }}>{item.term}</h3>
                             <p>{getShortMeaning(item.meaning)}</p>
                           </div>
                           <div className="listActions">
-                            <button className="smallBtn" onClick={() => speak(item.term, settings.speakRate)}>🔊</button>
+                            <button className="smallBtn" onClick={(e) => { e.stopPropagation(); speak(item.term, settings.speakRate); }}>🔊</button>
                           </div>
                         </article>
                       ))}
@@ -9796,14 +9951,24 @@ function App() {
                 );
               })}
             </div>
-          )}
+            );
+          })()}
 
           {/* 情景记忆 */}
-          {extendTab === 'scene' && (
+          {extendTab === 'scene' && (() => {
+            const SCENE_PAGE_SIZE = 3;
+            const totalScenePages = Math.ceil(sceneData.length / SCENE_PAGE_SIZE);
+            const safePage = Math.min(scenePage, totalScenePages - 1);
+            const startIdx = safePage * SCENE_PAGE_SIZE;
+            const currentScenes = sceneData.slice(startIdx, startIdx + SCENE_PAGE_SIZE);
+            return (
             <div style={{ marginTop: 16 }}>
-              <p className="muted">通过句子和短文，在真实语境中记忆高考主题词。点击单词可听发音。</p>
-              {sceneData.map((scene, i) => (
-                <div key={i} className="sceneCard">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <p className="muted" style={{ margin: 0 }}>高考真题主题文章 · 点击单词可听发音</p>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>{startIdx + 1}-{Math.min(startIdx + SCENE_PAGE_SIZE, sceneData.length)} / {sceneData.length}</span>
+              </div>
+              {currentScenes.map((scene, i) => (
+                <div key={startIdx + i} className="sceneCard">
                   <h3>{scene.title}</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
                     {scene.words.map((w, j) => (
@@ -9814,8 +9979,33 @@ function App() {
                   <div className="sceneTextCn">{scene.textCn}</div>
                 </div>
               ))}
+              {/* 分页控件 */}
+              {totalScenePages > 1 && (
+                <div className="scenePagination">
+                  <button
+                    className="scenePageBtn"
+                    disabled={safePage === 0}
+                    onClick={() => setScenePage(p => Math.max(0, p - 1))}
+                  >◀ 上一页</button>
+                  <div className="scenePageDots">
+                    {Array.from({ length: totalScenePages }).map((_, i) => (
+                      <span
+                        key={i}
+                        className={`scenePageDot ${i === safePage ? 'active' : ''}`}
+                        onClick={() => setScenePage(i)}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    className="scenePageBtn"
+                    disabled={safePage >= totalScenePages - 1}
+                    onClick={() => setScenePage(p => Math.min(totalScenePages - 1, p + 1))}
+                  >下一页 ▶</button>
+                </div>
+              )}
             </div>
-          )}
+            );
+          })()}
 
           {/* 拼写纠错 */}
           {extendTab === 'spelling' && (
