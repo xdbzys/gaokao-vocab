@@ -1,7 +1,7 @@
 {
-  "version": "2.18.1",
-  "versionCode": 162,
-  "changelog": "v2.18.1 修复\n\n【修复】\n- 派生词算法重构：不再盲目给每个词加-tion/-ment等后缀造词\n- 仅当单词本身已有后缀时，还原出词根（如education→educate）\n- 词根必须在词库中有中文释义才会显示，避免生成不存在的词\n- 移除泛化中文翻译（如所有-tion词都显示\"行为；状态\"）\n- 无有效派生词的单词不再显示派生词板块",
-  "devNotes": "fix derivative generation: remove blind suffix appending, only strip known suffixes with verified base words",
+  "version": "2.19.0",
+  "versionCode": 163,
+  "changelog": "v2.19.0 例句情景化更新\n\n【优化】\n- 全面替换模版例句：删除所有\"…is a key word in gaokao\"套话\n- 985核心词汇977个全部替换为情景化例句\n- 熟词生义28个词条替换为展示新义的完整例句\n- 新增500+手工编写的高质量情景例句\n- 剩余词汇使用20+种句型轮换，确保多样性\n- 修复名词例句缺少冠词的语法问题",
+  "devNotes": "replace all template sentences with contextual examples: 977 seedWords985 + 28 seedFamiliarNew entries, 500+ curated + pattern-based rotation",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
