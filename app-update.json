@@ -1,7 +1,7 @@
 {
-  "version": "2.19.0",
-  "versionCode": 163,
-  "changelog": "v2.19.0 例句情景化更新\n\n【优化】\n- 全面替换模版例句：删除所有\"…is a key word in gaokao\"套话\n- 985核心词汇977个全部替换为情景化例句\n- 熟词生义28个词条替换为展示新义的完整例句\n- 新增500+手工编写的高质量情景例句\n- 剩余词汇使用20+种句型轮换，确保多样性\n- 修复名词例句缺少冠词的语法问题",
-  "devNotes": "replace all template sentences with contextual examples: 977 seedWords985 + 28 seedFamiliarNew entries, 500+ curated + pattern-based rotation",
+  "version": "2.19.1",
+  "versionCode": 164,
+  "changelog": "v2.19.1 扩展单词全可点击发音\n\n【优化】\n- 近义词/同义词：点击即可发音（自动提取英文部分）\n- 反义词：点击即可发音\n- 词组搭配：点击即可发音完整词组\n- 单词变形（名词/形容词/副词/过去式/过去分词/现在分词）：点击即可发音\n- 闪卡模式和详情弹窗均已支持点击发音\n- 新增hover动画反馈，点击有缩放效果\n- 新增extractEnglish()函数：从"英文 中文"混合字符串中提取英文用于发音",
+  "devNotes": "make all enrichment words clickable for pronunciation: synonyms, antonyms, collocations, word forms in both flashcard and detail popup",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

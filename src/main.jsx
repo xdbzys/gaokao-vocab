@@ -8164,6 +8164,13 @@ async function extractImageText(file) {
    九、发音功能
    ============================ */
 
+// 从"英文 中文"混合字符串中提取英文部分用于发音
+function extractEnglish(text) {
+  if (!text) return '';
+  const m = String(text).match(/^([a-zA-Z][a-zA-Z\s''\-\.]*?)(?:\s+[\u4e00-\u9fff]|$)/);
+  return m ? m[1].trim() : String(text).trim();
+}
+
 function speak(text, rate) {
   if (!text) return;
   const normalized = String(text).trim();
@@ -9545,7 +9552,7 @@ function App() {
                       {enrichment.collocations.length > 0 && (
                         <div className="points" style={{ marginTop: 8 }}>
                           <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>🔗 词组搭配</p>
-                          {enrichment.collocations.map((p, i) => <p key={i}>• {p}</p>)}
+                          {enrichment.collocations.map((p, i) => <p key={i} style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(p), settings.speakRate)}>• {p}</p>)}
                         </div>
                       )}
                       {enrichment.derivatives.length > 0 && (
@@ -9563,7 +9570,7 @@ function App() {
                         <div className="points" style={{ marginTop: 8 }}>
                           <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>📌 近义词</p>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {enrichment.synonyms.map((s, i) => <span key={i} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13 }}>{s}</span>)}
+                            {enrichment.synonyms.map((s, i) => <span key={i} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => speak(extractEnglish(s), settings.speakRate)}>{s}</span>)}
                           </div>
                         </div>
                       )}
@@ -9571,7 +9578,7 @@ function App() {
                         <div className="points" style={{ marginTop: 8 }}>
                           <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>⚡ 反义词</p>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {enrichment.antonyms.map((a, i) => <span key={i} style={{ display: 'inline-block', background: 'var(--danger-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13 }}>{a}</span>)}
+                            {enrichment.antonyms.map((a, i) => <span key={i} style={{ display: 'inline-block', background: 'var(--danger-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => speak(extractEnglish(a), settings.speakRate)}>{a}</span>)}
                           </div>
                         </div>
                       )}
@@ -9768,7 +9775,7 @@ function App() {
                 {enrichment && enrichment.collocations.length > 0 && (
                   <div className="detailSection detailCollocations">
                     <p className="detailSectionTitle">🔗 词组搭配</p>
-                    {enrichment.collocations.map((c, i) => <p key={i} className="detailCollocationItem">{c}</p>)}
+                    {enrichment.collocations.map((c, i) => <p key={i} className="detailCollocationItem" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(c), settings.speakRate)}>{c}</p>)}
                   </div>
                 )}
 
@@ -9777,12 +9784,12 @@ function App() {
                   <div className="detailSection detailWordForms">
                     <p className="detailSectionTitle">🔄 单词变形</p>
                     <div className="detailFormGrid">
-                      {enrichment.wordForms.noun && <div className="detailFormItem"><span className="detailFormLabel">名词</span><span className="detailFormValue">{enrichment.wordForms.noun}</span></div>}
-                      {enrichment.wordForms.adjective && <div className="detailFormItem"><span className="detailFormLabel">形容词</span><span className="detailFormValue">{enrichment.wordForms.adjective}</span></div>}
-                      {enrichment.wordForms.adverb && <div className="detailFormItem"><span className="detailFormLabel">副词</span><span className="detailFormValue">{enrichment.wordForms.adverb}</span></div>}
-                      {enrichment.wordForms.pastTense && <div className="detailFormItem"><span className="detailFormLabel">过去式</span><span className="detailFormValue">{enrichment.wordForms.pastTense}</span></div>}
-                      {enrichment.wordForms.pastParticiple && <div className="detailFormItem"><span className="detailFormLabel">过去分词</span><span className="detailFormValue">{enrichment.wordForms.pastParticiple}</span></div>}
-                      {enrichment.wordForms.presentParticiple && <div className="detailFormItem"><span className="detailFormLabel">现在分词</span><span className="detailFormValue">{enrichment.wordForms.presentParticiple}</span></div>}
+                      {enrichment.wordForms.noun && <div className="detailFormItem"><span className="detailFormLabel">名词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.noun, settings.speakRate)}>{enrichment.wordForms.noun}</span></div>}
+                      {enrichment.wordForms.adjective && <div className="detailFormItem"><span className="detailFormLabel">形容词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.adjective, settings.speakRate)}>{enrichment.wordForms.adjective}</span></div>}
+                      {enrichment.wordForms.adverb && <div className="detailFormItem"><span className="detailFormLabel">副词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.adverb, settings.speakRate)}>{enrichment.wordForms.adverb}</span></div>}
+                      {enrichment.wordForms.pastTense && <div className="detailFormItem"><span className="detailFormLabel">过去式</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.pastTense, settings.speakRate)}>{enrichment.wordForms.pastTense}</span></div>}
+                      {enrichment.wordForms.pastParticiple && <div className="detailFormItem"><span className="detailFormLabel">过去分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.pastParticiple, settings.speakRate)}>{enrichment.wordForms.pastParticiple}</span></div>}
+                      {enrichment.wordForms.presentParticiple && <div className="detailFormItem"><span className="detailFormLabel">现在分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.presentParticiple, settings.speakRate)}>{enrichment.wordForms.presentParticiple}</span></div>}
                     </div>
                   </div>
                 )}
@@ -9805,7 +9812,7 @@ function App() {
                   <div className="detailSection detailSynonyms">
                     <p className="detailSectionTitle">📌 近义词</p>
                     <div className="detailTagWrap">
-                      {enrichment.synonyms.map((s, i) => <span key={i} className="detailSynonymTag">{s}</span>)}
+                      {enrichment.synonyms.map((s, i) => <span key={i} className="detailSynonymTag" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(s), settings.speakRate)}>{s}</span>)}
                     </div>
                   </div>
                 )}
@@ -9815,7 +9822,7 @@ function App() {
                   <div className="detailSection detailAntonyms">
                     <p className="detailSectionTitle">⚡ 反义词</p>
                     <div className="detailTagWrap">
-                      {enrichment.antonyms.map((a, i) => <span key={i} className="detailAntonymTag">{a}</span>)}
+                      {enrichment.antonyms.map((a, i) => <span key={i} className="detailAntonymTag" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(a), settings.speakRate)}>{a}</span>)}
                     </div>
                   </div>
                 )}

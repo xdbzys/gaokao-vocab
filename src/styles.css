@@ -711,7 +711,10 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   color: #16a34a;
   font-size: 0.82em;
   font-weight: 500;
+  transition: background 0.15s, transform 0.1s;
 }
+.detailDerivTag:hover { background: #16a34a25; }
+.detailDerivTag:active { transform: scale(0.95); }
 .detailSynonymTag {
   padding: 4px 10px;
   border-radius: 10px;
@@ -719,7 +722,10 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   color: #2563eb;
   font-size: 0.82em;
   font-weight: 500;
+  transition: background 0.15s, transform 0.1s;
 }
+.detailSynonymTag:hover { background: #2563eb25; }
+.detailSynonymTag:active { transform: scale(0.95); }
 .detailAntonymTag {
   padding: 4px 10px;
   border-radius: 10px;
@@ -727,7 +733,14 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   color: #ef4444;
   font-size: 0.82em;
   font-weight: 500;
+  transition: background 0.15s, transform 0.1s;
 }
+.detailAntonymTag:hover { background: #ef444425; }
+.detailAntonymTag:active { transform: scale(0.95); }
+.detailFormValue { transition: color 0.15s; }
+.detailFormValue:hover { color: var(--primary); }
+.detailCollocationItem { transition: color 0.15s; }
+.detailCollocationItem:hover { color: var(--primary); }
 .detailFamilyBtn {
   padding: 4px 10px;
   border-radius: 10px;
