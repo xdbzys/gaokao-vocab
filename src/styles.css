@@ -562,6 +562,30 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   color: var(--text-secondary);
 }
 
+.examplePair {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--border-light);
+}
+.exampleEn {
+  margin: 0 0 3px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text);
+}
+.exampleZh {
+  margin: 0;
+  font-size: 0.85em;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+.exampleZhInline {
+  font-size: 0.82em;
+  color: var(--text-tertiary);
+  margin-left: 6px;
+}
+
 .empty {
   border-radius: 18px;
   background: var(--bg);
