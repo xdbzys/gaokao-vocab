@@ -5,12 +5,13 @@ import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { createWorker } from 'tesseract.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import './styles.css';
+import { getWordEnrichment } from './wordEnrichment';
 
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.14.7';
-const APP_VERSION_CODE = 157;
+const APP_VERSION = '2.15.0';
+const APP_VERSION_CODE = 158;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -9229,42 +9230,22 @@ function App() {
           </div>
 
           {/* 背诵模式快捷开关 */}
-          <div style={{ display: 'flex', gap: 6, padding: '0 16px 6px', flexWrap: 'wrap' }}>
+          <div className="quickToggleRow">
             <button
+              className="quickToggleBtn modeBtn"
               onClick={() => { const modes = choiceModes.map(m => m.id); const cur = modes.indexOf(practiceMode); const next = modes[(cur + 1) % modes.length]; setPracticeMode(next); setSettings(s => ({ ...s, mode: next })); saveSettings({ ...settings, mode: next }); setSelected(''); setShowBack(false); }}
-              style={{
-                padding: '4px 10px', borderRadius: 14, border: '1px solid var(--border)', fontSize: '0.78em',
-                background: '#7c3aed15',
-                color: '#7c3aed',
-                fontWeight: 600,
-              }}
             >📖 {choiceModes.find(m => m.id === practiceMode)?.name || '英文选中文'}</button>
             <button
+              className={`quickToggleBtn ${settings.shuffleMode ? 'shuffleOn' : 'shuffleOff'}`}
               onClick={() => { setSettings(s => ({ ...s, shuffleMode: !s.shuffleMode })); saveSettings({ ...settings, shuffleMode: !settings.shuffleMode }); }}
-              style={{
-                padding: '4px 10px', borderRadius: 14, border: '1px solid var(--border)', fontSize: '0.78em',
-                background: settings.shuffleMode ? '#2563eb15' : 'var(--bg-secondary)',
-                color: settings.shuffleMode ? '#2563eb' : 'var(--text-tertiary)',
-                fontWeight: settings.shuffleMode ? 600 : 400,
-              }}
             >{settings.shuffleMode ? '🔀 乱序' : '📋 顺序'}</button>
             <button
+              className={`quickToggleBtn ${settings.autoMaster ? 'masterOn' : 'masterOff'}`}
               onClick={() => { const v = !settings.autoMaster; setSettings(s => ({ ...s, autoMaster: v })); saveSettings({ ...settings, autoMaster: v }); }}
-              style={{
-                padding: '4px 10px', borderRadius: 14, border: '1px solid var(--border)', fontSize: '0.78em',
-                background: settings.autoMaster ? '#16a34a15' : 'var(--bg-secondary)',
-                color: settings.autoMaster ? '#16a34a' : 'var(--text-tertiary)',
-                fontWeight: settings.autoMaster ? 600 : 400,
-              }}
             >{settings.autoMaster ? '✅ 自动掌握' : '📝 自动掌握'}</button>
             <button
+              className={`quickToggleBtn ${settings.autoJump ? 'jumpOn' : 'jumpOff'}`}
               onClick={() => { const v = !settings.autoJump; setSettings(s => ({ ...s, autoJump: v })); saveSettings({ ...settings, autoJump: v }); }}
-              style={{
-                padding: '4px 10px', borderRadius: 14, border: '1px solid var(--border)', fontSize: '0.78em',
-                background: settings.autoJump ? '#2563eb15' : 'var(--bg-secondary)',
-                color: settings.autoJump ? '#2563eb' : 'var(--text-tertiary)',
-                fontWeight: settings.autoJump ? 600 : 400,
-              }}
             >{settings.autoJump ? '⏭ 自动跳转' : '⏸ 自动跳转'}</button>
           </div>
 
@@ -9484,7 +9465,9 @@ function App() {
             </button>
           )}
           {/* 词条详情弹窗 */}
-          {detailItem && (
+          {detailItem && (() => {
+            const enrichment = getWordEnrichment(detailItem.term);
+            return (
             <div className="modal" onClick={() => setDetailItem(null)}>
               <div className="modalContent" onClick={e => e.stopPropagation()}>
                 <div className="modalHeader">
@@ -9492,27 +9475,112 @@ function App() {
                   {detailItem.phonetic && <p className="phoneticText">{detailItem.phonetic}</p>}
                   <button className="closeBtn" onClick={() => setDetailItem(null)}>✕</button>
                 </div>
-                {detailItem.pos && <p style={{ color: posColor(detailItem.pos), fontWeight: 600, fontSize: '0.9em', margin: '0 0 8px' }}>{detailItem.pos}</p>}
-                <p className="muted"><span style={{ color: freqColor(detailItem.frequency) }}>{detailItem.frequency}</span></p>
-                <h3>{detailItem.meaning}</h3>
-                <div className="points">
-                  {detailItem.allPoints.map(p => <p key={p}>• {p}</p>)}
+                <div className="detailMetaRow">
+                  {detailItem.pos && <span className="detailPosTag" style={{ color: posColor(detailItem.pos), background: posColor(detailItem.pos) + '18' }}>{detailItem.pos}</span>}
+                  {detailItem.frequency && <span className="detailFreqTag" style={{ color: freqColor(detailItem.frequency) }}>{detailItem.frequency}</span>}
+                  {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag">✓ 已掌握</span>}
                 </div>
-                {detailItem.examples.length > 0 && (
-                  <div className="examples">{detailItem.examples.map(e => <p key={e}>{e}</p>)}</div>
+                <h3 className="detailMeaning">{detailItem.meaning}</h3>
+
+                {/* 考点提示 */}
+                {detailItem.corePoints && detailItem.corePoints.length > 0 && (
+                  <div className="detailSection detailExamPoints">
+                    <p className="detailSectionTitle">🎯 核心考点</p>
+                    {detailItem.corePoints.map((p, i) => <p key={i} className="detailPointItem">{p}</p>)}
+                  </div>
                 )}
+
+                {/* 增强数据：考点 */}
+                {enrichment && enrichment.examPoints.length > 0 && (
+                  <div className="detailSection detailExamPoints">
+                    <p className="detailSectionTitle">📝 常考要点</p>
+                    {enrichment.examPoints.map((p, i) => <p key={i} className="detailPointItem">{p}</p>)}
+                  </div>
+                )}
+
+                {/* 知识点 */}
+                {detailItem.allPoints && detailItem.allPoints.length > 0 && (
+                  <div className="detailSection">
+                    <p className="detailSectionTitle">💡 知识点</p>
+                    <div className="points">
+                      {detailItem.allPoints.map((p, i) => <p key={i}>• {p}</p>)}
+                    </div>
+                  </div>
+                )}
+
+                {/* 词组搭配 */}
+                {enrichment && enrichment.collocations.length > 0 && (
+                  <div className="detailSection detailCollocations">
+                    <p className="detailSectionTitle">🔗 词组搭配</p>
+                    {enrichment.collocations.map((c, i) => <p key={i} className="detailCollocationItem">{c}</p>)}
+                  </div>
+                )}
+
+                {/* 单词变形 */}
+                {enrichment && Object.keys(enrichment.wordForms).length > 0 && (
+                  <div className="detailSection detailWordForms">
+                    <p className="detailSectionTitle">🔄 单词变形</p>
+                    <div className="detailFormGrid">
+                      {enrichment.wordForms.noun && <div className="detailFormItem"><span className="detailFormLabel">名词</span><span className="detailFormValue">{enrichment.wordForms.noun}</span></div>}
+                      {enrichment.wordForms.adjective && <div className="detailFormItem"><span className="detailFormLabel">形容词</span><span className="detailFormValue">{enrichment.wordForms.adjective}</span></div>}
+                      {enrichment.wordForms.adverb && <div className="detailFormItem"><span className="detailFormLabel">副词</span><span className="detailFormValue">{enrichment.wordForms.adverb}</span></div>}
+                      {enrichment.wordForms.pastTense && <div className="detailFormItem"><span className="detailFormLabel">过去式</span><span className="detailFormValue">{enrichment.wordForms.pastTense}</span></div>}
+                      {enrichment.wordForms.pastParticiple && <div className="detailFormItem"><span className="detailFormLabel">过去分词</span><span className="detailFormValue">{enrichment.wordForms.pastParticiple}</span></div>}
+                      {enrichment.wordForms.presentParticiple && <div className="detailFormItem"><span className="detailFormLabel">现在分词</span><span className="detailFormValue">{enrichment.wordForms.presentParticiple}</span></div>}
+                    </div>
+                  </div>
+                )}
+
+                {/* 派生词 */}
+                {enrichment && enrichment.derivatives.length > 0 && (
+                  <div className="detailSection detailDerivatives">
+                    <p className="detailSectionTitle">🌿 派生词</p>
+                    <div className="detailTagWrap">
+                      {enrichment.derivatives.map((d, i) => <span key={i} className="detailDerivTag">{d}</span>)}
+                    </div>
+                  </div>
+                )}
+
+                {/* 近义词 / 同义词 */}
+                {enrichment && enrichment.synonyms.length > 0 && (
+                  <div className="detailSection detailSynonyms">
+                    <p className="detailSectionTitle">📌 近义词</p>
+                    <div className="detailTagWrap">
+                      {enrichment.synonyms.map((s, i) => <span key={i} className="detailSynonymTag">{s}</span>)}
+                    </div>
+                  </div>
+                )}
+
+                {/* 反义词 */}
+                {enrichment && enrichment.antonyms.length > 0 && (
+                  <div className="detailSection detailAntonyms">
+                    <p className="detailSectionTitle">⚡ 反义词</p>
+                    <div className="detailTagWrap">
+                      {enrichment.antonyms.map((a, i) => <span key={i} className="detailAntonymTag">{a}</span>)}
+                    </div>
+                  </div>
+                )}
+
+                {/* 例句 */}
+                {detailItem.examples && detailItem.examples.length > 0 && (
+                  <div className="detailSection">
+                    <p className="detailSectionTitle">💬 例句</p>
+                    <div className="examples">{detailItem.examples.map((e, i) => <p key={i}>{e}</p>)}</div>
+                  </div>
+                )}
+
                 {/* 关联词族 */}
                 {(() => {
                   const family = findWordFamily(detailItem.term, allWords);
                   if (family.length === 0) return null;
                   return (
-                    <div style={{ marginTop: 16, padding: '12px', background: 'var(--bg-tertiary)', borderRadius: 10 }}>
-                      <p style={{ fontWeight: 700, fontSize: '0.9em', color: 'var(--text-secondary)', marginBottom: 8 }}>🔗 关联词族</p>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    <div className="detailSection detailWordFamily">
+                      <p className="detailSectionTitle">🔗 关联词族</p>
+                      <div className="detailTagWrap">
                         {family.map(item => (
-                          <button key={item.id} className="smallBtn" style={{ fontSize: '0.85em', background: 'var(--bg-secondary)' }}
+                          <button key={item.id} className="detailFamilyBtn"
                             onClick={() => setDetailItem(item)}>
-                            {item.term} <small style={{ color: 'var(--text-tertiary)' }}>{item.pos}</small>
+                            {item.term} <small>{item.pos}</small>
                           </button>
                         ))}
                       </div>
@@ -9527,7 +9595,8 @@ function App() {
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
         </section>
       )}
 

@@ -1,7 +1,7 @@
 {
-  "version": "2.14.7",
-  "versionCode": 157,
-  "changelog": "v2.14.7 更新\n\n【修复】\n- 数字日期内容正确显示在扩展页\n- 背诵模式可切换（英文选中文/中文选英文/闪卡）\n- 点击立即更新不再导致界面膨胀\n- 背诵页中文选项过滤无效释义和重复项\n【优化】\n- 词库页懒加载，打开词库不再卡顿",
-  "devNotes": "fix numberdate display, mode switching, UI expansion, option filtering, lazy loading",
+  "version": "2.15.0",
+  "versionCode": 158,
+  "changelog": "v2.15.0 更新\n\n【新增】\n- 单词详情页全面升级，参考百词斩设计\n- 新增：核心考点、常考要点、词组搭配\n- 新增：单词变形（名词/形容词/副词/过去式/过去分词/现在分词）\n- 新增：派生词、近义词、反义词\n- 覆盖150+高考核心词汇，其余单词算法自动生成派生词\n\n【优化】\n- 首页快捷按钮UI重构，CSS样式化\n- 详情弹窗板块结构化展示，视觉层次更清晰",
+  "devNotes": "add word enrichment data, redesign detail popup, optimize homepage button UI",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

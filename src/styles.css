@@ -617,6 +617,187 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   margin-top: 14px;
 }
 
+/* ===== 详情弹窗增强样式 ===== */
+.detailMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.detailPosTag {
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 0.82em;
+  font-weight: 600;
+}
+.detailFreqTag {
+  font-size: 0.78em;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+}
+.detailMasteredTag {
+  font-size: 0.78em;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: #16a34a15;
+  color: #16a34a;
+}
+.detailMeaning {
+  font-size: 1.05em;
+  margin-bottom: 12px;
+}
+.detailSection {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--bg-tertiary);
+}
+.detailSectionTitle {
+  font-weight: 700;
+  font-size: 0.88em;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.detailPointItem {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 4px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+}
+.detailCollocationItem {
+  font-size: 0.85em;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 4px;
+}
+.detailFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.detailFormItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  font-size: 0.82em;
+}
+.detailFormLabel {
+  color: var(--text-tertiary);
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+.detailFormValue {
+  font-weight: 600;
+  color: var(--text);
+}
+.detailTagWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.detailDerivTag {
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: #16a34a12;
+  color: #16a34a;
+  font-size: 0.82em;
+  font-weight: 500;
+}
+.detailSynonymTag {
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: #2563eb12;
+  color: #2563eb;
+  font-size: 0.82em;
+  font-weight: 500;
+}
+.detailAntonymTag {
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: #ef444412;
+  color: #ef4444;
+  font-size: 0.82em;
+  font-weight: 500;
+}
+.detailFamilyBtn {
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  font-size: 0.82em;
+  color: var(--text);
+  cursor: pointer;
+}
+.detailFamilyBtn small {
+  color: var(--text-tertiary);
+  margin-left: 2px;
+}
+
+/* ===== 首页快捷按钮优化 ===== */
+.quickToggleRow {
+  display: flex;
+  gap: 6px;
+  padding: 0 0 8px;
+  flex-wrap: wrap;
+}
+.quickToggleBtn {
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  font-size: 0.78em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.quickToggleBtn.active {
+  font-weight: 600;
+}
+.quickToggleBtn.modeBtn {
+  background: #7c3aed12;
+  color: #7c3aed;
+  font-weight: 600;
+}
+.quickToggleBtn.shuffleOn {
+  background: #2563eb15;
+  color: #2563eb;
+  font-weight: 600;
+}
+.quickToggleBtn.shuffleOff {
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+}
+.quickToggleBtn.masterOn {
+  background: #16a34a15;
+  color: #16a34a;
+  font-weight: 600;
+}
+.quickToggleBtn.masterOff {
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+}
+.quickToggleBtn.jumpOn {
+  background: #2563eb15;
+  color: #2563eb;
+  font-weight: 600;
+}
+.quickToggleBtn.jumpOff {
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+}
+
 /* ===== 词根词缀 ===== */
 .sectionTitle {
   font-size: 20px;
