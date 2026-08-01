@@ -1211,82 +1211,51 @@ const baseWordMeanings = {
   wrap: '包裹', write: '写', wrong: '冤枉',
 };
 
-// 算法生成派生词（作为手动数据的补充，含中文释义）
+// 算法生成派生词（仅从已知后缀还原词根，不盲目添加后缀造词）
 function generateDerivatives(word) {
   if (!word || word.length < 3) return [];
   const w = word.toLowerCase();
-  const baseMeaning = baseWordMeanings[w] || '';
-  const results = [];
 
-  // 后缀中文释义映射
-  const suffixCnMap = {
-    'tion': '行为；状态', 'sion': '行为；状态', 'ment': '行为；结果',
-    'ness': '性质；状态', 'ity': '性质；状态', 'able': '可…的', 'ible': '可…的',
-    'ful': '充满…的', 'less': '无…的', 'ous': '有…特性的', 'ive': '有…倾向的',
-    'al': '与…有关的', 'ly': '…地', 'er': '做…的人/物', 'or': '做…的人/物',
-    'ist': '从事…的人', 'ary': '与…有关的', 'ery': '…场所', 'age': '行为；状态',
-    'ure': '行为；结果', 'ize': '使…化', 'ise': '使…化', 'ify': '使…化',
-    'en': '使…变得', 'ish': '有点…的', 'hood': '时期；状态', 'ship': '关系；身份',
-    'dom': '领域；状态', 'ism': '主义；学说', 'y': '有…特性的',
-  };
-
+  // 仅当单词本身已有后缀时，还原出词根形式
+  // 且词根必须在 baseWordMeanings 中有记录（确保是真实单词+有中文释义）
   const suffixRules = [
-    { suffix: 'tion', type: 'n.' },
-    { suffix: 'sion', type: 'n.' },
-    { suffix: 'ment', type: 'n.' },
-    { suffix: 'ness', type: 'n.' },
-    { suffix: 'ity', type: 'n.' },
-    { suffix: 'able', type: 'adj.' },
-    { suffix: 'ful', type: 'adj.' },
-    { suffix: 'less', type: 'adj.' },
-    { suffix: 'ous', type: 'adj.' },
-    { suffix: 'ive', type: 'adj.' },
-    { suffix: 'al', type: 'adj.' },
-    { suffix: 'ly', type: 'adv.' },
-    { suffix: 'er', type: 'n.' },
-    { suffix: 'ist', type: 'n.' },
+    { suffix: 'tion', type: 'v.' },   // education → educate
+    { suffix: 'sion', type: 'v.' },   // decision → decide
+    { suffix: 'ment', type: 'v.' },   // development → develop
+    { suffix: 'ness', type: 'adj.' }, // happiness → happy
+    { suffix: 'ity', type: 'adj.' },  // ability → able
+    { suffix: 'able', type: 'v.' },   // enjoyable → enjoy
+    { suffix: 'ible', type: 'v.' },   // visible → vis(e) (rare, skip)
+    { suffix: 'ful', type: 'n.' },    // careful → care
+    { suffix: 'less', type: 'n.' },   // fearless → fear
+    { suffix: 'ous', type: 'n.' },    // dangerous → danger
+    { suffix: 'ive', type: 'v.' },    // creative → create
+    { suffix: 'al', type: 'n.' },     // cultural → culture
+    { suffix: 'ly', type: 'adj.' },   // quickly → quick
+    { suffix: 'er', type: 'v.' },     // teacher → teach
+    { suffix: 'or', type: 'v.' },     // actor → act
+    { suffix: 'ist', type: 'n.' },    // artist → art
   ];
-  // 检查是否已有后缀，若有则生成去掉后缀的形式
+
+  const results = [];
   for (const rule of suffixRules) {
     if (w.endsWith(rule.suffix)) {
-      const base = w.slice(0, -rule.suffix.length);
-      if (base.length >= 2) {
-        const baseM = baseWordMeanings[base] || '';
-        const cnPart = baseM ? ` ${baseM}` : '';
-        results.push(`${base} ${rule.type}${cnPart}`);
-      }
+      let base = w.slice(0, -rule.suffix.length);
+      // 处理特殊拼写变化
+      if (rule.suffix === 'tion' && base.endsWith('a')) base = base.slice(0, -1) + 'e'; // educa → educate
+      if (rule.suffix === 'sion' && base.endsWith('de')) base = base; // decide → decid (keep)
+      if (rule.suffix === 'ity' && base.endsWith('abil')) base = base.slice(0, -1); // abil → able
+      if (rule.suffix === 'ness' && base.endsWith('i')) base = base.slice(0, -1) + 'y'; // happi → happy
+      if (base.length < 2) continue;
+
+      // 必须在词库中找到中文释义，否则跳过（避免生成不存在的词）
+      const baseM = baseWordMeanings[base];
+      if (!baseM) continue;
+
+      results.push(`${base} ${rule.type} ${baseM}`);
     }
   }
-  // 生成常见派生
-  const commonSuffixes = [
-    { suffix: 'tion', label: 'n.' },
-    { suffix: 'ment', label: 'n.' },
-    { suffix: 'ness', label: 'n.' },
-    { suffix: 'ful', label: 'adj.' },
-    { suffix: 'less', label: 'adj.' },
-    { suffix: 'ly', label: 'adv.' },
-    { suffix: 'er', label: 'n.' },
-    { suffix: 'able', label: 'adj.' },
-    { suffix: 'ive', label: 'adj.' },
-    { suffix: 'al', label: 'adj.' },
-  ];
-  for (const cs of commonSuffixes) {
-    const derived = w + cs.suffix;
-    if (derived !== w && !results.some(r => r.startsWith(derived))) {
-      const cnSuffix = suffixCnMap[cs.suffix] || '';
-      // 组合中文释义：词根义 + 后缀义
-      let cnMeaning = '';
-      if (baseMeaning && cnSuffix) {
-        cnMeaning = ` ${baseMeaning}${cnSuffix}`;
-      } else if (baseMeaning) {
-        cnMeaning = ` ${baseMeaning}`;
-      } else if (cnSuffix) {
-        cnMeaning = ` ${cnSuffix}`;
-      }
-      results.push(`${derived} ${cs.label}${cnMeaning}`);
-    }
-  }
-  return results.slice(0, 6);
+  return results.slice(0, 4);
 }
 
 // 获取单词的增强数据（合并手动数据和算法生成）
@@ -1304,7 +1273,7 @@ export function getWordEnrichment(term) {
       examPoints: data.examPoints || [],
     };
   }
-  // 算法回退：生成基本派生词
+  // 算法回退：仅当能还原出词根时才返回派生词
   const autoDerivatives = generateDerivatives(term);
   if (autoDerivatives.length === 0) return null;
   return {

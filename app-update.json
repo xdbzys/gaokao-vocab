@@ -1,7 +1,7 @@
 {
-  "version": "2.18.0",
-  "versionCode": 161,
-  "changelog": "v2.18.0 更新\n\n【新增】\n- 派生词支持点击发音（详情弹窗+闪卡模式）\n- 熟词生义大幅扩充：从30个增至150+个高考高频熟词生义\n  · 覆盖absorb/admit/advance/approach/argue等全部高频词\n  · 每个词条含多义说明和典型例句\n\n【优化】\n- 情景记忆分页展示：每页3篇文章，支持上下页+页码点切换\n- 易错词条目可点击查看详情，不再限制显示数量\n- 情景记忆顶部显示文章进度（如 1-3 / 16）",
-  "devNotes": "clickable derivatives pronunciation, expand familiar-new words to 150+, scene memory pagination",
+  "version": "2.18.1",
+  "versionCode": 162,
+  "changelog": "v2.18.1 修复\n\n【修复】\n- 派生词算法重构：不再盲目给每个词加-tion/-ment等后缀造词\n- 仅当单词本身已有后缀时，还原出词根（如education→educate）\n- 词根必须在词库中有中文释义才会显示，避免生成不存在的词\n- 移除泛化中文翻译（如所有-tion词都显示\"行为；状态\"）\n- 无有效派生词的单词不再显示派生词板块",
+  "devNotes": "fix derivative generation: remove blind suffix appending, only strip known suffixes with verified base words",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
