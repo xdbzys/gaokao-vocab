@@ -744,14 +744,14 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 
 /* ===== 首页快捷按钮优化 ===== */
 .quickToggleRow {
-  display: flex;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
   padding: 0 0 8px;
-  flex-wrap: wrap;
 }
 .quickToggleBtn {
-  padding: 6px 12px;
-  border-radius: 16px;
+  padding: 8px 6px;
+  border-radius: 14px;
   border: 1px solid var(--border);
   font-size: 0.78em;
   font-weight: 500;
@@ -759,8 +759,10 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   transition: all 0.2s;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   white-space: nowrap;
+  text-align: center;
 }
 .quickToggleBtn.active {
   font-weight: 600;

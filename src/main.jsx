@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.15.0';
-const APP_VERSION_CODE = 158;
+const APP_VERSION = '2.16.0';
+const APP_VERSION_CODE = 159;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -9212,7 +9212,7 @@ function App() {
                   {wrongWords.length > 0 && (
                     <label key="wrong-words" className="bookPickerItem" style={{ borderBottom: '1px solid var(--border)', paddingBottom: 8, marginBottom: 4 }}>
                       <input type="checkbox" checked={studyBookIds.includes('wrong-words')} onChange={() => switchStudyBook('wrong-words')} />
-                      <span style={{ color: '#ef4444', fontWeight: 600 }}>❌ 错词本</span>
+                      <span style={{ color: '#ef4444', fontWeight: 600 }}>错词本</span>
                       <span className="bookCount">({wrongWords.length})</span>
                     </label>
                   )}
@@ -9310,7 +9310,11 @@ function App() {
               )}
 
               {/* 答题后选项消失，解释内容顶替选项位置 */}
-              {(showBack || selected) && (
+              {(showBack || selected) && (() => {
+                const isFlashcard = practiceMode === 'flashcard';
+                const enrichment = isFlashcard ? getWordEnrichment(displayCurrent.term) : null;
+                const showAll = isFlashcard || detailMode === 'full';
+                return (
                 <div className="answerBox">
                   {selected && (
                     <p style={{ fontWeight: 600, marginBottom: 8, color: (practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning) === selected ? '#16a34a' : '#dc2626' }}>
@@ -9320,9 +9324,50 @@ function App() {
                   <h3>{displayCurrent.term} &middot; {stripPosPrefix(displayCurrent.meaning)}</h3>
                   <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>
                   <div className="points">
-                    {(detailMode === 'brief' ? displayCurrent.corePoints.slice(0, 2) : displayCurrent.allPoints).map(p => <p key={p}>• {p}</p>)}
+                    {(showAll ? displayCurrent.allPoints : displayCurrent.corePoints.slice(0, 2)).map(p => <p key={p}>• {p}</p>)}
                   </div>
-                  {detailMode === 'full' && displayCurrent.examples.length > 0 && (
+                  {/* 闪卡模式：显示全部考点和增强数据 */}
+                  {isFlashcard && enrichment && (
+                    <>
+                      {enrichment.examPoints.length > 0 && (
+                        <div className="points" style={{ marginTop: 8 }}>
+                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>📝 常考要点</p>
+                          {enrichment.examPoints.map((p, i) => <p key={i}>• {p}</p>)}
+                        </div>
+                      )}
+                      {enrichment.collocations.length > 0 && (
+                        <div className="points" style={{ marginTop: 8 }}>
+                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>🔗 词组搭配</p>
+                          {enrichment.collocations.map((p, i) => <p key={i}>• {p}</p>)}
+                        </div>
+                      )}
+                      {enrichment.derivatives.length > 0 && (
+                        <div className="points" style={{ marginTop: 8 }}>
+                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>🌿 派生词</p>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                            {enrichment.derivatives.map((d, i) => <span key={i} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13 }}>{d}</span>)}
+                          </div>
+                        </div>
+                      )}
+                      {enrichment.synonyms.length > 0 && (
+                        <div className="points" style={{ marginTop: 8 }}>
+                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>📌 近义词</p>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                            {enrichment.synonyms.map((s, i) => <span key={i} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13 }}>{s}</span>)}
+                          </div>
+                        </div>
+                      )}
+                      {enrichment.antonyms.length > 0 && (
+                        <div className="points" style={{ marginTop: 8 }}>
+                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>⚡ 反义词</p>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                            {enrichment.antonyms.map((a, i) => <span key={i} style={{ display: 'inline-block', background: 'var(--danger-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13 }}>{a}</span>)}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {(showAll || isFlashcard) && displayCurrent.examples.length > 0 && (
                     <div className="examples">{displayCurrent.examples.map(e => <p key={e}>{e}</p>)}</div>
                   )}
                   <div className="answerActions">
@@ -9331,7 +9376,8 @@ function App() {
                     </button>
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {/* 底部导航按钮 */}
               <div className="navButtons">
@@ -9350,7 +9396,7 @@ function App() {
       {section === 'wrong' && (
         <section className="panel">
           <div className="libraryHeader">
-            <h2 className="sectionTitle">❌ 错词本</h2>
+            <h2 className="sectionTitle">错词本</h2>
             {wrongWords.length > 0 && <button className="smallBtn dangerGhost" onClick={clearWrongWords}>清空</button>}
           </div>
           <p className="muted">答错的单词会自动加入这里，方便集中复习。掌握后可移除。</p>
