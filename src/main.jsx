@@ -8447,11 +8447,9 @@ function App() {
     setBooks(prev => prev.map(b => b.id === 'mastered-words' ? { ...b, items: masteredItems } : b));
   }, [progress]);
 
-  // 当前页面对应的词库选择（背诵页和词库页独立）
-  const currentBookIds = section === 'learn' ? studyBookIds : libraryBookIds;
-  const activeBook = useMemo(() => {
-    // 如果选中了错词本，单独处理
-    if (currentBookIds.includes('wrong-words')) {
+  // 背诵页词库（始终用 studyBookIds，不受 section 切换影响）
+  const learnActiveBook = useMemo(() => {
+    if (studyBookIds.includes('wrong-words')) {
       return {
         id: 'wrong-words',
         name: '错词本',
@@ -8459,9 +8457,8 @@ function App() {
         editable: false
       };
     }
-    const selected = books.filter(b => currentBookIds.includes(b.id) && !hiddenBookIds.includes(b.id));
+    const selected = books.filter(b => studyBookIds.includes(b.id) && !hiddenBookIds.includes(b.id));
     if (selected.length === 0) return books[0] || { id: 'empty', name: '空', items: [], editable: false };
-    // 多词库合并时按 term 去重（大小写不敏感），保留第一个出现的
     const seen = new Set();
     const uniqueItems = [];
     selected.forEach(b => {
@@ -8473,37 +8470,80 @@ function App() {
         }
       });
     });
-    // 词库变化时更新洗牌种子
     shuffleSeedRef.current = Date.now();
     return {
-      id: currentBookIds.join(','),
+      id: studyBookIds.join(','),
       name: selected.length === 1 ? selected[0].name : `${selected.length}个词库`,
       items: uniqueItems,
       editable: false
     };
-  }, [books, currentBookIds, wrongWords, hiddenBookIds]);
+  }, [books, studyBookIds, wrongWords, hiddenBookIds]);
+
+  // 词库页词库（始终用 libraryBookIds，不受 section 切换影响）
+  const libraryActiveBook = useMemo(() => {
+    if (libraryBookIds.includes('wrong-words')) {
+      return {
+        id: 'wrong-words',
+        name: '错词本',
+        items: wrongWords,
+        editable: false
+      };
+    }
+    const selected = books.filter(b => libraryBookIds.includes(b.id) && !hiddenBookIds.includes(b.id));
+    if (selected.length === 0) return books[0] || { id: 'empty', name: '空', items: [], editable: false };
+    const seen = new Set();
+    const uniqueItems = [];
+    selected.forEach(b => {
+      b.items.forEach(item => {
+        const key = termKey(item.term);
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniqueItems.push(item);
+        }
+      });
+    });
+    return {
+      id: libraryBookIds.join(','),
+      name: selected.length === 1 ? selected[0].name : `${selected.length}个词库`,
+      items: uniqueItems,
+      editable: false
+    };
+  }, [books, libraryBookIds, wrongWords, hiddenBookIds]);
+
+  // 当前页面对应的词库（仅用于 UI 显示标题等，不影响背诵页的词汇列表）
+  const currentBookIds = section === 'learn' ? studyBookIds : libraryBookIds;
+  const activeBook = section === 'learn' ? learnActiveBook : libraryActiveBook;
 
   // 全部词汇合并（词根词缀、对比、易错词基于全量词汇）
   const allWords = useMemo(() => {
     return books.flatMap(b => b.items);
   }, [books]);
 
-  const filteredItems = useMemo(() => {
-    let items = activeBook.items.filter(item => {
+  // 背诵页词汇列表（不受 section 切换影响，始终基于 studyBookIds）
+  const learnItems = useMemo(() => {
+    let items = learnActiveBook.items.filter(item => {
       const posOk = posFilter === '全部' || getPosCategory(item.pos) === posFilter;
       const typeOk = typeFilter === '全部' || item.type === typeFilter;
-      // 隐藏已掌握只在背诵页生效，词库页不受影响（大小写不敏感）
-      const masteredOk = section !== 'learn' || !hideMastered || progress[termKey(item.term)] !== 'mastered';
-      // 搜索只在词库页生效，不影响背诵页
-      const searchOk = section === 'learn' || !search || `${item.term}${item.meaning}${item.pos}`.toLowerCase().includes(search.toLowerCase());
-      return posOk && typeOk && masteredOk && searchOk;
+      const masteredOk = !hideMastered || progress[termKey(item.term)] !== 'mastered';
+      return posOk && typeOk && masteredOk;
     });
-    // 使用稳定种子洗牌，避免进度变化时顺序跳变
     if (settings.shuffleMode) items = seededShuffle(items, shuffleSeedRef.current);
     return items;
-  }, [activeBook, posFilter, typeFilter, hideMastered, search, settings.shuffleMode, progress, section]);
+  }, [learnActiveBook, posFilter, typeFilter, hideMastered, settings.shuffleMode, progress]);
 
-  const current = filteredItems[index % Math.max(filteredItems.length, 1)];
+  // 词库页词汇列表（用于词库浏览，受搜索影响）
+  const filteredItems = useMemo(() => {
+    let items = libraryActiveBook.items.filter(item => {
+      const posOk = posFilter === '全部' || getPosCategory(item.pos) === posFilter;
+      const typeOk = typeFilter === '全部' || item.type === typeFilter;
+      const searchOk = !search || `${item.term}${item.meaning}${item.pos}`.toLowerCase().includes(search.toLowerCase());
+      return posOk && typeOk && searchOk;
+    });
+    return items;
+  }, [libraryActiveBook, posFilter, typeFilter, search]);
+
+  // 背诵页当前单词：使用 learnItems 而非 filteredItems
+  const current = learnItems[index % Math.max(learnItems.length, 1)];
 
   // 锁定当前显示的单词，防止 toggleProgress 改变 filteredItems 导致 UI 判断错误
   const lockedCurrent = useRef(null);
@@ -8718,7 +8758,7 @@ function App() {
   useEffect(() => {
     recentSeenRef.current = [];
     recentWrongRef.current = [];
-  }, [activeBook.id]);
+  }, [learnActiveBook.id]);
 
   // 同步 practiceMode 与 settings.mode（设置页修改模式后生效）
   useEffect(() => {
@@ -8728,34 +8768,34 @@ function App() {
   // 筛选条件变化时重置词库页显示条数
   useEffect(() => {
     setLibraryLimit(60);
-  }, [search, posFilter, typeFilter, activeBook.id]);
+  }, [search, posFilter, typeFilter, libraryActiveBook.id]);
 
   function nextCard() {
     // 把当前单词加入"已看"记录
-    if (filteredItems.length > 0) {
-      const currentItem = filteredItems[index % filteredItems.length];
+    if (learnItems.length > 0) {
+      const currentItem = learnItems[index % learnItems.length];
       if (currentItem && currentItem.term) {
         const rs = recentSeenRef.current;
         if (!rs.includes(currentItem.term)) rs.push(currentItem.term);
         // 动态窗口：最多保留词库60%且不超过50个
-        const maxSeen = Math.min(50, Math.max(3, Math.floor(filteredItems.length * 0.6)));
+        const maxSeen = Math.min(50, Math.max(3, Math.floor(learnItems.length * 0.6)));
         while (rs.length > maxSeen) rs.shift();
       }
     }
 
-    let nextIdx = (index + 1) % Math.max(filteredItems.length, 1);
+    let nextIdx = (index + 1) % Math.max(learnItems.length, 1);
     // 跳过最近已看和答错的单词，除非所有单词都被跳过了
-    if (filteredItems.length > 3) {
+    if (learnItems.length > 3) {
       const rs = recentSeenRef.current;
       const rw = recentWrongRef.current;
       let tried = 0;
-      while (tried < filteredItems.length) {
-        const item = filteredItems[nextIdx];
+      while (tried < learnItems.length) {
+        const item = learnItems[nextIdx];
         // 检查是否所有单词都在"已看"或"答错"列表中
-        const allSeenOrWrong = filteredItems.every(it => rs.includes(it.term) || rw.includes(it.term));
+        const allSeenOrWrong = learnItems.every(it => rs.includes(it.term) || rw.includes(it.term));
         if (allSeenOrWrong) break; // 词库内没有新单词了，允许重复
         if (!rs.includes(item.term) && !rw.includes(item.term)) break;
-        nextIdx = (nextIdx + 1) % filteredItems.length;
+        nextIdx = (nextIdx + 1) % learnItems.length;
         tried++;
       }
     }
@@ -8764,8 +8804,8 @@ function App() {
     lockedCurrent.current = null;
     setForceShowItem(null);
     // 自动朗读新单词
-    if (settings.autoSpeak && filteredItems.length > 0) {
-      const nextWord = filteredItems[nextIdx];
+    if (settings.autoSpeak && learnItems.length > 0) {
+      const nextWord = learnItems[nextIdx];
       if (nextWord && nextWord.term) {
         setTimeout(() => speak(nextWord.term, settings.speakRate), 100);
       }
@@ -8776,8 +8816,8 @@ function App() {
     // 如果存在最近一次回答的单词，优先跳转回该单词（只生效一次）
     if (lastAnsweredRef.current) {
       const { item } = lastAnsweredRef.current;
-      // 先尝试在 filteredItems 中找到
-      const targetIdx = filteredItems.findIndex(it => it.term === item.term);
+      // 先尝试在 learnItems 中找到
+      const targetIdx = learnItems.findIndex(it => it.term === item.term);
       if (targetIdx !== -1 && targetIdx !== index) {
         setIndex(targetIdx);
         setShowBack(false); setSelected('');
@@ -8786,7 +8826,7 @@ function App() {
         lastAnsweredRef.current = null;
         return;
       }
-      // 如果在 filteredItems 中找不到（被隐藏已掌握等过滤掉了），
+      // 如果在 learnItems 中找不到（被隐藏已掌握等过滤掉了），
       // 强制临时显示该单词
       setIndex(0); // index 暂时不重要，用 forceShowItem 覆盖显示
       setShowBack(false); setSelected('');
@@ -8796,7 +8836,7 @@ function App() {
       return;
     }
     setForceShowItem(null);
-    setIndex(i => (i - 1 + filteredItems.length) % Math.max(filteredItems.length, 1));
+    setIndex(i => (i - 1 + learnItems.length) % Math.max(learnItems.length, 1));
     setShowBack(false); setSelected('');
     lockedCurrent.current = null;
   }
@@ -9440,7 +9480,7 @@ function App() {
                 </div>
               )}
             </div>
-            <span className="progressTag">{index + 1}/{filteredItems.length}</span>
+            <span className="progressTag">{index + 1}/{learnItems.length}</span>
           </div>
 
           {/* 背诵模式快捷开关 */}
