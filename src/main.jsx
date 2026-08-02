@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.21.0';
-const APP_VERSION_CODE = 167;
+const APP_VERSION = '2.21.1';
+const APP_VERSION_CODE = 168;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -7815,26 +7815,35 @@ function cleanOcrText(text) {
 // 提取词干（去掉常见词性后缀），用于词族关联
 function getStem(word) {
   if (!word || word.length < 3) return word;
-  const suffixes = ['fully', 'fully', 'tion', 'sion', 'ment', 'ness', 'ity', 'ly', 'ful', 'less', 'ous', 'ive', 'able', 'ible', 'al', 'ic', 'er', 'or', 'ist', 'ize', 'ise', 'en', 'ed', 'ing', 'y'];
-  for (const s of suffixes) {
-    if (word.endsWith(s) && word.length > s.length + 2) {
-      let stem = word.slice(0, -s.length);
-      // 处理双写辅音：如 stopped → stop
-      if (/([bcdfghjklmnpqrstvwxz])\1$/.test(stem)) stem = stem.slice(0, -1);
-      // 处理 y → i：如 happiness → happy (stem=happi, 还原为 happy)
-      if (stem.endsWith('i') && !/^[aeiou]/.test(word)) {
-        const withY = stem.slice(0, -1) + 'y';
-        if (withY.length >= 2) return withY;
+  const suffixes = ['fully', 'tion', 'sion', 'ment', 'ness', 'ity', 'ly', 'ful', 'less', 'ous', 'ive', 'able', 'ible', 'al', 'ic', 'er', 'or', 'ist', 'ize', 'ise', 'en', 'ed', 'ing', 'y'];
+  let result = word.toLowerCase();
+  let prev = '';
+  let rounds = 0;
+  // 最多剥离3轮后缀（如 typically → typic → typ）
+  while (prev !== result && rounds < 3) {
+    prev = result;
+    for (const s of suffixes) {
+      if (result.endsWith(s) && result.length > s.length + 2) {
+        let stem = result.slice(0, -s.length);
+        // 处理双写辅音：如 stopped → stop
+        if (/([bcdfghjklmnpqrstvwxz])\1$/.test(stem)) stem = stem.slice(0, -1);
+        // 处理 y → i：如 happiness → happy (stem=happi, 还原为 happy)
+        if (stem.endsWith('i') && !/^[aeiou]/.test(result)) {
+          const withY = stem.slice(0, -1) + 'y';
+          if (withY.length >= 2) { result = withY; break; }
+        }
+        // 处理 e 还原：如 beautiful → beauty (beauti → beauty)
+        if (stem.endsWith('i') && result.endsWith('ful')) {
+          const withY = stem.slice(0, -1) + 'y';
+          if (withY.length >= 2) { result = withY; break; }
+        }
+        result = stem;
+        break;
       }
-      // 处理 e 还原：如 beautiful → beauty (beauti → beauty)
-      if (stem.endsWith('i') && word.endsWith('ful')) {
-        const withY = stem.slice(0, -1) + 'y';
-        if (withY.length >= 2) return withY;
-      }
-      return stem;
     }
+    rounds++;
   }
-  return word;
+  return result;
 }
 
 // 查找词族：与给定单词同一词根的不同形式
@@ -7842,20 +7851,44 @@ function findWordFamily(term, items) {
   const seen = new Set([term]);
   const related = [];
   const termStem = getStem(term);
-
-  // 收集当前词库中所有有效的 term
-  const termSet = new Set(items.map(i => i.term));
+  const termLower = term.toLowerCase();
+  // 去尾E后的词干（用于匹配 type → typist, nature → natural 等）
+  const termNoE = (termLower.endsWith('e') && termLower.length >= 4) ? termLower.slice(0, -1) : null;
 
   for (const item of items) {
     if (termKey(item.term) === termKey(term) || seen.has(termKey(item.term))) continue;
+    const itemLower = item.term.toLowerCase();
     const otherStem = getStem(item.term);
+    const otherNoE = (itemLower.endsWith('e') && itemLower.length >= 4) ? itemLower.slice(0, -1) : null;
+
     // 匹配规则：
-    // 1. 当前词是另一个词的词干（如 success → successful）
-    // 2. 两个词共享同一个词干（如 successful 和 successfully）
-    // 3. 另一个词是当前词的词干（如 successful → success）
-    if (item.term.startsWith(term) || term.startsWith(item.term) ||
-        otherStem === term || otherStem === termStem ||
-        termStem === item.term || termStem === otherStem) {
+    // 1. 直接前缀匹配（如 success → successful, type → typewriter）
+    // 2. 词干完全匹配（如 successful 和 successfully 共享词干）
+    // 3. 词干前缀匹配（如 type → typist，词干 "type" 包含 "typ"）
+    // 4. 去尾E匹配（如 nature → natural，去E后 "natur" 匹配词干 "natur"）
+    //    也处理 type → typical（去E后 "typ" 匹配词干 "typic" 的前缀）
+    const isRelated =
+      // 规则1：直接前缀匹配
+      itemLower.startsWith(termLower) || termLower.startsWith(itemLower) ||
+      // 规则2：词干完全匹配
+      otherStem === termLower || otherStem === termStem ||
+      termStem === itemLower || termStem === otherStem ||
+      // 规则3：词干前缀匹配（至少3个字符重叠）
+      // 如 type(词干type) → typist(词干typ)：type.startsWith("typ") = true
+      // 如 create(词干create) → creative(词干creat)：create.startsWith("creat") = true
+      (termStem.length >= 3 && otherStem.length >= 3 &&
+       (termStem.startsWith(otherStem) || otherStem.startsWith(termStem))) ||
+      // 规则4：去尾E匹配（去E后至少4字符，避免 care→carbon 等误匹配）
+      // 如 nature → natural：去E得 "natur"，匹配词干 "natur"
+      // 如 create → creative：去E得 "creat"，匹配词干 "creat"
+      (termNoE && termNoE.length >= 4 &&
+       (otherStem === termNoE ||
+        (otherStem.length >= 3 && (otherStem.startsWith(termNoE) || termNoE.startsWith(otherStem))))) ||
+      (otherNoE && otherNoE.length >= 4 &&
+       (termStem === otherNoE ||
+        (termStem.length >= 3 && (termStem.startsWith(otherNoE) || otherNoE.startsWith(termStem)))));
+
+    if (isRelated) {
       related.push(item);
       seen.add(item.term);
     }
@@ -7870,7 +7903,7 @@ function findWordFamily(term, items) {
     return a.term.localeCompare(b.term);
   });
 
-  return related.slice(0, 12); // 最多显示12个关联词
+  return related.slice(0, 15); // 最多显示15个关联词
 }
 
 // 支持多种编号格式：1. / 1) / (1) / [1] / ① / 1、/ 第1 / 1.

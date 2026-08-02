@@ -1,7 +1,7 @@
 {
-  "version": "2.21.0",
-  "versionCode": 167,
-  "changelog": "v2.21.0 修复版本号、删除无效词库、添加词库删除功能\n\n【修复】\n- 修复APP内显示版本号不正确的问题（之前显示2.18.1）\n- APP内版本号与下载提示版本号现已一致\n\n【删除】\n- 删除「同义词对比」和「反义词对比」词库（非实际词汇词库）\n- 扩展页对比记忆功能保留不受影响\n\n【新增】\n- 词库管理：所有词库均可删除（包括内置词库）\n- 内置词库删除后可在「已删除的词库」区域一键恢复\n- 自定义词库删除后彻底移除\n- 启动时自动清理已删除词库的引用",
-  "devNotes": "fix APP_VERSION from 2.18.1 to 2.21.0; remove gaokao-synonym and gaokao-antonym from builtInBooks; update compareBook to use seed data directly; replace hide/show with delete/restore for all books; add auto-cleanup effect for removed book IDs on mount",
+  "version": "2.21.1",
+  "versionCode": 168,
+  "changelog": "v2.21.1 优化关联词族匹配逻辑\n\n【优化】\n- 关联词族匹配更全面：type 可找到 typist、typical、typewriter、typically\n- 词干剥离改为多轮递归：typically → typic → typ，匹配更精准\n- 新增词干前缀匹配规则：词干包含关系也能关联（如 type 的词干包含 typ）\n- 新增去尾E匹配规则：nature → natural 等通过去E后匹配词干\n- 双向匹配：查看 typist 也能找到 type，查看 typical 也能找到 typist\n- 关联词上限从12个提升到15个\n- 避免误匹配：care 不会关联 carbon，more 不会关联 morning",
+  "devNotes": "improve getStem to recursively strip up to 3 rounds of suffixes; add stem-prefix matching (min 3 chars) to findWordFamily; add E-stripping matching (min 4 chars) for words ending in 'e'; make all matching case-insensitive; increase max related words from 12 to 15",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
