@@ -1,7 +1,7 @@
 {
-  "version": "2.20.0",
-  "versionCode": 165,
-  "changelog": "v2.20.0 例句添加中文翻译\n\n【新增】\n- 所有例句添加中文翻译，英文下方显示中文\n- 闪卡模式：例句中英文对照显示\n- 详情弹窗：例句中英文对照显示\n- 月份/星期/季节等专题词汇：例句中英文对照显示\n- 使用MyMemory翻译API生成高质量中文翻译\n- 新增CSS样式：中文翻译用较小字号和浅色显示\n- 例句卡片式布局，英文加粗，中文浅色",
-  "devNotes": "add Chinese translations to all example sentences using ||| separator; update display logic to parse ||| and show EN/ZH separately; add CSS for examplePair, exampleEn, exampleZh",
+  "version": "2.20.1",
+  "versionCode": 166,
+  "changelog": "v2.20.1 搜索优化：最接近的单词排在第一位\n\n【优化】\n- 搜索结果按相关度排序，最匹配的单词显示在最前面\n- 英文搜索：完全匹配 > 前缀匹配 > 单词边界包含 > 普通包含\n- 中文搜索：自动去除词性前缀，按义项拆分匹配\n- 义项完全匹配 > 义项前缀匹配 > 释义包含\n- 单词越短越优先（更精确匹配）\n- 错词本搜索同样支持相关度排序",
+  "devNotes": "implement relevance scoring for search: exact term match (1000) > prefix (900) > word-boundary contains (850) > regular contains (800) > exact Chinese definition match (750) > definition prefix (580) > meaning contains (500) > other (100); add boundary regex for word-boundary detection; strip POS prefixes and split meanings by delimiters for accurate Chinese matching",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

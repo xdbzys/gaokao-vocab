@@ -8533,12 +8533,66 @@ function App() {
 
   // 词库页词汇列表（用于词库浏览，受搜索影响）
   const filteredItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
     let items = libraryActiveBook.items.filter(item => {
       const posOk = posFilter === '全部' || getPosCategory(item.pos) === posFilter;
       const typeOk = typeFilter === '全部' || item.type === typeFilter;
-      const searchOk = !search || `${item.term}${item.meaning}${item.pos}`.toLowerCase().includes(search.toLowerCase());
+      const searchOk = !q || `${item.term}${item.meaning}${item.pos}`.toLowerCase().includes(q);
       return posOk && typeOk && searchOk;
     });
+    // 有搜索词时按相关度排序：最接近的放最前面
+    if (q) {
+      // 转义正则特殊字符
+      const escQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // 单词边界正则：匹配出现在词首（开头/空格后/连字符后）的搜索词
+      const boundaryRe = new RegExp(`(^|\\s|-)${escQ}`, 'i');
+      items = items.map(item => {
+        const term = (item.term || '').toLowerCase();
+        const meaning = (item.meaning || '').toLowerCase();
+        let score = 0;
+
+        // === 英文词条匹配（优先级最高）===
+        if (term === q) {
+          score = 1000; // 完全匹配：搜 abandon → abandon
+        } else if (term.startsWith(q)) {
+          score = 900;  // 前缀匹配：搜 act → action, active
+        } else if (term.includes(q)) {
+          // 区分单词边界包含 vs 中间包含
+          if (boundaryRe.test(term)) {
+            score = 850; // 单词边界包含：搜 care → take care of
+          } else {
+            score = 800; // 普通包含：搜 act → character
+          }
+        }
+
+        // === 中文释义匹配 ===
+        if (score === 0) {
+          // 去除词性前缀(vt./vi./n./v./adj.等)，按分号和逗号拆分义项
+          const defs = meaning
+            .split(/[;；]/)
+            .map(p => p.replace(/^(vt\.|vi\.|n\.|v\.|a\.|adj\.|adv\.|prep\.|conj\.|pron\.|art\.|num\.|int\.|aux\.|modal\.|abbr\.|\[.*?\])\s*/gi, '').trim())
+            .flatMap(p => p.split(/[,，、]/).map(d => d.trim()))
+            .filter(Boolean);
+
+          if (defs.some(d => d === q)) {
+            score = 750; // 义项完全匹配：搜 放弃 → 放弃
+          } else if (defs.some(d => d.startsWith(q))) {
+            score = 580; // 义项前缀匹配：搜 放 → 放弃
+          } else if (meaning.includes(q)) {
+            score = 500; // 释义包含（含词性前缀等）
+          } else {
+            score = 100; // 仅词性/音标等匹配
+          }
+        }
+
+        // 额外加分：term 越短越优先（更精确匹配）
+        if (term === q || term.startsWith(q) || term.includes(q)) {
+          score += Math.max(0, 50 - term.length);
+        }
+
+        return { item, score };
+      }).sort((a, b) => b.score - a.score).map(x => x.item);
+    }
     return items;
   }, [libraryActiveBook, posFilter, typeFilter, search]);
 
