@@ -1,7 +1,7 @@
 {
-  "version": "2.21.1",
-  "versionCode": 168,
-  "changelog": "v2.21.1 优化关联词族匹配逻辑\n\n【优化】\n- 关联词族匹配更全面：type 可找到 typist、typical、typewriter、typically\n- 词干剥离改为多轮递归：typically → typic → typ，匹配更精准\n- 新增词干前缀匹配规则：词干包含关系也能关联（如 type 的词干包含 typ）\n- 新增去尾E匹配规则：nature → natural 等通过去E后匹配词干\n- 双向匹配：查看 typist 也能找到 type，查看 typical 也能找到 typist\n- 关联词上限从12个提升到15个\n- 避免误匹配：care 不会关联 carbon，more 不会关联 morning",
-  "devNotes": "improve getStem to recursively strip up to 3 rounds of suffixes; add stem-prefix matching (min 3 chars) to findWordFamily; add E-stripping matching (min 4 chars) for words ending in 'e'; make all matching case-insensitive; increase max related words from 12 to 15",
+  "version": "2.22.0",
+  "versionCode": 169,
+  "changelog": "v2.22.0 释义格式优化、关联词修正、易混词辨析\n\n【修复】\n- 985词库168个词条：不同意思用逗号隔开（如\"高尚的n.贵族\"→\"高尚的，n.贵族\"）\n- 修复rely被错误关联到relax的问题（词干剥离过度导致）\n- 移除'y'作为独立后缀，避免rely→rel、play→pla等误匹配\n- 词干前缀匹配增加60%长度比例要求，防止过度匹配\n\n【新增】\n- 扩展页新增「易混词辨析」模块\n- 收录80+组高考常考易混词对（如affect/effect, adapt/adopt）\n- 单词详情弹窗显示易混词（橙色标签，区别于关联词族）\n- 易混词可点击跳转查看详情\n- 点击单词可发音\n\n【优化】\n- 关联词族匹配更精准：仅保留真实词根变形\n- type↔typist, create↔creation等正确关联保留\n- play↔place, stay↔stand等假阳性已消除",
+  "devNotes": "fix 673 meaning concatenations in seedWords985; remove 'y' from suffix list to prevent rely→rel false match; add 60% length ratio for stem prefix matching; add confusingWordsData with 80+ pairs; add findConfusingWords/getConfusingNote functions; add confusing words section in extension page and word detail popup; add CSS for confusing word tags (orange warning style)",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
