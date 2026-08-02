@@ -40,9 +40,9 @@ const seedWords985 = [
   ['accordingly', 'adv.', '因此,依照', '985', ['因此,依照'], ['因此,依照'], ['The rules have changed; please act accordingly.|||规则已更改；请采取相应行动。']],
   ['account', 'n.', '账户；解释；理由', '985', ['账户；解释；理由'], ['账户；解释；理由'], ['She opened a bank account to save money for college.|||她开了一个银行账户，为上大学存钱。']],
   ['accurate', 'adj.', '精确的,准确的', '985', ['精确的,准确的'], ['精确的,准确的'], ['The clock is not very accurate; it loses a minute each day.|||时钟不是很准确；它每天损失一分钟。']],
-  ['accuse', 'vt.', '指责,归咎于', '985', ['指责,归咎于'], ['指责,归咎于'], ['You need to accuse the situation before making a final decision.|||在做出最终决定之前，您需要对情况提出指控。']],
+  ['accuse', 'vt.', '指责,归咎于', '985', ['指责,归咎于'], ['指责,归咎于'], ['The police accused him of stealing the car.|||警方指控他偷了汽车。']],
   ['actor', 'n.', '男演员', '985', ['男演员'], ['男演员'], ['The famous actor won an award for his performance in the film.|||这位著名演员在电影中的表演获得了奖项。']],
-  ['actress', 'n.', '女演员', '985', ['女演员'], ['女演员'], ['The young actress delivered a stunning performance on stage.|||这位年轻女演员在舞台上表演了令人惊叹的表演。']],
+  ['actress', 'n.', '女演员', '985', ['女演员'], ['女演员'], ['The young actress delivered a stunning performance on stage.|||这位年轻女演员在舞台上呈现了令人惊叹的表演。']],
   ['actual', 'adj.', '实际的,现行的', '985', ['实际的,现行的'], ['实际的,现行的'], ['The actual cost of the project was much higher than expected.|||该项目的实际成本远远高于预期。']],
   ['adapt', 'vt.', '使适应,改编', '985', ['使适应,改编'], ['使适应,改编'], ['Animals adapt to their environment over thousands of years.|||动物在数千年的时间里适应它们的环境。']],
   ['admire', 'vt.', '钦佩,羡慕,赞赏', '985', ['钦佩,羡慕,赞赏'], ['钦佩,羡慕,赞赏'], ['I admire her courage to speak up against injustice.|||我钦佩她勇敢地站出来反对不公正。']],
@@ -139,7 +139,7 @@ const seedWords985 = [
   ['belly', 'n.', '腹部,胃', '985', ['腹部,胃'], ['腹部,胃'], ['The report highlights the significance of belly in education.|||该报告强调了腹部在教育中的重要性。']],
   ['belong', 'vi.', '属于,附属', '985', ['属于,附属'], ['属于,附属'], ['The author attempts to belong readers\' attention to this issue.']],
   ['belt', 'n.', '带,腰带,区', '985', ['带,腰带,区'], ['带,腰带,区'], ['The report highlights the significance of belt in education.|||报告强调了“一带一路”在教育中的重要性。']],
-  ['bench', 'n.', '长凳,条凳,工作台', '985', ['长凳,条凳,工作台'], ['长凳,条凳,工作台'], ['The author mentions bench to support the main argument.|||作者提到了BENCH来支持主要论点。']],
+  ['bench', 'n.', '长凳,条凳,工作台', '985', ['长凳,条凳,工作台'], ['长凳,条凳,工作台'], ['We sat on the bench in the park and enjoyed the sunset.|||我们坐在公园的长椅上，欣赏日落。']],
   ['bend', 'vt.', '使弯曲，vi.弯曲', '985', ['使弯曲，vi.弯曲'], ['使弯曲，vi.弯曲'], ['The experiment shows how plants bend sunlight for growth.|||实验展示了植物如何弯曲阳光以促进生长。']],
   ['benefit', 'n.', '利益,恩惠,津贴', '985', ['利益,恩惠,津贴'], ['利益,恩惠,津贴'], ['Regular exercise has many benefits for both body and mind.|||定期锻炼对身心都有很多好处。']],
   ['best', 'adj.', '最好的', '985', ['最好的'], ['最好的'], ['The teacher was impressed by her best performance in class.|||老师对她在课堂上的最佳表现印象深刻。']],
@@ -162,7 +162,7 @@ const seedWords985 = [
   ['brake', 'n.', '闸,刹车，vi.刹车', '985', ['闸,刹车，vi.刹车'], ['闸,刹车，vi.刹车'], ['She wrote a research paper about brake last semester.|||她上学期写了一篇关于刹车的研究论文。']],
   ['branch', 'n.', '树枝,分部,分支，支流', '985', ['树枝,分部,分支，支'], ['树枝,分部,分支，支流'], ['The report highlights the significance of branch in education.|||报告强调了分支机构在教育中的重要性。']],
   ['brand', 'n.', '商标，牌子，烙印，vt.印商标于，打烙印于，铭刻于', '985', ['商标，牌子，烙印vt'], ['商标，牌子，烙印，vt.印商标于，打烙印于，铭刻于'], ['This brand of shampoo is popular among young consumers.|||这种品牌的洗发水在年轻消费者中很受欢迎。']],
-  ['brick', 'n.', '砖块', '985', ['砖块'], ['砖块'], ['The survey reveals public attitudes toward brick.|||调查揭示了公众对Brick的态度。']],
+  ['brick', 'n.', '砖块', '985', ['砖块'], ['砖块'], ['The house was built with red bricks and a tiled roof.|||这座房子是用红砖建造的，屋顶铺着瓦片。']],
   ['brief', 'adj.', '简短的，vt.作简报', '985', ['简短的，vt.作简报'], ['简短的，vt.作简报'], ['The brief approach helped students learn more effectively.|||简短的方法帮助学生更有效地学习。']],
   ['broad', 'adj.', '宽阔的,广泛的', '985', ['宽阔的,广泛的'], ['宽阔的,广泛的'], ['The findings have broad implications for future research.|||这些发现对未来的研究具有广泛的意义。']],
   ['broadcast', 'v/', 'n.广播,播撒，播音', '985', ['n.广播,播撒，播音'], ['n.广播,播撒，播音'], ['It is important to broadcast the instructions carefully before starting.|||在开始之前，仔细播放说明非常重要。']],
@@ -326,7 +326,7 @@ const seedWords985 = [
   ['document', 'n.', '文件，公文，vt.用文件证明', '985', ['文件，公文，vt.用文'], ['文件，公文，vt.用文件证明'], ['The interview covered several topics related to document.|||面试涵盖了与文件相关的几个主题。']],
   ['donate', 'vt.', 'vi.捐赠', '985', ['vi.捐赠'], ['vi.捐赠'], ['She tried to donate the problem from different angles.|||她试图从不同的角度来看待这个问题。']],
   ['dormitory', 'n.', '集体寝室,宿舍', '985', ['集体寝室,宿舍'], ['集体寝室,宿舍'], ['The author mentions dormitory to support the main argument.|||作者提到宿舍以支持主要论点。']],
-  ['dot', 'n.', '点,圆点，vt.打点于', '985', ['点,圆点，vt.打点于'], ['点,圆点，vt.打点于'], ['The article discusses the impact of dot on modern society.|||本文探讨了DOT对现代社会的影响。']],
+  ['dot', 'n.', '点,圆点，vt.打点于', '985', ['点,圆点，vt.打点于'], ['点,圆点，vt.打点于'], ['The small dot on the map marks the location of the village.|||地图上的小点标出了村庄的位置。']],
   ['download', 'n.', '下装,卸载', '985', ['下装,卸载'], ['下装,卸载'], ['The novel uses the theme of download throughout the story.|||这部小说在整个故事中使用了下载的主题。']],
   ['downtown', 'adv.', '在市区,往市区', '985', ['在市区,往市区'], ['在市区,往市区'], ['The students responded downtown to the teacher\'s challenging question.']],
   ['drawing', 'n.', '绘画', '985', ['绘画'], ['绘画'], ['The experiment demonstrates the properties of drawing.|||实验演示了绘图的属性。']],
@@ -411,7 +411,7 @@ const seedWords985 = [
   ['firm', 'adj.', '坚定的，n.公司,商号', '985', ['坚定的，n.公司,商号'], ['坚定的，n.公司,商号'], ['The firm approach helped students learn more effectively.|||坚定的方法帮助学生更有效地学习。']],
   ['fist', 'n.', '拳头', '985', ['拳头'], ['拳头'], ['The passage provides a detailed analysis of fist.|||该段提供了对拳头的详细分析。']],
   ['flame', 'n.', '火焰,光辉,热情', '985', ['火焰,光辉,热情'], ['火焰,光辉,热情'], ['The teacher explained flame with real-life examples in class.|||老师在课堂上用真实的例子解释火焰。']],
-  ['flash', 'n.', '闪光，vi.闪,闪烁', '985', ['闪光，vi.闪,闪烁'], ['闪光，vi.闪,闪烁'], ['Knowing flash well gives students confidence in exams.|||熟悉FLASH能让学生对考试充满信心。']],
+  ['flash', 'n.', '闪光，vi.闪,闪烁', '985', ['闪光，vi.闪,闪烁'], ['闪光，vi.闪,闪烁'], ['A flash of lightning lit up the dark sky for a brief moment.|||一道闪电瞬间照亮了黑暗的天空。']],
   ['flesh', 'n.', '肉,肌肉,肉体', '985', ['肉,肌肉,肉体'], ['肉,肌肉,肉体'], ['The survey reveals public attitudes toward flesh.|||调查揭示了公众对肉体的态度。']],
   ['flight', 'n.', '航班,飞行,逃跑', '985', ['航班,飞行,逃跑'], ['航班,飞行,逃跑'], ['The lecture focused on the role of flight in daily life.|||讲座的重点是飞行在日常生活中的作用。']],
   ['float', 'vi.', '漂浮，vt.使漂浮', '985', ['漂浮，vt.使漂浮'], ['漂浮，vt.使漂浮'], ['The leaves floated gently on the surface of the calm lake.|||叶子轻轻地漂浮在平静的湖面上。']],
@@ -553,10 +553,10 @@ const seedWords985 = [
   ['likely', 'adj.', '可能的，ad.很可能', '985', ['可能的，ad.很可能'], ['可能的，ad.很可能'], ['The likely changes in the climate worry many scientists worldwide.|||气候可能发生的变化令全世界许多科学家感到担忧。']],
   ['limit', 'vt.', '限制,限定，n.限度,限制', '985', ['限制,限定，n.限度,'], ['限制,限定，n.限度,限制'], ['The school limits the number of students in each class.|||学校限制每个班级的学生人数。']],
   ['link', 'vt.', '连接，联系，n.联系', '985', ['连接，联系，n.联系'], ['连接，联系，n.联系'], ['The bridge links the island to the mainland.|||这座桥将岛屿与大陆连接起来。']],
-  ['lip', 'n.', '嘴唇', '985', ['嘴唇'], ['嘴唇'], ['The report highlights the significance of lip in education.|||该报告强调了LIP在教育中的重要性。']],
+  ['lip', 'n.', '嘴唇', '985', ['嘴唇'], ['嘴唇'], ['She bit her lip nervously before speaking to the audience.|||她对听众讲话前紧张地咬了咬嘴唇。']],
   ['liquid', 'n.', '液体，a.液体的,流动的', '985', ['液体，a.液体的,流动'], ['液体，a.液体的,流动的'], ['The novel uses the theme of liquid throughout the story.|||这部小说在整个故事中使用了液体的主题。']],
   ['literature', 'n.', '文学(作品)', '985', ['文学(作品)'], ['文学(作品)'], ['The experiment demonstrates the properties of literature.|||实验演示了文献的属性。']],
-  ['litre', 'n.', '公升', '985', ['公升'], ['公升'], ['The teacher explained litre with real-life examples in class.|||老师在课堂上用真实的例子解释了LITRE。']],
+  ['litre', 'n.', '公升', '985', ['公升'], ['公升'], ['Please buy two litres of milk and a litre of orange juice.|||请买两升牛奶和一升橙汁。']],
   ['living-room', 'n.', '起居室', '985', ['起居室'], ['起居室'], ['The experiment demonstrates the properties of living-room.|||实验演示了客厅的特性。']],
   ['load', 'vt.', '装,装满，n.负载;负担', '985', ['装,装满，n.负载;负'], ['装,装满，n.负载;负担'], ['The author attempts to load readers\' attention to this issue.']],
   ['loaf', 'n.', '一条面包', '985', ['一条面包'], ['一条面包'], ['The documentary explores the history of loaf in China.|||这部纪录片探讨了中国面包的历史。']],
@@ -572,7 +572,7 @@ const seedWords985 = [
   ['male', 'adj.', '男的,雄的，n.男人，雄性动物', '985', ['男的,雄的，n.男人，'], ['男的,雄的，n.男人，雄性动物'], ['Maintaining a male lifestyle requires discipline and consistent effort.|||保持男性生活方式需要纪律和一致的努力。']],
   ['mankind', 'n.', '人类', '985', ['人类'], ['人类'], ['The committee discussed the topic of mankind at length during the meeting.|||会议期间，委员会详细讨论了人类的话题。']],
   ['manner', 'n.', '方式,态度;礼貌', '985', ['方式,态度;礼貌'], ['方式,态度;礼貌'], ['The lecture focused on the role of manner in daily life.|||讲座侧重于礼貌在日常生活中的作用。']],
-  ['march', 'n.', '三月', '985', ['三月'], ['三月'], ['Researchers have published new findings about march.|||研究人员发表了关于MARCH的新发现。']],
+  ['march', 'n.', '三月', '985', ['三月'], ['三月'], ['The soldiers marched bravely through the heavy rain.|||士兵们冒着大雨勇敢地行军。']],
   ['mass', 'n.', '大量，群众，块，团', '985', ['大量，群众，块，团'], ['大量，群众，块，团'], ['The lecture focused on the role of mass in daily life.|||讲座的重点是质量在日常生活中的作用。']],
   ['material', 'n.', '材料,原料;素材，a.物质的', '985', ['材料,原料;素材，a.'], ['材料,原料;素材，a.物质的'], ['The recycling center processes various types of material.|||回收中心处理各种类型的材料。']],
   ['mathematics', 'n.', '数学', '985', ['数学'], ['数学'], ['The documentary explores the history of mathematics in China.|||这部纪录片探讨了中国的数学史。']],
@@ -618,7 +618,7 @@ const seedWords985 = [
   ['neat', 'adj.', '整洁的;简洁的', '985', ['整洁的;简洁的'], ['整洁的;简洁的'], ['The neat design of the building won several international awards.|||这栋建筑的整洁设计赢得了多项国际奖项。']],
   ['needle', 'n.', '针，vt.缝补,编织', '985', ['针，vt.缝补,编织'], ['针，vt.缝补,编织'], ['The essay examines how needle shapes our decisions.|||这篇文章探讨了针头如何塑造我们的决定。']],
   ['nephew', 'n.', '侄子,外甥', '985', ['侄子,外甥'], ['侄子,外甥'], ['The textbook defines nephew clearly in chapter three.|||教科书在第三章中清楚地定义了侄子。']],
-  ['nest', 'n.', '巢,窝', '985', ['巢,窝'], ['巢,窝'], ['The novel uses the theme of nest throughout the story.|||这部小说在整个故事中使用了NEST的主题。']],
+  ['nest', 'n.', '巢,窝', '985', ['巢,窝'], ['巢,窝'], ['The birds built a nest in the tree outside our window.|||鸟儿在我们窗外的树上筑了一个巢。']],
   ['niece', 'n.', '侄女,外甥女', '985', ['侄女,外甥女'], ['侄女,外甥女'], ['Researchers have published new findings about niece.|||研究人员发表了关于侄女的新发现。']],
   ['noble', 'adj.', '高尚的，n.贵族', '985', ['高尚的，n.贵族'], ['高尚的，n.贵族'], ['Maintaining a noble lifestyle requires discipline and consistent effort.|||保持高尚的生活方式需要纪律和持续的努力。']],
   ['noisy', 'adj.', '嘈杂的,喧闹的', '985', ['嘈杂的,喧闹的'], ['嘈杂的,喧闹的'], ['The noisy changes in the climate worry many scientists worldwide.|||气候的嘈杂变化让全世界许多科学家感到担忧。']],
@@ -664,7 +664,7 @@ const seedWords985 = [
   ['pain', 'n.', '痛苦，疼痛，努力', '985', ['痛苦，疼痛，努力'], ['痛苦，疼痛，努力'], ['Many exam questions test students\' knowledge of pain.']],
   ['painful', 'adj.', '痛苦的', '985', ['痛苦的'], ['痛苦的'], ['Her painful attitude inspired those around her to do better.|||她痛苦的态度激励着周围的人做得更好。']],
   ['painting', 'n.', '油画;绘画', '985', ['油画;绘画'], ['油画;绘画'], ['Understanding painting is crucial for grasping the author\'s main message.']],
-  ['pan', 'n.', '平底锅', '985', ['平底锅'], ['平底锅'], ['The teacher explained pan with real-life examples in class.|||老师在课堂上用真实的例子解释了PAN。']],
+  ['pan', 'n.', '平底锅', '985', ['平底锅'], ['平底锅'], ['Heat some oil in the pan and fry the eggs.|||在锅里热些油，然后煎鸡蛋。']],
   ['panic', 'n.', '恐慌,惊慌', '985', ['恐慌,惊慌'], ['恐慌,惊慌'], ['The survey reveals public attitudes toward panic.|||调查揭示了公众对恐慌的态度。']],
   ['paragraph', 'n.', '(文章的)段,节', '985', ['(文章的)段,节'], ['(文章的)段,节'], ['The survey reveals public attitudes toward paragraph.|||调查揭示了公众对段落的态度。']],
   ['parcel', 'n.', '包裹,邮包', '985', ['包裹,邮包'], ['包裹,邮包'], ['The survey reveals public attitudes toward parcel.|||调查揭示了公众对包裹的态度。']],
@@ -687,10 +687,10 @@ const seedWords985 = [
   ['petrol', 'n.', '汽油', '985', ['汽油'], ['汽油'], ['The report highlights the significance of petrol in education.|||报告强调了汽油在教育中的重要性。']],
   ['phenomenon', 'n.', '现象', '985', ['现象'], ['现象'], ['The northern lights are a natural phenomenon that attracts many tourists.|||北极光是一种自然现象，吸引了许多游客。']],
   ['phrase', 'n.', '短语,习惯用语', '985', ['短语,习惯用语'], ['短语,习惯用语'], ['The teacher explained phrase with real-life examples in class.|||老师在课堂上用真实的例子解释了这个短语。']],
-  ['pile', 'n.', '堆，vt.堆积', '985', ['堆，vt.堆积'], ['堆，vt.堆积'], ['The report highlights the significance of pile in education.|||报告强调了PILE在教育中的重要性。']],
+  ['pile', 'n.', '堆，vt.堆积', '985', ['堆，vt.堆积'], ['堆，vt.堆积'], ['There is a pile of books on the desk waiting to be read.|||桌上有一堆书等着被阅读。']],
   ['pill', 'n.', '药丸', '985', ['药丸'], ['药丸'], ['The author mentions pill to support the main argument.|||作者提到药丸来支持主要论点。']],
   ['pillow', 'n.', '枕头', '985', ['枕头'], ['枕头'], ['The essay examines how pillow shapes our decisions.|||这篇文章探讨了枕头如何塑造我们的决策。']],
-  ['pin', 'n.', '别针，钉子，vt.钉住', '985', ['别针，钉子，vt.钉住'], ['别针，钉子，vt.钉住'], ['The textbook defines pin clearly in chapter three.|||教科书在第三章中明确定义了PIN。']],
+  ['pin', 'n.', '别针，钉子，vt.钉住', '985', ['别针，钉子，vt.钉住'], ['别针，钉子，vt.钉住'], ['She used a pin to fasten the badge to her jacket.|||她用别针把徽章固定在夹克上。']],
   ['pipe', 'vt.', '用管道输送，n.管子,导管;烟斗', '985', ['用管道输送，n.管子,'], ['用管道输送，n.管子,导管;烟斗'], ['The government plans to pipe the policy nationwide next year.|||政府计划明年在全国范围内实施该政策。']],
   ['platform', 'n.', '站台,讲台，平台', '985', ['站台,讲台，平台'], ['站台,讲台，平台'], ['Researchers have published new findings about platform.|||研究人员发表了关于平台的新发现。']],
   ['player', 'n.', '表演者,运动员，比赛者，游戏者', '985', ['表演者,运动员，比赛'], ['表演者,运动员，比赛者，游戏者'], ['Many exam questions test students\' knowledge of player.']],
@@ -875,7 +875,7 @@ const seedWords985 = [
   ['stadium', 'n.', '露天大型运动场', '985', ['露天大型运动场'], ['露天大型运动场'], ['The survey reveals public attitudes toward stadium.|||调查揭示了公众对体育场馆的态度。']],
   ['staff', 'n.', '全体工作人员', '985', ['全体工作人员'], ['全体工作人员'], ['The committee discussed the topic of staff at length during the meeting.|||委员会在会议期间详细讨论了工作人员的话题。']],
   ['stage', 'n.', '舞台;阶段，时期', '985', ['舞台;阶段，时期'], ['舞台;阶段，时期'], ['The documentary explores the history of stage in China.|||这部纪录片探讨了中国的舞台史。']],
-  ['stair', 'n.', '楼梯', '985', ['楼梯'], ['楼梯'], ['The author mentions stair to support the main argument.|||作者提到STAIR来支持主要论点。']],
+  ['stair', 'n.', '楼梯', '985', ['楼梯'], ['楼梯'], ['He climbed up the stairs to the third floor breathlessly.|||他气喘吁吁地爬楼梯到了三楼。']],
   ['stare', 'vi.', '凝视', '985', ['凝视'], ['凝视'], ['The boy stared at the ice cream, wanting some badly.|||男孩盯着冰淇淋，非常想吃。']],
   ['starve', 'vi.', '饿死，vt.使饿死', '985', ['饿死，vt.使饿死'], ['饿死，vt.使饿死'], ['The lost hikers starved for three days before being rescued.|||迷路的徒步旅行者饿了三天才获救。']],
   ['steady', 'adj.', '稳固的，vt.使稳定', '985', ['稳固的，vt.使稳定'], ['稳固的，vt.使稳定'], ['She remained steady despite the difficulties she faced.|||尽管面临种种困难，她仍然保持稳定。']],
@@ -893,7 +893,7 @@ const seedWords985 = [
   ['suffer', 'v.', '遭受,忍受', '985', ['遭受,忍受'], ['遭受,忍受'], ['Many people suffer from allergies during spring.|||许多人在春天会过敏。']],
   ['suit', 'n.', '套装，诉讼，vt.适合，使适应', '985', ['套装，诉讼，vt.适合'], ['套装，诉讼，vt.适合，使适应'], ['The job suits her personality and skills perfectly.|||这份工作完全符合她的个性和技能。']],
   ['suitable', 'adj.', '适宜的;恰当的', '985', ['适宜的;恰当的'], ['适宜的;恰当的'], ['The situation turned out to be more suitable than we had expected.|||事实证明，这种情况比我们预期的更合适。']],
-  ['sum', 'n.', '总数;金额，vi.共计', '985', ['总数;金额，vi.共计'], ['总数;金额，vi.共计'], ['The experiment demonstrates the properties of sum.|||实验演示了SUM的性质。']],
+  ['sum', 'n.', '总数;金额，vi.共计', '985', ['总数;金额，vi.共计'], ['总数;金额，vi.共计'], ['The sum of five and three is eight.|||五加三的和是八。']],
   ['summary', 'adj.', '简短的，扼要的，n.摘要,总结', '985', ['简短的，扼要的，n.摘'], ['简短的，扼要的，n.摘要,总结'], ['Please write a brief summary of the article for homework.|||请为家庭作业撰写文章的简短摘要。']],
   ['sunset', 'n.', '日落', '985', ['日落'], ['日落'], ['The survey reveals public attitudes toward sunset.|||调查揭示了公众对日落的态度。']],
   ['sunshine', 'n.', '阳光', '985', ['阳光'], ['阳光'], ['The passage provides a detailed analysis of sunshine.|||该段提供了对阳光的详细分析。']],
@@ -947,7 +947,7 @@ const seedWords985 = [
   ['tractor', 'n.', '拖拉机', '985', ['拖拉机'], ['拖拉机'], ['The passage provides a detailed analysis of tractor.|||该通道提供了拖拉机的详细分析。']],
   ['tradition', 'n.', '传统，惯例', '985', ['传统，惯例'], ['传统，惯例'], ['It is a Chinese tradition to give red envelopes during the Spring Festival.|||在春节期间赠送红包是中国的传统。']],
   ['transport', 'n.', '运输，vt.运输', '985', ['运输，vt.运输'], ['运输，vt.运输'], ['Trucks transport goods from factories to stores across the country.|||卡车将货物从工厂运送到全国各地的商店。']],
-  ['trap', 'n.', '陷阱；诡计，vt.诱骗', '985', ['陷阱；诡计，vt.诱骗'], ['陷阱；诡计，vt.诱骗'], ['Researchers have published new findings about trap.|||研究人员发表了关于TRAP的新发现。']],
+  ['trap', 'n.', '陷阱；诡计，vt.诱骗', '985', ['陷阱；诡计，vt.诱骗'], ['陷阱；诡计，vt.诱骗'], ['The hunters set a trap to catch the fox.|||猎人们设下陷阱来捕捉狐狸。']],
   ['trend', 'vi.', '伸向；倾向，n.倾向', '985', ['伸向；倾向，n.倾向'], ['伸向；倾向，n.倾向'], ['The trend towards online shopping continues to grow rapidly.|||网上购物的趋势继续快速增长。']],
   ['trial', 'n.', '试验；审判', '985', ['试验；审判'], ['试验；审判'], ['The clinical trial showed promising results for the new drug.|||临床试验表明，这种新药取得了有希望的结果。']],
   ['trick', 'n.', '诡计；窍门，vt.哄骗', '985', ['诡计；窍门，vt.哄骗'], ['诡计；窍门，vt.哄骗'], ['The magician tricked the audience with his clever illusions.|||魔法师用巧妙的幻术欺骗观众。']],
@@ -1475,7 +1475,7 @@ const seedWords536_人物描述 = [
   ['knowledgeable', 'adj.', '有见识的', '话题', ['人物描述话题词'], ['有见识的'], ['knowledgeable is common in 人物描述 topics.']],
   ['learned', 'adj.', '精通某学问的', '话题', ['人物描述话题词'], ['精通某学问的'], ['learned is common in 人物描述 topics.']],
   ['loyal', 'adj.', '忠心耿耿的', '话题', ['人物描述话题词'], ['忠心耿耿的'], ['loyal is common in 人物描述 topics.']],
-  ['mean', 'adj.', '吝啬的', '话题', ['人物描述话题词'], ['吝啬的'], ['What does this word mean in the context of the passage?']],
+  ['mean', 'adj.', '吝啬的', '话题', ['人物描述话题词'], ['吝啬的'], ['He is too mean to buy a gift for his mother.|||他太吝啬了，不愿给母亲买礼物。']],
   ['methodical', 'adj.', '有方法的', '话题', ['人物描述话题词'], ['有方法的'], ['methodical is common in 人物描述 topics.']],
   ['modest', 'adj.', '谦虚的', '话题', ['人物描述话题词'], ['谦虚的'], ['modest is common in 人物描述 topics.']],
   ['moody', 'adj.', '情绪化的', '话题', ['人物描述话题词'], ['情绪化的'], ['moody is common in 人物描述 topics.']],
@@ -1600,127 +1600,127 @@ const seedWords536_社会热点 = [
 
 // 105个必考核心词汇（2021-2025年真题）
 const seedWords105 = [
-  ['anniversary', 'n.', '周年纪念', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['周年纪念', '高考真题高频出现'], ['anniversary frequently appears in gaokao exams.']],
-  ['demonstrate', 'v.', '展示；证明', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['展示；证明', '高考真题高频出现'], ['demonstrate frequently appears in gaokao exams.']],
-  ['inspirational', 'adj.', '鼓舞人心的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['鼓舞人心的', '高考真题高频出现'], ['inspirational frequently appears in gaokao exams.']],
-  ['round-the-clock', 'adj.', '全天候的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['全天候的', '高考真题高频出现'], ['round-the-clock frequently appears in gaokao exams.']],
-  ['mobile', 'adj./n.', '可移动的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['可移动的', '高考真题高频出现'], ['mobile frequently appears in gaokao exams.']],
-  ['revolution', 'n.', '革命', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['革命', '高考真题高频出现'], ['revolution frequently appears in gaokao exams.']],
-  ['downgraded', 'adj.', '降级的；被轻视的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['降级的；被轻视的', '高考真题高频出现'], ['downgraded frequently appears in gaokao exams.']],
-  ['grazing', 'adj./n.', '放牧的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['放牧的', '高考真题高频出现'], ['grazing frequently appears in gaokao exams.']],
+  ['anniversary', 'n.', '周年纪念', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['周年纪念', '高考真题高频出现'], ['They celebrated their tenth wedding anniversary last weekend.|||上个周末他们庆祝了结婚十周年纪念日。']],
+  ['demonstrate', 'v.', '展示；证明', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['展示；证明', '高考真题高频出现'], ['The data demonstrates a clear link between exercise and health.|||数据清楚地表明了运动与健康之间的联系。']],
+  ['inspirational', 'adj.', '鼓舞人心的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['鼓舞人心的', '高考真题高频出现'], ['The teacher gave an inspirational speech at the graduation ceremony.|||老师在毕业典礼上发表了鼓舞人心的演讲。']],
+  ['round-the-clock', 'adj.', '全天候的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['全天候的', '高考真题高频出现'], ['The hospital provides round-the-clock service for patients.|||医院为患者提供全天候服务。']],
+  ['mobile', 'adj./n.', '可移动的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['可移动的', '高考真题高频出现'], ['Mobile phones have become an essential part of our daily lives.|||手机已成为我们日常生活中不可或缺的一部分。']],
+  ['revolution', 'n.', '革命', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['革命', '高考真题高频出现'], ['The industrial revolution changed the world dramatically.|||工业革命极大地改变了世界。']],
+  ['downgraded', 'adj.', '降级的；被轻视的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['降级的；被轻视的', '高考真题高频出现'], ['The company was downgraded from AAA to AA in credit rating.|||该公司的信用评级从AAA下调至AA。']],
+  ['grazing', 'adj./n.', '放牧的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['放牧的', '高考真题高频出现'], ['The sheep were grazing peacefully on the hillside.|||羊群在山坡上安静地吃草。']],
   ['monitor', 'v./n.', '监测；监控', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['监测；监控', '高考真题高频出现'], ['The teacher monitors each student\'s progress throughout the term.']],
-  ['texture', 'n.', '质地；纹理', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['质地；纹理', '高考真题高频出现'], ['texture frequently appears in gaokao exams.']],
-  ['nutrition', 'n.', '营养', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['营养', '高考真题高频出现'], ['nutrition frequently appears in gaokao exams.']],
-  ['disguise', 'v./n.', '伪装；假扮', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['伪装；假扮', '高考真题高频出现'], ['disguise frequently appears in gaokao exams.']],
-  ['dialect', 'n.', '方言', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['方言', '高考真题高频出现'], ['dialect frequently appears in gaokao exams.']],
-  ['criminal', 'adj./n.', '罪犯', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['罪犯', '高考真题高频出现'], ['criminal frequently appears in gaokao exams.']],
-  ['breeding', 'n.', '繁殖；培育', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['繁殖；培育', '高考真题高频出现'], ['breeding frequently appears in gaokao exams.']],
-  ['endangered', 'adj.', '濒危的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['濒危的', '高考真题高频出现'], ['endangered frequently appears in gaokao exams.']],
-  ['conservation', 'n.', '保护', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['保护', '高考真题高频出现'], ['conservation frequently appears in gaokao exams.']],
-  ['migratory', 'adj.', '迁徙的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['迁徙的', '高考真题高频出现'], ['migratory frequently appears in gaokao exams.']],
-  ['emotional', 'adj.', '情感的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['情感的', '高考真题高频出现'], ['emotional frequently appears in gaokao exams.']],
-  ['multimedia', 'adj./n.', '多媒体的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['多媒体的', '高考真题高频出现'], ['multimedia frequently appears in gaokao exams.']],
-  ['integration', 'n.', '融合；整合', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['融合；整合', '高考真题高频出现'], ['integration frequently appears in gaokao exams.']],
-  ['distracted', 'adj.', '分心的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['分心的', '高考真题高频出现'], ['distracted frequently appears in gaokao exams.']],
-  ['efficient', 'adj.', '高效的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['高效的', '高考真题高频出现'], ['efficient frequently appears in gaokao exams.']],
-  ['aerobic', 'adj.', '有氧的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['有氧的', '高考真题高频出现'], ['aerobic frequently appears in gaokao exams.']],
-  ['flexibility', 'n.', '灵活性', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['灵活性', '高考真题高频出现'], ['flexibility frequently appears in gaokao exams.']],
-  ['affordable', 'adj.', '负担得起的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['负担得起的', '高考真题高频出现'], ['affordable frequently appears in gaokao exams.']],
-  ['schedule', 'n./v.', '安排；计划', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['安排；计划', '高考真题高频出现'], ['schedule frequently appears in gaokao exams.']],
-  ['agricultural', 'adj.', '农业的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['农业的', '高考真题高频出现'], ['agricultural frequently appears in gaokao exams.']],
-  ['evolution', 'n.', '进化', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['进化', '高考真题高频出现'], ['evolution frequently appears in gaokao exams.']],
-  ['maintenance', 'n.', '维护；维修', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['维护；维修', '高考真题高频出现'], ['maintenance frequently appears in gaokao exams.']],
-  ['infrastructure', 'n.', '基础设施', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['基础设施', '高考真题高频出现'], ['infrastructure frequently appears in gaokao exams.']],
-  ['obesity', 'n.', '肥胖症', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['肥胖症', '高考真题高频出现'], ['obesity frequently appears in gaokao exams.']],
-  ['manufacturer', 'n.', '制造商', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['制造商', '高考真题高频出现'], ['manufacturer frequently appears in gaokao exams.']],
-  ['psychology', 'n.', '心理学', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['心理学', '高考真题高频出现'], ['psychology frequently appears in gaokao exams.']],
-  ['mutual', 'adj.', '相互的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['相互的', '高考真题高频出现'], ['mutual frequently appears in gaokao exams.']],
-  ['symmetrical', 'adj.', '对称的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['对称的', '高考真题高频出现'], ['symmetrical frequently appears in gaokao exams.']],
-  ['precious', 'adj.', '珍贵的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['珍贵的', '高考真题高频出现'], ['precious frequently appears in gaokao exams.']],
-  ['diverse', 'adj.', '多样的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['多样的', '高考真题高频出现'], ['diverse frequently appears in gaokao exams.']],
-  ['sustainable', 'adj.', '可持续的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['可持续的', '高考真题高频出现'], ['sustainable frequently appears in gaokao exams.']],
-  ['economical', 'adj.', '经济的；实惠的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['经济的；实惠的', '高考真题高频出现'], ['economical frequently appears in gaokao exams.']],
-  ['minimalism', 'n.', '极简主义', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['极简主义', '高考真题高频出现'], ['minimalism frequently appears in gaokao exams.']],
-  ['correlation', 'n.', '关联；相关性', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['关联；相关性', '高考真题高频出现'], ['correlation frequently appears in gaokao exams.']],
-  ['independent', 'adj.', '独立的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['独立的', '高考真题高频出现'], ['independent frequently appears in gaokao exams.']],
-  ['initial', 'adj./n.', '最初的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['最初的', '高考真题高频出现'], ['initial frequently appears in gaokao exams.']],
-  ['interactive', 'adj.', '互动的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['互动的', '高考真题高频出现'], ['interactive frequently appears in gaokao exams.']],
-  ['domestic', 'adj.', '家庭的；国内的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['家庭的；国内的', '高考真题高频出现'], ['domestic frequently appears in gaokao exams.']],
-  ['category', 'n.', '类别', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['类别', '高考真题高频出现'], ['category frequently appears in gaokao exams.']],
-  ['physician', 'n.', '医生；内科医生', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['医生；内科医生', '高考真题高频出现'], ['physician frequently appears in gaokao exams.']],
-  ['cuisine', 'n.', '烹饪；菜肴', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['烹饪；菜肴', '高考真题高频出现'], ['cuisine frequently appears in gaokao exams.']],
-  ['ingredient', 'n.', '原料；配料', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['原料；配料', '高考真题高频出现'], ['ingredient frequently appears in gaokao exams.']],
-  ['reconstruct', 'v.', '重建；复原', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['重建；复原', '高考真题高频出现'], ['reconstruct frequently appears in gaokao exams.']],
-  ['interpret', 'v.', '解释；诠释', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['解释；诠释', '高考真题高频出现'], ['interpret frequently appears in gaokao exams.']],
-  ['culinary', 'adj.', '烹饪的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['烹饪的', '高考真题高频出现'], ['culinary frequently appears in gaokao exams.']],
-  ['colonial', 'adj.', '殖民的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['殖民的', '高考真题高频出现'], ['colonial frequently appears in gaokao exams.']],
-  ['philosophy', 'n.', '哲学', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['哲学', '高考真题高频出现'], ['philosophy frequently appears in gaokao exams.']],
-  ['informative', 'adj.', '增长知识的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['增长知识的', '高考真题高频出现'], ['informative frequently appears in gaokao exams.']],
-  ['essential', 'adj./n.', '必要的；至关重要的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['必要的；至关重要的', '高考真题高频出现'], ['essential frequently appears in gaokao exams.']],
-  ['innovative', 'adj.', '创新的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['创新的', '高考真题高频出现'], ['innovative frequently appears in gaokao exams.']],
-  ['automated', 'adj.', '自动化的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['自动化的', '高考真题高频出现'], ['automated frequently appears in gaokao exams.']],
-  ['sustainability', 'n.', '可持续性', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['可持续性', '高考真题高频出现'], ['sustainability frequently appears in gaokao exams.']],
-  ['forthcoming', 'adj.', '即将到来的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['即将到来的', '高考真题高频出现'], ['forthcoming frequently appears in gaokao exams.']],
-  ['accessible', 'adj.', '易懂的；可得到的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['易懂的；可得到的', '高考真题高频出现'], ['accessible frequently appears in gaokao exams.']],
-  ['holistic', 'adj.', '整体的；全面的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['整体的；全面的', '高考真题高频出现'], ['holistic frequently appears in gaokao exams.']],
-  ['conventional', 'adj.', '传统的；常规的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['传统的；常规的', '高考真题高频出现'], ['conventional frequently appears in gaokao exams.']],
-  ['abstraction', 'n.', '抽象概念', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['抽象概念', '高考真题高频出现'], ['abstraction frequently appears in gaokao exams.']],
-  ['identical', 'adj.', '完全相同的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['完全相同的', '高考真题高频出现'], ['identical frequently appears in gaokao exams.']],
-  ['biodiversity', 'n.', '生物多样性', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['生物多样性', '高考真题高频出现'], ['biodiversity frequently appears in gaokao exams.']],
-  ['specimen', 'n.', '标本', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['标本', '高考真题高频出现'], ['specimen frequently appears in gaokao exams.']],
-  ['bias', 'n./v.', '偏见；使偏向', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['偏见；使偏向', '高考真题高频出现'], ['bias frequently appears in gaokao exams.']],
-  ['contemporary', 'adj./n.', '当代的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['当代的', '高考真题高频出现'], ['contemporary frequently appears in gaokao exams.']],
-  ['commemorate', 'v.', '纪念', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['纪念', '高考真题高频出现'], ['commemorate frequently appears in gaokao exams.']],
-  ['recreational', 'adj.', '娱乐的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['娱乐的', '高考真题高频出现'], ['recreational frequently appears in gaokao exams.']],
-  ['invertebrate', 'n./adj.', '无脊椎动物', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['无脊椎动物', '高考真题高频出现'], ['invertebrate frequently appears in gaokao exams.']],
-  ['rural', 'adj.', '乡村的；偏远的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['乡村的；偏远的', '高考真题高频出现'], ['rural frequently appears in gaokao exams.']],
-  ['decarbonize', 'v.', '脱碳', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['脱碳', '高考真题高频出现'], ['decarbonize frequently appears in gaokao exams.']],
-  ['emission', 'n.', '排放', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['排放', '高考真题高频出现'], ['emission frequently appears in gaokao exams.']],
-  ['synthetic', 'adj.', '合成的', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['合成的', '高考真题高频出现'], ['synthetic frequently appears in gaokao exams.']],
-  ['hydrocarbon', 'n.', '碳氢化合物', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['碳氢化合物', '高考真题高频出现'], ['hydrocarbon frequently appears in gaokao exams.']],
-  ['transition', 'n./v.', '变革', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['变革', '高考真题高频出现'], ['transition frequently appears in gaokao exams.']],
-  ['staggering', 'adj.', '令人震惊的', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['令人震惊的', '高考真题高频出现'], ['staggering frequently appears in gaokao exams.']],
-  ['persuasive', 'adj.', '有说服力的', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['有说服力的', '高考真题高频出现'], ['persuasive frequently appears in gaokao exams.']],
-  ['pedestrian', 'n./adj.', '行人', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['行人', '高考真题高频出现'], ['pedestrian frequently appears in gaokao exams.']],
-  ['champion', 'v./n.', '支持，拥护', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['支持，拥护', '高考真题高频出现'], ['champion frequently appears in gaokao exams.']],
-  ['microplastic', 'n.', '微塑料', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['微塑料', '高考真题高频出现'], ['microplastic frequently appears in gaokao exams.']],
-  ['filter', 'n./v.', '过滤', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['过滤', '高考真题高频出现'], ['filter frequently appears in gaokao exams.']],
-  ['calcium carbonate', 'n.', '碳酸钙', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['碳酸钙', '高考真题高频出现'], ['calcium carbonate frequently appears in gaokao exams.']],
-  ['polystyrene', 'n.', '聚苯乙烯', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['聚苯乙烯', '高考真题高频出现'], ['polystyrene frequently appears in gaokao exams.']],
-  ['polyethylene', 'n.', '聚乙烯', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['聚乙烯', '高考真题高频出现'], ['polyethylene frequently appears in gaokao exams.']],
-  ['medieval', 'adj.', '中世纪的', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['中世纪的', '高考真题高频出现'], ['medieval frequently appears in gaokao exams.']],
-  ['exclusively', 'adv.', '专门地', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['专门地', '高考真题高频出现'], ['exclusively frequently appears in gaokao exams.']],
-  ['psychological', 'adj.', '心理的', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['心理的', '高考真题高频出现'], ['psychological frequently appears in gaokao exams.']],
-  ['weightlifting', 'n.', '举重', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['举重', '高考真题高频出现'], ['weightlifting frequently appears in gaokao exams.']],
-  ['identity', 'n.', '身份', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['身份', '高考真题高频出现'], ['identity frequently appears in gaokao exams.']]
+  ['texture', 'n.', '质地；纹理', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['质地；纹理', '高考真题高频出现'], ['The fabric has a soft and smooth texture.|||这种面料质地柔软光滑。']],
+  ['nutrition', 'n.', '营养', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['营养', '高考真题高频出现'], ['Good nutrition is essential for growing children.|||良好的营养对发育中的孩子至关重要。']],
+  ['disguise', 'v./n.', '伪装；假扮', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['伪装；假扮', '高考真题高频出现'], ['He wore a disguise to avoid being recognized.|||他化了装以免被认出来。']],
+  ['dialect', 'n.', '方言', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['方言', '高考真题高频出现'], ['The old man speaks in a local dialect that few understand.|||老人说一种很少有人懂的当地方言。']],
+  ['criminal', 'adj./n.', '罪犯', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['罪犯', '高考真题高频出现'], ['The criminal was finally caught after three months on the run.|||逃亡三个月后，罪犯终于被抓获。']],
+  ['breeding', 'n.', '繁殖；培育', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['繁殖；培育', '高考真题高频出现'], ['The breeding season of these birds lasts from spring to summer.|||这些鸟类的繁殖季节从春天持续到夏天。']],
+  ['endangered', 'adj.', '濒危的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['濒危的', '高考真题高频出现'], ['We must protect endangered species from extinction.|||我们必须保护濒危物种免于灭绝。']],
+  ['conservation', 'n.', '保护', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['保护', '高考真题高频出现'], ['Wildlife conservation requires effort from everyone.|||野生动物保护需要每个人的努力。']],
+  ['migratory', 'adj.', '迁徙的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['迁徙的', '高考真题高频出现'], ['Migratory birds travel thousands of miles each year.|||候鸟每年迁徙数千英里。']],
+  ['emotional', 'adj.', '情感的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['情感的', '高考真题高频出现'], ['She gave an emotional speech that moved everyone.|||她发表了一篇动情的演讲，感动了所有人。']],
+  ['multimedia', 'adj./n.', '多媒体的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['多媒体的', '高考真题高频出现'], ['The multimedia exhibition combined sound, light and video.|||多媒体展览结合了声音、光影和视频。']],
+  ['integration', 'n.', '融合；整合', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['融合；整合', '高考真题高频出现'], ['The integration of technology into education has changed learning.|||科技与教育的融合改变了学习方式。']],
+  ['distracted', 'adj.', '分心的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['分心的', '高考真题高频出现'], ['Students who are distracted in class often miss key points.|||上课分心的学生经常错过重点。']],
+  ['efficient', 'adj.', '高效的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['高效的', '高考真题高频出现'], ['Electric cars are more energy-efficient than traditional ones.|||电动汽车比传统汽车更节能高效。']],
+  ['aerobic', 'adj.', '有氧的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['有氧的', '高考真题高频出现'], ['Aerobic exercise like jogging is good for your heart.|||慢跑等有氧运动对心脏有益。']],
+  ['flexibility', 'n.', '灵活性', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['灵活性', '高考真题高频出现'], ['Yoga improves flexibility and reduces stress.|||瑜伽能提高柔韧性并减轻压力。']],
+  ['affordable', 'adj.', '负担得起的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['负担得起的', '高考真题高频出现'], ['The city needs more affordable housing for young people.|||这座城市需要更多年轻人负担得起的住房。']],
+  ['schedule', 'n./v.', '安排；计划', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['安排；计划', '高考真题高频出现'], ['Please check the schedule and plan your trip accordingly.|||请查看时间表，据此安排你的行程。']],
+  ['agricultural', 'adj.', '农业的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['农业的', '高考真题高频出现'], ['Agricultural technology has greatly increased crop yields.|||农业技术大幅提高了作物产量。']],
+  ['evolution', 'n.', '进化', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['进化', '高考真题高频出现'], ['Darwin\'s theory of evolution changed how we understand life.|||达尔文的进化论改变了我们对生命的理解。']],
+  ['maintenance', 'n.', '维护；维修', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['维护；维修', '高考真题高频出现'], ['Regular maintenance can extend the life of your car.|||定期保养可以延长汽车的使用寿命。']],
+  ['infrastructure', 'n.', '基础设施', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['基础设施', '高考真题高频出现'], ['The government is investing in infrastructure projects.|||政府正在投资基础设施项目。']],
+  ['obesity', 'n.', '肥胖症', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['肥胖症', '高考真题高频出现'], ['Childhood obesity has become a serious health concern.|||儿童肥胖已成为严重的健康问题。']],
+  ['manufacturer', 'n.', '制造商', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['制造商', '高考真题高频出现'], ['The manufacturer recalled all defective products immediately.|||制造商立即召回了所有缺陷产品。']],
+  ['psychology', 'n.', '心理学', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['心理学', '高考真题高频出现'], ['Understanding consumer psychology is key to marketing success.|||了解消费者心理是营销成功的关键。']],
+  ['mutual', 'adj.', '相互的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['相互的', '高考真题高频出现'], ['Trust and respect are the foundation of mutual understanding.|||信任和尊重是相互理解的基础。']],
+  ['symmetrical', 'adj.', '对称的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['对称的', '高考真题高频出现'], ['The building has a symmetrical design with two identical wings.|||这座建筑采用对称设计，有两个相同的侧翼。']],
+  ['precious', 'adj.', '珍贵的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['珍贵的', '高考真题高频出现'], ['Water is a precious resource that we should not waste.|||水是宝贵的资源，我们不应浪费。']],
+  ['diverse', 'adj.', '多样的', '必考', ['真题必考词', '二、2022 年高考英语真题'], ['多样的', '高考真题高频出现'], ['The university attracts students from diverse cultural backgrounds.|||这所大学吸引了来自多元文化背景的学生。']],
+  ['sustainable', 'adj.', '可持续的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['可持续的', '高考真题高频出现'], ['We need to find sustainable ways to develop the economy.|||我们需要找到可持续的经济发展方式。']],
+  ['economical', 'adj.', '经济的；实惠的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['经济的；实惠的', '高考真题高频出现'], ['Hybrid cars are economical and environmentally friendly.|||混合动力汽车既经济又环保。']],
+  ['minimalism', 'n.', '极简主义', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['极简主义', '高考真题高频出现'], ['Minimalism encourages people to live with fewer possessions.|||极简主义鼓励人们用更少的物品生活。']],
+  ['correlation', 'n.', '关联；相关性', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['关联；相关性', '高考真题高频出现'], ['There is a strong correlation between exercise and health.|||运动与健康之间存在很强的相关性。']],
+  ['independent', 'adj.', '独立的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['独立的', '高考真题高频出现'], ['She became independent after graduating from college.|||大学毕业后她变得独立了。']],
+  ['initial', 'adj./n.', '最初的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['最初的', '高考真题高频出现'], ['His initial reaction was surprise, but he soon calmed down.|||他最初的反应是惊讶，但很快冷静下来。']],
+  ['interactive', 'adj.', '互动的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['互动的', '高考真题高频出现'], ['The interactive exhibit allows visitors to touch and explore.|||互动展览允许参观者触摸和探索。']],
+  ['domestic', 'adj.', '家庭的；国内的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['家庭的；国内的', '高考真题高频出现'], ['Domestic flights are cheaper than international ones.|||国内航班比国际航班便宜。']],
+  ['category', 'n.', '类别', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['类别', '高考真题高频出现'], ['The books are divided into several categories by topic.|||这些书按主题分为几个类别。']],
+  ['physician', 'n.', '医生；内科医生', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['医生；内科医生', '高考真题高频出现'], ['The physician advised him to get more rest and exercise.|||医生建议他多休息、多运动。']],
+  ['cuisine', 'n.', '烹饪；菜肴', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['烹饪；菜肴', '高考真题高频出现'], ['Italian cuisine is famous for its pasta and pizza.|||意大利菜以意面和披萨闻名。']],
+  ['ingredient', 'n.', '原料；配料', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['原料；配料', '高考真题高频出现'], ['Honey is a key ingredient in many traditional remedies.|||蜂蜜是许多传统药方的关键配料。']],
+  ['reconstruct', 'v.', '重建；复原', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['重建；复原', '高考真题高频出现'], ['Archaeologists tried to reconstruct the ancient temple.|||考古学家试图重建那座古老的神庙。']],
+  ['interpret', 'v.', '解释；诠释', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['解释；诠释', '高考真题高频出现'], ['It is difficult to interpret dreams without context.|||没有背景信息，很难解读梦境。']],
+  ['culinary', 'adj.', '烹饪的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['烹饪的', '高考真题高频出现'], ['He pursued a culinary career and became a famous chef.|||他走上了烹饪之路，成为著名厨师。']],
+  ['colonial', 'adj.', '殖民的', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['殖民的', '高考真题高频出现'], ['The city retains many colonial-era buildings and streets.|||这座城市保留了许多殖民时期的建筑和街道。']],
+  ['philosophy', 'n.', '哲学', '必考', ['真题必考词', '三、2023 年高考英语真题'], ['哲学', '高考真题高频出现'], ['Her philosophy of life is to always keep learning.|||她的人生哲学是永远保持学习。']],
+  ['informative', 'adj.', '增长知识的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['增长知识的', '高考真题高频出现'], ['The documentary was both entertaining and informative.|||这部纪录片既有趣又增长知识。']],
+  ['essential', 'adj./n.', '必要的；至关重要的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['必要的；至关重要的', '高考真题高频出现'], ['Sleep is essential for good health and concentration.|||睡眠对健康和注意力至关重要。']],
+  ['innovative', 'adj.', '创新的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['创新的', '高考真题高频出现'], ['The company is known for its innovative products.|||这家公司以创新产品闻名。']],
+  ['automated', 'adj.', '自动化的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['自动化的', '高考真题高频出现'], ['Automated systems have replaced many manual jobs.|||自动化系统取代了许多手工工作。']],
+  ['sustainability', 'n.', '可持续性', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['可持续性', '高考真题高频出现'], ['Sustainability has become a core value for modern businesses.|||可持续性已成为现代企业的核心价值。']],
+  ['forthcoming', 'adj.', '即将到来的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['即将到来的', '高考真题高频出现'], ['Details about the forthcoming conference will be announced soon.|||即将召开的会议细节将很快公布。']],
+  ['accessible', 'adj.', '易懂的；可得到的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['易懂的；可得到的', '高考真题高频出现'], ['The museum is accessible to visitors with disabilities.|||博物馆对残障游客开放无碍。']],
+  ['holistic', 'adj.', '整体的；全面的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['整体的；全面的', '高考真题高频出现'], ['A holistic approach to health considers both body and mind.|||整体健康观兼顾身体和心理。']],
+  ['conventional', 'adj.', '传统的；常规的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['传统的；常规的', '高考真题高频出现'], ['She rejected conventional methods and tried something new.|||她拒绝了常规方法，尝试了新做法。']],
+  ['abstraction', 'n.', '抽象概念', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['抽象概念', '高考真题高频出现'], ['Modern art often relies on abstraction rather than realism.|||现代艺术常依赖抽象而非写实。']],
+  ['identical', 'adj.', '完全相同的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['完全相同的', '高考真题高频出现'], ['The twins look identical but have very different personalities.|||这对双胞胎长得一模一样，但性格截然不同。']],
+  ['biodiversity', 'n.', '生物多样性', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['生物多样性', '高考真题高频出现'], ['Protecting biodiversity is crucial for the ecosystem.|||保护生物多样性对生态系统至关重要。']],
+  ['specimen', 'n.', '标本', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['标本', '高考真题高频出现'], ['The museum displayed a rare butterfly specimen.|||博物馆展出了一只罕见的蝴蝶标本。']],
+  ['bias', 'n./v.', '偏见；使偏向', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['偏见；使偏向', '高考真题高频出现'], ['The judge must avoid bias when making a decision.|||法官在做出裁决时必须避免偏见。']],
+  ['contemporary', 'adj./n.', '当代的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['当代的', '高考真题高频出现'], ['The gallery features works by contemporary artists.|||这家画廊展出当代艺术家的作品。']],
+  ['commemorate', 'v.', '纪念', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['纪念', '高考真题高频出现'], ['A statue was built to commemorate the national hero.|||人们建造了一座雕像来纪念这位民族英雄。']],
+  ['recreational', 'adj.', '娱乐的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['娱乐的', '高考真题高频出现'], ['The park offers various recreational activities for families.|||公园为家庭提供各种娱乐活动。']],
+  ['invertebrate', 'n./adj.', '无脊椎动物', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['无脊椎动物', '高考真题高频出现'], ['Insects are the most common type of invertebrate.|||昆虫是最常见的无脊椎动物。']],
+  ['rural', 'adj.', '乡村的；偏远的', '必考', ['真题必考词', '四、2024 年高考英语真题'], ['乡村的；偏远的', '高考真题高频出现'], ['Rural areas often lack access to advanced medical care.|||农村地区往往缺乏先进的医疗条件。']],
+  ['decarbonize', 'v.', '脱碳', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['脱碳', '高考真题高频出现'], ['Many countries are racing to decarbonize their economies.|||许多国家正竞相实现经济脱碳。']],
+  ['emission', 'n.', '排放', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['排放', '高考真题高频出现'], ['Carbon emission must be reduced to fight climate change.|||必须减少碳排放以应对气候变化。']],
+  ['synthetic', 'adj.', '合成的', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['合成的', '高考真题高频出现'], ['Synthetic fibers are widely used in the textile industry.|||合成纤维广泛用于纺织工业。']],
+  ['hydrocarbon', 'n.', '碳氢化合物', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['碳氢化合物', '高考真题高频出现'], ['Petroleum is a complex mixture of hydrocarbon compounds.|||石油是碳氢化合物的复杂混合物。']],
+  ['transition', 'n./v.', '变革', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['变革', '高考真题高频出现'], ['The transition from high school to college is challenging.|||从高中到大学的过渡充满挑战。']],
+  ['staggering', 'adj.', '令人震惊的', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['令人震惊的', '高考真题高频出现'], ['The staggering cost of the project shocked everyone.|||该项目令人震惊的成本让所有人大吃一惊。']],
+  ['persuasive', 'adj.', '有说服力的', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['有说服力的', '高考真题高频出现'], ['She gave a persuasive argument that convinced the jury.|||她给出了有说服力的论点，说服了陪审团。']],
+  ['pedestrian', 'n./adj.', '行人', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['行人', '高考真题高频出现'], ['The new bridge will improve safety for pedestrians.|||新桥将提高行人的安全性。']],
+  ['champion', 'v./n.', '支持，拥护', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['支持，拥护', '高考真题高频出现'], ['She has long championed the cause of environmental protection.|||她长期以来拥护环境保护事业。']],
+  ['microplastic', 'n.', '微塑料', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['微塑料', '高考真题高频出现'], ['Microplastic pollution threatens marine life worldwide.|||微塑料污染威胁着全球海洋生物。']],
+  ['filter', 'n./v.', '过滤', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['过滤', '高考真题高频出现'], ['The water filter removes harmful bacteria and chemicals.|||滤水器能去除有害细菌和化学物质。']],
+  ['calcium carbonate', 'n.', '碳酸钙', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['碳酸钙', '高考真题高频出现'], ['Calcium carbonate is the main component of limestone.|||碳酸钙是石灰石的主要成分。']],
+  ['polystyrene', 'n.', '聚苯乙烯', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['聚苯乙烯', '高考真题高频出现'], ['Polystyrene is commonly used for packaging and insulation.|||聚苯乙烯常用于包装和隔热。']],
+  ['polyethylene', 'n.', '聚乙烯', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['聚乙烯', '高考真题高频出现'], ['Polyethylene is the most widely used plastic in the world.|||聚乙烯是世界上使用最广泛的塑料。']],
+  ['medieval', 'adj.', '中世纪的', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['中世纪的', '高考真题高频出现'], ['The medieval castle has stood for over eight hundred years.|||这座中世纪城堡已矗立了八百多年。']],
+  ['exclusively', 'adv.', '专门地', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['专门地', '高考真题高频出现'], ['This club is exclusively for members and their guests.|||这家俱乐部仅供会员及其客人使用。']],
+  ['psychological', 'adj.', '心理的', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['心理的', '高考真题高频出现'], ['The accident left him with deep psychological scars.|||那次事故给他留下了深深的心理创伤。']],
+  ['weightlifting', 'n.', '举重', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['举重', '高考真题高频出现'], ['Weightlifting requires both strength and technique.|||举重需要力量和技巧。']],
+  ['identity', 'n.', '身份', '必考', ['真题必考词', '五、2025 年高考英语真题'], ['身份', '高考真题高频出现'], ['Cultural identity plays an important role in shaping who we are.|||文化认同在塑造我们是谁方面起着重要作用。']]
 ];
 
 // 近五年真题高频词
 const seedWordsExam = [
-  ['paragraph', 'n.', '文章段落', '真题', ['真题词频66次'], ['文章段落'], ['paragraph appears in recent gaokao exams.']],
-  ['still', 'adj./adv./n./v.', 'adj.静止的；平静的；adv.仍然；依旧；还；n.剧照；（电影的）定格画面；v.使静止；使平静下来', '真题', ['真题词频54次'], ['adj.静止的；平静的；adv.仍然；依旧；还；n.剧照；（电影的）定格画面；v.使静止；使平静下来'], ['still appears in recent gaokao exams.']],
-  ['plastic', 'n./adj.', 'n.塑料；adj.可塑的', '真题', ['真题词频30次'], ['n.塑料；adj.可塑的'], ['plastic appears in recent gaokao exams.']],
+  ['paragraph', 'n.', '文章段落', '真题', ['真题词频66次'], ['文章段落'], ['Read the first paragraph carefully to understand the main idea.|||仔细阅读第一段以理解文章主旨。']],
+  ['still', 'adj./adv./n./v.', 'adj.静止的；平静的；adv.仍然；依旧；还；n.剧照；（电影的）定格画面；v.使静止；使平静下来', '真题', ['真题词频54次'], ['adj.静止的；平静的；adv.仍然；依旧；还；n.剧照；（电影的）定格画面；v.使静止；使平静下来'], ['Stand still while I take your photo.|||我给你拍照时站着别动。']],
+  ['plastic', 'n./adj.', 'n.塑料；adj.可塑的', '真题', ['真题词频30次'], ['n.塑料；adj.可塑的'], ['Plastic pollution has become a global environmental crisis.|||塑料污染已成为全球环境危机。']],
   ['improve', 'v.', '改善；改进；提高；变得更好', '真题', ['真题词频28次'], ['改善；改进；提高；变得更好'], ['Reading regularly can improve your vocabulary and writing skills.|||定期阅读可以提高你的词汇量和写作技巧。']],
-  ['species', 'n.', '物种；种类', '真题', ['真题词频25次'], ['物种；种类'], ['species appears in recent gaokao exams.']],
-  ['creative', 'adj.', '创造性的，指具有创新或原创性的', '真题', ['真题词频24次'], ['创造性的，指具有创新或原创性的'], ['creative appears in recent gaokao exams.']],
-  ['wild', 'adj.', '野生的，指自然生长而非人工培育的', '真题', ['真题词频19次'], ['野生的，指自然生长而非人工培育的'], ['wild appears in recent gaokao exams.']],
-  ['state', 'n./v.', 'n.状态；状况；国家；州；v.陈述；说明；声明', '真题', ['真题词频17次'], ['n.状态；状况；国家；州；v.陈述；说明；声明'], ['state appears in recent gaokao exams.']],
+  ['species', 'n.', '物种；种类', '真题', ['真题词频25次'], ['物种；种类'], ['Many species are threatened by habitat loss.|||许多物种因栖息地丧失而受到威胁。']],
+  ['creative', 'adj.', '创造性的，指具有创新或原创性的', '真题', ['真题词频24次'], ['创造性的，指具有创新或原创性的'], ['Creative thinking is essential for solving complex problems.|||创造性思维对解决复杂问题至关重要。']],
+  ['wild', 'adj.', '野生的，指自然生长而非人工培育的', '真题', ['真题词频19次'], ['野生的，指自然生长而非人工培育的'], ['Wild animals should not be kept as pets.|||野生动物不应被当作宠物饲养。']],
+  ['state', 'n./v.', 'n.状态；状况；国家；州；v.陈述；说明；声明', '真题', ['真题词频17次'], ['n.状态；状况；国家；州；v.陈述；说明；声明'], ['The document states clearly that all members must attend.|||文件明确陈述所有成员必须出席。']],
   ['consider', 'v.', '仔细考虑；细想；认为；以为；体谅；考虑到', '真题', ['真题词频17次'], ['仔细考虑；细想；认为；以为；体谅；考虑到'], ['You should consider all options before making a final decision.|||在做出最终决定之前，您应该考虑所有选项。']],
-  ['require', 'v.', '要求，指需要或命令某人做某事', '真题', ['真题词频16次'], ['要求，指需要或命令某人做某事'], ['require appears in recent gaokao exams.']],
-  ['focus', 'n./v.', 'n.焦点；v.聚焦（on）', '真题', ['真题词频16次'], ['n.焦点；v.聚焦（on）'], ['focus appears in recent gaokao exams.']],
-  ['positive', 'adj.', '积极的；正面的', '真题', ['真题词频16次'], ['积极的；正面的'], ['positive appears in recent gaokao exams.']],
-  ['concept', 'n.', '概念', '真题', ['真题词频16次'], ['概念'], ['concept appears in recent gaokao exams.']],
-  ['personal', 'adj.', '私人的；个人的；亲自的', '真题', ['真题词频15次'], ['私人的；个人的；亲自的'], ['personal appears in recent gaokao exams.']],
+  ['require', 'v.', '要求，指需要或命令某人做某事', '真题', ['真题词频16次'], ['要求，指需要或命令某人做某事'], ['This job requires patience and attention to detail.|||这份工作需要耐心和注重细节。']],
+  ['focus', 'n./v.', 'n.焦点；v.聚焦（on）', '真题', ['真题词频16次'], ['n.焦点；v.聚焦（on）'], ['You need to focus on your studies to succeed.|||你需要专注于学业才能成功。']],
+  ['positive', 'adj.', '积极的；正面的', '真题', ['真题词频16次'], ['积极的；正面的'], ['A positive attitude can make a big difference in life.|||积极的态度能给生活带来很大改变。']],
+  ['concept', 'n.', '概念', '真题', ['真题词频16次'], ['概念'], ['The concept of freedom means different things to different people.|||自由的概念对不同的人有不同的含义。']],
+  ['personal', 'adj.', '私人的；个人的；亲自的', '真题', ['真题词频15次'], ['私人的；个人的；亲自的'], ['This is a personal matter that I\'d rather not discuss.|||这是个人私事，我不想讨论。']],
   ['support', 'v./n.', 'v.支持；拥护；鼓励；帮助；支撑；供养；n.支持；拥护；鼓励；帮助；支撑物；支柱', '真题', ['真题词频15次'], ['v.支持；拥护；鼓励；帮助；支撑；供养；n.支持；拥护；鼓励；帮助；支撑物；支柱'], ['Parents should support their children\'s dreams and ambitions.']],
   ['store', 'v./n.', 'v.储存；n.商店', '真题', ['真题词频15次'], ['v.储存；n.商店'], ['The data is stored securely on the company\'s servers.']],
   ['respect', 'v./n.', 'v./n.尊敬；尊重', '真题', ['真题词频15次'], ['v./n.尊敬；尊重'], ['Students should respect their teachers and classmates.|||学生应尊重老师和同学。']],
-  ['promote', 'v.', '促进，推动某事的发展', '真题', ['真题词频15次'], ['促进，推动某事的发展'], ['promote appears in recent gaokao exams.']],
-  ['ancient', 'adj.', '古老的', '真题', ['真题词频15次'], ['古老的'], ['ancient appears in recent gaokao exams.']],
-  ['habitat', 'n.', '（动植物的）栖息地；生活环境', '真题', ['真题词频15次'], ['（动植物的）栖息地；生活环境'], ['habitat appears in recent gaokao exams.']],
-  ['physical', 'adj.', '物质的；身体的，指与物质或身体相关的', '真题', ['真题词频14次'], ['物质的；身体的，指与物质或身体相关的'], ['physical appears in recent gaokao exams.']],
-  ['average', 'adj.', '平均的', '真题', ['真题词频14次'], ['平均的'], ['average appears in recent gaokao exams.']],
-  ['protect', 'v.', '保护；防护；（制定法律）保护；（通过征关税）保护（国内企业）', '真题', ['真题词频13次'], ['保护；防护；（制定法律）保护；（通过征关税）保护（国内企业）'], ['protect appears in recent gaokao exams.']],
-  ['percent', 'n.', '百分比，表示比例或比率', '真题', ['真题词频13次'], ['百分比，表示比例或比率'], ['percent appears in recent gaokao exams.']],
+  ['promote', 'v.', '促进，推动某事的发展', '真题', ['真题词频15次'], ['促进，推动某事的发展'], ['The campaign aims to promote healthy eating habits.|||这项活动旨在推广健康的饮食习惯。']],
+  ['ancient', 'adj.', '古老的', '真题', ['真题词频15次'], ['古老的'], ['The ancient temple attracts thousands of tourists every year.|||这座古庙每年吸引成千上万的游客。']],
+  ['habitat', 'n.', '（动植物的）栖息地；生活环境', '真题', ['真题词频15次'], ['（动植物的）栖息地；生活环境'], ['Deforestation destroys the natural habitat of many animals.|||森林砍伐破坏了许多动物的自然栖息地。']],
+  ['physical', 'adj.', '物质的；身体的，指与物质或身体相关的', '真题', ['真题词频14次'], ['物质的；身体的，指与物质或身体相关的'], ['Regular physical exercise helps prevent heart disease.|||经常体育锻炼有助于预防心脏病。']],
+  ['average', 'adj.', '平均的', '真题', ['真题词频14次'], ['平均的'], ['The average temperature has risen over the past decade.|||过去十年平均气温有所上升。']],
+  ['protect', 'v.', '保护；防护；（制定法律）保护；（通过征关税）保护（国内企业）', '真题', ['真题词频13次'], ['保护；防护；（制定法律）保护；（通过征关税）保护（国内企业）'], ['It is our duty to protect the environment for future generations.|||为后代保护环境是我们的责任。']],
+  ['percent', 'n.', '百分比，表示比例或比率', '真题', ['真题词频13次'], ['百分比，表示比例或比率'], ['Eighty percent of the students passed the exam.|||百分之八十的学生通过了考试。']],
   ['tax', 'v./n.', 'v.对……征税；使负重担；n.税；税款', '真题', ['真题词频13次'], ['v.对……征税；使负重担；n.税；税款'], ['tax appears in recent gaokao exams.']],
   ['offer', 'v./n.', 'v.出价；n.提议；出价；主动提议', '真题', ['真题词频12次'], ['v.出价；n.提议；出价；主动提议'], ['The company offered her a position with a generous salary.|||公司给她提供了一个薪水丰厚的职位。']],
   ['produce', 'v./n.', 'v.生产；制造；产生；引起；创作；n.农产品', '真题', ['真题词频12次'], ['v.生产；制造；产生；引起；创作；n.农产品'], ['produce appears in recent gaokao exams.']],
@@ -1742,469 +1742,469 @@ const seedWordsExam = [
   ['professional', 'adj./n.', 'adj.专业的；职业的；n.具有某种专业技能或从事某种专业工作的人', '真题', ['真题词频10次'], ['adj.专业的；职业的；n.具有某种专业技能或从事某种专业工作的人'], ['professional appears in recent gaokao exams.']],
   ['speech', 'n.', '演讲，指公开发表的讲话或演说', '真题', ['真题词频10次'], ['演讲，指公开发表的讲话或演说'], ['speech appears in recent gaokao exams.']],
   ['regular', 'adj.', '有规律的；定期的，指按照固定模式或时间间隔进行的', '真题', ['真题词频10次'], ['有规律的；定期的，指按照固定模式或时间间隔进行的'], ['regular appears in recent gaokao exams.']],
-  ['range', 'n.', '范围，表示一系列事物的界限', '真题', ['真题词频10次'], ['范围，表示一系列事物的界限'], ['range appears in recent gaokao exams.']],
-  ['opportunity', 'n.', '机会，有利的时机', '真题', ['真题词频10次'], ['机会，有利的时机'], ['opportunity appears in recent gaokao exams.']],
-  ['potential', 'adj./n.', 'adj.潜在的；n.潜力，可能性或潜力', '真题', ['真题词频10次'], ['adj.潜在的；n.潜力，可能性或潜力'], ['potential appears in recent gaokao exams.']],
-  ['available', 'adj.', '可利用的，指某物或某人可被使用', '真题', ['真题词频10次'], ['可利用的，指某物或某人可被使用'], ['available appears in recent gaokao exams.']],
+  ['range', 'n.', '范围，表示一系列事物的界限', '真题', ['真题词频10次'], ['范围，表示一系列事物的界限'], ['The store offers a wide range of products for customers.|||这家商店为顾客提供种类繁多的商品。']],
+  ['opportunity', 'n.', '机会，有利的时机', '真题', ['真题词频10次'], ['机会，有利的时机'], ['Studying abroad is a great opportunity to experience different cultures.|||出国留学是体验不同文化的绝佳机会。']],
+  ['potential', 'adj./n.', 'adj.潜在的；n.潜力，可能性或潜力', '真题', ['真题词频10次'], ['adj.潜在的；n.潜力，可能性或潜力'], ['This job offers good potential for career growth.|||这份工作提供了很好的职业发展潜力。']],
+  ['available', 'adj.', '可利用的，指某物或某人可被使用', '真题', ['真题词频10次'], ['可利用的，指某物或某人可被使用'], ['The book is available in both print and digital versions.|||这本书有纸质版和电子版可供选择。']],
   ['remove', 'v.', '移除；去掉', '真题', ['真题词频10次'], ['移除；去掉'], ['Please remove your shoes before entering the temple.|||进入寺庙前请脱鞋。']],
-  ['unique', 'adj.', '唯一的；独一无二的', '真题', ['真题词频10次'], ['唯一的；独一无二的'], ['unique appears in recent gaokao exams.']],
-  ['reserve', 'v./n.', 'v.预订；保留；储备；n.储备；保护区；矜持', '真题', ['真题词频10次'], ['v.预订；保留；储备；n.储备；保护区；矜持'], ['reserve appears in recent gaokao exams.']],
+  ['unique', 'adj.', '唯一的；独一无二的', '真题', ['真题词频10次'], ['唯一的；独一无二的'], ['Each person has a unique fingerprint that cannot be copied.|||每个人都有独特的指纹，无法被复制。']],
+  ['reserve', 'v./n.', 'v.预订；保留；储备；n.储备；保护区；矜持', '真题', ['真题词频10次'], ['v.预订；保留；储备；n.储备；保护区；矜持'], ['We reserved a table at the restaurant for seven oclock.|||我们在餐厅预订了七点的桌子。']],
   ['distinguish', 'v.', '区分；辨别；使杰出', '真题', ['真题词频10次'], ['区分；辨别；使杰出'], ['It is hard to distinguish the twins from each other.|||很难将双胞胎彼此区分开来。']],
-  ['former', 'adj.', '以前的、前者', '真题', ['真题词频10次'], ['以前的、前者'], ['former appears in recent gaokao exams.']],
-  ['volunteer', 'n./v.', 'n.志愿者；v.（自愿）做', '真题', ['真题词频9次'], ['n.志愿者；v.（自愿）做'], ['volunteer appears in recent gaokao exams.']],
+  ['former', 'adj.', '以前的、前者', '真题', ['真题词频10次'], ['以前的、前者'], ['The former president gave a speech at the university.|||前总统在大学发表了演讲。']],
+  ['volunteer', 'n./v.', 'n.志愿者；v.（自愿）做', '真题', ['真题词频9次'], ['n.志愿者；v.（自愿）做'], ['She volunteers at the animal shelter every weekend.|||她每个周末在动物收容所做志愿者。']],
   ['review', 'v./n.', 'v./n.复习；回顾；评估', '真题', ['真题词频9次'], ['v./n.复习；回顾；评估'], ['Let us review what we learned in class today.|||让我们回顾一下今天在课堂上学到的内容。']],
-  ['official', 'adj./n.', 'adj.正式的，指符合规定或程序的；n.官员', '真题', ['真题词频9次'], ['adj.正式的，指符合规定或程序的；n.官员'], ['official appears in recent gaokao exams.']],
-  ['approach', 'v./n.', 'v.靠近；n.途径；方法（to）', '真题', ['真题词频9次'], ['v.靠近；n.途径；方法（to）'], ['approach appears in recent gaokao exams.']],
-  ['entire', 'adj.', '全部的；整个的', '真题', ['真题词频9次'], ['全部的；整个的'], ['entire appears in recent gaokao exams.']],
-  ['specific', 'adj.', '明确的；具体的', '真题', ['真题词频9次'], ['明确的；具体的'], ['specific appears in recent gaokao exams.']],
-  ['complex', 'adj./n.', 'adj.复杂的；难懂的；n.建筑群；综合设施', '真题', ['真题词频9次'], ['adj.复杂的；难懂的；n.建筑群；综合设施'], ['complex appears in recent gaokao exams.']],
-  ['impact', 'n./v.', 'n.影响；冲击力；v.影响；冲击', '真题', ['真题词频9次'], ['n.影响；冲击力；v.影响；冲击'], ['impact appears in recent gaokao exams.']],
-  ['industry', 'n.', '工业、产业', '真题', ['真题词频9次'], ['工业、产业'], ['industry appears in recent gaokao exams.']],
+  ['official', 'adj./n.', 'adj.正式的，指符合规定或程序的；n.官员', '真题', ['真题词频9次'], ['adj.正式的，指符合规定或程序的；n.官员'], ['The official announcement will be made tomorrow morning.|||官方公告将于明早发布。']],
+  ['approach', 'v./n.', 'v.靠近；n.途径；方法（to）', '真题', ['真题词频9次'], ['v.靠近；n.途径；方法（to）'], ['We need a new approach to solve this problem.|||我们需要一种新方法来解决这个问题。']],
+  ['entire', 'adj.', '全部的；整个的', '真题', ['真题词频9次'], ['全部的；整个的'], ['He spent the entire weekend preparing for the exam.|||他整个周末都在准备考试。']],
+  ['specific', 'adj.', '明确的；具体的', '真题', ['真题词频9次'], ['明确的；具体的'], ['Can you be more specific about what you need?|||你能更具体地说明你需要什么吗？']],
+  ['complex', 'adj./n.', 'adj.复杂的；难懂的；n.建筑群；综合设施', '真题', ['真题词频9次'], ['adj.复杂的；难懂的；n.建筑群；综合设施'], ['The human brain is a complex and fascinating organ.|||人类大脑是一个复杂而迷人的器官。']],
+  ['impact', 'n./v.', 'n.影响；冲击力；v.影响；冲击', '真题', ['真题词频9次'], ['n.影响；冲击力；v.影响；冲击'], ['Technology has a huge impact on our daily lives.|||科技对我们的日常生活有巨大影响。']],
+  ['industry', 'n.', '工业、产业', '真题', ['真题词频9次'], ['工业、产业'], ['The tourism industry is recovering slowly after the pandemic.|||疫情后旅游业正在缓慢复苏。']],
   ['wonder', 'v./n.', 'v.想知道；琢磨；感到诧异；惊叹；n.惊奇；惊讶；奇迹；奇观', '真题', ['真题词频8次'], ['v.想知道；琢磨；感到诧异；惊叹；n.惊奇；惊讶；奇迹；奇观'], ['I wonder if it will rain tomorrow afternoon.|||我想知道明天下午是否会下雨。']],
   ['matter', 'n./v.', 'n.事情；事态；问题；物质；v.要紧；有关系', '真题', ['真题词频8次'], ['n.事情；事态；问题；物质；v.要紧；有关系'], ['It does not matter how slowly you go, as long as you do not stop.|||不管你走得多慢，只要你不停下来。']],
-  ['popularity', 'n.', '普及；流行，指某物被广泛接受或喜爱的程度', '真题', ['真题词频8次'], ['普及；流行，指某物被广泛接受或喜爱的程度'], ['popularity appears in recent gaokao exams.']],
-  ['pressure', 'n.', '压力；压强', '真题', ['真题词频8次'], ['压力；压强'], ['pressure appears in recent gaokao exams.']],
-  ['replace', 'v.', '取代，用新的代替旧的', '真题', ['真题词频8次'], ['取代，用新的代替旧的'], ['replace appears in recent gaokao exams.']],
+  ['popularity', 'n.', '普及；流行，指某物被广泛接受或喜爱的程度', '真题', ['真题词频8次'], ['普及；流行，指某物被广泛接受或喜爱的程度'], ['The popularity of electric cars continues to grow worldwide.|||电动汽车在全球持续受到欢迎。']],
+  ['pressure', 'n.', '压力；压强', '真题', ['真题词频8次'], ['压力；压强'], ['Students face increasing pressure to perform well in exams.|||学生面临越来越大的考试压力。']],
+  ['replace', 'v.', '取代，用新的代替旧的', '真题', ['真题词频8次'], ['取代，用新的代替旧的'], ['Computers will never completely replace teachers in the classroom.|||电脑永远不会完全取代课堂上的老师。']],
   ['stick', 'v.', 'v.粘住；坚持（to）', '真题', ['真题词频8次'], ['v.粘住；坚持（to）'], ['He stuck the note on the refrigerator with a magnet.|||他用磁铁把纸条贴在冰箱上。']],
-  ['response', 'n.', '反应；响应（to）', '真题', ['真题词频8次'], ['反应；响应（to）'], ['response appears in recent gaokao exams.']],
-  ['significant', 'adj.', '重要的；有意义的；显著的', '真题', ['真题词频8次'], ['重要的；有意义的；显著的'], ['significant appears in recent gaokao exams.']],
+  ['response', 'n.', '反应；响应（to）', '真题', ['真题词频8次'], ['反应；响应（to）'], ['Her response to the question surprised everyone in the room.|||她对问题的回答让在场所有人感到惊讶。']],
+  ['significant', 'adj.', '重要的；有意义的；显著的', '真题', ['真题词频8次'], ['重要的；有意义的；显著的'], ['The discovery has significant implications for medical research.|||这一发现对医学研究有重大意义。']],
   ['transform', 'v.', '使改变形态；使改观；使转化', '真题', ['真题词频8次'], ['使改变形态；使改观；使转化'], ['Education can transform a person\'s life and future.']],
-  ['artificial', 'adj.', '人造的；人工的；人为的；虚假的', '真题', ['真题词频8次'], ['人造的；人工的；人为的；虚假的'], ['artificial appears in recent gaokao exams.']],
-  ['awkward', 'adj.', '令人尴尬的；难对付的；笨拙的；不灵活的', '真题', ['真题词频8次'], ['令人尴尬的；难对付的；笨拙的；不灵活的'], ['awkward appears in recent gaokao exams.']],
-  ['addition', 'n.', '增加；加法；添加物', '真题', ['真题词频7次'], ['增加；加法；添加物'], ['addition appears in recent gaokao exams.']],
-  ['cause', 'v./n.', 'v.引起；使发生；造成；导致；n.原因；起因；理由；事业', '真题', ['真题词频7次'], ['v.引起；使发生；造成；导致；n.原因；起因；理由；事业'], ['cause appears in recent gaokao exams.']],
-  ['perform', 'v.', '执行；表演，指完成任务或进行艺术表演', '真题', ['真题词频7次'], ['执行；表演，指完成任务或进行艺术表演'], ['perform appears in recent gaokao exams.']],
+  ['artificial', 'adj.', '人造的；人工的；人为的；虚假的', '真题', ['真题词频8次'], ['人造的；人工的；人为的；虚假的'], ['Many people worry about the risks of artificial intelligence.|||许多人担心人工智能的风险。']],
+  ['awkward', 'adj.', '令人尴尬的；难对付的；笨拙的；不灵活的', '真题', ['真题词频8次'], ['令人尴尬的；难对付的；笨拙的；不灵活的'], ['There was an awkward silence after his comment.|||他评论后出现了尴尬的沉默。']],
+  ['addition', 'n.', '增加；加法；添加物', '真题', ['真题词频7次'], ['增加；加法；添加物'], ['In addition to English, she also speaks French and German.|||除了英语，她还会说法语和德语。']],
+  ['cause', 'v./n.', 'v.引起；使发生；造成；导致；n.原因；起因；理由；事业', '真题', ['真题词频7次'], ['v.引起；使发生；造成；导致；n.原因；起因；理由；事业'], ['Smoking is a major cause of lung cancer.|||吸烟是肺癌的主要原因。']],
+  ['perform', 'v.', '执行；表演，指完成任务或进行艺术表演', '真题', ['真题词频7次'], ['执行；表演，指完成任务或进行艺术表演'], ['The students will perform a play at the school festival.|||学生们将在校庆上表演一出戏剧。']],
   ['connect', 'v.', '连接；联系，指将两个或多个事物连接起来或建立联系', '真题', ['真题词频7次'], ['连接；联系，指将两个或多个事物连接起来或建立联系'], ['The bridge connects the two cities across the wide river.|||这座桥横跨宽阔的河流将两座城市连接起来。']],
   ['lack', 'n./v.', 'n.缺乏（of/in）；v.缺乏', '真题', ['真题词频7次'], ['n.缺乏（of/in）；v.缺乏'], ['Many students lack confidence when speaking in front of others.|||许多学生在别人面前说话时缺乏自信。']],
-  ['original', 'adj.', '原始的；最初的，指最初的状态或版本', '真题', ['真题词频7次'], ['原始的；最初的，指最初的状态或版本'], ['original appears in recent gaokao exams.']],
-  ['account', 'n.', '账户，指记录财务收支的账目', '真题', ['真题词频7次'], ['账户，指记录财务收支的账目'], ['account appears in recent gaokao exams.']],
-  ['figure', 'n.', '人物，指特定的人或形象', '真题', ['真题词频7次'], ['人物，指特定的人或形象'], ['figure appears in recent gaokao exams.']],
+  ['original', 'adj.', '原始的；最初的，指最初的状态或版本', '真题', ['真题词频7次'], ['原始的；最初的，指最初的状态或版本'], ['This is the original painting by Vincent van Gogh.|||这是文森特·梵高的原画。']],
+  ['account', 'n.', '账户，指记录财务收支的账目', '真题', ['真题词频7次'], ['账户，指记录财务收支的账目'], ['You need to create an account to access the online library.|||你需要创建一个账户才能访问在线图书馆。']],
+  ['figure', 'n.', '人物，指特定的人或形象', '真题', ['真题词频7次'], ['人物，指特定的人或形象'], ['Can you figure out the answer to this math problem?|||你能算出这道数学题的答案吗？']],
   ['risk', 'n./v.', 'n.危险；风险；v.冒……的危险', '真题', ['真题词频7次'], ['n.危险；风险；v.冒……的危险'], ['You risk failing the exam if you do not study properly.|||如果您没有正确学习，您就有可能考试不及格。']],
-  ['collection', 'n.', '收集', '真题', ['真题词频7次'], ['收集'], ['collection appears in recent gaokao exams.']],
-  ['moral', 'adj./n.', 'adj.道德的；道义上的；n.品行；道德规范', '真题', ['真题词频7次'], ['adj.道德的；道义上的；n.品行；道德规范'], ['moral appears in recent gaokao exams.']],
+  ['collection', 'n.', '收集', '真题', ['真题词频7次'], ['收集'], ['The museum has an impressive collection of ancient artifacts.|||博物馆收藏了大量令人印象深刻的古代文物。']],
+  ['moral', 'adj./n.', 'adj.道德的；道义上的；n.品行；道德规范', '真题', ['真题词频7次'], ['adj.道德的；道义上的；n.品行；道德规范'], ['The story teaches us an important moral lesson.|||这个故事教会我们一个重要的道德教训。']],
   ['ensure', 'v.', '确保；保证', '真题', ['真题词频7次'], ['确保；保证'], ['Wearing a helmet ensures your safety while riding a bicycle.|||佩戴头盔可确保您在骑自行车时的安全。']],
-  ['register', 'v./n.', 'v.登记；注册；记录；n.登记；注册；登记簿', '真题', ['真题词频7次'], ['v.登记；注册；记录；n.登记；注册；登记簿'], ['register appears in recent gaokao exams.']],
-  ['frequently', 'adv.', '频繁地；经常', '真题', ['真题词频7次'], ['频繁地；经常'], ['frequently appears in recent gaokao exams.']],
-  ['session', 'n.', '一场、一段时间、会议', '真题', ['真题词频7次'], ['一场、一段时间、会议'], ['session appears in recent gaokao exams.']],
+  ['register', 'v./n.', 'v.登记；注册；记录；n.登记；注册；登记簿', '真题', ['真题词频7次'], ['v.登记；注册；记录；n.登记；注册；登记簿'], ['All students must register for the exam before Friday.|||所有学生必须在周五前报名参加考试。']],
+  ['frequently', 'adv.', '频繁地；经常', '真题', ['真题词频7次'], ['频繁地；经常'], ['He frequently visits the library to study.|||他经常去图书馆学习。']],
+  ['session', 'n.', '一场、一段时间、会议', '真题', ['真题词频7次'], ['一场、一段时间、会议'], ['The training session will last for three hours.|||培训将持续三个小时。']],
   ['present', 'adj./n./v.', 'adj.现存的；当前的；出席的；到场的；n.礼物；目前；现在；v.把……交给；颁发；授予；提出', '真题', ['真题词频6次'], ['adj.现存的；当前的；出席的；到场的；n.礼物；目前；现在；v.把……交给；颁发；授予；提出'], ['The professor presented her research at an international conference.|||这位教授在一次国际会议上介绍了她的研究成果。']],
   ['prefer', 'v.', '更喜欢，指对某物或某人比对其他有更强烈的喜好', '真题', ['真题词频6次'], ['更喜欢，指对某物或某人比对其他有更强烈的喜好'], ['I prefer tea to coffee in the morning.|||我早晨喜欢喝咖啡。']],
-  ['raise', 'v.', '举起；筹集；提出', '真题', ['真题词频6次'], ['举起；筹集；提出'], ['raise appears in recent gaokao exams.']],
-  ['particular', 'adj.', '特别的，指与众不同的或特定的', '真题', ['真题词频6次'], ['特别的，指与众不同的或特定的'], ['particular appears in recent gaokao exams.']],
-  ['subject', 'n./adj.', 'n.主题；实验对象；adj.服从的', '真题', ['真题词频6次'], ['n.主题；实验对象；adj.服从的'], ['subject appears in recent gaokao exams.']],
-  ['charge', 'n./v.', 'n.费用；指控；v.要价（for）；管理；充电', '真题', ['真题词频6次'], ['n.费用；指控；v.要价（for）；管理；充电'], ['charge appears in recent gaokao exams.']],
+  ['raise', 'v.', '举起；筹集；提出', '真题', ['真题词频6次'], ['举起；筹集；提出'], ['The school decided to raise funds for the library.|||学校决定为图书馆筹集资金。']],
+  ['particular', 'adj.', '特别的，指与众不同的或特定的', '真题', ['真题词频6次'], ['特别的，指与众不同的或特定的'], ['Is there any particular book you are looking for?|||你在找某本特定的书吗？']],
+  ['subject', 'n./adj.', 'n.主题；实验对象；adj.服从的', '真题', ['真题词频6次'], ['n.主题；实验对象；adj.服从的'], ['Math is my favorite subject in school.|||数学是我在学校最喜欢的科目。']],
+  ['charge', 'n./v.', 'n.费用；指控；v.要价（for）；管理；充电', '真题', ['真题词频6次'], ['n.费用；指控；v.要价（for）；管理；充电'], ['The manager is in charge of the marketing department.|||经理负责市场部。']],
   ['contain', 'v.', '包含，容纳某物在内', '真题', ['真题词频6次'], ['包含，容纳某物在内'], ['The box contains important documents for the meeting.|||该框包含会议的重要文档。']],
-  ['labor', 'n.', '劳力，指体力工作或劳动者', '真题', ['真题词频6次'], ['劳力，指体力工作或劳动者'], ['labor appears in recent gaokao exams.']],
-  ['pollution', 'n.', '污染', '真题', ['真题词频6次'], ['污染'], ['pollution appears in recent gaokao exams.']],
+  ['labor', 'n.', '劳力，指体力工作或劳动者', '真题', ['真题词频6次'], ['劳力，指体力工作或劳动者'], ['Physical labor is still important in many industries.|||体力劳动在许多行业中仍然很重要。']],
+  ['pollution', 'n.', '污染', '真题', ['真题词频6次'], ['污染'], ['Air pollution is a serious problem in big cities.|||空气污染是大城市的一个严重问题。']],
   ['hire', 'v.', '雇请', '真题', ['真题词频6次'], ['雇请'], ['The company hired ten new employees for the summer season.|||该公司在夏季雇佣了10名新员工。']],
-  ['aspect', 'n.', '方面；外观', '真题', ['真题词频6次'], ['方面；外观'], ['aspect appears in recent gaokao exams.']],
-  ['convenient', 'adj.', '方便的；便利的', '真题', ['真题词频6次'], ['方便的；便利的'], ['convenient appears in recent gaokao exams.']],
+  ['aspect', 'n.', '方面；外观', '真题', ['真题词频6次'], ['方面；外观'], ['We need to consider every aspect of the problem.|||我们需要考虑问题的每个方面。']],
+  ['convenient', 'adj.', '方便的；便利的', '真题', ['真题词频6次'], ['方便的；便利的'], ['Online shopping is very convenient for busy people.|||网上购物对忙碌的人来说非常方便。']],
   ['decline', 'v./n.', 'v.下降；衰退；谢绝；n.下降；衰退', '真题', ['真题词频6次'], ['v.下降；衰退；谢绝；n.下降；衰退'], ['Sales declined sharply during the economic crisis last year.|||去年经济危机期间，销售额急剧下降。']],
   ['evaluate', 'v.', '评估；评价', '真题', ['真题词频6次'], ['评估；评价'], ['The committee will evaluate all proposals before making a decision.|||委员会将在做出决定之前对所有提案进行评估。']],
-  ['unexpected', 'adj.', '出乎意料的；意外的', '真题', ['真题词频6次'], ['出乎意料的；意外的'], ['unexpected appears in recent gaokao exams.']],
-  ['vital', 'adj.', '至关重要的；生死攸关的；充满生机的', '真题', ['真题词频6次'], ['至关重要的；生死攸关的；充满生机的'], ['vital appears in recent gaokao exams.']],
-  ['annual', 'adj./n.', 'adj.每年的；一年一次的；年度的；n.年刊；年鉴', '真题', ['真题词频6次'], ['adj.每年的；一年一次的；年度的；n.年刊；年鉴'], ['annual appears in recent gaokao exams.']],
-  ['giant', 'n./adj.', 'n.巨人；巨兽；大公司；adj.巨大的；伟大的', '真题', ['真题词频6次'], ['n.巨人；巨兽；大公司；adj.巨大的；伟大的'], ['giant appears in recent gaokao exams.']],
-  ['visual', 'adj.', '视力的、视觉的', '真题', ['真题词频6次'], ['视力的、视觉的'], ['visual appears in recent gaokao exams.']],
+  ['unexpected', 'adj.', '出乎意料的；意外的', '真题', ['真题词频6次'], ['出乎意料的；意外的'], ['The unexpected rain ruined our picnic plans.|||突如其来的雨破坏了我们的野餐计划。']],
+  ['vital', 'adj.', '至关重要的；生死攸关的；充满生机的', '真题', ['真题词频6次'], ['至关重要的；生死攸关的；充满生机的'], ['Water is vital to all living things on Earth.|||水对地球上所有生物都至关重要。']],
+  ['annual', 'adj./n.', 'adj.每年的；一年一次的；年度的；n.年刊；年鉴', '真题', ['真题词频6次'], ['adj.每年的；一年一次的；年度的；n.年刊；年鉴'], ['The company holds an annual meeting every December.|||公司每年十二月举行年会。']],
+  ['giant', 'n./adj.', 'n.巨人；巨兽；大公司；adj.巨大的；伟大的', '真题', ['真题词频6次'], ['n.巨人；巨兽；大公司；adj.巨大的；伟大的'], ['The giant panda is native to central China.|||大熊猫原产于中国中部。']],
+  ['visual', 'adj.', '视力的、视觉的', '真题', ['真题词频6次'], ['视力的、视觉的'], ['Visual aids can help students understand complex concepts.|||视觉辅助工具可以帮助学生理解复杂概念。']],
   ['promise', 'n./v.', 'n.诺言；允诺；v.许诺；承诺', '真题', ['真题词频5次'], ['n.诺言；允诺；v.许诺；承诺'], ['He promised to help his sister with her math homework.|||他答应帮妹妹做数学作业。']],
-  ['general', 'adj.', '普遍的；通用的', '真题', ['真题词频5次'], ['普遍的；通用的'], ['general appears in recent gaokao exams.']],
-  ['condition', 'n.', 'n.情况；条件', '真题', ['真题词频5次'], ['n.情况；条件'], ['condition appears in recent gaokao exams.']],
-  ['affect', 'v.', '影响', '真题', ['真题词频5次'], ['影响'], ['affect appears in recent gaokao exams.']],
+  ['general', 'adj.', '普遍的；通用的', '真题', ['真题词频5次'], ['普遍的；通用的'], ['In general, students who study regularly perform better.|||一般来说，定期学习的学生表现更好。']],
+  ['condition', 'n.', 'n.情况；条件', '真题', ['真题词频5次'], ['n.情况；条件'], ['The car is in excellent condition despite its age.|||尽管年代久远，这辆车状况极佳。']],
+  ['affect', 'v.', '影响', '真题', ['真题词频5次'], ['影响'], ['Climate change affects everyone on the planet.|||气候变化影响地球上的每个人。']],
   ['feed', 'v.', '喂养（on）', '真题', ['真题词频5次'], ['喂养（on）'], ['The farmer feeds the chickens and ducks every morning at dawn.|||农民每天清晨都会喂鸡和鸭。']],
-  ['strength', 'n.', '力量', '真题', ['真题词频5次'], ['力量'], ['strength appears in recent gaokao exams.']],
+  ['strength', 'n.', '力量', '真题', ['真题词频5次'], ['力量'], ['Her greatest strength is her ability to stay calm under pressure.|||她最大的优点是在压力下保持冷静的能力。']],
   ['determine', 'v.', '下决心', '真题', ['真题词频5次'], ['下决心'], ['Scientists determined the age of the fossil using carbon dating.|||科学家使用碳年代测定法确定了化石的年龄。']],
-  ['equipment', 'n.', '设备', '真题', ['真题词频5次'], ['设备'], ['equipment appears in recent gaokao exams.']],
-  ['desire', 'n./v.', 'n.渴望；v.渴望，强烈的愿望或需求', '真题', ['真题词频5次'], ['n.渴望；v.渴望，强烈的愿望或需求'], ['desire appears in recent gaokao exams.']],
-  ['advance', 'v./adj./n.', 'v.前进；adj.提前的；n.前进；提前', '真题', ['真题词频5次'], ['v.前进；adj.提前的；n.前进；提前'], ['advance appears in recent gaokao exams.']],
-  ['character', 'n.', '个性，指人的性格特征', '真题', ['真题词频5次'], ['个性，指人的性格特征'], ['character appears in recent gaokao exams.']],
-  ['private', 'adj.', '私人的，指个人的、非公开的', '真题', ['真题词频5次'], ['私人的，指个人的、非公开的'], ['private appears in recent gaokao exams.']],
+  ['equipment', 'n.', '设备', '真题', ['真题词频5次'], ['设备'], ['The laboratory is equipped with modern equipment.|||实验室配备了现代设备。']],
+  ['desire', 'n./v.', 'n.渴望；v.渴望，强烈的愿望或需求', '真题', ['真题词频5次'], ['n.渴望；v.渴望，强烈的愿望或需求'], ['He has a strong desire to help others in need.|||他有强烈的愿望去帮助有需要的人。']],
+  ['advance', 'v./adj./n.', 'v.前进；adj.提前的；n.前进；提前', '真题', ['真题词频5次'], ['v.前进；adj.提前的；n.前进；提前'], ['Technology advances at a rapid pace in the twenty-first century.|||二十一世纪科技飞速发展。']],
+  ['character', 'n.', '个性，指人的性格特征', '真题', ['真题词频5次'], ['个性，指人的性格特征'], ['The main character in the novel is a brave young woman.|||小说的主人公是一位勇敢的年轻女子。']],
+  ['private', 'adj.', '私人的，指个人的、非公开的', '真题', ['真题词频5次'], ['私人的，指个人的、非公开的'], ['This is a private conversation between the two of us.|||这是我们两人之间的私下谈话。']],
   ['persuade', 'v.', '说服，指通过言语或行动使他人信服', '真题', ['真题词频5次'], ['说服，指通过言语或行动使他人信服'], ['He persuaded his friend to join the volunteer program.|||他说服他的朋友加入志愿者计划。']],
-  ['security', 'n.', '安全；保障', '真题', ['真题词频5次'], ['安全；保障'], ['security appears in recent gaokao exams.']],
-  ['host', 'n./v.', 'n.主人；主持人；v.主办；主持', '真题', ['真题词频5次'], ['n.主人；主持人；v.主办；主持'], ['host appears in recent gaokao exams.']],
-  ['version', 'n.', '版本', '真题', ['真题词频5次'], ['版本'], ['version appears in recent gaokao exams.']],
-  ['chemical', 'adj./n.', 'adj.化学的；n.药品', '真题', ['真题词频5次'], ['adj.化学的；n.药品'], ['chemical appears in recent gaokao exams.']],
-  ['straight', 'adj.', 'adj.直的；直接的', '真题', ['真题词频5次'], ['adj.直的；直接的'], ['straight appears in recent gaokao exams.']],
-  ['treatment', 'n.', '对待；治疗', '真题', ['真题词频5次'], ['对待；治疗'], ['treatment appears in recent gaokao exams.']],
+  ['security', 'n.', '安全；保障', '真题', ['真题词频5次'], ['安全；保障'], ['Airport security has become much stricter since 2001.|||自2001年以来，机场安检变得更加严格。']],
+  ['host', 'n./v.', 'n.主人；主持人；v.主办；主持', '真题', ['真题词频5次'], ['n.主人；主持人；v.主办；主持'], ['Beijing will host the next international technology conference.|||北京将主办下一届国际科技大会。']],
+  ['version', 'n.', '版本', '真题', ['真题词频5次'], ['版本'], ['The latest version of the app includes new features.|||最新版应用包含了新功能。']],
+  ['chemical', 'adj./n.', 'adj.化学的；n.药品', '真题', ['真题词频5次'], ['adj.化学的；n.药品'], ['Some chemical reactions produce dangerous gases.|||一些化学反应会产生危险气体。']],
+  ['straight', 'adj.', 'adj.直的；直接的', '真题', ['真题词频5次'], ['adj.直的；直接的'], ['Go straight ahead and turn left at the second crossing.|||一直往前走，在第二个路口左转。']],
+  ['treatment', 'n.', '对待；治疗', '真题', ['真题词频5次'], ['对待；治疗'], ['The patient responded well to the new treatment.|||病人对新疗法反应良好。']],
   ['contribute', 'v.', '贡献；致力于（to）', '真题', ['真题词频5次'], ['贡献；致力于（to）'], ['Everyone should contribute to protecting the environment.|||每个人都应该为保护环境做出贡献。']],
-  ['constant', 'adj.', '持续不断的', '真题', ['真题词频5次'], ['持续不断的'], ['constant appears in recent gaokao exams.']],
+  ['constant', 'adj.', '持续不断的', '真题', ['真题词频5次'], ['持续不断的'], ['There is a constant need for blood donors in hospitals.|||医院对献血者的需求是持续不断的。']],
   ['delay', 'v./n.', 'v./n.推迟；耽搁', '真题', ['真题词频5次'], ['v./n.推迟；耽搁'], ['The flight was delayed by two hours due to bad weather.|||由于天气恶劣，航班延误了两个小时。']],
-  ['sympathy', 'n.', '同情；同情心', '真题', ['真题词频5次'], ['同情；同情心'], ['sympathy appears in recent gaokao exams.']],
-  ['accurate', 'adj.', '准确的；精确的', '真题', ['真题词频5次'], ['准确的；精确的'], ['accurate appears in recent gaokao exams.']],
-  ['assess', 'v.', '评估；评定', '真题', ['真题词频5次'], ['评估；评定'], ['assess appears in recent gaokao exams.']],
-  ['current', 'adj./n.', 'adj.当前的；现在的；流行的；n.水流；气流；电流；潮流', '真题', ['真题词频5次'], ['adj.当前的；现在的；流行的；n.水流；气流；电流；潮流'], ['current appears in recent gaokao exams.']],
-  ['household', 'n./adj.', 'n.家庭；一家人；adj.家庭的；家用的', '真题', ['真题词频5次'], ['n.家庭；一家人；adj.家庭的；家用的'], ['household appears in recent gaokao exams.']],
-  ['tough', 'adj.', '艰苦的；困难的；坚强的；坚韧的', '真题', ['真题词频5次'], ['艰苦的；困难的；坚强的；坚韧的'], ['tough appears in recent gaokao exams.']],
+  ['sympathy', 'n.', '同情；同情心', '真题', ['真题词频5次'], ['同情；同情心'], ['I felt great sympathy for the victims of the earthquake.|||我对地震灾民深表同情。']],
+  ['accurate', 'adj.', '准确的；精确的', '真题', ['真题词频5次'], ['准确的；精确的'], ['The weather forecast is not always accurate.|||天气预报并不总是准确的。']],
+  ['assess', 'v.', '评估；评定', '真题', ['真题词频5次'], ['评估；评定'], ['The teacher will assess the students progress at the end of the term.|||老师将在期末评估学生的进步。']],
+  ['current', 'adj./n.', 'adj.当前的；现在的；流行的；n.水流；气流；电流；潮流', '真题', ['真题词频5次'], ['adj.当前的；现在的；流行的；n.水流；气流；电流；潮流'], ['The current situation requires immediate action.|||当前局势需要立即采取行动。']],
+  ['household', 'n./adj.', 'n.家庭；一家人；adj.家庭的；家用的', '真题', ['真题词频5次'], ['n.家庭；一家人；adj.家庭的；家用的'], ['The average household in this city has three members.|||这个城市的平均家庭有三口人。']],
+  ['tough', 'adj.', '艰苦的；困难的；坚强的；坚韧的', '真题', ['真题词频5次'], ['艰苦的；困难的；坚强的；坚韧的'], ['The exam was tough, but I managed to pass it.|||考试很难，但我还是通过了。']],
   ['confirm', 'v.', '证实；确认；批准', '真题', ['真题词频5次'], ['证实；确认；批准'], ['Please confirm your reservation by email before the deadline.|||请在截止日期前通过电子邮件确认您的预订。']],
-  ['witness', 'v./n.', 'v.目击；见证；n.目击者；证人', '真题', ['真题词频5次'], ['v.目击；见证；n.目击者；证人'], ['witness appears in recent gaokao exams.']],
-  ['restore', 'v.', '恢复；修复；归还', '真题', ['真题词频5次'], ['恢复；修复；归还'], ['restore appears in recent gaokao exams.']],
-  ['multiple', 'adj./n.', 'adj.数量多的；多种多样的；n.倍数', '真题', ['真题词频5次'], ['adj.数量多的；多种多样的；n.倍数'], ['multiple appears in recent gaokao exams.']],
-  ['random', 'adj./n.', 'adj.随机的；随意的；n.随机；随意', '真题', ['真题词频5次'], ['adj.随机的；随意的；n.随机；随意'], ['random appears in recent gaokao exams.']],
-  ['phrase', 'n.', '短语、词组', '真题', ['真题词频5次'], ['短语、词组'], ['phrase appears in recent gaokao exams.']],
-  ['section', 'n.', '一段、部分', '真题', ['真题词频5次'], ['一段、部分'], ['section appears in recent gaokao exams.']],
-  ['string', 'n.', '细线、琴弦、一连串', '真题', ['真题词频5次'], ['细线、琴弦、一连串'], ['string appears in recent gaokao exams.']],
+  ['witness', 'v./n.', 'v.目击；见证；n.目击者；证人', '真题', ['真题词频5次'], ['v.目击；见证；n.目击者；证人'], ['Several witnesses saw the accident happen.|||几名目击者看到了事故的发生。']],
+  ['restore', 'v.', '恢复；修复；归还', '真题', ['真题词频5次'], ['恢复；修复；归还'], ['The city plans to restore the ancient temple next year.|||城市计划明年修复这座古寺。']],
+  ['multiple', 'adj./n.', 'adj.数量多的；多种多样的；n.倍数', '真题', ['真题词频5次'], ['adj.数量多的；多种多样的；n.倍数'], ['The question has multiple possible answers.|||这个问题有多个可能的答案。']],
+  ['random', 'adj./n.', 'adj.随机的；随意的；n.随机；随意', '真题', ['真题词频5次'], ['adj.随机的；随意的；n.随机；随意'], ['The teacher chose students at random to answer questions.|||老师随机选择学生回答问题。']],
+  ['phrase', 'n.', '短语、词组', '真题', ['真题词频5次'], ['短语、词组'], ['Can you explain the meaning of this phrase?|||你能解释这个短语的意思吗？']],
+  ['section', 'n.', '一段、部分', '真题', ['真题词频5次'], ['一段、部分'], ['Please read the first section of the article carefully.|||请仔细阅读文章的第一部分。']],
+  ['string', 'n.', '细线、琴弦、一连串', '真题', ['真题词频5次'], ['细线、琴弦、一连串'], ['She tied the package with a piece of string.|||她用一根绳子把包裹绑好。']],
   ['swap', 'v.', '交换', '真题', ['真题词频5次'], ['交换'], ['The two boys swapped sandwiches during lunch break.|||两个男孩在午休时间交换了三明治。']],
-  ['directly', 'adv.', '直接地；径直地；坦率地；正好；立即', '真题', ['真题词频4次'], ['直接地；径直地；坦率地；正好；立即'], ['directly appears in recent gaokao exams.']],
+  ['directly', 'adv.', '直接地；径直地；坦率地；正好；立即', '真题', ['真题词频4次'], ['直接地；径直地；坦率地；正好；立即'], ['The incident is directly related to the new policy.|||这一事件与新政策直接相关。']],
   ['valuable', 'adj./n.', 'adj.很有用的；宝贵的；很值钱的；贵重的；n.贵重物品（尤指珠宝）', '真题', ['真题词频4次'], ['adj.很有用的；宝贵的；很值钱的；贵重的；n.贵重物品（尤指珠宝）'], ['She learned a valuable lesson from her failure in the exam.|||她从考试失败中吸取了宝贵的教训。']],
-  ['necessarily', 'adv.', '必然地，指某事发生是不可避免的', '真题', ['真题词频4次'], ['必然地，指某事发生是不可避免的'], ['necessarily appears in recent gaokao exams.']],
-  ['achievement', 'n.', '成就，指通过努力获得的成功或结果', '真题', ['真题词频4次'], ['成就，指通过努力获得的成功或结果'], ['achievement appears in recent gaokao exams.']],
+  ['necessarily', 'adv.', '必然地，指某事发生是不可避免的', '真题', ['真题词频4次'], ['必然地，指某事发生是不可避免的'], ['Expensive is not necessarily better quality.|||贵的不一定质量更好。']],
+  ['achievement', 'n.', '成就，指通过努力获得的成功或结果', '真题', ['真题词频4次'], ['成就，指通过努力获得的成功或结果'], ['Winning the science fair was her greatest achievement.|||赢得科学展是她最大的成就。']],
   ['prevent', 'v.', '阻止，指防止某事发生或进行', '真题', ['真题词频4次'], ['阻止，指防止某事发生或进行'], ['Vaccines help prevent many serious diseases.|||疫苗有助于预防许多严重疾病。']],
-  ['relate', 'v.', '有关联（to）；陈述', '真题', ['真题词频4次'], ['有关联（to）；陈述'], ['relate appears in recent gaokao exams.']],
-  ['attack', 'n./v.', 'n./v.攻击', '真题', ['真题词频4次'], ['n./v.攻击'], ['attack appears in recent gaokao exams.']],
+  ['relate', 'v.', '有关联（to）；陈述', '真题', ['真题词频4次'], ['有关联（to）；陈述'], ['I can relate to the characters struggles in the novel.|||我能理解小说中人物的挣扎。']],
+  ['attack', 'n./v.', 'n./v.攻击', '真题', ['真题词频4次'], ['n./v.攻击'], ['The newspaper reported a cyber attack on the bank.|||报纸报道了对该银行的网络攻击。']],
   ['gather', 'v.', '聚集，使人或物集合在一起', '真题', ['真题词频4次'], ['聚集，使人或物集合在一起'], ['The family gathered around the table for a holiday dinner.|||一家人围着桌子吃节日晚餐。']],
-  ['praise', 'v./n.', 'v./n.称赞，表示对某人或某事的赞扬', '真题', ['真题词频4次'], ['v./n.称赞，表示对某人或某事的赞扬'], ['praise appears in recent gaokao exams.']],
-  ['recover', 'v.', '恢复，指从疾病、损失等中恢复过来', '真题', ['真题词频4次'], ['恢复，指从疾病、损失等中恢复过来'], ['recover appears in recent gaokao exams.']],
+  ['praise', 'v./n.', 'v./n.称赞，表示对某人或某事的赞扬', '真题', ['真题词频4次'], ['v./n.称赞，表示对某人或某事的赞扬'], ['The teacher praised the student for his excellent work.|||老师表扬了这位学生的出色表现。']],
+  ['recover', 'v.', '恢复，指从疾病、损失等中恢复过来', '真题', ['真题词频4次'], ['恢复，指从疾病、损失等中恢复过来'], ['It took him two weeks to recover from the illness.|||他花了两周时间才从疾病中康复。']],
   ['exchange', 'v./n.', 'v./n.交换，指互相给予或接受某物', '真题', ['真题词频4次'], ['v./n.交换，指互相给予或接受某物'], ['Students can exchange ideas during the group discussion.|||学生可以在小组讨论期间交换意见。']],
-  ['eager', 'adj.', '渴望的，指对某事物有强烈的愿望', '真题', ['真题词频4次'], ['渴望的，指对某事物有强烈的愿望'], ['eager appears in recent gaokao exams.']],
-  ['apply', 'v.', '应用（to）；申请（for）', '真题', ['真题词频4次'], ['应用（to）；申请（for）'], ['apply appears in recent gaokao exams.']],
+  ['eager', 'adj.', '渴望的，指对某事物有强烈的愿望', '真题', ['真题词频4次'], ['渴望的，指对某事物有强烈的愿望'], ['The children were eager to open their birthday presents.|||孩子们迫不及待地想打开生日礼物。']],
+  ['apply', 'v.', '应用（to）；申请（for）', '真题', ['真题词频4次'], ['应用（to）；申请（for）'], ['You should apply for the scholarship before the deadline.|||你应该在截止日期前申请奖学金。']],
   ['select', 'v.', '挑选；选择', '真题', ['真题词频4次'], ['挑选；选择'], ['The coach selected the best players for the tournament.|||教练为比赛选择了最好的球员。']],
-  ['urgent', 'adj.', '紧急的；迫切的', '真题', ['真题词频4次'], ['紧急的；迫切的'], ['urgent appears in recent gaokao exams.']],
-  ['track', 'v./n.', 'v.跟踪；n.小路；轨迹', '真题', ['真题词频4次'], ['v.跟踪；n.小路；轨迹'], ['track appears in recent gaokao exams.']],
+  ['urgent', 'adj.', '紧急的；迫切的', '真题', ['真题词频4次'], ['紧急的；迫切的'], ['There is an urgent need for medical supplies in the area.|||该地区急需医疗物资。']],
+  ['track', 'v./n.', 'v.跟踪；n.小路；轨迹', '真题', ['真题词频4次'], ['v.跟踪；n.小路；轨迹'], ['The police tracked the criminal for three days.|||警察追踪了罪犯三天。']],
   ['reflect', 'v.', '反射；反映；思考', '真题', ['真题词频4次'], ['反射；反映；思考'], ['The calm lake reflected the mountains like a mirror.|||平静的湖面像镜子一样映照着群山。']],
-  ['contact', 'v./n.', 'v./n.联系（with）；接触', '真题', ['真题词频4次'], ['v./n.联系（with）；接触'], ['contact appears in recent gaokao exams.']],
-  ['represent', 'v.', '展示；代表', '真题', ['真题词频4次'], ['展示；代表'], ['represent appears in recent gaokao exams.']],
-  ['purchase', 'v./n.', 'v./n.购买', '真题', ['真题词频4次'], ['v./n.购买'], ['purchase appears in recent gaokao exams.']],
-  ['conflict', 'n.', '冲突', '真题', ['真题词频4次'], ['冲突'], ['conflict appears in recent gaokao exams.']],
-  ['grateful', 'adj.', '感激的（to）', '真题', ['真题词频4次'], ['感激的（to）'], ['grateful appears in recent gaokao exams.']],
+  ['contact', 'v./n.', 'v./n.联系（with）；接触', '真题', ['真题词频4次'], ['v./n.联系（with）；接触'], ['Please contact me if you have any questions.|||如有任何问题请联系我。']],
+  ['represent', 'v.', '展示；代表', '真题', ['真题词频4次'], ['展示；代表'], ['The flag represents the spirit of the nation.|||国旗代表了民族的精神。']],
+  ['purchase', 'v./n.', 'v./n.购买', '真题', ['真题词频4次'], ['v./n.购买'], ['You can purchase tickets online or at the box office.|||你可以在网上或售票处购票。']],
+  ['conflict', 'n.', '冲突', '真题', ['真题词频4次'], ['冲突'], ['Good communication can help resolve conflicts between people.|||良好的沟通有助于解决人与人之间的冲突。']],
+  ['grateful', 'adj.', '感激的（to）', '真题', ['真题词频4次'], ['感激的（to）'], ['I am grateful for all the help you have given me.|||我非常感谢你给予我的所有帮助。']],
   ['celebrate', 'v.', '庆祝', '真题', ['真题词频4次'], ['庆祝'], ['The whole family gathered to celebrate the Spring Festival.|||全家人聚在一起庆祝春节。']],
-  ['previous', 'adj.', '先前的；以前的', '真题', ['真题词频4次'], ['先前的；以前的'], ['previous appears in recent gaokao exams.']],
-  ['reliable', 'adj.', '可靠的；可信赖的', '真题', ['真题词频4次'], ['可靠的；可信赖的'], ['reliable appears in recent gaokao exams.']],
-  ['trap', 'v./n.', 'v.使陷入困境；诱捕；n.陷阱', '真题', ['真题词频4次'], ['v.使陷入困境；诱捕；n.陷阱'], ['trap appears in recent gaokao exams.']],
+  ['previous', 'adj.', '先前的；以前的', '真题', ['真题词频4次'], ['先前的；以前的'], ['Her previous experience helped her get the new job.|||她之前的经验帮助她获得了这份新工作。']],
+  ['reliable', 'adj.', '可靠的；可信赖的', '真题', ['真题词频4次'], ['可靠的；可信赖的'], ['The website is a reliable source of information for students.|||这个网站是学生可靠的信息来源。']],
+  ['trap', 'v./n.', 'v.使陷入困境；诱捕；n.陷阱', '真题', ['真题词频4次'], ['v.使陷入困境；诱捕；n.陷阱'], ['The hunters set a trap to catch the wild boar.|||猎人们设下陷阱捕捉野猪。']],
   ['citizen', 'n.', '公民；市民', '真题', ['真题词频4次'], ['公民；市民'], ['Every citizen has the right to vote in democratic elections.|||每个公民都有在民主选举中投票的权利。']],
-  ['cautious', 'adj.', '小心的；谨慎的', '真题', ['真题词频4次'], ['小心的；谨慎的'], ['cautious appears in recent gaokao exams.']],
-  ['federal', 'adj.', '联邦制的；联邦政府的', '真题', ['真题词频4次'], ['联邦制的；联邦政府的'], ['federal appears in recent gaokao exams.']],
+  ['cautious', 'adj.', '小心的；谨慎的', '真题', ['真题词频4次'], ['小心的；谨慎的'], ['Be cautious when sharing personal information online.|||在网上分享个人信息时要谨慎。']],
+  ['federal', 'adj.', '联邦制的；联邦政府的', '真题', ['真题词频4次'], ['联邦制的；联邦政府的'], ['The federal government announced new education policies.|||联邦政府宣布了新的教育政策。']],
   ['chief', 'adj./n.', 'adj.主要的；首要的；n.首领；酋长', '真题', ['真题词频4次'], ['adj.主要的；首要的；n.首领；酋长'], ['The chief editor approved the article for publication.|||主编批准了这篇文章的出版。']],
-  ['remote', 'adj.', '遥远的；偏僻的；疏远的；遥控的', '真题', ['真题词频4次'], ['遥远的；偏僻的；疏远的；遥控的'], ['remote appears in recent gaokao exams.']],
-  ['appeal', 'v./n.', 'v.呼吁；上诉；有吸引力；n.呼吁；上诉；吸引力', '真题', ['真题词频4次'], ['v.呼吁；上诉；有吸引力；n.呼吁；上诉；吸引力'], ['appeal appears in recent gaokao exams.']],
-  ['trend', 'n./v.', 'n.趋势；潮流；v.趋向；倾向', '真题', ['真题词频4次'], ['n.趋势；潮流；v.趋向；倾向'], ['trend appears in recent gaokao exams.']],
-  ['adopt', 'v.', '收养；采取；采纳', '真题', ['真题词频4次'], ['收养；采取；采纳'], ['adopt appears in recent gaokao exams.']],
-  ['assume', 'v.', '假定；假设；认为；承担（责任等）', '真题', ['真题词频4次'], ['假定；假设；认为；承担（责任等）'], ['assume appears in recent gaokao exams.']],
-  ['cancel', 'v.', '取消；撤销；废除', '真题', ['真题词频4次'], ['取消；撤销；废除'], ['cancel appears in recent gaokao exams.']],
-  ['advocate', 'v./n.', 'v.提倡；拥护；主张；n.提倡者；拥护者', '真题', ['真题词频4次'], ['v.提倡；拥护；主张；n.提倡者；拥护者'], ['advocate appears in recent gaokao exams.']],
-  ['brilliant', 'adj.', '明亮的；闪耀的；杰出的；精彩的', '真题', ['真题词频4次'], ['明亮的；闪耀的；杰出的；精彩的'], ['brilliant appears in recent gaokao exams.']],
-  ['opponent', 'n.', '对手；敌手；反对者', '真题', ['真题词频4次'], ['对手；敌手；反对者'], ['opponent appears in recent gaokao exams.']],
-  ['awful', 'adj.', '很坏的；极讨厌的；非常的；可怕的', '真题', ['真题词频4次'], ['很坏的；极讨厌的；非常的；可怕的'], ['awful appears in recent gaokao exams.']],
-  ['minimize', 'v.', '使减少到最低限度；降低；贬低；使显得不重要', '真题', ['真题词频4次'], ['使减少到最低限度；降低；贬低；使显得不重要'], ['minimize appears in recent gaokao exams.']],
-  ['beam', 'n.', '光束', '真题', ['真题词频4次'], ['光束'], ['beam appears in recent gaokao exams.']],
-  ['phenomenon', 'n.', '现象', '真题', ['真题词频4次'], ['现象'], ['phenomenon appears in recent gaokao exams.']],
+  ['remote', 'adj.', '遥远的；偏僻的；疏远的；遥控的', '真题', ['真题词频4次'], ['遥远的；偏僻的；疏远的；遥控的'], ['They live in a remote village far from the city.|||他们住在远离城市的偏远村庄。']],
+  ['appeal', 'v./n.', 'v.呼吁；上诉；有吸引力；n.呼吁；上诉；吸引力', '真题', ['真题词频4次'], ['v.呼吁；上诉；有吸引力；n.呼吁；上诉；吸引力'], ['The charity made an appeal for donations after the flood.|||洪水过后，慈善机构呼吁捐款。']],
+  ['trend', 'n./v.', 'n.趋势；潮流；v.趋向；倾向', '真题', ['真题词频4次'], ['n.趋势；潮流；v.趋向；倾向'], ['There is a growing trend toward remote working.|||远程办公的趋势日益增长。']],
+  ['adopt', 'v.', '收养；采取；采纳', '真题', ['真题词频4次'], ['收养；采取；采纳'], ['The school adopted a new method of teaching English.|||学校采用了一种新的英语教学方法。']],
+  ['assume', 'v.', '假定；假设；认为；承担（责任等）', '真题', ['真题词频4次'], ['假定；假设；认为；承担（责任等）'], ['Dont assume that everyone shares your opinion.|||不要假设每个人都同意你的观点。']],
+  ['cancel', 'v.', '取消；撤销；废除', '真题', ['真题词频4次'], ['取消；撤销；废除'], ['The airline canceled the flight due to bad weather.|||航空公司因天气恶劣取消了航班。']],
+  ['advocate', 'v./n.', 'v.提倡；拥护；主张；n.提倡者；拥护者', '真题', ['真题词频4次'], ['v.提倡；拥护；主张；n.提倡者；拥护者'], ['Many scientists advocate for stronger environmental laws.|||许多科学家倡导更严格的环境法律。']],
+  ['brilliant', 'adj.', '明亮的；闪耀的；杰出的；精彩的', '真题', ['真题词频4次'], ['明亮的；闪耀的；杰出的；精彩的'], ['She gave a brilliant performance in the piano competition.|||她在钢琴比赛中表现极为出色。']],
+  ['opponent', 'n.', '对手；敌手；反对者', '真题', ['真题词频4次'], ['对手；敌手；反对者'], ['The chess player defeated his opponent in just ten moves.|||棋手仅用十步就击败了对手。']],
+  ['awful', 'adj.', '很坏的；极讨厌的；非常的；可怕的', '真题', ['真题词频4次'], ['很坏的；极讨厌的；非常的；可怕的'], ['The weather has been awful for the past three days.|||过去三天的天气糟透了。']],
+  ['minimize', 'v.', '使减少到最低限度；降低；贬低；使显得不重要', '真题', ['真题词频4次'], ['使减少到最低限度；降低；贬低；使显得不重要'], ['We should minimize the use of plastic bags.|||我们应该尽量减少塑料袋的使用。']],
+  ['beam', 'n.', '光束', '真题', ['真题词频4次'], ['光束'], ['A beam of sunlight came through the window.|||一束阳光透过窗户照了进来。']],
+  ['phenomenon', 'n.', '现象', '真题', ['真题词频4次'], ['现象'], ['Aurora borealis is a beautiful natural phenomenon.|||北极光是一种美丽的自然现象。']],
   ['expect', 'v.', '预料；预期；期待；指望', '真题', ['真题词频3次'], ['预料；预期；期待；指望'], ['We expect all students to arrive on time for the lecture.|||我们希望所有学生都能准时到达讲座地点。']],
-  ['manage', 'v.', '管理；经营；设法做到', '真题', ['真题词频3次'], ['管理；经营；设法做到'], ['manage appears in recent gaokao exams.']],
-  ['sensitive', 'adj.', '敏感的；灵敏的；善解人意的；易生气的；神经过敏的', '真题', ['真题词频3次'], ['敏感的；灵敏的；善解人意的；易生气的；神经过敏的'], ['sensitive appears in recent gaokao exams.']],
-  ['attend', 'v.', 'v.出席；关心；处理', '真题', ['真题词频3次'], ['v.出席；关心；处理'], ['attend appears in recent gaokao exams.']],
-  ['concern', 'v.', '关心（about）；涉及', '真题', ['真题词频3次'], ['关心（about）；涉及'], ['concern appears in recent gaokao exams.']],
-  ['stress', 'v./n.', 'v.强调；n.压力；强调', '真题', ['真题词频3次'], ['v.强调；n.压力；强调'], ['stress appears in recent gaokao exams.']],
+  ['manage', 'v.', '管理；经营；设法做到', '真题', ['真题词频3次'], ['管理；经营；设法做到'], ['She managed to finish the project ahead of schedule.|||她设法提前完成了项目。']],
+  ['sensitive', 'adj.', '敏感的；灵敏的；善解人意的；易生气的；神经过敏的', '真题', ['真题词频3次'], ['敏感的；灵敏的；善解人意的；易生气的；神经过敏的'], ['Some people are sensitive to pollen in spring.|||有些人在春天对花粉敏感。']],
+  ['attend', 'v.', 'v.出席；关心；处理', '真题', ['真题词频3次'], ['v.出席；关心；处理'], ['All students are required to attend the meeting.|||所有学生都必须参加会议。']],
+  ['concern', 'v.', '关心（about）；涉及', '真题', ['真题词频3次'], ['关心（about）；涉及'], ['The parents concern for their children is understandable.|||父母对孩子的关心是可以理解的。']],
+  ['stress', 'v./n.', 'v.强调；n.压力；强调', '真题', ['真题词频3次'], ['v.强调；n.压力；强调'], ['Regular exercise can help reduce stress.|||经常锻炼有助于减轻压力。']],
   ['seek', 'v.', '寻找，试图找到某物或某人', '真题', ['真题词频3次'], ['寻找，试图找到某物或某人'], ['Many students seek scholarships to help pay for tuition.|||许多学生寻求奖学金来帮助支付学费。']],
-  ['equal', 'adj.', '相等的，表示数量、质量等相同', '真题', ['真题词频3次'], ['相等的，表示数量、质量等相同'], ['equal appears in recent gaokao exams.']],
-  ['destruction', 'n.', '破坏，指对某物的毁坏', '真题', ['真题词频3次'], ['破坏，指对某物的毁坏'], ['destruction appears in recent gaokao exams.']],
-  ['function', 'n./v.', 'n.功能，指某物或某系统的用途或作用；v.运行，起作用', '真题', ['真题词频3次'], ['n.功能，指某物或某系统的用途或作用；v.运行，起作用'], ['function appears in recent gaokao exams.']],
+  ['equal', 'adj.', '相等的，表示数量、质量等相同', '真题', ['真题词频3次'], ['相等的，表示数量、质量等相同'], ['All people should have equal opportunities in education.|||所有人都应该在教育中享有平等的机会。']],
+  ['destruction', 'n.', '破坏，指对某物的毁坏', '真题', ['真题词频3次'], ['破坏，指对某物的毁坏'], ['The hurricane caused widespread destruction along the coast.|||飓风在沿海地区造成了广泛的破坏。']],
+  ['function', 'n./v.', 'n.功能，指某物或某系统的用途或作用；v.运行，起作用', '真题', ['真题词频3次'], ['n.功能，指某物或某系统的用途或作用；v.运行，起作用'], ['The main function of the heart is to pump blood.|||心脏的主要功能是泵血。']],
   ['repeat', 'v./n.', 'v./n.重复，指再做一次或多次做某事', '真题', ['真题词频3次'], ['v./n.重复，指再做一次或多次做某事'], ['Could you please repeat the question? I did not hear it clearly.|||您能重复这个问题吗？我没有听清楚。']],
-  ['strict', 'adj.', '严格的，指对规则、纪律等要求严格', '真题', ['真题词频3次'], ['严格的，指对规则、纪律等要求严格'], ['strict appears in recent gaokao exams.']],
-  ['gradually', 'adv.', '逐渐地，指慢慢地、一步一步地', '真题', ['真题词频3次'], ['逐渐地，指慢慢地、一步一步地'], ['gradually appears in recent gaokao exams.']],
-  ['belief', 'n.', '信念，指对某事的坚定信仰', '真题', ['真题词频3次'], ['信念，指对某事的坚定信仰'], ['belief appears in recent gaokao exams.']],
-  ['imagination', 'n.', '想象力，指创造或构思新事物的能力', '真题', ['真题词频3次'], ['想象力，指创造或构思新事物的能力'], ['imagination appears in recent gaokao exams.']],
-  ['recommend', 'v.', '推荐，指向他人介绍或提议某物', '真题', ['真题词频3次'], ['推荐，指向他人介绍或提议某物'], ['recommend appears in recent gaokao exams.']],
-  ['literature', 'n.', '文学', '真题', ['真题词频3次'], ['文学'], ['literature appears in recent gaokao exams.']],
+  ['strict', 'adj.', '严格的，指对规则、纪律等要求严格', '真题', ['真题词频3次'], ['严格的，指对规则、纪律等要求严格'], ['Our school has strict rules about using phones in class.|||我们学校对课堂上使用手机有严格的规定。']],
+  ['gradually', 'adv.', '逐渐地，指慢慢地、一步一步地', '真题', ['真题词频3次'], ['逐渐地，指慢慢地、一步一步地'], ['The weather gradually became warmer as spring approached.|||随着春天临近，天气逐渐变暖。']],
+  ['belief', 'n.', '信念，指对某事的坚定信仰', '真题', ['真题词频3次'], ['信念，指对某事的坚定信仰'], ['His belief in hard work has guided him throughout life.|||他对努力的信念贯穿了他的一生。']],
+  ['imagination', 'n.', '想象力，指创造或构思新事物的能力', '真题', ['真题词频3次'], ['想象力，指创造或构思新事物的能力'], ['A good writer needs a vivid imagination.|||一个好的作家需要丰富的想象力。']],
+  ['recommend', 'v.', '推荐，指向他人介绍或提议某物', '真题', ['真题词频3次'], ['推荐，指向他人介绍或提议某物'], ['I highly recommend this book to all students.|||我向所有学生强烈推荐这本书。']],
+  ['literature', 'n.', '文学', '真题', ['真题词频3次'], ['文学'], ['She is studying English literature at university.|||她在大学学习英国文学。']],
   ['object', 'v./n.', 'v.反对（to）；n.目标；物体', '真题', ['真题词频3次'], ['v.反对（to）；n.目标；物体'], ['Several residents objected to the new construction plan.|||几位居民反对新的建设计划。']],
-  ['solution', 'n.', '解决办法；解答', '真题', ['真题词频3次'], ['解决办法；解答'], ['solution appears in recent gaokao exams.']],
-  ['wealth', 'n.', '财富；财产', '真题', ['真题词频3次'], ['财富；财产'], ['wealth appears in recent gaokao exams.']],
-  ['appreciate', 'v.', '欣赏；感激', '真题', ['真题词频3次'], ['欣赏；感激'], ['appreciate appears in recent gaokao exams.']],
-  ['historical', 'adj.', '历史的', '真题', ['真题词频3次'], ['历史的'], ['historical appears in recent gaokao exams.']],
-  ['primary', 'adj.', '主要的；首要的；初级的', '真题', ['真题词频3次'], ['主要的；首要的；初级的'], ['primary appears in recent gaokao exams.']],
-  ['concert', 'n.', '音乐会', '真题', ['真题词频3次'], ['音乐会'], ['concert appears in recent gaokao exams.']],
-  ['decade', 'n.', '十年', '真题', ['真题词频3次'], ['十年'], ['decade appears in recent gaokao exams.']],
-  ['symbol', 'n.', '象征；符号', '真题', ['真题词频3次'], ['象征；符号'], ['symbol appears in recent gaokao exams.']],
-  ['ceremony', 'n.', '仪式；典礼', '真题', ['真题词频3次'], ['仪式；典礼'], ['ceremony appears in recent gaokao exams.']],
-  ['typical', 'adj.', '典型的；有代表性的', '真题', ['真题词频3次'], ['典型的；有代表性的'], ['typical appears in recent gaokao exams.']],
-  ['negative', 'adj./n.', 'adj.消极的；负面的；否定的；n.否定；负数', '真题', ['真题词频3次'], ['adj.消极的；负面的；否定的；n.否定；负数'], ['negative appears in recent gaokao exams.']],
+  ['solution', 'n.', '解决办法；解答', '真题', ['真题词频3次'], ['解决办法；解答'], ['We need to find a solution to the traffic problem.|||我们需要找到解决交通问题的办法。']],
+  ['wealth', 'n.', '财富；财产', '真题', ['真题词频3次'], ['财富；财产'], ['Health is more important than wealth.|||健康比财富更重要。']],
+  ['appreciate', 'v.', '欣赏；感激', '真题', ['真题词频3次'], ['欣赏；感激'], ['I really appreciate your help with the project.|||我非常感谢你对项目的帮助。']],
+  ['historical', 'adj.', '历史的', '真题', ['真题词频3次'], ['历史的'], ['This city has many historical buildings worth visiting.|||这座城市有许多值得参观的历史建筑。']],
+  ['primary', 'adj.', '主要的；首要的；初级的', '真题', ['真题词频3次'], ['主要的；首要的；初级的'], ['The primary reason for his success is hard work.|||他成功的主要原因在于努力。']],
+  ['concert', 'n.', '音乐会', '真题', ['真题词频3次'], ['音乐会'], ['We went to a classical music concert last night.|||昨晚我们去听了一场古典音乐会。']],
+  ['decade', 'n.', '十年', '真题', ['真题词频3次'], ['十年'], ['Over the past decade, technology has changed dramatically.|||在过去十年里，技术发生了巨大变化。']],
+  ['symbol', 'n.', '象征；符号', '真题', ['真题词频3次'], ['象征；符号'], ['The dove is a symbol of peace around the world.|||鸽子是世界和平的象征。']],
+  ['ceremony', 'n.', '仪式；典礼', '真题', ['真题词频3次'], ['仪式；典礼'], ['The opening ceremony of the Olympics was spectacular.|||奥运会开幕式非常壮观。']],
+  ['typical', 'adj.', '典型的；有代表性的', '真题', ['真题词频3次'], ['典型的；有代表性的'], ['This is a typical example of modern architecture.|||这是现代建筑的典型例子。']],
+  ['negative', 'adj./n.', 'adj.消极的；负面的；否定的；n.否定；负数', '真题', ['真题词频3次'], ['adj.消极的；负面的；否定的；n.否定；负数'], ['Negative attitudes can affect your performance at work.|||消极的态度会影响你的工作表现。']],
   ['combine', 'v.', '使结合；使联合；（使）混合', '真题', ['真题词频3次'], ['使结合；使联合；（使）混合'], ['The chef combined fresh ingredients to create a delicious dish.|||厨师将新鲜食材融合在一起，打造出一道美味佳肴。']],
-  ['remark', 'v./n.', 'v.评论；说起；n.评论；言论', '真题', ['真题词频3次'], ['v.评论；说起；n.评论；言论'], ['remark appears in recent gaokao exams.']],
-  ['curiosity', 'n.', '好奇心；求知欲', '真题', ['真题词频3次'], ['好奇心；求知欲'], ['curiosity appears in recent gaokao exams.']],
-  ['atmosphere', 'n.', '大气；气氛；氛围', '真题', ['真题词频3次'], ['大气；气氛；氛围'], ['atmosphere appears in recent gaokao exams.']],
+  ['remark', 'v./n.', 'v.评论；说起；n.评论；言论', '真题', ['真题词频3次'], ['v.评论；说起；n.评论；言论'], ['The teacher made a remark about the importance of reading.|||老师谈到了阅读的重要性。']],
+  ['curiosity', 'n.', '好奇心；求知欲', '真题', ['真题词频3次'], ['好奇心；求知欲'], ['Children are full of curiosity about the world around them.|||孩子们对周围的世界充满好奇。']],
+  ['atmosphere', 'n.', '大气；气氛；氛围', '真题', ['真题词频3次'], ['大气；气氛；氛围'], ['The restaurant has a warm and friendly atmosphere.|||这家餐厅氛围温馨友好。']],
   ['recall', 'v./n.', 'v.回忆起；召回；收回；n.回忆；记忆力', '真题', ['真题词频3次'], ['v.回忆起；召回；收回；n.回忆；记忆力'], ['She could not recall where she had left her umbrella.|||她不记得把伞放在哪里了。']],
   ['resist', 'v.', '抵抗；抵制；忍住', '真题', ['真题词频3次'], ['抵抗；抵制；忍住'], ['It is hard to resist the temptation of eating chocolate.|||很难抗拒吃巧克力的诱惑。']],
-  ['ambition', 'n.', '雄心；野心；抱负', '真题', ['真题词频3次'], ['雄心；野心；抱负'], ['ambition appears in recent gaokao exams.']],
-  ['assistant', 'n./adj.', 'n.助手；助理；adj.辅助的；助理的', '真题', ['真题词频3次'], ['n.助手；助理；adj.辅助的；助理的'], ['assistant appears in recent gaokao exams.']],
-  ['destination', 'n.', '目的地；终点', '真题', ['真题词频3次'], ['目的地；终点'], ['destination appears in recent gaokao exams.']],
-  ['peak', 'n./adj./v.', 'n.山峰；高峰；顶点；adj.最高的；高峰的；v.达到高峰；达到最大值', '真题', ['真题词频3次'], ['n.山峰；高峰；顶点；adj.最高的；高峰的；v.达到高峰；达到最大值'], ['peak appears in recent gaokao exams.']],
-  ['harmony', 'n.', '和谐；融洽；和声', '真题', ['真题词频3次'], ['和谐；融洽；和声'], ['harmony appears in recent gaokao exams.']],
-  ['distinct', 'adj.', '清晰的；明显的；截然不同的', '真题', ['真题词频3次'], ['清晰的；明显的；截然不同的'], ['distinct appears in recent gaokao exams.']],
-  ['principle', 'n.', '原则；原理；准则', '真题', ['真题词频3次'], ['原则；原理；准则'], ['principle appears in recent gaokao exams.']],
-  ['pure', 'adj.', '纯的；纯净的；纯粹的；纯洁的', '真题', ['真题词频3次'], ['纯的；纯净的；纯粹的；纯洁的'], ['pure appears in recent gaokao exams.']],
-  ['clarify', 'v.', '澄清；阐明；使清楚易懂', '真题', ['真题词频3次'], ['澄清；阐明；使清楚易懂'], ['clarify appears in recent gaokao exams.']],
-  ['tourism', 'n.', '旅游业；观光业', '真题', ['真题词频3次'], ['旅游业；观光业'], ['tourism appears in recent gaokao exams.']],
-  ['deliberately', 'adv.', '故意地；蓄意地；从容不迫地', '真题', ['真题词频3次'], ['故意地；蓄意地；从容不迫地'], ['deliberately appears in recent gaokao exams.']],
-  ['sustain', 'v.', '维持；支撑；承受；经受；支持', '真题', ['真题词频3次'], ['维持；支撑；承受；经受；支持'], ['sustain appears in recent gaokao exams.']],
-  ['agriculture', 'n.', '农业', '真题', ['真题词频3次'], ['农业'], ['agriculture appears in recent gaokao exams.']],
-  ['authority', 'n.', '权力、权威、官方', '真题', ['真题词频3次'], ['权力、权威、官方'], ['authority appears in recent gaokao exams.']],
-  ['conference', 'n.', '大型会议', '真题', ['真题词频3次'], ['大型会议'], ['conference appears in recent gaokao exams.']],
-  ['context', 'n.', '上下文、语境', '真题', ['真题词频3次'], ['上下文、语境'], ['context appears in recent gaokao exams.']],
-  ['estate', 'n.', '私有土地、庄园', '真题', ['真题词频3次'], ['私有土地、庄园'], ['estate appears in recent gaokao exams.']],
-  ['hive', 'n.', '蜂箱', '真题', ['真题词频3次'], ['蜂箱'], ['hive appears in recent gaokao exams.']],
-  ['maximum', 'adj.', '最大程度的', '真题', ['真题词频3次'], ['最大程度的'], ['maximum appears in recent gaokao exams.']],
-  ['minimum', 'adj.', '最小程度的', '真题', ['真题词频3次'], ['最小程度的'], ['minimum appears in recent gaokao exams.']],
-  ['personnel', 'n.', '全体人员、职员', '真题', ['真题词频3次'], ['全体人员、职员'], ['personnel appears in recent gaokao exams.']],
-  ['scale', 'n.', '大小、规模、刻度', '真题', ['真题词频3次'], ['大小、规模、刻度'], ['scale appears in recent gaokao exams.']],
-  ['straw', 'n.', '稻草', '真题', ['真题词频3次'], ['稻草'], ['straw appears in recent gaokao exams.']],
-  ['position', 'n./v.', 'n.位置；立场；v.定位；安排', '真题', ['真题词频2次'], ['n.位置；立场；v.定位；安排'], ['position appears in recent gaokao exams.']],
-  ['force', 'v./n.', 'v.强迫；n.力量', '真题', ['真题词频2次'], ['v.强迫；n.力量'], ['force appears in recent gaokao exams.']],
-  ['satisfy', 'v.', '使满意', '真题', ['真题词频2次'], ['使满意'], ['satisfy appears in recent gaokao exams.']],
-  ['organize', 'v.', '组织；安排', '真题', ['真题词频2次'], ['组织；安排'], ['organize appears in recent gaokao exams.']],
-  ['favor', 'n./v.', 'n.好意；v.偏爱', '真题', ['真题词频2次'], ['n.好意；v.偏爱'], ['favor appears in recent gaokao exams.']],
-  ['publish', 'v.', '出版；发行', '真题', ['真题词频2次'], ['出版；发行'], ['publish appears in recent gaokao exams.']],
+  ['ambition', 'n.', '雄心；野心；抱负', '真题', ['真题词频3次'], ['雄心；野心；抱负'], ['His ambition is to become a successful scientist.|||他的志向是成为一名成功的科学家。']],
+  ['assistant', 'n./adj.', 'n.助手；助理；adj.辅助的；助理的', '真题', ['真题词频3次'], ['n.助手；助理；adj.辅助的；助理的'], ['The professor hired a research assistant for the project.|||教授为项目聘请了一位研究助手。']],
+  ['destination', 'n.', '目的地；终点', '真题', ['真题词频3次'], ['目的地；终点'], ['Paris is a popular tourist destination in Europe.|||巴黎是欧洲受欢迎的旅游目的地。']],
+  ['peak', 'n./adj./v.', 'n.山峰；高峰；顶点；adj.最高的；高峰的；v.达到高峰；达到最大值', '真题', ['真题词频3次'], ['n.山峰；高峰；顶点；adj.最高的；高峰的；v.达到高峰；达到最大值'], ['The mountain peak was covered with snow all year round.|||山顶终年覆盖着积雪。']],
+  ['harmony', 'n.', '和谐；融洽；和声', '真题', ['真题词频3次'], ['和谐；融洽；和声'], ['People of different cultures can live in harmony.|||不同文化的人可以和谐相处。']],
+  ['distinct', 'adj.', '清晰的；明显的；截然不同的', '真题', ['真题词频3次'], ['清晰的；明显的；截然不同的'], ['There are two distinct types of students in this class.|||这个班有两种明显不同的学生类型。']],
+  ['principle', 'n.', '原则；原理；准则', '真题', ['真题词频3次'], ['原则；原理；准则'], ['Honesty is the fundamental principle of this company.|||诚信是这家公司的基本原则。']],
+  ['pure', 'adj.', '纯的；纯净的；纯粹的；纯洁的', '真题', ['真题词频3次'], ['纯的；纯净的；纯粹的；纯洁的'], ['The water in this mountain stream is pure and clean.|||这条山涧的水纯净干净。']],
+  ['clarify', 'v.', '澄清；阐明；使清楚易懂', '真题', ['真题词频3次'], ['澄清；阐明；使清楚易懂'], ['Could you clarify what you mean by that statement?|||你能说明一下那句话的意思吗？']],
+  ['tourism', 'n.', '旅游业；观光业', '真题', ['真题词频3次'], ['旅游业；观光业'], ['Tourism is the main source of income for this island.|||旅游业是这个岛屿的主要收入来源。']],
+  ['deliberately', 'adv.', '故意地；蓄意地；从容不迫地', '真题', ['真题词频3次'], ['故意地；蓄意地；从容不迫地'], ['He deliberately ignored the question during the interview.|||他在采访中故意回避了这个问题。']],
+  ['sustain', 'v.', '维持；支撑；承受；经受；支持', '真题', ['真题词频3次'], ['维持；支撑；承受；经受；支持'], ['It is hard to sustain economic growth without innovation.|||没有创新很难维持经济增长。']],
+  ['agriculture', 'n.', '农业', '真题', ['真题词频3次'], ['农业'], ['Modern agriculture relies heavily on technology.|||现代农业严重依赖技术。']],
+  ['authority', 'n.', '权力、权威、官方', '真题', ['真题词频3次'], ['权力、权威、官方'], ['The local authority decided to build a new school.|||地方当局决定建一所新学校。']],
+  ['conference', 'n.', '大型会议', '真题', ['真题词频3次'], ['大型会议'], ['She will attend an international conference next month.|||她下个月将参加一个国际会议。']],
+  ['context', 'n.', '上下文、语境', '真题', ['真题词频3次'], ['上下文、语境'], ['You can guess the meaning from the context of the sentence.|||你可以从句子的上下文猜出意思。']],
+  ['estate', 'n.', '私有土地、庄园', '真题', ['真题词频3次'], ['私有土地、庄园'], ['He bought a large estate in the countryside.|||他在乡下买了一处大庄园。']],
+  ['hive', 'n.', '蜂箱', '真题', ['真题词频3次'], ['蜂箱'], ['Bees store honey in their hive for the winter.|||蜜蜂在蜂巢里储存蜂蜜过冬。']],
+  ['maximum', 'adj.', '最大程度的', '真题', ['真题词频3次'], ['最大程度的'], ['The maximum speed on this road is 80 kilometers per hour.|||这条路的最高限速是每小时80公里。']],
+  ['minimum', 'adj.', '最小程度的', '真题', ['真题词频3次'], ['最小程度的'], ['The minimum age for driving is eighteen in most countries.|||大多数国家驾驶的最低年龄是十八岁。']],
+  ['personnel', 'n.', '全体人员、职员', '真题', ['真题词频3次'], ['全体人员、职员'], ['All personnel must wear safety equipment on site.|||所有人员必须在现场穿戴安全设备。']],
+  ['scale', 'n.', '大小、规模、刻度', '真题', ['真题词频3次'], ['大小、规模、刻度'], ['The project was carried out on a large scale.|||该项目大规模地进行。']],
+  ['straw', 'n.', '稻草', '真题', ['真题词频3次'], ['稻草'], ['The farmer fed the horses with straw and grain.|||农夫用稻草和谷物喂马。']],
+  ['position', 'n./v.', 'n.位置；立场；v.定位；安排', '真题', ['真题词频2次'], ['n.位置；立场；v.定位；安排'], ['She applied for the position of marketing manager.|||她申请了市场经理的职位。']],
+  ['force', 'v./n.', 'v.强迫；n.力量', '真题', ['真题词频2次'], ['v.强迫；n.力量'], ['The police used reasonable force to stop the fight.|||警察使用合理的武力制止了打斗。']],
+  ['satisfy', 'v.', '使满意', '真题', ['真题词频2次'], ['使满意'], ['The results of the experiment satisfied the researchers.|||实验结果令研究人员满意。']],
+  ['organize', 'v.', '组织；安排', '真题', ['真题词频2次'], ['组织；安排'], ['The students organized a charity event for the elderly.|||学生们为老人组织了一场慈善活动。']],
+  ['favor', 'n./v.', 'n.好意；v.偏爱', '真题', ['真题词频2次'], ['n.好意；v.偏爱'], ['The new policy is in favor of environmental protection.|||新政策有利于环境保护。']],
+  ['publish', 'v.', '出版；发行', '真题', ['真题词频2次'], ['出版；发行'], ['The research findings were published in a scientific journal.|||研究结果发表在一本科学期刊上。']],
   ['weigh', 'v.', '称（重量）；重达', '真题', ['真题词频2次'], ['称（重量）；重达'], ['The doctor weighed the baby on the small scale.|||医生对婴儿进行了小规模的称重。']],
-  ['credit', 'n.', '信用', '真题', ['真题词频2次'], ['信用'], ['credit appears in recent gaokao exams.']],
-  ['deliver', 'v.', '递送；发表（演讲）', '真题', ['真题词频2次'], ['递送；发表（演讲）'], ['deliver appears in recent gaokao exams.']],
+  ['credit', 'n.', '信用', '真题', ['真题词频2次'], ['信用'], ['She deserves credit for the success of the project.|||项目的成功归功于她。']],
+  ['deliver', 'v.', '递送；发表（演讲）', '真题', ['真题词频2次'], ['递送；发表（演讲）'], ['The company promises to deliver products within two days.|||公司承诺两天内送货。']],
   ['spread', 'v.', '延伸；传播', '真题', ['真题词频2次'], ['延伸；传播'], ['The rumor spread quickly throughout the school.|||谣言迅速传遍全校。']],
-  ['impress', 'v.', '使……有印象；留下深刻印象', '真题', ['真题词频2次'], ['使……有印象；留下深刻印象'], ['impress appears in recent gaokao exams.']],
+  ['impress', 'v.', '使……有印象；留下深刻印象', '真题', ['真题词频2次'], ['使……有印象；留下深刻印象'], ['Her speech impressed everyone at the conference.|||她的演讲给与会者留下了深刻印象。']],
   ['remind', 'v.', '提醒；使某人想起某事', '真题', ['真题词频2次'], ['提醒；使某人想起某事'], ['The calendar reminds me of my mother\'s birthday next week.']],
-  ['guidance', 'n.', '指导，给予方向或建议', '真题', ['真题词频2次'], ['指导，给予方向或建议'], ['guidance appears in recent gaokao exams.']],
-  ['emotion', 'n.', '情绪，强烈的感情或心情', '真题', ['真题词频2次'], ['情绪，强烈的感情或心情'], ['emotion appears in recent gaokao exams.']],
+  ['guidance', 'n.', '指导，给予方向或建议', '真题', ['真题词频2次'], ['指导，给予方向或建议'], ['With the teachers guidance, I improved my writing skills.|||在老师的指导下，我的写作水平提高了。']],
+  ['emotion', 'n.', '情绪，强烈的感情或心情', '真题', ['真题词频2次'], ['情绪，强烈的感情或心情'], ['Music can evoke strong emotions in listeners.|||音乐能在听众中唤起强烈的情感。']],
   ['reward', 'n./v.', '奖赏，给予报酬或奖励', '真题', ['真题词频2次'], ['奖赏，给予报酬或奖励'], ['The school rewarded the top students with certificates.|||学校向优秀学生颁发证书。']],
-  ['judge', 'v./n.', 'v.判断，对某事做出评价或决定；n.法官，负责审判的人', '真题', ['真题词频2次'], ['v.判断，对某事做出评价或决定；n.法官，负责审判的人'], ['judge appears in recent gaokao exams.']],
-  ['spirit', 'n.', '精神，指人的思想、意志或情绪状态', '真题', ['真题词频2次'], ['精神，指人的思想、意志或情绪状态'], ['spirit appears in recent gaokao exams.']],
-  ['fairly', 'adv.', '公正地，指公平、不偏不倚地', '真题', ['真题词频2次'], ['公正地，指公平、不偏不倚地'], ['fairly appears in recent gaokao exams.']],
-  ['fellow', 'n.', '同事，指一起工作的人', '真题', ['真题词频2次'], ['同事，指一起工作的人'], ['fellow appears in recent gaokao exams.']],
-  ['predict', 'v.', '预言；预测', '真题', ['真题词频2次'], ['预言；预测'], ['predict appears in recent gaokao exams.']],
+  ['judge', 'v./n.', 'v.判断，对某事做出评价或决定；n.法官，负责审判的人', '真题', ['真题词频2次'], ['v.判断，对某事做出评价或决定；n.法官，负责审判的人'], ['Dont judge a person by their appearance alone.|||不要仅凭外表判断一个人。']],
+  ['spirit', 'n.', '精神，指人的思想、意志或情绪状态', '真题', ['真题词频2次'], ['精神，指人的思想、意志或情绪状态'], ['The team showed great spirit throughout the competition.|||整个比赛期间，队伍展现了出色的精神。']],
+  ['fairly', 'adv.', '公正地，指公平、不偏不倚地', '真题', ['真题词频2次'], ['公正地，指公平、不偏不倚地'], ['The test was fairly easy compared to the last one.|||与上次相比，这次测试还算容易。']],
+  ['fellow', 'n.', '同事，指一起工作的人', '真题', ['真题词频2次'], ['同事，指一起工作的人'], ['My fellow students and I are working on a group project.|||我和同学们正在做一个小组项目。']],
+  ['predict', 'v.', '预言；预测', '真题', ['真题词频2次'], ['预言；预测'], ['Scientists predict that sea levels will rise in the future.|||科学家预测未来海平面将会上升。']],
   ['handle', 'v.', '处理；应付', '真题', ['真题词频2次'], ['处理；应付'], ['She handled the difficult situation with great professionalism.|||她以极大的专业精神处理了这一困难局面。']],
-  ['opposite', 'adj.', '相反的；对面的', '真题', ['真题词频2次'], ['相反的；对面的'], ['opposite appears in recent gaokao exams.']],
-  ['struggle', 'n./v.', 'n.斗争；挣扎；v.斗争；挣扎（against）', '真题', ['真题词频2次'], ['n.斗争；挣扎；v.斗争；挣扎（against）'], ['struggle appears in recent gaokao exams.']],
-  ['delight', 'n.', '高兴；愉快', '真题', ['真题词频2次'], ['高兴；愉快'], ['delight appears in recent gaokao exams.']],
-  ['talent', 'n.', '天赋；才华', '真题', ['真题词频2次'], ['天赋；才华'], ['talent appears in recent gaokao exams.']],
+  ['opposite', 'adj.', '相反的；对面的', '真题', ['真题词频2次'], ['相反的；对面的'], ['The library is on the opposite side of the street.|||图书馆在街道的对面。']],
+  ['struggle', 'n./v.', 'n.斗争；挣扎；v.斗争；挣扎（against）', '真题', ['真题词频2次'], ['n.斗争；挣扎；v.斗争；挣扎（against）'], ['Many students struggle with math in their first year.|||许多学生在第一年学习数学时感到吃力。']],
+  ['delight', 'n.', '高兴；愉快', '真题', ['真题词频2次'], ['高兴；愉快'], ['To the childrens delight, it started snowing on Christmas Day.|||令孩子们高兴的是，圣诞节开始下雪了。']],
+  ['talent', 'n.', '天赋；才华', '真题', ['真题词频2次'], ['天赋；才华'], ['She has a remarkable talent for painting.|||她有非凡的绘画天赋。']],
   ['permit', 'v.', '允许', '真题', ['真题词频2次'], ['允许'], ['The school does not permit students to leave during lunch.|||学校不允许学生在午餐时间离开。']],
-  ['rapid', 'adj.', '迅速的', '真题', ['真题词频2次'], ['迅速的'], ['rapid appears in recent gaokao exams.']],
+  ['rapid', 'adj.', '迅速的', '真题', ['真题词频2次'], ['迅速的'], ['There has been a rapid increase in the number of internet users.|||互联网用户数量快速增长。']],
   ['conclude', 'v.', '总结', '真题', ['真题词频2次'], ['总结'], ['The scientist concluded that the experiment was a success.|||这位科学家得出结论，实验取得了成功。']],
-  ['possess', 'v.', '拥有', '真题', ['真题词频2次'], ['拥有'], ['possess appears in recent gaokao exams.']],
-  ['feature', 'n.', '特征', '真题', ['真题词频2次'], ['特征'], ['feature appears in recent gaokao exams.']],
+  ['possess', 'v.', '拥有', '真题', ['真题词频2次'], ['拥有'], ['The school possesses a large collection of books.|||学校拥有大量藏书。']],
+  ['feature', 'n.', '特征', '真题', ['真题词频2次'], ['特征'], ['The phones best feature is its long battery life.|||这款手机最大的特点是电池续航长。']],
   ['switch', 'v.', '转换（开/关）', '真题', ['真题词频2次'], ['转换（开/关）'], ['Please switch off the lights when you leave the room.|||离开房间时，请关闭电灯。']],
-  ['fond', 'adj.', '喜欢的（of）', '真题', ['真题词频2次'], ['喜欢的（of）'], ['fond appears in recent gaokao exams.']],
-  ['motivate', 'v.', '激发；激励', '真题', ['真题词频2次'], ['激发；激励'], ['motivate appears in recent gaokao exams.']],
+  ['fond', 'adj.', '喜欢的（of）', '真题', ['真题词频2次'], ['喜欢的（of）'], ['I am very fond of classical music and jazz.|||我非常喜欢古典音乐和爵士乐。']],
+  ['motivate', 'v.', '激发；激励', '真题', ['真题词频2次'], ['激发；激励'], ['A good teacher knows how to motivate students to learn.|||好的老师知道如何激励学生学习。']],
   ['trick', 'v./n.', 'v.欺骗；n.诡计', '真题', ['真题词频2次'], ['v.欺骗；n.诡计'], ['The magician tricked the audience with his clever illusions.|||魔法师用巧妙的幻术欺骗观众。']],
   ['debate', 'v./n.', 'v./n.辩论；n.辩论会', '真题', ['真题词频2次'], ['v./n.辩论；n.辩论会'], ['The students debated passionately about climate change policies.|||学生们就气候变化政策进行了激烈的辩论。']],
   ['deserve', 'v.', '应得；值得', '真题', ['真题词频2次'], ['应得；值得'], ['She deserves the award after years of dedicated service.|||经过多年的奉献，她应该得到这个奖项。']],
-  ['alternative', 'adj./n.', 'adj.可供替代的；n.可供选择的事物', '真题', ['真题词频2次'], ['adj.可供替代的；n.可供选择的事物'], ['alternative appears in recent gaokao exams.']],
-  ['analyze', 'v.', '分析', '真题', ['真题词频2次'], ['分析'], ['analyze appears in recent gaokao exams.']],
-  ['legal', 'adj.', '法律的；合法的', '真题', ['真题词频2次'], ['法律的；合法的'], ['legal appears in recent gaokao exams.']],
+  ['alternative', 'adj./n.', 'adj.可供替代的；n.可供选择的事物', '真题', ['真题词频2次'], ['adj.可供替代的；n.可供选择的事物'], ['We need to find an alternative source of energy.|||我们需要找到替代能源。']],
+  ['analyze', 'v.', '分析', '真题', ['真题词频2次'], ['分析'], ['The scientist analyzed the data carefully before drawing conclusions.|||科学家在得出结论前仔细分析了数据。']],
+  ['legal', 'adj.', '法律的；合法的', '真题', ['真题词频2次'], ['法律的；合法的'], ['It is legal to drive at eighteen in this country.|||在这个国家十八岁开车是合法的。']],
   ['compete', 'v.', '竞争；比赛', '真题', ['真题词频2次'], ['竞争；比赛'], ['Students from different schools compete in the annual science fair.|||来自不同学校的学生参加年度科学博览会。']],
-  ['sharp', 'adj.', 'adj.锋利的；尖锐的；敏锐的', '真题', ['真题词频2次'], ['adj.锋利的；尖锐的；敏锐的'], ['sharp appears in recent gaokao exams.']],
+  ['sharp', 'adj.', 'adj.锋利的；尖锐的；敏锐的', '真题', ['真题词频2次'], ['adj.锋利的；尖锐的；敏锐的'], ['Be careful with that sharp knife in the kitchen.|||小心厨房里那把锋利的刀。']],
   ['absorb', 'v.', '吸收；理解；使全神贯注', '真题', ['真题词频2次'], ['吸收；理解；使全神贯注'], ['absorb appears in recent gaokao exams.']],
   ['adapt', 'v.', '使适应；改编', '真题', ['真题词频2次'], ['使适应；改编'], ['adapt appears in recent gaokao exams.']],
-  ['confidence', 'n.', '信心；信任', '真题', ['真题词频2次'], ['信心；信任'], ['confidence appears in recent gaokao exams.']],
-  ['attach', 'v.', '系；贴；附加；使依恋', '真题', ['真题词频2次'], ['系；贴；附加；使依恋'], ['attach appears in recent gaokao exams.']],
-  ['engage', 'v.', '吸引；使参与；从事', '真题', ['真题词频2次'], ['吸引；使参与；从事'], ['engage appears in recent gaokao exams.']],
+  ['confidence', 'n.', '信心；信任', '真题', ['真题词频2次'], ['信心；信任'], ['Practice speaking English to build your confidence.|||练习说英语来建立你的信心。']],
+  ['attach', 'v.', '系；贴；附加；使依恋', '真题', ['真题词频2次'], ['系；贴；附加；使依恋'], ['Please attach a recent photo to your application form.|||请在申请表上附上一张近照。']],
+  ['engage', 'v.', '吸引；使参与；从事', '真题', ['真题词频2次'], ['吸引；使参与；从事'], ['The teacher tried to engage students in active discussion.|||老师试图让学生积极参与讨论。']],
   ['political', 'adj.', '政治的；政党的', '真题', ['真题词频2次'], ['政治的；政党的'], ['The political debate attracted a large television audience last night.|||昨晚的政治辩论吸引了大量的电视观众。']],
-  ['adjust', 'v.', '调整；调节；适应', '真题', ['真题词频2次'], ['调整；调节；适应'], ['adjust appears in recent gaokao exams.']],
-  ['capital', 'n.', 'n.首都；资本；大写字母', '真题', ['真题词频2次'], ['n.首都；资本；大写字母'], ['capital appears in recent gaokao exams.']],
+  ['adjust', 'v.', '调整；调节；适应', '真题', ['真题词频2次'], ['调整；调节；适应'], ['It took time to adjust to the new school environment.|||适应新学校环境需要时间。']],
+  ['capital', 'n.', 'n.首都；资本；大写字母', '真题', ['真题词频2次'], ['n.首都；资本；大写字母'], ['Beijing is the capital of China with a rich history.|||北京是中国的首都，有着丰富的历史。']],
   ['sweep', 'v./n.', 'v.打扫；清扫；席卷；迅速传播；n.打扫；挥动', '真题', ['真题词频2次'], ['v.打扫；清扫；席卷；迅速传播；n.打扫；挥动'], ['She swept the floor and mopped it until it was spotless.|||她扫了一下地板，拖了一下，直到一尘不染。']],
-  ['appointment', 'n.', '约会；预约；任命', '真题', ['真题词频2次'], ['约会；预约；任命'], ['appointment appears in recent gaokao exams.']],
-  ['charity', 'n.', '慈善；慈善机构；施舍', '真题', ['真题词频2次'], ['慈善；慈善机构；施舍'], ['charity appears in recent gaokao exams.']],
-  ['consult', 'v.', '咨询；请教；查阅', '真题', ['真题词频2次'], ['咨询；请教；查阅'], ['consult appears in recent gaokao exams.']],
-  ['participate', 'v.', '参加；参与', '真题', ['真题词频2次'], ['参加；参与'], ['participate appears in recent gaokao exams.']],
-  ['explode', 'v.', '爆炸；爆发；激增', '真题', ['真题词频2次'], ['爆炸；爆发；激增'], ['explode appears in recent gaokao exams.']],
-  ['theory', 'n.', '理论；学说', '真题', ['真题词频2次'], ['理论；学说'], ['theory appears in recent gaokao exams.']],
-  ['minor', 'adj./n.', 'adj.较小的；次要的；轻微的；n.未成年人', '真题', ['真题词频2次'], ['adj.较小的；次要的；轻微的；n.未成年人'], ['minor appears in recent gaokao exams.']],
-  ['academic', 'adj./n.', 'adj.学术的；学业的；学院的；n.学者', '真题', ['真题词频2次'], ['adj.学术的；学业的；学院的；n.学者'], ['academic appears in recent gaokao exams.']],
-  ['pile', 'v./n.', 'v.堆放；堆积；n.一堆；大量', '真题', ['真题词频2次'], ['v.堆放；堆积；n.一堆；大量'], ['pile appears in recent gaokao exams.']],
-  ['contest', 'v./n.', 'v.竞争；质疑；n.比赛；竞赛', '真题', ['真题词频2次'], ['v.竞争；质疑；n.比赛；竞赛'], ['contest appears in recent gaokao exams.']],
-  ['comprehension', 'n.', '理解；领悟；理解力', '真题', ['真题词频2次'], ['理解；领悟；理解力'], ['comprehension appears in recent gaokao exams.']],
-  ['crisis', 'n.', '危机；危急关头；（病情）危险期', '真题', ['真题词频2次'], ['危机；危急关头；（病情）危险期'], ['crisis appears in recent gaokao exams.']],
-  ['routine', 'n./adj.', 'n.常规；例行公事；日常惯例；adj.常规的；例行的', '真题', ['真题词频2次'], ['n.常规；例行公事；日常惯例；adj.常规的；例行的'], ['routine appears in recent gaokao exams.']],
-  ['absence', 'n.', '缺席；不在；缺乏', '真题', ['真题词频2次'], ['缺席；不在；缺乏'], ['absence appears in recent gaokao exams.']],
+  ['appointment', 'n.', '约会；预约；任命', '真题', ['真题词频2次'], ['约会；预约；任命'], ['I have a doctors appointment tomorrow afternoon.|||我明天下午有医生的预约。']],
+  ['charity', 'n.', '慈善；慈善机构；施舍', '真题', ['真题词频2次'], ['慈善；慈善机构；施舍'], ['She donates part of her salary to charity every month.|||她每月把部分工资捐给慈善机构。']],
+  ['consult', 'v.', '咨询；请教；查阅', '真题', ['真题词频2次'], ['咨询；请教；查阅'], ['You should consult a doctor if the pain continues.|||如果疼痛持续，你应该咨询医生。']],
+  ['participate', 'v.', '参加；参与', '真题', ['真题词频2次'], ['参加；参与'], ['All students are encouraged to participate in sports activities.|||鼓励所有学生参加体育活动。']],
+  ['explode', 'v.', '爆炸；爆发；激增', '真题', ['真题词频2次'], ['爆炸；爆发；激增'], ['The firework exploded in the sky with a loud bang.|||烟花在空中伴随着巨响爆炸了。']],
+  ['theory', 'n.', '理论；学说', '真题', ['真题词频2次'], ['理论；学说'], ['In theory, the plan sounds great, but will it work in practice?|||理论上计划听起来不错，但实际能行吗？']],
+  ['minor', 'adj./n.', 'adj.较小的；次要的；轻微的；n.未成年人', '真题', ['真题词频2次'], ['adj.较小的；次要的；轻微的；n.未成年人'], ['There were only minor injuries in the car accident.|||车祸中只有轻微受伤。']],
+  ['academic', 'adj./n.', 'adj.学术的；学业的；学院的；n.学者', '真题', ['真题词频2次'], ['adj.学术的；学业的；学院的；n.学者'], ['Her academic performance has improved significantly this term.|||本学期她的学业成绩显著提高。']],
+  ['pile', 'v./n.', 'v.堆放；堆积；n.一堆；大量', '真题', ['真题词频2次'], ['v.堆放；堆积；n.一堆；大量'], ['There is a pile of books on the desk waiting to be read.|||桌上有一堆书等着被阅读。']],
+  ['contest', 'v./n.', 'v.竞争；质疑；n.比赛；竞赛', '真题', ['真题词频2次'], ['v.竞争；质疑；n.比赛；竞赛'], ['She won first place in the national writing contest.|||她在全国写作比赛中获得第一名。']],
+  ['comprehension', 'n.', '理解；领悟；理解力', '真题', ['真题词频2次'], ['理解；领悟；理解力'], ['Reading aloud can improve your reading comprehension.|||朗读可以提高你的阅读理解能力。']],
+  ['crisis', 'n.', '危机；危急关头；（病情）危险期', '真题', ['真题词频2次'], ['危机；危急关头；（病情）危险期'], ['The country is facing an economic crisis.|||这个国家正面临经济危机。']],
+  ['routine', 'n./adj.', 'n.常规；例行公事；日常惯例；adj.常规的；例行的', '真题', ['真题词频2次'], ['n.常规；例行公事；日常惯例；adj.常规的；例行的'], ['Exercise should be part of your daily routine.|||锻炼应该成为你日常习惯的一部分。']],
+  ['absence', 'n.', '缺席；不在；缺乏', '真题', ['真题词频2次'], ['缺席；不在；缺乏'], ['His absence from the meeting was noticed by everyone.|||大家都注意到他缺席了会议。']],
   ['decrease', 'v./n.', 'v.减少；降低；n.减少；降低；减少量', '真题', ['真题词频2次'], ['v.减少；降低；n.减少；降低；减少量'], ['The number of smokers has decreased significantly in recent years.|||近年来，吸烟人数大幅减少。']],
   ['vast', 'adj.', '巨大的；辽阔的；大量的', '真题', ['真题词频2次'], ['巨大的；辽阔的；大量的'], ['The vast desert stretches for hundreds of kilometers in northwest China.|||这片广阔的沙漠在中国西北部绵延数百公里。']],
-  ['acquire', 'v.', '获得；取得；学到', '真题', ['真题词频2次'], ['获得；取得；学到'], ['acquire appears in recent gaokao exams.']],
-  ['estimate', 'v./n.', 'v.估计；估算；评价；n.估计；估算；评价', '真题', ['真题词频2次'], ['v.估计；估算；评价；n.估计；估算；评价'], ['estimate appears in recent gaokao exams.']],
-  ['critical', 'adj.', '关键的；批判性的；危急的', '真题', ['真题词频2次'], ['关键的；批判性的；危急的'], ['critical appears in recent gaokao exams.']],
+  ['acquire', 'v.', '获得；取得；学到', '真题', ['真题词频2次'], ['获得；取得；学到'], ['Children acquire language skills naturally through interaction.|||儿童通过互动自然习得语言技能。']],
+  ['estimate', 'v./n.', 'v.估计；估算；评价；n.估计；估算；评价', '真题', ['真题词频2次'], ['v.估计；估算；评价；n.估计；估算；评价'], ['Experts estimate that the population will double by 2050.|||专家估计人口到2050年将翻一番。']],
+  ['critical', 'adj.', '关键的；批判性的；危急的', '真题', ['真题词频2次'], ['关键的；批判性的；危急的'], ['Critical thinking is an essential skill for students.|||批判性思维是学生必备的技能。']],
   ['strike', 'v./n.', 'v.撞击；击打；罢工；突然想到；n.罢工；袭击', '真题', ['真题词频2次'], ['v.撞击；击打；罢工；突然想到；n.罢工；袭击'], ['The workers went on strike to demand better wages.|||工人们举行罢工，要求提高工资。']],
   ['identify', 'v.', '认出；识别；鉴定；认同', '真题', ['真题词频2次'], ['认出；识别；鉴定；认同'], ['The witness helped police identify the suspect in the lineup.|||目击者帮助警方确定了阵容中的嫌疑人。']],
-  ['peer', 'v./n.', 'v.仔细看；端详；n.同龄人；同等地位的人', '真题', ['真题词频2次'], ['v.仔细看；端详；n.同龄人；同等地位的人'], ['peer appears in recent gaokao exams.']],
-  ['loose', 'adj.', '宽松的；松散的；不牢固的', '真题', ['真题词频2次'], ['宽松的；松散的；不牢固的'], ['loose appears in recent gaokao exams.']],
-  ['rough', 'adj.', '粗糙的；不平滑的；粗略的；艰难的', '真题', ['真题词频2次'], ['粗糙的；不平滑的；粗略的；艰难的'], ['rough appears in recent gaokao exams.']],
+  ['peer', 'v./n.', 'v.仔细看；端详；n.同龄人；同等地位的人', '真题', ['真题词频2次'], ['v.仔细看；端详；n.同龄人；同等地位的人'], ['Peer pressure can influence teenagers decisions.|||同伴压力会影响青少年的决定。']],
+  ['loose', 'adj.', '宽松的；松散的；不牢固的', '真题', ['真题词频2次'], ['宽松的；松散的；不牢固的'], ['The screw on the chair has become loose.|||椅子上的螺丝松了。']],
+  ['rough', 'adj.', '粗糙的；不平滑的；粗略的；艰难的', '真题', ['真题词频2次'], ['粗糙的；不平滑的；粗略的；艰难的'], ['The road was rough and full of potholes.|||道路崎岖不平，到处是坑。']],
   ['negotiate', 'v.', '谈判；协商；洽谈', '真题', ['真题词频2次'], ['谈判；协商；洽谈'], ['The two companies negotiated a deal that benefited both sides.|||两家公司通过谈判达成了一项使双方受益的协议。']],
-  ['sculpture', 'n./v.', 'n.雕塑；雕刻作品；v.雕刻；雕塑', '真题', ['真题词频2次'], ['n.雕塑；雕刻作品；v.雕刻；雕塑'], ['sculpture appears in recent gaokao exams.']],
-  ['unemployment', 'n.', '失业；失业率', '真题', ['真题词频2次'], ['失业；失业率'], ['unemployment appears in recent gaokao exams.']],
+  ['sculpture', 'n./v.', 'n.雕塑；雕刻作品；v.雕刻；雕塑', '真题', ['真题词频2次'], ['n.雕塑；雕刻作品；v.雕刻；雕塑'], ['The museum displays sculptures from ancient Greece.|||博物馆展出了古希腊的雕塑。']],
+  ['unemployment', 'n.', '失业；失业率', '真题', ['真题词频2次'], ['失业；失业率'], ['Unemployment rates have dropped this year.|||今年失业率下降了。']],
   ['seize', 'v.', '抓住；捉住；夺取；攻占；把握（机会等）', '真题', ['真题词频2次'], ['抓住；捉住；夺取；攻占；把握（机会等）'], ['The police seized a large quantity of illegal drugs.|||警方查获了大量非法毒品。']],
-  ['cooperate', 'v.', '合作；协作；配合', '真题', ['真题词频2次'], ['合作；协作；配合'], ['cooperate appears in recent gaokao exams.']],
-  ['salary', 'n.', '薪水；薪金', '真题', ['真题词频2次'], ['薪水；薪金'], ['salary appears in recent gaokao exams.']],
-  ['calculate', 'v.', '计算；核算；预测；推测', '真题', ['真题词频2次'], ['计算；核算；预测；推测'], ['calculate appears in recent gaokao exams.']],
-  ['permanent', 'adj.', '永久的；永恒的；长久的', '真题', ['真题词频2次'], ['永久的；永恒的；长久的'], ['permanent appears in recent gaokao exams.']],
-  ['pesticide', 'n.', '杀虫剂；农药', '真题', ['真题词频2次'], ['杀虫剂；农药'], ['pesticide appears in recent gaokao exams.']],
-  ['surgery', 'n.', '外科手术；外科学；诊所', '真题', ['真题词频2次'], ['外科手术；外科学；诊所'], ['surgery appears in recent gaokao exams.']],
-  ['trail', 'v./n.', 'v.跟踪；追踪；拖；拉；（尤指植物）蔓延；n.踪迹；痕迹；小道；小径', '真题', ['真题词频2次'], ['v.跟踪；追踪；拖；拉；（尤指植物）蔓延；n.踪迹；痕迹；小道；小径'], ['trail appears in recent gaokao exams.']],
-  ['fundamental', 'adj./n.', 'adj.基础的；根本的；n.基本规律；根本法则；基本原理', '真题', ['真题词频2次'], ['adj.基础的；根本的；n.基本规律；根本法则；基本原理'], ['fundamental appears in recent gaokao exams.']],
-  ['moderate', 'adj./n./v.', 'adj.适度的；中等的；温和的；不激烈的；n.持温和观点者；v.缓和；使适中；审核评分（给作业）', '真题', ['真题词频2次'], ['adj.适度的；中等的；温和的；不激烈的；n.持温和观点者；v.缓和；使适中；审核评分（给作业）'], ['moderate appears in recent gaokao exams.']],
-  ['delicate', 'adj.', '易损的；易碎的；脆弱的；微妙的；精美的；熟练的', '真题', ['真题词频2次'], ['易损的；易碎的；脆弱的；微妙的；精美的；熟练的'], ['delicate appears in recent gaokao exams.']],
-  ['prejudice', 'n./v.', 'n.偏见；成见；v.使怀有（或形成）偏见', '真题', ['真题词频2次'], ['n.偏见；成见；v.使怀有（或形成）偏见'], ['prejudice appears in recent gaokao exams.']],
+  ['cooperate', 'v.', '合作；协作；配合', '真题', ['真题词频2次'], ['合作；协作；配合'], ['The two countries agreed to cooperate on climate change.|||两国同意在气候变化问题上合作。']],
+  ['salary', 'n.', '薪水；薪金', '真题', ['真题词频2次'], ['薪水；薪金'], ['The company offers a competitive salary and benefits.|||公司提供有竞争力的薪水和福利。']],
+  ['calculate', 'v.', '计算；核算；预测；推测', '真题', ['真题词频2次'], ['计算；核算；预测；推测'], ['The computer can calculate the results in seconds.|||计算机可以在几秒钟内计算出结果。']],
+  ['permanent', 'adj.', '永久的；永恒的；长久的', '真题', ['真题词频2次'], ['永久的；永恒的；长久的'], ['She is looking for a permanent job in the city.|||她在这个城市找一份长期工作。']],
+  ['pesticide', 'n.', '杀虫剂；农药', '真题', ['真题词频2次'], ['杀虫剂；农药'], ['Farmers use pesticides to protect crops from insects.|||农民使用农药保护庄稼免受虫害。']],
+  ['surgery', 'n.', '外科手术；外科学；诊所', '真题', ['真题词频2次'], ['外科手术；外科学；诊所'], ['He recovered quickly after the surgery.|||他手术后恢复得很快。']],
+  ['trail', 'v./n.', 'v.跟踪；追踪；拖；拉；（尤指植物）蔓延；n.踪迹；痕迹；小道；小径', '真题', ['真题词频2次'], ['v.跟踪；追踪；拖；拉；（尤指植物）蔓延；n.踪迹；痕迹；小道；小径'], ['They followed the trail through the forest to the lake.|||他们沿着小径穿过森林到达湖边。']],
+  ['fundamental', 'adj./n.', 'adj.基础的；根本的；n.基本规律；根本法则；基本原理', '真题', ['真题词频2次'], ['adj.基础的；根本的；n.基本规律；根本法则；基本原理'], ['Reading is a fundamental skill for all learning.|||阅读是所有学习的基本技能。']],
+  ['moderate', 'adj./n./v.', 'adj.适度的；中等的；温和的；不激烈的；n.持温和观点者；v.缓和；使适中；审核评分（给作业）', '真题', ['真题词频2次'], ['adj.适度的；中等的；温和的；不激烈的；n.持温和观点者；v.缓和；使适中；审核评分（给作业）'], ['Moderate exercise is good for your health.|||适度的运动对健康有益。']],
+  ['delicate', 'adj.', '易损的；易碎的；脆弱的；微妙的；精美的；熟练的', '真题', ['真题词频2次'], ['易损的；易碎的；脆弱的；微妙的；精美的；熟练的'], ['The delicate glass needs to be handled with care.|||易碎的玻璃需要小心处理。']],
+  ['prejudice', 'n./v.', 'n.偏见；成见；v.使怀有（或形成）偏见', '真题', ['真题词频2次'], ['n.偏见；成见；v.使怀有（或形成）偏见'], ['We should fight against prejudice and discrimination.|||我们应该与偏见和歧视作斗争。']],
   ['lean', 'v./adj.', 'v.倾斜；倚靠；靠在；adj.瘦且健康的；贫乏的；歉收的', '真题', ['真题词频2次'], ['v.倾斜；倚靠；靠在；adj.瘦且健康的；贫乏的；歉收的'], ['She leaned against the wall, exhausted after the long run.|||她靠在墙上，长途跋涉后筋疲力尽。']],
-  ['tolerate', 'v.', '容许；允许；忍受；容忍', '真题', ['真题词频2次'], ['容许；允许；忍受；容忍'], ['tolerate appears in recent gaokao exams.']],
-  ['approximately', 'adv.', '大约；大概', '真题', ['真题词频2次'], ['大约；大概'], ['approximately appears in recent gaokao exams.']],
-  ['abnormal', 'adj.', '不正常的；反常的；变态的', '真题', ['真题词频2次'], ['不正常的；反常的；变态的'], ['abnormal appears in recent gaokao exams.']],
-  ['lighten', 'v.', '（使）变亮；（使）减轻；使轻松愉快', '真题', ['真题词频2次'], ['（使）变亮；（使）减轻；使轻松愉快'], ['lighten appears in recent gaokao exams.']],
-  ['worthwhile', 'adj.', '值得花时间（或花钱、努力等）的；重要的', '真题', ['真题词频2次'], ['值得花时间（或花钱、努力等）的；重要的'], ['worthwhile appears in recent gaokao exams.']],
-  ['anticipate', 'v.', '预期、期待', '真题', ['真题词频2次'], ['预期、期待'], ['anticipate appears in recent gaokao exams.']],
-  ['authentic', 'adj.', '真正的、真品的', '真题', ['真题词频2次'], ['真正的、真品的'], ['authentic appears in recent gaokao exams.']],
-  ['biography', 'n.', '人物传记', '真题', ['真题词频2次'], ['人物传记'], ['biography appears in recent gaokao exams.']],
-  ['botany', 'n.', '植物学', '真题', ['真题词频2次'], ['植物学'], ['botany appears in recent gaokao exams.']],
-  ['brewery', 'n.', '酿酒厂', '真题', ['真题词频2次'], ['酿酒厂'], ['brewery appears in recent gaokao exams.']],
-  ['bunch', 'n.', '一束、大量', '真题', ['真题词频2次'], ['一束、大量'], ['bunch appears in recent gaokao exams.']],
-  ['cathedral', 'n.', '大教堂', '真题', ['真题词频2次'], ['大教堂'], ['cathedral appears in recent gaokao exams.']],
-  ['compensate', 'v.', '补偿、弥补', '真题', ['真题词频2次'], ['补偿、弥补'], ['compensate appears in recent gaokao exams.']],
-  ['digest', 'v.', '消化、吸收', '真题', ['真题词频2次'], ['消化、吸收'], ['digest appears in recent gaokao exams.']],
-  ['geography', 'n.', '地理学', '真题', ['真题词频2次'], ['地理学'], ['geography appears in recent gaokao exams.']],
-  ['initiative', 'n.', '倡议', '真题', ['真题词频2次'], ['倡议'], ['initiative appears in recent gaokao exams.']],
-  ['mine', 'n.', '矿', '真题', ['真题词频2次'], ['矿'], ['mine appears in recent gaokao exams.']],
-  ['profession', 'n.', '职业', '真题', ['真题词频2次'], ['职业'], ['profession appears in recent gaokao exams.']],
-  ['vocabulary', 'n.', '词汇', '真题', ['真题词频2次'], ['词汇'], ['vocabulary appears in recent gaokao exams.']],
-  ['wool', 'n.', '羊毛、羊绒', '真题', ['真题词频2次'], ['羊毛、羊绒'], ['wool appears in recent gaokao exams.']],
-  ['realise', 'v.', '认识到；意识到；实现；了解；将（概念等）变成现实', '真题', ['真题词频1次'], ['认识到；意识到；实现；了解；将（概念等）变成现实'], ['realise appears in recent gaokao exams.']],
+  ['tolerate', 'v.', '容许；允许；忍受；容忍', '真题', ['真题词频2次'], ['容许；允许；忍受；容忍'], ['I cannot tolerate people who are always late.|||我无法忍受总是迟到的人。']],
+  ['approximately', 'adv.', '大约；大概', '真题', ['真题词频2次'], ['大约；大概'], ['There are approximately two thousand students in our school.|||我们学校大约有两千名学生。']],
+  ['abnormal', 'adj.', '不正常的；反常的；变态的', '真题', ['真题词频2次'], ['不正常的；反常的；变态的'], ['The doctor said his blood pressure was abnormal.|||医生说他的血压不正常。']],
+  ['lighten', 'v.', '（使）变亮；（使）减轻；使轻松愉快', '真题', ['真题词频2次'], ['（使）变亮；（使）减轻；使轻松愉快'], ['A good joke can lighten the mood in the room.|||一个好笑话可以缓和房间的气氛。']],
+  ['worthwhile', 'adj.', '值得花时间（或花钱、努力等）的；重要的', '真题', ['真题词频2次'], ['值得花时间（或花钱、努力等）的；重要的'], ['Volunteering at the hospital is a worthwhile experience.|||在医院做志愿者是一次有意义的经历。']],
+  ['anticipate', 'v.', '预期、期待', '真题', ['真题词频2次'], ['预期、期待'], ['We anticipate a large number of visitors at the exhibition.|||我们预计展览会有大量参观者。']],
+  ['authentic', 'adj.', '真正的、真品的', '真题', ['真题词频2次'], ['真正的、真品的'], ['The restaurant serves authentic Italian food.|||这家餐厅供应正宗的意大利菜。']],
+  ['biography', 'n.', '人物传记', '真题', ['真题词频2次'], ['人物传记'], ['I read a biography of Albert Einstein last month.|||上个月我读了一本爱因斯坦的传记。']],
+  ['botany', 'n.', '植物学', '真题', ['真题词频2次'], ['植物学'], ['Botany is the scientific study of plants.|||植物学是对植物的科学研究。']],
+  ['brewery', 'n.', '酿酒厂', '真题', ['真题词频2次'], ['酿酒厂'], ['The old brewery has been turned into a museum.|||旧啤酒厂已改建成博物馆。']],
+  ['bunch', 'n.', '一束、大量', '真题', ['真题词频2次'], ['一束、大量'], ['She bought a bunch of flowers for her mother.|||她给妈妈买了一束花。']],
+  ['cathedral', 'n.', '大教堂', '真题', ['真题词频2次'], ['大教堂'], ['The cathedral is one of the most famous landmarks in the city.|||大教堂是这座城市最著名的地标之一。']],
+  ['compensate', 'v.', '补偿、弥补', '真题', ['真题词频2次'], ['补偿、弥补'], ['The company compensated him for the extra hours he worked.|||公司补偿了他加班的时间。']],
+  ['digest', 'v.', '消化、吸收', '真题', ['真题词频2次'], ['消化、吸收'], ['It takes time for the body to digest food properly.|||身体需要时间来正常消化食物。']],
+  ['geography', 'n.', '地理学', '真题', ['真题词频2次'], ['地理学'], ['Geography helps us understand the world we live in.|||地理帮助我们了解我们生活的世界。']],
+  ['initiative', 'n.', '倡议', '真题', ['真题词频2次'], ['倡议'], ['The government launched a new initiative to promote recycling.|||政府发起了一项推广回收利用的新倡议。']],
+  ['mine', 'n.', '矿', '真题', ['真题词频2次'], ['矿'], ['Coal was mined from this area for over a century.|||这个地区的煤矿开采了一个多世纪。']],
+  ['profession', 'n.', '职业', '真题', ['真题词频2次'], ['职业'], ['Teaching is a noble profession that shapes the future.|||教学是一项塑造未来的崇高职业。']],
+  ['vocabulary', 'n.', '词汇', '真题', ['真题词频2次'], ['词汇'], ['Reading is one of the best ways to expand your vocabulary.|||阅读是扩大词汇量的最佳方法之一。']],
+  ['wool', 'n.', '羊毛、羊绒', '真题', ['真题词频2次'], ['羊毛、羊绒'], ['This sweater is made of 100 percent pure wool.|||这件毛衣是百分百纯羊毛做的。']],
+  ['realise', 'v.', '认识到；意识到；实现；了解；将（概念等）变成现实', '真题', ['真题词频1次'], ['认识到；意识到；实现；了解；将（概念等）变成现实'], ['I suddenly realised that I had left my keys at home.|||我突然意识到我把钥匙忘在家里了。']],
   ['hang', 'v.', '悬挂；吊；垂下；（被）绞死；上吊；安装（门、窗等）', '真题', ['真题词频1次'], ['悬挂；吊；垂下；（被）绞死；上吊；安装（门、窗等）'], ['The painting hung on the wall of the living room.|||这幅画挂在客厅的墙上。']],
   ['vary', 'v.', '改变；不同，指事物之间的差异或变化', '真题', ['真题词频1次'], ['改变；不同，指事物之间的差异或变化'], ['Prices vary from store to store, so compare before buying.|||价格因商店而异，因此请在购买前进行比较。']],
   ['suffer', 'v.', '遭受，指经历痛苦、损失或不幸', '真题', ['真题词频1次'], ['遭受，指经历痛苦、损失或不幸'], ['Many people suffer from allergies during spring.|||许多人在春天会过敏。']],
   ['damage', 'v./n.', 'v.损害；n.损害', '真题', ['真题词频1次'], ['v.损害；n.损害'], ['The storm damaged several houses in the coastal village.|||风暴破坏了沿海村庄的几栋房屋。']],
-  ['visible', 'adj.', '可见的', '真题', ['真题词频1次'], ['可见的'], ['visible appears in recent gaokao exams.']],
-  ['operate', 'v.', '操作；经营；动手术', '真题', ['真题词频1次'], ['操作；经营；动手术'], ['operate appears in recent gaokao exams.']],
+  ['visible', 'adj.', '可见的', '真题', ['真题词频1次'], ['可见的'], ['The stars are clearly visible on a cloudless night.|||在无云的夜晚星星清晰可见。']],
+  ['operate', 'v.', '操作；经营；动手术', '真题', ['真题词频1次'], ['操作；经营；动手术'], ['The machine is very simple to operate.|||这台机器操作起来非常简单。']],
   ['warn', 'v.', '警告', '真题', ['真题词频1次'], ['警告'], ['The weather forecast warned of heavy rain tomorrow.|||天气预报说明天会下大雨。']],
-  ['hardly', 'adv.', '几乎不，表示程度极低', '真题', ['真题词频1次'], ['几乎不，表示程度极低'], ['hardly appears in recent gaokao exams.']],
-  ['greedy', 'adj.', '贪婪的，过分渴望或追求某物', '真题', ['真题词频1次'], ['贪婪的，过分渴望或追求某物'], ['greedy appears in recent gaokao exams.']],
-  ['confuse', 'v.', '使困惑，让人迷惑不解', '真题', ['真题词频1次'], ['使困惑，让人迷惑不解'], ['confuse appears in recent gaokao exams.']],
-  ['attempt', 'v./n.', 'v./n.企图；尝试做某事', '真题', ['真题词频1次'], ['v./n.企图；尝试做某事'], ['attempt appears in recent gaokao exams.']],
-  ['argument', 'n.', '观点，指对某事的看法或争论', '真题', ['真题词频1次'], ['观点，指对某事的看法或争论'], ['argument appears in recent gaokao exams.']],
-  ['desert', 'n.', '沙漠，指干旱、少雨的地区', '真题', ['真题词频1次'], ['沙漠，指干旱、少雨的地区'], ['desert appears in recent gaokao exams.']],
-  ['seldom', 'adv.', '很少，指不常发生或出现的', '真题', ['真题词频1次'], ['很少，指不常发生或出现的'], ['seldom appears in recent gaokao exams.']],
-  ['consume', 'v.', '消耗；消费', '真题', ['真题词频1次'], ['消耗；消费'], ['consume appears in recent gaokao exams.']],
+  ['hardly', 'adv.', '几乎不，表示程度极低', '真题', ['真题词频1次'], ['几乎不，表示程度极低'], ['I could hardly believe my eyes when I saw the result.|||看到结果时我简直不敢相信自己的眼睛。']],
+  ['greedy', 'adj.', '贪婪的，过分渴望或追求某物', '真题', ['真题词频1次'], ['贪婪的，过分渴望或追求某物'], ['The greedy child ate all the cookies by himself.|||贪婪的孩子把饼干全吃光了。']],
+  ['confuse', 'v.', '使困惑，让人迷惑不解', '真题', ['真题词频1次'], ['使困惑，让人迷惑不解'], ['The complicated instructions confused the students.|||复杂的说明让学生们感到困惑。']],
+  ['attempt', 'v./n.', 'v./n.企图；尝试做某事', '真题', ['真题词频1次'], ['v./n.企图；尝试做某事'], ['He made an attempt to climb the mountain in winter.|||他尝试在冬天攀登这座山。']],
+  ['argument', 'n.', '观点，指对某事的看法或争论', '真题', ['真题词频1次'], ['观点，指对某事的看法或争论'], ['They had a heated argument about the new policy.|||他们就新政策进行了激烈的争论。']],
+  ['desert', 'n.', '沙漠，指干旱、少雨的地区', '真题', ['真题词频1次'], ['沙漠，指干旱、少雨的地区'], ['The Sahara is the largest hot desert in the world.|||撒哈拉沙漠是世界上最大的热带沙漠。']],
+  ['seldom', 'adv.', '很少，指不常发生或出现的', '真题', ['真题词频1次'], ['很少，指不常发生或出现的'], ['He seldom goes out on weekends because he is too busy.|||他周末很少出门，因为太忙了。']],
+  ['consume', 'v.', '消耗；消费', '真题', ['真题词频1次'], ['消耗；消费'], ['The average person consumes about three meals a day.|||普通人每天吃大约三顿饭。']],
   ['devote', 'v.', '致力于（to）；专心于', '真题', ['真题词频1次'], ['致力于（to）；专心于'], ['He devoted his entire life to studying ancient Chinese history.|||他毕生致力于研究中国古代历史。']],
   ['complain', 'v.', '抱怨（to/about）', '真题', ['真题词频1次'], ['抱怨（to/about）'], ['The customer complained about the slow service at the restaurant.|||顾客抱怨餐厅服务慢。']],
-  ['annoy', 'v.', '使恼怒；烦扰', '真题', ['真题词频1次'], ['使恼怒；烦扰'], ['annoy appears in recent gaokao exams.']],
-  ['arrange', 'v.', '安排；筹划', '真题', ['真题词频1次'], ['安排；筹划'], ['arrange appears in recent gaokao exams.']],
-  ['rarely', 'adv.', '很少；不常', '真题', ['真题词频1次'], ['很少；不常'], ['rarely appears in recent gaokao exams.']],
-  ['colleague', 'n.', '同事', '真题', ['真题词频1次'], ['同事'], ['colleague appears in recent gaokao exams.']],
+  ['annoy', 'v.', '使恼怒；烦扰', '真题', ['真题词频1次'], ['使恼怒；烦扰'], ['The constant noise from the construction annoyed the residents.|||施工持续的噪音让居民们很烦恼。']],
+  ['arrange', 'v.', '安排；筹划', '真题', ['真题词频1次'], ['安排；筹划'], ['I will arrange a meeting with the client for next Monday.|||我会安排下周一与客户开会。']],
+  ['rarely', 'adv.', '很少；不常', '真题', ['真题词频1次'], ['很少；不常'], ['She rarely eats fast food because she prefers home cooking.|||她很少吃快餐，更喜欢家里做的饭。']],
+  ['colleague', 'n.', '同事', '真题', ['真题词频1次'], ['同事'], ['My colleague and I are working on a research paper together.|||我和同事正在一起写一篇研究论文。']],
   ['survive', 'v.', '幸存', '真题', ['真题词频1次'], ['幸存'], ['Only two passengers survived the terrible car accident.|||在这场可怕的车祸中，只有两名乘客幸免于难']],
   ['surround', 'v.', '包围', '真题', ['真题词频1次'], ['包围'], ['A tall fence surrounds the school to keep students safe.|||学校周围有一道高高的篱笆，以确保学生的安全。']],
-  ['cast', 'v.', '投射；掷', '真题', ['真题词频1次'], ['投射；掷'], ['cast appears in recent gaokao exams.']],
-  ['aware', 'adj.', '意识到的（of）', '真题', ['真题词频1次'], ['意识到的（of）'], ['aware appears in recent gaokao exams.']],
+  ['cast', 'v.', '投射；掷', '真题', ['真题词频1次'], ['投射；掷'], ['The fisherman cast his net into the sea at dawn.|||渔夫黎明时分把网撒向大海。']],
+  ['aware', 'adj.', '意识到的（of）', '真题', ['真题词频1次'], ['意识到的（of）'], ['Are you aware of the new rules starting next week?|||你知道下周开始的新规定吗？']],
   ['narrow', 'v./adj.', 'v.（使）变窄；adj.狭窄的', '真题', ['真题词频1次'], ['v.（使）变窄；adj.狭窄的'], ['The road narrowed as we drove further into the mountains.|||当我们开车进一步进入山区时，道路变窄了。']],
-  ['conduct', 'v.', '实施；指挥', '真题', ['真题词频1次'], ['实施；指挥'], ['conduct appears in recent gaokao exams.']],
-  ['overcome', 'v.', '战胜；克服', '真题', ['真题词频1次'], ['战胜；克服'], ['overcome appears in recent gaokao exams.']],
+  ['conduct', 'v.', '实施；指挥', '真题', ['真题词频1次'], ['实施；指挥'], ['The scientist conducted a series of experiments on the new material.|||科学家对新材料进行了一系列实验。']],
+  ['overcome', 'v.', '战胜；克服', '真题', ['真题词频1次'], ['战胜；克服'], ['She overcame her fear of public speaking through practice.|||她通过练习克服了对公开演讲的恐惧。']],
   ['translate', 'v.', '翻译', '真题', ['真题词频1次'], ['翻译'], ['She translates Chinese novels into English for a living.|||她以将中国小说翻译成英语为生。']],
-  ['guard', 'v./n.', 'v.保卫；n.看守人', '真题', ['真题词频1次'], ['v.保卫；n.看守人'], ['guard appears in recent gaokao exams.']],
-  ['anxiety', 'n.', '焦虑；不安', '真题', ['真题词频1次'], ['焦虑；不安'], ['anxiety appears in recent gaokao exams.']],
-  ['concentrate', 'v.', '集中（注意力等）；专心', '真题', ['真题词频1次'], ['集中（注意力等）；专心'], ['concentrate appears in recent gaokao exams.']],
-  ['quit', 'v.', '停止；放弃；离开', '真题', ['真题词频1次'], ['停止；放弃；离开'], ['quit appears in recent gaokao exams.']],
+  ['guard', 'v./n.', 'v.保卫；n.看守人', '真题', ['真题词频1次'], ['v.保卫；n.看守人'], ['The security guard checked everyones ID at the entrance.|||保安在入口处检查每个人的身份证。']],
+  ['anxiety', 'n.', '焦虑；不安', '真题', ['真题词频1次'], ['焦虑；不安'], ['She felt great anxiety before the important exam.|||重要考试前她感到非常焦虑。']],
+  ['concentrate', 'v.', '集中（注意力等）；专心', '真题', ['真题词频1次'], ['集中（注意力等）；专心'], ['It is hard to concentrate in a noisy environment.|||在嘈杂的环境中很难集中注意力。']],
+  ['quit', 'v.', '停止；放弃；离开', '真题', ['真题词频1次'], ['停止；放弃；离开'], ['He quit smoking after twenty years for his health.|||为了健康，他戒烟了，抽了二十年。']],
   ['stare', 'v./n.', 'v./n.凝视；盯着看', '真题', ['真题词频1次'], ['v./n.凝视；盯着看'], ['The boy stared at the ice cream, wanting some badly.|||男孩盯着冰淇淋，非常想吃。']],
-  ['admire', 'v.', '钦佩；赞赏；欣赏', '真题', ['真题词频1次'], ['钦佩；赞赏；欣赏'], ['admire appears in recent gaokao exams.']],
-  ['apologize', 'v.', '道歉', '真题', ['真题词频1次'], ['道歉'], ['apologize appears in recent gaokao exams.']],
-  ['vehicle', 'n.', '车辆；交通工具', '真题', ['真题词频1次'], ['车辆；交通工具'], ['vehicle appears in recent gaokao exams.']],
-  ['brief', 'adj./n.', 'adj.简短的；短暂的；n.摘要；概要', '真题', ['真题词频1次'], ['adj.简短的；短暂的；n.摘要；概要'], ['brief appears in recent gaokao exams.']],
-  ['consequence', 'n.', '结果；后果', '真题', ['真题词频1次'], ['结果；后果'], ['consequence appears in recent gaokao exams.']],
-  ['bitter', 'adj.', 'adj.苦的；痛苦的；充满仇恨的', '真题', ['真题词频1次'], ['adj.苦的；痛苦的；充满仇恨的'], ['bitter appears in recent gaokao exams.']],
-  ['shame', 'n./v.', 'n.羞耻；羞愧；憾事；v.使羞愧', '真题', ['真题词频1次'], ['n.羞耻；羞愧；憾事；v.使羞愧'], ['shame appears in recent gaokao exams.']],
-  ['regardless', 'adv.', '不顾；不管', '真题', ['真题词频1次'], ['不顾；不管'], ['regardless appears in recent gaokao exams.']],
-  ['commercial', 'adj./n.', 'adj.商业的；营利性的；n.商业广告', '真题', ['真题词频1次'], ['adj.商业的；营利性的；n.商业广告'], ['commercial appears in recent gaokao exams.']],
-  ['astonish', 'v.', '使惊讶；使震惊', '真题', ['真题词频1次'], ['使惊讶；使震惊'], ['astonish appears in recent gaokao exams.']],
+  ['admire', 'v.', '钦佩；赞赏；欣赏', '真题', ['真题词频1次'], ['钦佩；赞赏；欣赏'], ['I admire her courage to speak up against injustice.|||我钦佩她勇敢地反对不公正。']],
+  ['apologize', 'v.', '道歉', '真题', ['真题词频1次'], ['道歉'], ['He apologized to his teacher for being late to class.|||他因上课迟到向老师道歉。']],
+  ['vehicle', 'n.', '车辆；交通工具', '真题', ['真题词频1次'], ['车辆；交通工具'], ['Electric vehicles are becoming popular in big cities.|||电动汽车在大城市越来越受欢迎。']],
+  ['brief', 'adj./n.', 'adj.简短的；短暂的；n.摘要；概要', '真题', ['真题词频1次'], ['adj.简短的；短暂的；n.摘要；概要'], ['The teacher gave a brief introduction to the course.|||老师对课程做了简短的介绍。']],
+  ['consequence', 'n.', '结果；后果', '真题', ['真题词频1次'], ['结果；后果'], ['Every action has consequences, so think before you act.|||每个行为都有后果，所以三思而后行。']],
+  ['bitter', 'adj.', 'adj.苦的；痛苦的；充满仇恨的', '真题', ['真题词频1次'], ['adj.苦的；痛苦的；充满仇恨的'], ['The medicine tasted bitter but it helped me recover.|||药很苦，但它帮助我康复了。']],
+  ['shame', 'n./v.', 'n.羞耻；羞愧；憾事；v.使羞愧', '真题', ['真题词频1次'], ['n.羞耻；羞愧；憾事；v.使羞愧'], ['It is a shame that he missed the opportunity to study abroad.|||可惜他错过了出国留学的机会。']],
+  ['regardless', 'adv.', '不顾；不管', '真题', ['真题词频1次'], ['不顾；不管'], ['Regardless of the weather, the match will go ahead as planned.|||不管天气如何，比赛将按计划进行。']],
+  ['commercial', 'adj./n.', 'adj.商业的；营利性的；n.商业广告', '真题', ['真题词频1次'], ['adj.商业的；营利性的；n.商业广告'], ['The commercial center of the city is always busy.|||城市的商业中心总是很繁忙。']],
+  ['astonish', 'v.', '使惊讶；使震惊', '真题', ['真题词频1次'], ['使惊讶；使震惊'], ['The magicians performance astonished the entire audience.|||魔术师的表演令全场观众惊叹。']],
   ['guarantee', 'v./n.', 'v.保证；担保；n.保证；担保；保修单', '真题', ['真题词频1次'], ['v.保证；担保；n.保证；担保；保修单'], ['The company guarantees the quality of all its products.|||公司保证所有产品的质量。']],
-  ['block', 'v./n.', 'v.堵塞；阻碍；n.街区；大块；障碍物', '真题', ['真题词频1次'], ['v.堵塞；阻碍；n.街区；大块；障碍物'], ['block appears in recent gaokao exams.']],
-  ['emergency', 'n.', '紧急情况；突发事件', '真题', ['真题词频1次'], ['紧急情况；突发事件'], ['emergency appears in recent gaokao exams.']],
+  ['block', 'v./n.', 'v.堵塞；阻碍；n.街区；大块；障碍物', '真题', ['真题词频1次'], ['v.堵塞；阻碍；n.街区；大块；障碍物'], ['The road was blocked by a fallen tree after the storm.|||暴风雨后道路被倒下的树挡住了。']],
+  ['emergency', 'n.', '紧急情况；突发事件', '真题', ['真题词频1次'], ['紧急情况；突发事件'], ['Call 120 in case of a medical emergency.|||遇到医疗紧急情况请拨打120。']],
   ['sink', 'v./n.', 'v.下沉；沉没；使下降；陷入（困境等）；n.水槽', '真题', ['真题词频1次'], ['v.下沉；沉没；使下降；陷入（困境等）；n.水槽'], ['The Titanic sank after hitting an iceberg in 1912.|||泰坦尼克号在1912年撞上冰山后沉没。']],
   ['wander', 'v.', '徘徊；漫步；走神', '真题', ['真题词频1次'], ['徘徊；漫步；走神'], ['The lost child wandered through the streets for hours.|||迷路的孩子在街上徘徊了几个小时。']],
-  ['precise', 'adj.', '精确的；准确的；确切的', '真题', ['真题词频1次'], ['精确的；准确的；确切的'], ['precise appears in recent gaokao exams.']],
-  ['gap', 'n.', '缺口；差距；间隙', '真题', ['真题词频1次'], ['缺口；差距；间隙'], ['gap appears in recent gaokao exams.']],
-  ['apparent', 'adj.', '显而易见的；明显的；表面上的', '真题', ['真题词频1次'], ['显而易见的；明显的；表面上的'], ['apparent appears in recent gaokao exams.']],
+  ['precise', 'adj.', '精确的；准确的；确切的', '真题', ['真题词频1次'], ['精确的；准确的；确切的'], ['The scientist gave precise measurements in the report.|||科学家在报告中给出了精确的测量数据。']],
+  ['gap', 'n.', '缺口；差距；间隙', '真题', ['真题词频1次'], ['缺口；差距；间隙'], ['There is a wide gap between rich and poor in some countries.|||一些国家的贫富差距很大。']],
+  ['apparent', 'adj.', '显而易见的；明显的；表面上的', '真题', ['真题词频1次'], ['显而易见的；明显的；表面上的'], ['It was apparent that she had been crying before the meeting.|||很明显她在开会前哭过。']],
   ['withdraw', 'v.', '撤回；撤离；取（款）；退出', '真题', ['真题词频1次'], ['撤回；撤离；取（款）；退出'], ['He withdrew some money from the ATM before going shopping.|||他在购物前从自动取款机提取了一些钱。']],
-  ['enable', 'v.', '使能够；使成为可能', '真题', ['真题词频1次'], ['使能够；使成为可能'], ['enable appears in recent gaokao exams.']],
-  ['thick', 'adj.', 'adj.厚的；浓的；茂密的', '真题', ['真题词频1次'], ['adj.厚的；浓的；茂密的'], ['thick appears in recent gaokao exams.']],
-  ['optimistic', 'adj.', '乐观的；乐观主义的', '真题', ['真题词频1次'], ['乐观的；乐观主义的'], ['optimistic appears in recent gaokao exams.']],
-  ['addiction', 'n.', '上瘾；沉溺；嗜好', '真题', ['真题词频1次'], ['上瘾；沉溺；嗜好'], ['addiction appears in recent gaokao exams.']],
-  ['facility', 'n.', '设施；设备；便利；才能', '真题', ['真题词频1次'], ['设施；设备；便利；才能'], ['facility appears in recent gaokao exams.']],
-  ['associate', 'v./n.', 'v.联想；联系；交往；n.同事；伙伴', '真题', ['真题词频1次'], ['v.联想；联系；交往；n.同事；伙伴'], ['associate appears in recent gaokao exams.']],
-  ['severe', 'adj.', '严峻的；严厉的；严重的', '真题', ['真题词频1次'], ['严峻的；严厉的；严重的'], ['severe appears in recent gaokao exams.']],
-  ['chain', 'n./v.', 'n.链子；链条；一连串；连锁店；v.用链子拴住', '真题', ['真题词频1次'], ['n.链子；链条；一连串；连锁店；v.用链子拴住'], ['chain appears in recent gaokao exams.']],
-  ['preserve', 'v.', '保护；维护；保存；腌制', '真题', ['真题词频1次'], ['保护；维护；保存；腌制'], ['preserve appears in recent gaokao exams.']],
+  ['enable', 'v.', '使能够；使成为可能', '真题', ['真题词频1次'], ['使能够；使成为可能'], ['The new technology enables students to learn at their own pace.|||新技术使学生能够按照自己的节奏学习。']],
+  ['thick', 'adj.', 'adj.厚的；浓的；茂密的', '真题', ['真题词频1次'], ['adj.厚的；浓的；茂密的'], ['The thick fog made it difficult to see the road ahead.|||浓雾使人难以看清前方的路。']],
+  ['optimistic', 'adj.', '乐观的；乐观主义的', '真题', ['真题词频1次'], ['乐观的；乐观主义的'], ['She is optimistic about her chances of winning the competition.|||她对自己赢得比赛的机会持乐观态度。']],
+  ['addiction', 'n.', '上瘾；沉溺；嗜好', '真题', ['真题词频1次'], ['上瘾；沉溺；嗜好'], ['Phone addiction is a growing problem among teenagers.|||手机成瘾在青少年中是一个日益严重的问题。']],
+  ['facility', 'n.', '设施；设备；便利；才能', '真题', ['真题词频1次'], ['设施；设备；便利；才能'], ['The sports facility is open to all students for free.|||体育设施免费向所有学生开放。']],
+  ['associate', 'v./n.', 'v.联想；联系；交往；n.同事；伙伴', '真题', ['真题词频1次'], ['v.联想；联系；交往；n.同事；伙伴'], ['People often associate red with luck in Chinese culture.|||在中国文化中，人们常把红色与好运联系在一起。']],
+  ['severe', 'adj.', '严峻的；严厉的；严重的', '真题', ['真题词频1次'], ['严峻的；严厉的；严重的'], ['The severe storm caused damage to many houses.|||猛烈的风暴对许多房屋造成了损坏。']],
+  ['chain', 'n./v.', 'n.链子；链条；一连串；连锁店；v.用链子拴住', '真题', ['真题词频1次'], ['n.链子；链条；一连串；连锁店；v.用链子拴住'], ['A chain is only as strong as its weakest link.|||一条链子的强度取决于最薄弱的环节。']],
+  ['preserve', 'v.', '保护；维护；保存；腌制', '真题', ['真题词频1次'], ['保护；维护；保存；腌制'], ['We should preserve our cultural heritage for future generations.|||我们应该为后代保护文化遗产。']],
   ['manufacture', 'v./n.', 'v.（用机器大量）制造，生产；编造；n.制造；制造业', '真题', ['真题词频1次'], ['v.（用机器大量）制造，生产；编造；n.制造；制造业'], ['The factory manufactures car parts for several major brands.|||该工厂为几个主要品牌生产汽车零部件。']],
-  ['foundation', 'n.', '基础；地基；基金会', '真题', ['真题词频1次'], ['基础；地基；基金会'], ['foundation appears in recent gaokao exams.']],
-  ['temporary', 'adj.', '暂时的；临时的', '真题', ['真题词频1次'], ['暂时的；临时的'], ['temporary appears in recent gaokao exams.']],
-  ['beneficial', 'adj.', '有益的；有利的', '真题', ['真题词频1次'], ['有益的；有利的'], ['beneficial appears in recent gaokao exams.']],
-  ['define', 'v.', '给……下定义；界定；明确', '真题', ['真题词频1次'], ['给……下定义；界定；明确'], ['define appears in recent gaokao exams.']],
-  ['exhausted', 'adj.', '筋疲力尽的；耗尽的', '真题', ['真题词频1次'], ['筋疲力尽的；耗尽的'], ['exhausted appears in recent gaokao exams.']],
+  ['foundation', 'n.', '基础；地基；基金会', '真题', ['真题词频1次'], ['基础；地基；基金会'], ['A solid foundation in English is essential for further study.|||扎实的英语基础对进一步学习至关重要。']],
+  ['temporary', 'adj.', '暂时的；临时的', '真题', ['真题词频1次'], ['暂时的；临时的'], ['This is only a temporary solution to the problem.|||这只是问题的临时解决方案。']],
+  ['beneficial', 'adj.', '有益的；有利的', '真题', ['真题词频1次'], ['有益的；有利的'], ['Regular exercise is beneficial to both body and mind.|||经常锻炼对身心都有益。']],
+  ['define', 'v.', '给……下定义；界定；明确', '真题', ['真题词频1次'], ['给……下定义；界定；明确'], ['How would you define the word success?|||你会如何定义"成功"这个词？']],
+  ['exhausted', 'adj.', '筋疲力尽的；耗尽的', '真题', ['真题词频1次'], ['筋疲力尽的；耗尽的'], ['After running the marathon, he was completely exhausted.|||跑完马拉松后，他完全筋疲力尽了。']],
   ['glance', 'v./n.', 'v.瞥一眼；匆匆一看；n.一瞥；匆匆一看', '真题', ['真题词频1次'], ['v.瞥一眼；匆匆一看；n.一瞥；匆匆一看'], ['She glanced at her watch and realized she was late.|||她瞥了一眼手表，发现自己迟到了。']],
-  ['uncertain', 'adj.', '不确定的；无把握的；多变的', '真题', ['真题词频1次'], ['不确定的；无把握的；多变的'], ['uncertain appears in recent gaokao exams.']],
-  ['ashamed', 'adj.', '羞愧的；惭愧的', '真题', ['真题词频1次'], ['羞愧的；惭愧的'], ['ashamed appears in recent gaokao exams.']],
+  ['uncertain', 'adj.', '不确定的；无把握的；多变的', '真题', ['真题词频1次'], ['不确定的；无把握的；多变的'], ['The future of the project remains uncertain.|||项目的未来仍然不确定。']],
+  ['ashamed', 'adj.', '羞愧的；惭愧的', '真题', ['真题词频1次'], ['羞愧的；惭愧的'], ['He felt ashamed of his behavior at the party.|||他对自己在派对上的行为感到羞愧。']],
   ['illegal', 'adj.', '非法的；违法的', '真题', ['真题词频1次'], ['非法的；违法的'], ['It is illegal to drive through a red traffic light.|||开车穿过红灯是违法的。']],
-  ['vivid', 'adj.', '生动的；逼真的；鲜明的', '真题', ['真题词频1次'], ['生动的；逼真的；鲜明的'], ['vivid appears in recent gaokao exams.']],
-  ['absolute', 'adj.', '绝对的；完全的；十足的', '真题', ['真题词频1次'], ['绝对的；完全的；十足的'], ['absolute appears in recent gaokao exams.']],
-  ['administration', 'n.', '管理；行政；管理部门；（尤指美国）政府', '真题', ['真题词频1次'], ['管理；行政；管理部门；（尤指美国）政府'], ['administration appears in recent gaokao exams.']],
-  ['treasure', 'n./v.', 'n.金银财宝；财富；珍品；v.珍视；珍爱', '真题', ['真题词频1次'], ['n.金银财宝；财富；珍品；v.珍视；珍爱'], ['treasure appears in recent gaokao exams.']],
-  ['foster', 'v./adj.', 'v.促进；培养；收养；adj.寄养的；代养的', '真题', ['真题词频1次'], ['v.促进；培养；收养；adj.寄养的；代养的'], ['foster appears in recent gaokao exams.']],
-  ['freezing', 'adj./n.', 'adj.极冷的；冰冻的；n.冰点', '真题', ['真题词频1次'], ['adj.极冷的；冰冻的；n.冰点'], ['freezing appears in recent gaokao exams.']],
-  ['antique', 'n./adj.', 'n.古董；古玩；adj.古老的；古董的', '真题', ['真题词频1次'], ['n.古董；古玩；adj.古老的；古董的'], ['antique appears in recent gaokao exams.']],
-  ['scare', 'v./n.', 'v.使害怕；惊吓；受惊吓；n.恐慌；惊吓', '真题', ['真题词频1次'], ['v.使害怕；惊吓；受惊吓；n.恐慌；惊吓'], ['scare appears in recent gaokao exams.']],
-  ['desperate', 'adj.', '绝望的；不顾一切的；极其需要的', '真题', ['真题词频1次'], ['绝望的；不顾一切的；极其需要的'], ['desperate appears in recent gaokao exams.']],
-  ['payment', 'n.', '付款；支付；支付的款项', '真题', ['真题词频1次'], ['付款；支付；支付的款项'], ['payment appears in recent gaokao exams.']],
-  ['priority', 'n.', '优先事项；首要事情；优先权', '真题', ['真题词频1次'], ['优先事项；首要事情；优先权'], ['priority appears in recent gaokao exams.']],
-  ['procedure', 'n.', '程序；手续；步骤', '真题', ['真题词频1次'], ['程序；手续；步骤'], ['procedure appears in recent gaokao exams.']],
-  ['quote', 'v./n.', 'v.引用；引述；报价；n.引文；引语；报价', '真题', ['真题词频1次'], ['v.引用；引述；报价；n.引文；引语；报价'], ['quote appears in recent gaokao exams.']],
-  ['tight', 'adj./adv.', 'adj.紧的；牢固的；紧身的；紧密的；（时间）紧的；adv.紧紧地；牢固地', '真题', ['真题词频1次'], ['adj.紧的；牢固的；紧身的；紧密的；（时间）紧的；adv.紧紧地；牢固地'], ['tight appears in recent gaokao exams.']],
-  ['flexible', 'adj.', '灵活的；可弯曲的；柔韧的', '真题', ['真题词频1次'], ['灵活的；可弯曲的；柔韧的'], ['flexible appears in recent gaokao exams.']],
-  ['barely', 'adv.', '仅仅；几乎不；勉强可能', '真题', ['真题词频1次'], ['仅仅；几乎不；勉强可能'], ['barely appears in recent gaokao exams.']],
-  ['optional', 'adj.', '可选择的；非强制的', '真题', ['真题词频1次'], ['可选择的；非强制的'], ['optional appears in recent gaokao exams.']],
-  ['emphasis', 'n.', '强调；重视；重要性', '真题', ['真题词频1次'], ['强调；重视；重要性'], ['emphasis appears in recent gaokao exams.']],
-  ['legend', 'n.', '传说；传奇故事；传奇人物', '真题', ['真题词频1次'], ['传说；传奇故事；传奇人物'], ['legend appears in recent gaokao exams.']],
+  ['vivid', 'adj.', '生动的；逼真的；鲜明的', '真题', ['真题词频1次'], ['生动的；逼真的；鲜明的'], ['The author gave a vivid description of the landscape.|||作者对风景做了生动的描述。']],
+  ['absolute', 'adj.', '绝对的；完全的；十足的', '真题', ['真题词频1次'], ['绝对的；完全的；十足的'], ['I have absolute confidence in her ability to do the job.|||我绝对相信她有能力做好这份工作。']],
+  ['administration', 'n.', '管理；行政；管理部门；（尤指美国）政府', '真题', ['真题词频1次'], ['管理；行政；管理部门；（尤指美国）政府'], ['The new administration plans to reform the education system.|||新政府计划改革教育系统。']],
+  ['treasure', 'n./v.', 'n.金银财宝；财富；珍品；v.珍视；珍爱', '真题', ['真题词频1次'], ['n.金银财宝；财富；珍品；v.珍视；珍爱'], ['The museum houses many national treasures.|||博物馆收藏了许多国宝。']],
+  ['foster', 'v./adj.', 'v.促进；培养；收养；adj.寄养的；代养的', '真题', ['真题词频1次'], ['v.促进；培养；收养；adj.寄养的；代养的'], ['The school aims to foster creativity in every student.|||学校旨在培养每个学生的创造力。']],
+  ['freezing', 'adj./n.', 'adj.极冷的；冰冻的；n.冰点', '真题', ['真题词频1次'], ['adj.极冷的；冰冻的；n.冰点'], ['It was freezing cold outside, so we stayed indoors.|||外面冷得结冰，所以我们待在室内。']],
+  ['antique', 'n./adj.', 'n.古董；古玩；adj.古老的；古董的', '真题', ['真题词频1次'], ['n.古董；古玩；adj.古老的；古董的'], ['She collects antique furniture from the nineteenth century.|||她收藏十九世纪的古董家具。']],
+  ['scare', 'v./n.', 'v.使害怕；惊吓；受惊吓；n.恐慌；惊吓', '真题', ['真题词频1次'], ['v.使害怕；惊吓；受惊吓；n.恐慌；惊吓'], ['The loud thunder scared the little child.|||巨大的雷声吓到了那个小孩。']],
+  ['desperate', 'adj.', '绝望的；不顾一切的；极其需要的', '真题', ['真题词频1次'], ['绝望的；不顾一切的；极其需要的'], ['The desperate parents searched everywhere for their lost child.|||绝望的父母到处寻找他们走失的孩子。']],
+  ['payment', 'n.', '付款；支付；支付的款项', '真题', ['真题词频1次'], ['付款；支付；支付的款项'], ['Online payment has become the most popular way to shop.|||在线支付已成为最受欢迎的购物方式。']],
+  ['priority', 'n.', '优先事项；首要事情；优先权', '真题', ['真题词频1次'], ['优先事项；首要事情；优先权'], ['Safety is the top priority in our school.|||安全是我们学校的首要任务。']],
+  ['procedure', 'n.', '程序；手续；步骤', '真题', ['真题词频1次'], ['程序；手续；步骤'], ['Please follow the procedure for applying for a visa.|||请按照程序申请签证。']],
+  ['quote', 'v./n.', 'v.引用；引述；报价；n.引文；引语；报价', '真题', ['真题词频1次'], ['v.引用；引述；报价；n.引文；引语；报价'], ['The teacher quoted a famous saying by Confucius.|||老师引用了孔子的一句名言。']],
+  ['tight', 'adj./adv.', 'adj.紧的；牢固的；紧身的；紧密的；（时间）紧的；adv.紧紧地；牢固地', '真题', ['真题词频1次'], ['adj.紧的；牢固的；紧身的；紧密的；（时间）紧的；adv.紧紧地；牢固地'], ['These shoes are too tight for me to wear comfortably.|||这双鞋太紧了，穿着不舒服。']],
+  ['flexible', 'adj.', '灵活的；可弯曲的；柔韧的', '真题', ['真题词频1次'], ['灵活的；可弯曲的；柔韧的'], ['The schedule is flexible, so you can choose your own time.|||时间表很灵活，你可以选择自己的时间。']],
+  ['barely', 'adv.', '仅仅；几乎不；勉强可能', '真题', ['真题词频1次'], ['仅仅；几乎不；勉强可能'], ['She barely passed the exam with the minimum score.|||她以最低分勉强通过了考试。']],
+  ['optional', 'adj.', '可选择的；非强制的', '真题', ['真题词频1次'], ['可选择的；非强制的'], ['The course is optional, but I recommend you take it.|||这门课是选修的，但我建议你选。']],
+  ['emphasis', 'n.', '强调；重视；重要性', '真题', ['真题词频1次'], ['强调；重视；重要性'], ['The school places great emphasis on science education.|||学校非常重视科学教育。']],
+  ['legend', 'n.', '传说；传奇故事；传奇人物', '真题', ['真题词频1次'], ['传说；传奇故事；传奇人物'], ['This is a famous legend passed down for generations.|||这是一个代代相传的著名传说。']],
   ['swallow', 'v./n.', 'v.吞下；咽下；（因紧张等）做吞咽动作；吞没；淹没；n.吞；咽；燕子', '真题', ['真题词频1次'], ['v.吞下；咽下；（因紧张等）做吞咽动作；吞没；淹没；n.吞；咽；燕子'], ['She swallowed the medicine with a glass of water.|||她用一杯水吞下了药。']],
-  ['fulfill', 'v.', '履行（诺言等）；执行（命令等）；实现（梦想等）；满足（需求等）', '真题', ['真题词频1次'], ['履行（诺言等）；执行（命令等）；实现（梦想等）；满足（需求等）'], ['fulfill appears in recent gaokao exams.']],
-  ['unforgettable', 'adj.', '难以忘记的；令人难忘的', '真题', ['真题词频1次'], ['难以忘记的；令人难忘的'], ['unforgettable appears in recent gaokao exams.']],
-  ['abstract', 'adj./n./v.', 'adj.抽象的；纯理论的；n.摘要；抽象派艺术作品；v.提取；抽取；使抽象化', '真题', ['真题词频1次'], ['adj.抽象的；纯理论的；n.摘要；抽象派艺术作品；v.提取；抽取；使抽象化'], ['abstract appears in recent gaokao exams.']],
-  ['appetite', 'n.', '食欲；胃口；强烈欲望', '真题', ['真题词频1次'], ['食欲；胃口；强烈欲望'], ['appetite appears in recent gaokao exams.']],
-  ['vain', 'adj.', '徒劳的；无效的；自负的；虚荣的', '真题', ['真题词频1次'], ['徒劳的；无效的；自负的；虚荣的'], ['vain appears in recent gaokao exams.']],
-  ['breakthrough', 'n.', '突破；重大进展', '真题', ['真题词频1次'], ['突破；重大进展'], ['breakthrough appears in recent gaokao exams.']],
+  ['fulfill', 'v.', '履行（诺言等）；执行（命令等）；实现（梦想等）；满足（需求等）', '真题', ['真题词频1次'], ['履行（诺言等）；执行（命令等）；实现（梦想等）；满足（需求等）'], ['He worked hard to fulfill his dream of becoming a doctor.|||他努力实现成为医生的梦想。']],
+  ['unforgettable', 'adj.', '难以忘记的；令人难忘的', '真题', ['真题词频1次'], ['难以忘记的；令人难忘的'], ['The trip to the Great Wall was an unforgettable experience.|||去长城的旅行是一次难忘的经历。']],
+  ['abstract', 'adj./n./v.', 'adj.抽象的；纯理论的；n.摘要；抽象派艺术作品；v.提取；抽取；使抽象化', '真题', ['真题词频1次'], ['adj.抽象的；纯理论的；n.摘要；抽象派艺术作品；v.提取；抽取；使抽象化'], ['The concept of justice is too abstract for young children.|||正义的概念对幼儿来说太抽象了。']],
+  ['appetite', 'n.', '食欲；胃口；强烈欲望', '真题', ['真题词频1次'], ['食欲；胃口；强烈欲望'], ['The long walk gave him a good appetite for dinner.|||长时间的步行让他晚餐胃口很好。']],
+  ['vain', 'adj.', '徒劳的；无效的；自负的；虚荣的', '真题', ['真题词频1次'], ['徒劳的；无效的；自负的；虚荣的'], ['She looked in the mirror in vain, trying to fix her hair.|||她对着镜子徒劳地试图整理头发。']],
+  ['breakthrough', 'n.', '突破；重大进展', '真题', ['真题词频1次'], ['突破；重大进展'], ['Scientists have made a major breakthrough in cancer research.|||科学家在癌症研究方面取得了重大突破。']],
   ['mature', 'adj./v.', 'adj.成熟的；理智的；成年的；发育完全的；v.成熟；长成；使成熟', '真题', ['真题词频1次'], ['adj.成熟的；理智的；成年的；发育完全的；v.成熟；长成；使成熟'], ['She has matured a lot since her first year of college.|||自大学一年级以来，她已经成熟了很多。']],
-  ['latter', 'adj./n.', 'adj.后者的；后半的；（两者中）较后的；n.后者', '真题', ['真题词频1次'], ['adj.后者的；后半的；（两者中）较后的；n.后者'], ['latter appears in recent gaokao exams.']],
-  ['damp', 'adj./n./v.', 'adj.潮湿的；n.潮湿；湿气；v.使潮湿；减弱；抑制', '真题', ['真题词频1次'], ['adj.潮湿的；n.潮湿；湿气；v.使潮湿；减弱；抑制'], ['damp appears in recent gaokao exams.']],
-  ['neglect', 'v./n.', 'v.忽视；忽略；疏忽；疏漏；n.忽视；疏忽', '真题', ['真题词频1次'], ['v.忽视；忽略；疏忽；疏漏；n.忽视；疏忽'], ['neglect appears in recent gaokao exams.']],
-  ['accelerate', 'v.', '（使）加速；加快；促进', '真题', ['真题词频1次'], ['（使）加速；加快；促进'], ['accelerate appears in recent gaokao exams.']],
-  ['temptation', 'n.', '引诱；诱惑；煽诱人的事物', '真题', ['真题词频1次'], ['引诱；诱惑；煽诱人的事物'], ['temptation appears in recent gaokao exams.']],
-  ['angle', 'n./v.', 'n.角；角度；观点；立场；v.斜移；斜置；从（特定角度）报道', '真题', ['真题词频1次'], ['n.角；角度；观点；立场；v.斜移；斜置；从（特定角度）报道'], ['angle appears in recent gaokao exams.']],
-  ['decisive', 'adj.', '决定性的；关键的；坚决的；果断的', '真题', ['真题词频1次'], ['决定性的；关键的；坚决的；果断的'], ['decisive appears in recent gaokao exams.']],
-  ['time-consuming', 'adj.', '耗时的；旷日持久的', '真题', ['真题词频1次'], ['耗时的；旷日持久的'], ['time-consuming appears in recent gaokao exams.']],
-  ['ambiguous', 'adj.', '模棱两可的；含混不清的', '真题', ['真题词频1次'], ['模棱两可的；含混不清的'], ['ambiguous appears in recent gaokao exams.']],
-  ['aluminium', 'n.', '铝', '真题', ['真题词频1次'], ['铝'], ['aluminium appears in recent gaokao exams.']],
-  ['bacteria', 'n.', '细菌', '真题', ['真题词频1次'], ['细菌'], ['bacteria appears in recent gaokao exams.']],
-  ['behalf', 'n.', '代表某人', '真题', ['真题词频1次'], ['代表某人'], ['behalf appears in recent gaokao exams.']],
-  ['bind', 'v.', '捆绑、绑定', '真题', ['真题词频1次'], ['捆绑、绑定'], ['bind appears in recent gaokao exams.']],
-  ['butcher', 'n.', '屠夫', '真题', ['真题词频1次'], ['屠夫'], ['butcher appears in recent gaokao exams.']],
-  ['circuit', 'n.', '电路、环形路线', '真题', ['真题词频1次'], ['电路、环形路线'], ['circuit appears in recent gaokao exams.']],
-  ['component', 'n.', '组成部分、部件', '真题', ['真题词频1次'], ['组成部分、部件'], ['component appears in recent gaokao exams.']],
-  ['conscious', 'adj.', '有意识的', '真题', ['真题词频1次'], ['有意识的'], ['conscious appears in recent gaokao exams.']],
-  ['cottage', 'n.', '小屋、村舍', '真题', ['真题词频1次'], ['小屋、村舍'], ['cottage appears in recent gaokao exams.']],
-  ['dioxide', 'n.', '二氧化物', '真题', ['真题词频1次'], ['二氧化物'], ['dioxide appears in recent gaokao exams.']],
-  ['directory', 'n.', '目录、名录', '真题', ['真题词频1次'], ['目录、名录'], ['directory appears in recent gaokao exams.']],
-  ['discrimination', 'n.', '歧视', '真题', ['真题词频1次'], ['歧视'], ['discrimination appears in recent gaokao exams.']],
-  ['enormous', 'adj.', '巨大的', '真题', ['真题词频1次'], ['巨大的'], ['enormous appears in recent gaokao exams.']],
-  ['export', 'v./n.', '出口、输出', '真题', ['真题词频1次'], ['出口、输出'], ['export appears in recent gaokao exams.']],
-  ['genuine', 'adj.', '真正的', '真题', ['真题词频1次'], ['真正的'], ['genuine appears in recent gaokao exams.']],
-  ['grain', 'n.', '谷物', '真题', ['真题词频1次'], ['谷物'], ['grain appears in recent gaokao exams.']],
-  ['hence', 'adv.', '因此', '真题', ['真题词频1次'], ['因此'], ['hence appears in recent gaokao exams.']],
-  ['ideal', 'adj.', '理想的、完美的', '真题', ['真题词频1次'], ['理想的、完美的'], ['ideal appears in recent gaokao exams.']],
-  ['import', 'v./n.', '进口、输入', '真题', ['真题词频1次'], ['进口、输入'], ['import appears in recent gaokao exams.']],
-  ['integrity', 'n.', '诚实、正直', '真题', ['真题词频1次'], ['诚实、正直'], ['integrity appears in recent gaokao exams.']],
-  ['literally', 'adv.', '字面意义上、确实', '真题', ['真题词频1次'], ['字面意义上、确实'], ['literally appears in recent gaokao exams.']],
-  ['logical', 'adj.', '符合逻辑的', '真题', ['真题词频1次'], ['符合逻辑的'], ['logical appears in recent gaokao exams.']],
-  ['mineral', 'n.', '矿物质', '真题', ['真题词频1次'], ['矿物质'], ['mineral appears in recent gaokao exams.']],
-  ['monument', 'n.', '纪念碑', '真题', ['真题词频1次'], ['纪念碑'], ['monument appears in recent gaokao exams.']],
-  ['nuclear', 'adj.', '核能的', '真题', ['真题词频1次'], ['核能的'], ['nuclear appears in recent gaokao exams.']],
-  ['oral', 'adj.', '口头的', '真题', ['真题词频1次'], ['口头的'], ['oral appears in recent gaokao exams.']],
-  ['outcome', 'n.', '结果、效果', '真题', ['真题词频1次'], ['结果、效果'], ['outcome appears in recent gaokao exams.']],
-  ['paddle', 'n./v.', '船桨、涉水', '真题', ['真题词频1次'], ['船桨、涉水'], ['paddle appears in recent gaokao exams.']],
-  ['parallel', 'adj.', '平行的', '真题', ['真题词频1次'], ['平行的'], ['parallel appears in recent gaokao exams.']],
-  ['premier', 'n.', '首相、总理', '真题', ['真题词频1次'], ['首相、总理'], ['premier appears in recent gaokao exams.']],
-  ['pump', 'n.', '抽水机、水泵', '真题', ['真题词频1次'], ['抽水机、水泵'], ['pump appears in recent gaokao exams.']],
-  ['quantity', 'n.', '数量', '真题', ['真题词频1次'], ['数量'], ['quantity appears in recent gaokao exams.']],
-  ['smog', 'n.', '烟雾、雾霾', '真题', ['真题词频1次'], ['烟雾、雾霾'], ['smog appears in recent gaokao exams.']],
-  ['starvation', 'n.', '饥荒', '真题', ['真题词频1次'], ['饥荒'], ['starvation appears in recent gaokao exams.']],
-  ['substitute', 'v.', '代替、取代', '真题', ['真题词频1次'], ['代替、取代'], ['substitute appears in recent gaokao exams.']],
-  ['superb', 'adj.', '卓越的', '真题', ['真题词频1次'], ['卓越的'], ['superb appears in recent gaokao exams.']],
-  ['telegraph', 'n.', '电报', '真题', ['真题词频1次'], ['电报'], ['telegraph appears in recent gaokao exams.']],
-  ['tendency', 'n.', '倾向', '真题', ['真题词频1次'], ['倾向'], ['tendency appears in recent gaokao exams.']],
+  ['latter', 'adj./n.', 'adj.后者的；后半的；（两者中）较后的；n.后者', '真题', ['真题词频1次'], ['adj.后者的；后半的；（两者中）较后的；n.后者'], ['Of the two options, I prefer the latter.|||在这两个选项中，我更喜欢后者。']],
+  ['damp', 'adj./n./v.', 'adj.潮湿的；n.潮湿；湿气；v.使潮湿；减弱；抑制', '真题', ['真题词频1次'], ['adj.潮湿的；n.潮湿；湿气；v.使潮湿；减弱；抑制'], ['The walls were damp after the heavy rain.|||大雨后墙壁很潮湿。']],
+  ['neglect', 'v./n.', 'v.忽视；忽略；疏忽；疏漏；n.忽视；疏忽', '真题', ['真题词频1次'], ['v.忽视；忽略；疏忽；疏漏；n.忽视；疏忽'], ['Dont neglect your health while pursuing success.|||在追求成功的同时不要忽视健康。']],
+  ['accelerate', 'v.', '（使）加速；加快；促进', '真题', ['真题词频1次'], ['（使）加速；加快；促进'], ['The car accelerated from zero to sixty in five seconds.|||汽车在五秒内从零加速到六十。']],
+  ['temptation', 'n.', '引诱；诱惑；煽诱人的事物', '真题', ['真题词频1次'], ['引诱；诱惑；煽诱人的事物'], ['He resisted the temptation to eat the cake before dinner.|||他抵制了在晚饭前吃蛋糕的诱惑。']],
+  ['angle', 'n./v.', 'n.角；角度；观点；立场；v.斜移；斜置；从（特定角度）报道', '真题', ['真题词频1次'], ['n.角；角度；观点；立场；v.斜移；斜置；从（特定角度）报道'], ['The photographer found the perfect angle for the shot.|||摄影师找到了完美的拍摄角度。']],
+  ['decisive', 'adj.', '决定性的；关键的；坚决的；果断的', '真题', ['真题词频1次'], ['决定性的；关键的；坚决的；果断的'], ['The coach made a decisive change in the second half.|||教练在下半场做出了决定性的改变。']],
+  ['time-consuming', 'adj.', '耗时的；旷日持久的', '真题', ['真题词频1次'], ['耗时的；旷日持久的'], ['Learning a language is a time-consuming process.|||学习一门语言是一个耗时的过程。']],
+  ['ambiguous', 'adj.', '模棱两可的；含混不清的', '真题', ['真题词频1次'], ['模棱两可的；含混不清的'], ['His answer was ambiguous, so I did not know what to do.|||他的回答模棱两可，我不知道该怎么办。']],
+  ['aluminium', 'n.', '铝', '真题', ['真题词频1次'], ['铝'], ['Aluminium is a light and widely used metal.|||铝是一种轻便且广泛使用的金属。']],
+  ['bacteria', 'n.', '细菌', '真题', ['真题词频1次'], ['细菌'], ['Washing hands helps kill bacteria and prevent disease.|||洗手有助于杀死细菌和预防疾病。']],
+  ['behalf', 'n.', '代表某人', '真题', ['真题词频1次'], ['代表某人'], ['On behalf of the class, I thank you for your help.|||我代表全班感谢你的帮助。']],
+  ['bind', 'v.', '捆绑、绑定', '真题', ['真题词频1次'], ['捆绑、绑定'], ['The contract binds both parties to the agreement.|||合同约束双方遵守协议。']],
+  ['butcher', 'n.', '屠夫', '真题', ['真题词频1次'], ['屠夫'], ['The butcher sells fresh meat every morning.|||肉贩每天早上卖新鲜的肉。']],
+  ['circuit', 'n.', '电路、环形路线', '真题', ['真题词频1次'], ['电路、环形路线'], ['The electric circuit was broken, so the lights went out.|||电路断了，所以灯灭了。']],
+  ['component', 'n.', '组成部分、部件', '真题', ['真题词频1次'], ['组成部分、部件'], ['Each component of the machine must work perfectly.|||机器的每个部件都必须完美运作。']],
+  ['conscious', 'adj.', '有意识的', '真题', ['真题词频1次'], ['有意识的'], ['The patient was conscious and able to speak after the surgery.|||手术后病人意识清醒，能说话。']],
+  ['cottage', 'n.', '小屋、村舍', '真题', ['真题词频1次'], ['小屋、村舍'], ['They spent the weekend at a cozy cottage in the countryside.|||他们在乡下一间舒适的小屋里度过了周末。']],
+  ['dioxide', 'n.', '二氧化物', '真题', ['真题词频1次'], ['二氧化物'], ['Carbon dioxide is a major cause of global warming.|||二氧化碳是全球变暖的主要原因。']],
+  ['directory', 'n.', '目录、名录', '真题', ['真题词频1次'], ['目录、名录'], ['You can find the phone number in the directory.|||你可以在电话簿里找到电话号码。']],
+  ['discrimination', 'n.', '歧视', '真题', ['真题词频1次'], ['歧视'], ['Racial discrimination is illegal in many countries.|||种族歧视在许多国家是违法的。']],
+  ['enormous', 'adj.', '巨大的', '真题', ['真题词频1次'], ['巨大的'], ['The new stadium can hold an enormous number of spectators.|||新体育场可以容纳大量观众。']],
+  ['export', 'v./n.', '出口、输出', '真题', ['真题词频1次'], ['出口、输出'], ['The country exports large amounts of tea and silk.|||这个国家出口大量茶叶和丝绸。']],
+  ['genuine', 'adj.', '真正的', '真题', ['真题词频1次'], ['真正的'], ['This is a genuine diamond, not a fake one.|||这是真正的钻石，不是假的。']],
+  ['grain', 'n.', '谷物', '真题', ['真题词频1次'], ['谷物'], ['The farmer harvested tons of grain this autumn.|||农民今年秋天收获了数吨粮食。']],
+  ['hence', 'adv.', '因此', '真题', ['真题词频1次'], ['因此'], ['The roads were flooded; hence, the school was closed.|||道路被淹了，因此学校停课了。']],
+  ['ideal', 'adj.', '理想的、完美的', '真题', ['真题词频1次'], ['理想的、完美的'], ['This location is ideal for building a new school.|||这个位置是建新学校的理想地点。']],
+  ['import', 'v./n.', '进口、输入', '真题', ['真题词频1次'], ['进口、输入'], ['The country has to import most of its oil from abroad.|||这个国家不得不从国外进口大部分石油。']],
+  ['integrity', 'n.', '诚实、正直', '真题', ['真题词频1次'], ['诚实、正直'], ['A person of integrity always does the right thing.|||正直的人总是做正确的事。']],
+  ['literally', 'adv.', '字面意义上、确实', '真题', ['真题词频1次'], ['字面意义上、确实'], ['I literally had no idea what he was talking about.|||我完全不知道他在说什么。']],
+  ['logical', 'adj.', '符合逻辑的', '真题', ['真题词频1次'], ['符合逻辑的'], ['Her argument was logical and well-organized.|||她的论点合乎逻辑且条理清晰。']],
+  ['mineral', 'n.', '矿物质', '真题', ['真题词频1次'], ['矿物质'], ['This region is rich in mineral resources.|||这个地区矿产资源丰富。']],
+  ['monument', 'n.', '纪念碑', '真题', ['真题词频1次'], ['纪念碑'], ['The monument was built to honor the national hero.|||这座纪念碑是为了纪念民族英雄而建的。']],
+  ['nuclear', 'adj.', '核能的', '真题', ['真题词频1次'], ['核能的'], ['Nuclear energy is both powerful and controversial.|||核能既强大又充满争议。']],
+  ['oral', 'adj.', '口头的', '真题', ['真题词频1次'], ['口头的'], ['The exam includes both written and oral sections.|||考试包括笔试和口试两部分。']],
+  ['outcome', 'n.', '结果、效果', '真题', ['真题词频1次'], ['结果、效果'], ['We are waiting for the outcome of the election.|||我们在等待选举的结果。']],
+  ['paddle', 'n./v.', '船桨、涉水', '真题', ['真题词频1次'], ['船桨、涉水'], ['He used a paddle to steer the canoe downstream.|||他用桨控制独木舟顺流而下。']],
+  ['parallel', 'adj.', '平行的', '真题', ['真题词频1次'], ['平行的'], ['The two roads run parallel to each other for several miles.|||这两条路平行延伸了几英里。']],
+  ['premier', 'n.', '首相、总理', '真题', ['真题词频1次'], ['首相、总理'], ['The premier visited the disaster area to comfort the victims.|||总理视察了灾区以慰问灾民。']],
+  ['pump', 'n.', '抽水机、水泵', '真题', ['真题词频1次'], ['抽水机、水泵'], ['The pump is used to draw water from the well.|||水泵用来从井里抽水。']],
+  ['quantity', 'n.', '数量', '真题', ['真题词频1次'], ['数量'], ['A large quantity of food was wasted at the buffet.|||自助餐上浪费了大量食物。']],
+  ['smog', 'n.', '烟雾、雾霾', '真题', ['真题词频1次'], ['烟雾、雾霾'], ['Thick smog covered the city during the winter months.|||冬季厚厚的雾霾笼罩着城市。']],
+  ['starvation', 'n.', '饥荒', '真题', ['真题词频1次'], ['饥荒'], ['Many people in the region face starvation due to the drought.|||由于干旱，该地区许多人面临饥饿。']],
+  ['substitute', 'v.', '代替、取代', '真题', ['真题词频1次'], ['代替、取代'], ['Honey can be used as a substitute for sugar in recipes.|||蜂蜜可以在食谱中替代糖。']],
+  ['superb', 'adj.', '卓越的', '真题', ['真题词频1次'], ['卓越的'], ['The chef prepared a superb meal for the guests.|||厨师为客人准备了一顿极好的饭菜。']],
+  ['telegraph', 'n.', '电报', '真题', ['真题词频1次'], ['电报'], ['Before phones, people used the telegraph to send messages.|||在电话出现之前，人们用电报发送信息。']],
+  ['tendency', 'n.', '倾向', '真题', ['真题词频1次'], ['倾向'], ['There is a tendency for young people to move to cities.|||年轻人有向城市迁移的趋势。']],
   ['twist', 'v./n.', '扭曲、转动', '真题', ['真题词频1次'], ['扭曲、转动'], ['She twisted her ankle while playing basketball.|||她在打篮球时扭伤了脚踝。']],
-  ['vice', 'n.', '邪恶、罪行', '真题', ['真题词频1次'], ['邪恶、罪行'], ['vice appears in recent gaokao exams.']],
-  ['volume', 'n.', '体积、容量、音量、大量', '真题', ['真题词频1次'], ['体积、容量、音量、大量'], ['volume appears in recent gaokao exams.']],
-  ['wage', 'n.', '工资', '真题', ['真题词频1次'], ['工资'], ['wage appears in recent gaokao exams.']],
-  ['welfare', 'n.', '幸福、福利', '真题', ['真题词频1次'], ['幸福、福利'], ['welfare appears in recent gaokao exams.']]
+  ['vice', 'n.', '邪恶、罪行', '真题', ['真题词频1次'], ['邪恶、罪行'], ['Smoking is a vice that harms both you and others around you.|||吸烟是一种既害己又害人的恶习。']],
+  ['volume', 'n.', '体积、容量、音量、大量', '真题', ['真题词频1次'], ['体积、容量、音量、大量'], ['Please turn down the volume of the music.|||请把音乐的音量调低。']],
+  ['wage', 'n.', '工资', '真题', ['真题词频1次'], ['工资'], ['The workers went on strike for higher wages.|||工人为提高工资而罢工。']],
+  ['welfare', 'n.', '幸福、福利', '真题', ['真题词频1次'], ['幸福、福利'], ['The government provides welfare for the elderly and disabled.|||政府为老人和残疾人提供福利。']]
 ];
 
 // 褒义词
@@ -2305,7 +2305,7 @@ const seedWordsNegative = [
   ['awkward', 'adj.', '贬义（消极态度）—— 尴尬的，笨拙的', '褒贬', ['注意情感色彩辨析'], ['贬义词，阅读中常表达消极态度'], ['His awkward behavior was criticized.|||他的尴尬行为受到了批评。']],
   ['selfish', 'adj.', '贬义（消极态度）—— 自私的，利己的', '褒贬', ['注意情感色彩辨析'], ['贬义词，阅读中常表达消极态度'], ['His selfish behavior was criticized.|||他的自私行为受到了批评。']],
   ['stubborn', 'adj.', '贬义（消极态度）—— 固执的，倔强的', '褒贬', ['注意情感色彩辨析'], ['贬义词，阅读中常表达消极态度'], ['His stubborn behavior was criticized.|||他的顽固行为受到了批评。']],
-  ['mean', 'adj.', '贬义（消极态度）—— 吝啬的，刻薄的', '褒贬', ['注意情感色彩辨析'], ['贬义词，阅读中常表达消极态度'], ['What does this word mean in the context of the passage?']],
+  ['mean', 'adj.', '贬义（消极态度）—— 吝啬的，刻薄的', '褒贬', ['注意情感色彩辨析'], ['贬义词，阅读中常表达消极态度'], ['He is too mean to buy a gift for his mother.|||他太吝啬了，不愿给母亲买礼物。']],
   ['cruel', 'adj.', '贬义（消极态度）—— 残忍的，冷酷的', '褒贬', ['注意情感色彩辨析'], ['贬义词，阅读中常表达消极态度'], ['His cruel behavior was criticized.|||他的残忍行为受到了批评。']],
   ['greedy', 'adj.', '贬义（消极态度）—— 贪婪的，贪心的', '褒贬', ['注意情感色彩辨析'], ['贬义词，阅读中常表达消极态度'], ['His greedy behavior was criticized.|||他的贪婪行为受到了批评。']],
   ['arrogant', 'adj.', '贬义（消极态度）—— 傲慢的，自大的', '褒贬', ['注意情感色彩辨析'], ['贬义词，阅读中常表达消极态度'], ['His arrogant behavior was criticized.|||他的傲慢行为受到了批评。']],
@@ -2488,148 +2488,148 @@ const seedWordsSuper = [
 
 // 同义词对比
 const seedSynonyms = [
-  ['abandon / give up', '词组', '放弃', '同义', ['同义词对比记忆'], ['abandon和give up可互换使用'], ['Both abandon and give up mean give up.|||放弃和放弃都意味着放弃。']],
-  ['absorb / take in', '词组', '吸收', '同义', ['同义词对比记忆'], ['absorb和take in可互换使用'], ['Both absorb and take in mean take in.|||吸收和摄入均值摄入。']],
-  ['affect / have an effect on', '词组', '影响', '同义', ['同义词对比记忆'], ['affect和have an effect on可互换使用'], ['Both affect and have an effect on mean have an effect on.|||对均值的影响和对均值的影响都对均值的影响。']],
-  ['beautiful / pretty', '词组', '漂亮的', '同义', ['同义词对比记忆'], ['beautiful和pretty可互换使用'], ['Both beautiful and pretty mean pretty.|||既美丽又漂亮的意思是漂亮。']],
-  ['big / large', '词组', '大的', '同义', ['同义词对比记忆'], ['big和large可互换使用'], ['Both big and large mean large.|||无论大还是大，都意味着大。']],
-  ['brave / courageous', '词组', '勇敢的', '同义', ['同义词对比记忆'], ['brave和courageous可互换使用'], ['Both brave and courageous mean courageous.|||勇敢和勇敢都意味着勇敢。']],
-  ['begin / start', '词组', '开始', '同义', ['同义词对比记忆'], ['begin和start可互换使用'], ['Both begin and start mean start.|||开始和开始均值开始。']],
-  ['buy / purchase', '词组', '购买', '同义', ['同义词对比记忆'], ['buy和purchase可互换使用'], ['Both buy and purchase mean purchase.|||购买和购买都意味着购买。']],
-  ['change / alter', '词组', '改变', '同义', ['同义词对比记忆'], ['change和alter可互换使用'], ['Both change and alter mean alter.|||CHANGE和ALTER均意味着ALTER。']],
-  ['choose / select', '词组', '选择', '同义', ['同义词对比记忆'], ['choose和select可互换使用'], ['Both choose and select mean select.|||CHOOSE和SELECT均值SEL']],
-  ['close / shut', '词组', '关闭', '同义', ['同义词对比记忆'], ['close和shut可互换使用'], ['Both close and shut mean shut.|||关闭和关闭都意味着关闭。']],
-  ['complete / finish', '词组', '完成', '同义', ['同义词对比记忆'], ['complete和finish可互换使用'], ['Both complete and finish mean finish.|||完成和完成均意味着完成。']],
-  ['correct / right', '词组', '正确的', '同义', ['同义词对比记忆'], ['correct和right可互换使用'], ['Both correct and right mean right.|||正确和正确都意味着正确。']],
-  ['dangerous / risky', '词组', '危险的', '同义', ['同义词对比记忆'], ['dangerous和risky可互换使用'], ['Both dangerous and risky mean risky.|||危险和风险都意味着风险。']],
-  ['decide / determine', '词组', '决定', '同义', ['同义词对比记忆'], ['decide和determine可互换使用'], ['Both decide and determine mean determine.|||决定和确定均值决定。']],
-  ['decrease / reduce', '词组', '减少', '同义', ['同义词对比记忆'], ['decrease和reduce可互换使用'], ['Both decrease and reduce mean reduce.|||递减和递减均值递减。']],
-  ['difficult / hard', '词组', '困难的', '同义', ['同义词对比记忆'], ['difficult和hard可互换使用'], ['Both difficult and hard mean hard.|||困难和困难都意味着困难。']],
-  ['end / finish', '词组', '结束', '同义', ['同义词对比记忆'], ['end和finish可互换使用'], ['Both end and finish mean finish.|||终点和终点均意味着终点。']],
-  ['enough / adequate', '词组', '足够的', '同义', ['同义词对比记忆'], ['enough和adequate可互换使用'], ['Both enough and adequate mean adequate.|||足够和足够的意思是足够的。']],
-  ['fast / quick', '词组', '快的', '同义', ['同义词对比记忆'], ['fast和quick可互换使用'], ['Both fast and quick mean quick.|||快和快都意味着快。']],
+  ['abandon / give up', '词组', '放弃', '同义', ['同义词对比记忆'], ['abandon和give up可互换使用'], ['He abandoned his plan and gave up the project.|||他放弃了计划，放弃了这个项目。']],
+  ['absorb / take in', '词组', '吸收', '同义', ['同义词对比记忆'], ['absorb和take in可互换使用'], ['Plants absorb sunlight and take in carbon dioxide.|||植物吸收阳光并摄入二氧化碳。']],
+  ['affect / have an effect on', '词组', '影响', '同义', ['同义词对比记忆'], ['affect和have an effect on可互换使用'], ['Lack of sleep affects your health and has an effect on your mood.|||睡眠不足会影响健康，也会影响情绪。']],
+  ['beautiful / pretty', '词组', '漂亮的', '同义', ['同义词对比记忆'], ['beautiful和pretty可互换使用'], ['She is a beautiful girl with a pretty smile.|||她是个美丽的女孩，笑容很漂亮。']],
+  ['big / large', '词组', '大的', '同义', ['同义词对比记忆'], ['big和large可互换使用'], ['They live in a big house with a large garden.|||他们住在一所大房子里，有个大花园。']],
+  ['brave / courageous', '词组', '勇敢的', '同义', ['同义词对比记忆'], ['brave和courageous可互换使用'], ['The brave soldier was courageous in the face of danger.|||勇敢的士兵在危险面前表现得很英勇。']],
+  ['begin / start', '词组', '开始', '同义', ['同义词对比记忆'], ['begin和start可互换使用'], ['The concert will begin at seven and start with a piano solo.|||音乐会七点开始，以钢琴独奏开场。']],
+  ['buy / purchase', '词组', '购买', '同义', ['同义词对比记忆'], ['buy和purchase可互换使用'], ['You can buy tickets online or purchase them at the box office.|||你可以在网上买票，也可以在售票处购买。']],
+  ['change / alter', '词组', '改变', '同义', ['同义词对比记忆'], ['change和alter可互换使用'], ['The weather changes quickly, altering our plans for the day.|||天气变化很快，改变了我们当天的计划。']],
+  ['choose / select', '词组', '选择', '同义', ['同义词对比记忆'], ['choose和select可互换使用'], ['You can choose any book or select one from the list.|||你可以选任何书，或者从清单中挑选一本。']],
+  ['close / shut', '词组', '关闭', '同义', ['同义词对比记忆'], ['close和shut可互换使用'], ['Please close the door and shut the window.|||请关上门，关上窗户。']],
+  ['complete / finish', '词组', '完成', '同义', ['同义词对比记忆'], ['complete和finish可互换使用'], ['She completed the task and finished the report on time.|||她完成了任务，按时写完了报告。']],
+  ['correct / right', '词组', '正确的', '同义', ['同义词对比记忆'], ['correct和right可互换使用'], ['Your answer is correct and your reasoning is right.|||你的答案是正确的，推理也是对的。']],
+  ['dangerous / risky', '词组', '危险的', '同义', ['同义词对比记忆'], ['dangerous和risky可互换使用'], ['It is dangerous to drive fast and risky to text while driving.|||开快车很危险，开车时发短信也很冒险。']],
+  ['decide / determine', '词组', '决定', '同义', ['同义词对比记忆'], ['decide和determine可互换使用'], ['They decided to go and determined the date for the trip.|||他们决定去，并确定了旅行的日期。']],
+  ['decrease / reduce', '词组', '减少', '同义', ['同义词对比记忆'], ['decrease和reduce可互换使用'], ['Sales decreased by 10% and costs were reduced significantly.|||销售额减少了10%，成本大幅降低。']],
+  ['difficult / hard', '词组', '困难的', '同义', ['同义词对比记忆'], ['difficult和hard可互换使用'], ['The exam was difficult and the questions were hard to answer.|||考试很难，题目很难回答。']],
+  ['end / finish', '词组', '结束', '同义', ['同义词对比记忆'], ['end和finish可互换使用'], ['The movie ends at ten and the party finishes at midnight.|||电影十点结束，派对午夜结束。']],
+  ['enough / adequate', '词组', '足够的', '同义', ['同义词对比记忆'], ['enough和adequate可互换使用'], ['We have enough food and adequate water for the trip.|||我们有足够的食物和充足的水供旅行用。']],
+  ['fast / quick', '词组', '快的', '同义', ['同义词对比记忆'], ['fast和quick可互换使用'], ['He is a fast runner and a quick thinker.|||他跑得快，思维也敏捷。']],
   ['fear / be afraid of', '词组', '害怕', '同义', ['同义词对比记忆'], ['fear和be afraid of可互换使用'], ['Both fear and be afraid of mean be afraid of.|||既害怕又害怕卑鄙害怕。']],
-  ['find / discover', '词组', '发现', '同义', ['同义词对比记忆'], ['find和discover可互换使用'], ['Both find and discover mean discover.|||发现和发现意味着发现。']],
-  ['get / obtain', '词组', '获得', '同义', ['同义词对比记忆'], ['get和obtain可互换使用'], ['Both get and obtain mean obtain.|||GET和GET均值GET。']],
-  ['happy / glad', '词组', '高兴的', '同义', ['同义词对比记忆'], ['happy和glad可互换使用'], ['Both happy and glad mean glad.|||快乐和快乐都意味着快乐。']],
-  ['help / assist', '词组', '帮助', '同义', ['同义词对比记忆'], ['help和assist可互换使用'], ['Both help and assist mean assist.|||“帮助”和“协助”都意味着“协助”。']],
-  ['hide / conceal', '词组', '隐藏', '同义', ['同义词对比记忆'], ['hide和conceal可互换使用'], ['Both hide and conceal mean conceal.|||隐藏和隐藏意味着隐藏。']],
-  ['hope / wish', '词组', '希望', '同义', ['同义词对比记忆'], ['hope和wish可互换使用'], ['Both hope and wish mean wish.|||希望和愿望都意味着愿望。']],
-  ['important / significant', '词组', '重要的', '同义', ['同义词对比记忆'], ['important和significant可互换使用'], ['Both important and significant mean significant.|||重要和显著均值显著。']],
-  ['increase / raise', '词组', '增加', '同义', ['同义词对比记忆'], ['increase和raise可互换使用'], ['Both increase and raise mean raise.|||增加和增加均值增加。']],
-  ['job / work', '词组', '工作', '同义', ['同义词对比记忆'], ['job和work可互换使用'], ['Both job and work mean work.|||工作和工作都意味着工作。']],
-  ['keep / preserve', '词组', '保持', '同义', ['同义词对比记忆'], ['keep和preserve可互换使用'], ['Both keep and preserve mean preserve.|||Keep和preserve均指preserve。']],
-  ['large / huge', '词组', '巨大的', '同义', ['同义词对比记忆'], ['large和huge可互换使用'], ['Both large and huge mean huge.|||大和巨大都意味着巨大。']],
-  ['look / see', '词组', '看', '同义', ['同义词对比记忆'], ['look和see可互换使用'], ['Both look and see mean see.|||看和看的意思都是看。']],
-  ['make / create', '词组', '制造', '同义', ['同义词对比记忆'], ['make和create可互换使用'], ['Both make and create mean create.|||Make和create均指create。']],
-  ['old / ancient', '词组', '古老的', '同义', ['同义词对比记忆'], ['old和ancient可互换使用'], ['Both old and ancient mean ancient.|||古老和古老的意思都是古老的。']],
-  ['poor / needy', '词组', '贫穷的', '同义', ['同义词对比记忆'], ['poor和needy可互换使用'], ['Both poor and needy mean needy.|||穷人和有需要的人都意味着有需要的人。']],
-  ['quick / rapid', '词组', '迅速的', '同义', ['同义词对比记忆'], ['quick和rapid可互换使用'], ['Both quick and rapid mean rapid.|||快速和快速的意思是快速。']],
-  ['quiet / silent', '词组', '安静的', '同义', ['同义词对比记忆'], ['quiet和silent可互换使用'], ['Both quiet and silent mean silent.|||安静和沉默都意味着沉默。']],
-  ['rich / wealthy', '词组', '富裕的', '同义', ['同义词对比记忆'], ['rich和wealthy可互换使用'], ['Both rich and wealthy mean wealthy.|||富人和富人都意味着富人。']],
-  ['sad / unhappy', '词组', '悲伤的', '同义', ['同义词对比记忆'], ['sad和unhappy可互换使用'], ['Both sad and unhappy mean unhappy.|||悲伤和不快乐都意味着不快乐。']],
-  ['say / state', '词组', '说', '同义', ['同义词对比记忆'], ['say和state可互换使用'], ['Both say and state mean state.|||Say和state均指状态。']],
-  ['show / display', '词组', '展示', '同义', ['同义词对比记忆'], ['show和display可互换使用'], ['Both show and display mean display.|||Show和display均值显示。']],
-  ['small / tiny', '词组', '小的', '同义', ['同义词对比记忆'], ['small和tiny可互换使用'], ['Both small and tiny mean tiny.|||小和微小都意味着微小。']],
-  ['start / begin', '词组', '开始', '同义', ['同义词对比记忆'], ['start和begin可互换使用'], ['Both start and begin mean begin.|||Start和begin均表示开始。']],
-  ['stop / halt', '词组', '停止', '同义', ['同义词对比记忆'], ['stop和halt可互换使用'], ['Both stop and halt mean halt.|||停止和暂停都意味着暂停。']],
-  ['strong / powerful', '词组', '强大的', '同义', ['同义词对比记忆'], ['strong和powerful可互换使用'], ['Both strong and powerful mean powerful.|||强大和强大都意味着强大。']],
-  ['tell / inform', '词组', '告诉', '同义', ['同义词对比记忆'], ['tell和inform可互换使用'], ['Both tell and inform mean inform.|||告知和告知均意味着告知。']],
-  ['think / believe', '词组', '认为', '同义', ['同义词对比记忆'], ['think和believe可互换使用'], ['Both think and believe mean believe.|||Think和Believe都意味着Believe。']],
-  ['tired / exhausted', '词组', '疲倦的', '同义', ['同义词对比记忆'], ['tired和exhausted可互换使用'], ['Both tired and exhausted mean exhausted.|||疲惫和疲惫都意味着疲惫。']],
-  ['try / attempt', '词组', '尝试', '同义', ['同义词对比记忆'], ['try和attempt可互换使用'], ['Both try and attempt mean attempt.|||尝试和尝试都意味着尝试。']],
-  ['use / employ', '词组', '使用', '同义', ['同义词对比记忆'], ['use和employ可互换使用'], ['Both use and employ mean employ.|||使用和雇用均值雇用。']],
-  ['want / desire', '词组', '想要', '同义', ['同义词对比记忆'], ['want和desire可互换使用'], ['Both want and desire mean desire.|||欲望和渴望都意味着欲望。']],
-  ['work / labor', '词组', '工作', '同义', ['同义词对比记忆'], ['work和labor可互换使用'], ['Both work and labor mean labor.|||工作和劳动都意味着劳动。']],
-  ['worried / anxious', '词组', '担心的', '同义', ['同义词对比记忆'], ['worried和anxious可互换使用'], ['Both worried and anxious mean anxious.|||焦虑和焦虑都意味着焦虑。']],
-  ['answer / reply', '词组', '回答', '同义', ['同义词对比记忆'], ['answer和reply可互换使用'], ['Both answer and reply mean reply.|||答案和回复都意味着回复。']],
-  ['appear / emerge', '词组', '出现', '同义', ['同义词对比记忆'], ['appear和emerge可互换使用'], ['Both appear and emerge mean emerge.|||出现和涌现都意味着涌现。']],
-  ['ask / inquire', '词组', '询问', '同义', ['同义词对比记忆'], ['ask和inquire可互换使用'], ['Both ask and inquire mean inquire.|||Ask和inquire的意思都是询问。']],
-  ['attract / draw', '词组', '吸引', '同义', ['同义词对比记忆'], ['attract和draw可互换使用'], ['Both attract and draw mean draw.|||吸引和绘制均值绘制。']],
-  ['build / construct', '词组', '建造', '同义', ['同义词对比记忆'], ['build和construct可互换使用'], ['Both build and construct mean construct.|||构建和构造均值构造。']],
-  ['carry / bear', '词组', '携带', '同义', ['同义词对比记忆'], ['carry和bear可互换使用'], ['Both carry and bear mean bear.|||携带和熊意味着熊。']],
-  ['catch / capture', '词组', '抓住', '同义', ['同义词对比记忆'], ['catch和capture可互换使用'], ['Both catch and capture mean capture.|||捕获和捕获均意味着捕获。']],
+  ['find / discover', '词组', '发现', '同义', ['同义词对比记忆'], ['find和discover可互换使用'], ['Scientists discover new species while explorers find ancient ruins.|||科学家发现新物种，探险家找到古代遗迹。']],
+  ['get / obtain', '词组', '获得', '同义', ['同义词对比记忆'], ['get和obtain可互换使用'], ['You can get information online or obtain it from the library.|||你可以在网上获取信息，也可以从图书馆获得。']],
+  ['happy / glad', '词组', '高兴的', '同义', ['同义词对比记忆'], ['happy和glad可互换使用'], ['She was happy with the result and glad to share the news.|||她对结果很满意，也很高兴分享这个消息。']],
+  ['help / assist', '词组', '帮助', '同义', ['同义词对比记忆'], ['help和assist可互换使用'], ['Volunteers help the elderly and assist doctors in the clinic.|||志愿者帮助老人，并协助诊所的医生工作。']],
+  ['hide / conceal', '词组', '隐藏', '同义', ['同义词对比记忆'], ['hide和conceal可互换使用'], ['The child tried to hide behind the curtain to conceal himself.|||孩子试图躲在窗帘后面把自己藏起来。']],
+  ['hope / wish', '词组', '希望', '同义', ['同义词对比记忆'], ['hope和wish可互换使用'], ['I hope to pass the exam and wish you the same luck.|||我希望能通过考试，也祝你同样好运。']],
+  ['important / significant', '词组', '重要的', '同义', ['同义词对比记忆'], ['important和significant可互换使用'], ['Education is important and plays a significant role in life.|||教育很重要，在人生中起着重要作用。']],
+  ['increase / raise', '词组', '增加', '同义', ['同义词对比记忆'], ['increase和raise可互换使用'], ['Prices increased and the company raised salaries.|||物价上涨了，公司也提高了工资。']],
+  ['job / work', '词组', '工作', '同义', ['同义词对比记忆'], ['job和work可互换使用'], ['He found a new job and started work immediately.|||他找到了新工作，立刻开始上班。']],
+  ['keep / preserve', '词组', '保持', '同义', ['同义词对比记忆'], ['keep和preserve可互换使用'], ['Keep the tradition alive and preserve our cultural heritage.|||保持传统活力，保护我们的文化遗产。']],
+  ['large / huge', '词组', '巨大的', '同义', ['同义词对比记忆'], ['large和huge可互换使用'], ['The elephant is large, but the whale is huge.|||大象很大，但鲸鱼是巨大的。']],
+  ['look / see', '词组', '看', '同义', ['同义词对比记忆'], ['look和see可互换使用'], ['Look at the sky and you will see a rainbow.|||看看天空，你会看到一道彩虹。']],
+  ['make / create', '词组', '制造', '同义', ['同义词对比记忆'], ['make和create可互换使用'], ['She makes jewelry and creates unique designs.|||她制作珠宝，创作独特的设计。']],
+  ['old / ancient', '词组', '古老的', '同义', ['同义词对比记忆'], ['old和ancient可互换使用'], ['The old man told stories about ancient civilizations.|||那位老人讲述了关于古代文明的故事。']],
+  ['poor / needy', '词组', '贫穷的', '同义', ['同义词对比记忆'], ['poor和needy可互换使用'], ['The poor family was needy but never gave up hope.|||那个贫困的家庭虽然困难，但从未放弃希望。']],
+  ['quick / rapid', '词组', '迅速的', '同义', ['同义词对比记忆'], ['quick和rapid可互换使用'], ['He made a quick decision amid the rapid changes.|||在快速变化中，他迅速做出了决定。']],
+  ['quiet / silent', '词组', '安静的', '同义', ['同义词对比记忆'], ['quiet和silent可互换使用'], ['The library was quiet and the students remained silent.|||图书馆很安静，学生们保持着沉默。']],
+  ['rich / wealthy', '词组', '富裕的', '同义', ['同义词对比记忆'], ['rich和wealthy可互换使用'], ['The rich businessman became even wealthier after the merger.|||那位富有的商人在合并后变得更加富裕。']],
+  ['sad / unhappy', '词组', '悲伤的', '同义', ['同义词对比记忆'], ['sad和unhappy可互换使用'], ['She felt sad about the loss and unhappy with the outcome.|||她为失去感到悲伤，对结果也不满意。']],
+  ['say / state', '词组', '说', '同义', ['同义词对比记忆'], ['say和state可互换使用'], ['He said sorry and stated his reasons clearly.|||他说了抱歉，并清楚地陈述了理由。']],
+  ['show / display', '词组', '展示', '同义', ['同义词对比记忆'], ['show和display可互换使用'], ['The chart shows data and the screen displays results.|||图表展示了数据，屏幕显示结果。']],
+  ['small / tiny', '词组', '小的', '同义', ['同义词对比记忆'], ['small和tiny可互换使用'], ['The small insect left tiny footprints on the leaf.|||那只小虫子在叶子上留下了微小的足迹。']],
+  ['start / begin', '词组', '开始', '同义', ['同义词对比记忆'], ['start和begin可互换使用'], ['Classes start at eight and begin with morning reading.|||课程八点开始，以晨读开始。']],
+  ['stop / halt', '词组', '停止', '同义', ['同义词对比记忆'], ['stop和halt可互换使用'], ['The rain stopped and the construction work came to a halt.|||雨停了，但建筑工程也停了下来。']],
+  ['strong / powerful', '词组', '强大的', '同义', ['同义词对比记忆'], ['strong和powerful可互换使用'], ['The strong athlete gave a powerful performance.|||那位强壮的运动员展现了有力的表现。']],
+  ['tell / inform', '词组', '告诉', '同义', ['同义词对比记忆'], ['tell和inform可互换使用'], ['Please tell me the truth and inform the manager.|||请告诉我真相，并通知经理。']],
+  ['think / believe', '词组', '认为', '同义', ['同义词对比记忆'], ['think和believe可互换使用'], ['I think he is honest and I believe his words.|||我认为他很诚实，也相信他说的话。']],
+  ['tired / exhausted', '词组', '疲倦的', '同义', ['同义词对比记忆'], ['tired和exhausted可互换使用'], ['After the marathon, she was tired but not exhausted.|||马拉松后她很累，但还没有精疲力竭。']],
+  ['try / attempt', '词组', '尝试', '同义', ['同义词对比记忆'], ['try和attempt可互换使用'], ['Try your best and attempt the difficult question first.|||尽你所能，先尝试那道难题。']],
+  ['use / employ', '词组', '使用', '同义', ['同义词对比记忆'], ['use和employ可互换使用'], ['We use computers and employ new technology in class.|||我们在课上使用电脑并运用新技术。']],
+  ['want / desire', '词组', '想要', '同义', ['同义词对比记忆'], ['want和desire可互换使用'], ['She wants success but desires happiness even more.|||她想要成功，但更渴望幸福。']],
+  ['work / labor', '词组', '工作', '同义', ['同义词对比记忆'], ['work和labor可互换使用'], ['They work hard and labor from dawn to dusk.|||他们努力工作，从早到晚辛勤劳动。']],
+  ['worried / anxious', '词组', '担心的', '同义', ['同义词对比记忆'], ['worried和anxious可互换使用'], ['The mother was worried about her son and felt anxious all day.|||母亲担心儿子，整天感到焦虑。']],
+  ['answer / reply', '词组', '回答', '同义', ['同义词对比记忆'], ['answer和reply可互换使用'], ['Please answer the question and reply to the email promptly.|||请回答问题并及时回复邮件。']],
+  ['appear / emerge', '词组', '出现', '同义', ['同义词对比记忆'], ['appear和emerge可互换使用'], ['Stars appear at night and new ideas emerge from discussion.|||星星在夜晚出现，新想法在讨论中涌现。']],
+  ['ask / inquire', '词组', '询问', '同义', ['同义词对比记忆'], ['ask和inquire可互换使用'], ['You can ask the teacher or inquire at the front desk.|||你可以问老师，也可以到前台询问。']],
+  ['attract / draw', '词组', '吸引', '同义', ['同义词对比记忆'], ['attract和draw可互换使用'], ['The show attracts many visitors and draws large crowds.|||演出吸引了许多游客，吸引了大批人群。']],
+  ['build / construct', '词组', '建造', '同义', ['同义词对比记忆'], ['build和construct可互换使用'], ['They build houses and construct bridges.|||他们建造房屋，修建桥梁。']],
+  ['carry / bear', '词组', '携带', '同义', ['同义词对比记忆'], ['carry和bear可互换使用'], ['The porter can carry heavy loads and bear great pressure.|||搬运工能搬运重物，也能承受巨大压力。']],
+  ['catch / capture', '词组', '抓住', '同义', ['同义词对比记忆'], ['catch和capture可互换使用'], ['The police caught the thief and captured the moment on camera.|||警察抓住了小偷，并用相机记录了这一刻。']],
   ['cause / lead to', '词组', '导致', '同义', ['同义词对比记忆'], ['cause和lead to可互换使用'], ['Both cause and lead to mean lead to.|||导致和导致平均导致。']],
-  ['clever / smart', '词组', '聪明的', '同义', ['同义词对比记忆'], ['clever和smart可互换使用'], ['Both clever and smart mean smart.|||聪明和聪明都意味着聪明。']],
+  ['clever / smart', '词组', '聪明的', '同义', ['同义词对比记忆'], ['clever和smart可互换使用'], ['The clever student gave a smart answer to the question.|||那个聪明的学生给出了一个机智的回答。']],
   ['continue / go on', '词组', '继续', '同义', ['同义词对比记忆'], ['continue和go on可互换使用'], ['Both continue and go on mean go on.|||两者都继续，继续意味着继续。']],
-  ['copy / duplicate', '词组', '复制', '同义', ['同义词对比记忆'], ['copy和duplicate可互换使用'], ['Both copy and duplicate mean duplicate.|||COPY和DUPLICATE均指重复。']],
-  ['cry / weep', '词组', '哭泣', '同义', ['同义词对比记忆'], ['cry和weep可互换使用'], ['Both cry and weep mean weep.|||哭泣和哭泣都意味着哭泣。']],
-  ['damage / harm', '词组', '损害', '同义', ['同义词对比记忆'], ['damage和harm可互换使用'], ['Both damage and harm mean harm.|||损害和伤害都意味着伤害。']],
-  ['demand / require', '词组', '要求', '同义', ['同义词对比记忆'], ['demand和require可互换使用'], ['Both demand and require mean require.|||需求和需求均值需求。']],
-  ['destroy / ruin', '词组', '破坏', '同义', ['同义词对比记忆'], ['destroy和ruin可互换使用'], ['Both destroy and ruin mean ruin.|||破坏和毁灭都意味着毁灭。']],
+  ['copy / duplicate', '词组', '复制', '同义', ['同义词对比记忆'], ['copy和duplicate可互换使用'], ['Please copy the file and duplicate the document.|||请复制文件并复印文件。']],
+  ['cry / weep', '词组', '哭泣', '同义', ['同义词对比记忆'], ['cry和weep可互换使用'], ['The child began to cry and continued to weep silently.|||孩子开始哭泣，后来默默地流泪。']],
+  ['damage / harm', '词组', '损害', '同义', ['同义词对比记忆'], ['damage和harm可互换使用'], ['The storm can damage buildings and harm people.|||暴风雨会损坏建筑物，也会伤害人。']],
+  ['demand / require', '词组', '要求', '同义', ['同义词对比记忆'], ['demand和require可互换使用'], ['The job demands patience and requires good communication skills.|||这份工作需要耐心，要求良好的沟通能力。']],
+  ['destroy / ruin', '词组', '破坏', '同义', ['同义词对比记忆'], ['destroy和ruin可互换使用'], ['The earthquake can destroy cities and ruin entire economies.|||地震能摧毁城市，也能毁掉整个经济。']],
   ['die / pass away', '词组', '死亡', '同义', ['同义词对比记忆'], ['die和pass away可互换使用'], ['Both die and pass away mean pass away.|||死亡和逝去都意味着逝去。']],
-  ['doubt / suspect', '词组', '怀疑', '同义', ['同义词对比记忆'], ['doubt和suspect可互换使用'], ['Both doubt and suspect mean suspect.|||怀疑和嫌疑都是嫌疑犯的意思。']],
-  ['dream / vision', '词组', '梦想', '同义', ['同义词对比记忆'], ['dream和vision可互换使用'], ['Both dream and vision mean vision.|||梦想和愿景都意味着愿景。']],
-  ['drink / sip', '词组', '喝', '同义', ['同义词对比记忆'], ['drink和sip可互换使用'], ['Both drink and sip mean sip.|||饮料和啜饮都意味着啜饮。']],
-  ['eat / consume', '词组', '吃', '同义', ['同义词对比记忆'], ['eat和consume可互换使用'], ['Both eat and consume mean consume.|||EAT和CUSTOME均为消费。']],
-  ['enjoy / like', '词组', '喜欢', '同义', ['同义词对比记忆'], ['enjoy和like可互换使用'], ['Both enjoy and like mean like.|||既喜欢又喜欢卑鄙。']],
-  ['enter / go into', '词组', '进入', '同义', ['同义词对比记忆'], ['enter和go into可互换使用'], ['Both enter and go into mean go into.|||ENTER和INTER均表示INTER。']],
-  ['explain / clarify', '词组', '解释', '同义', ['同义词对比记忆'], ['explain和clarify可互换使用'], ['Both explain and clarify mean clarify.|||解释和澄清的意思是澄清。']],
-  ['follow / pursue', '词组', '跟随', '同义', ['同义词对比记忆'], ['follow和pursue可互换使用'], ['Both follow and pursue mean pursue.|||跟随和追求平均追求。']],
-  ['guess / estimate', '词组', '猜测', '同义', ['同义词对比记忆'], ['guess和estimate可互换使用'], ['Both guess and estimate mean estimate.|||猜测和估计均为估计值。']],
-  ['happen / occur', '词组', '发生', '同义', ['同义词对比记忆'], ['happen和occur可互换使用'], ['Both happen and occur mean occur.|||均发生和均发生。']],
-  ['hate / dislike', '词组', '讨厌', '同义', ['同义词对比记忆'], ['hate和dislike可互换使用'], ['Both hate and dislike mean dislike.|||仇恨和厌恶都意味着厌恶。']],
-  ['hear / listen', '词组', '听', '同义', ['同义词对比记忆'], ['hear和listen可互换使用'], ['Both hear and listen mean listen.|||倾听和倾听都意味着倾听。']],
-  ['hurry / rush', '词组', '匆忙', '同义', ['同义词对比记忆'], ['hurry和rush可互换使用'], ['Both hurry and rush mean rush.|||匆忙和匆忙都意味着匆忙。']],
-  ['hurt / injure', '词组', '伤害', '同义', ['同义词对比记忆'], ['hurt和injure可互换使用'], ['Both hurt and injure mean injure.|||受伤和受伤都意味着受伤。']],
-  ['improve / better', '词组', '改善', '同义', ['同义词对比记忆'], ['improve和better可互换使用'], ['Both improve and better mean better.|||无论是改善还是更好，都意味着更好。']],
-  ['join / participate', '词组', '参加', '同义', ['同义词对比记忆'], ['join和participate可互换使用'], ['Both join and participate mean participate.|||加入和参与都意味着参与。']],
-  ['kill / murder', '词组', '杀死', '同义', ['同义词对比记忆'], ['kill和murder可互换使用'], ['Both kill and murder mean murder.|||杀人和谋杀都意味着谋杀。']],
-  ['know / realize', '词组', '知道', '同义', ['同义词对比记忆'], ['know和realize可互换使用'], ['Both know and realize mean realize.|||知道和实现意味着实现。']],
-  ['laugh / smile', '词组', '笑', '同义', ['同义词对比记忆'], ['laugh和smile可互换使用'], ['Both laugh and smile mean smile.|||笑和微笑都意味着微笑。']],
-  ['leave / depart', '词组', '离开', '同义', ['同义词对比记忆'], ['leave和depart可互换使用'], ['Both leave and depart mean depart.|||离开和离开都意味着离开。']],
-  ['lend / loan', '词组', '借出', '同义', ['同义词对比记忆'], ['lend和loan可互换使用'], ['Both lend and loan mean loan.|||贷款和贷款的意思都是贷款。']],
-  ['like / enjoy', '词组', '喜欢', '同义', ['同义词对比记忆'], ['like和enjoy可互换使用'], ['Both like and enjoy mean enjoy.|||喜欢和享受意味着享受。']],
-  ['live / exist', '词组', '生活', '同义', ['同义词对比记忆'], ['live和exist可互换使用'], ['Both live and exist mean exist.|||活着和存在的意思都是存在的。']],
-  ['lose / miss', '词组', '丢失', '同义', ['同义词对比记忆'], ['lose和miss可互换使用'], ['Both lose and miss mean miss.|||LOSE和MISS均表示MISS。']],
-  ['love / adore', '词组', '爱', '同义', ['同义词对比记忆'], ['love和adore可互换使用'], ['Both love and adore mean adore.|||爱和崇拜都意味着崇拜。']],
-  ['move / shift', '词组', '移动', '同义', ['同义词对比记忆'], ['move和shift可互换使用'], ['Both move and shift mean shift.|||移动和移位均值移位。']],
-  ['need / require', '词组', '需要', '同义', ['同义词对比记忆'], ['need和require可互换使用'], ['Both need and require mean require.|||NEED和REQUIRE均值REQ']],
-  ['open / unfold', '词组', '打开', '同义', ['同义词对比记忆'], ['open和unfold可互换使用'], ['Both open and unfold mean unfold.|||打开和展开都意味着展开。']],
-  ['pay / compensate', '词组', '支付', '同义', ['同义词对比记忆'], ['pay和compensate可互换使用'], ['Both pay and compensate mean compensate.|||薪酬和补偿均值补偿。']],
-  ['pick / choose', '词组', '挑选', '同义', ['同义词对比记忆'], ['pick和choose可互换使用'], ['Both pick and choose mean choose.|||PICK和CHOOSE均意味着选择。']],
-  ['plan / arrange', '词组', '计划', '同义', ['同义词对比记忆'], ['plan和arrange可互换使用'], ['Both plan and arrange mean arrange.|||规划和安排均意味着安排。']],
-  ['play / perform', '词组', '玩', '同义', ['同义词对比记忆'], ['play和perform可互换使用'], ['Both play and perform mean perform.|||播放和表演均值表演。']],
-  ['point / indicate', '词组', '指向', '同义', ['同义词对比记忆'], ['point和indicate可互换使用'], ['Both point and indicate mean indicate.|||点和指示平均值都表示。']],
-  ['prove / demonstrate', '词组', '证明', '同义', ['同义词对比记忆'], ['prove和demonstrate可互换使用'], ['Both prove and demonstrate mean demonstrate.|||证明和演示均值演示。']],
-  ['pull / draw', '词组', '拉', '同义', ['同义词对比记忆'], ['pull和draw可互换使用'], ['Both pull and draw mean draw.|||牵引和牵引均值牵引。']],
-  ['push / shove', '词组', '推', '同义', ['同义词对比记忆'], ['push和shove可互换使用'], ['Both push and shove mean shove.|||推和推都意味着推。']],
-  ['put / place', '词组', '放', '同义', ['同义词对比记忆'], ['put和place可互换使用'], ['Both put and place mean place.|||放置和放置的平均位置。']],
-  ['raise / lift', '词组', '举起', '同义', ['同义词对比记忆'], ['raise和lift可互换使用'], ['Both raise and lift mean lift.|||抬升和抬升均值抬升。']],
-  ['reach / arrive', '词组', '到达', '同义', ['同义词对比记忆'], ['reach和arrive可互换使用'], ['Both reach and arrive mean arrive.|||到达和到达都意味着到达。']],
-  ['read / scan', '词组', '阅读', '同义', ['同义词对比记忆'], ['read和scan可互换使用'], ['Both read and scan mean scan.|||读取和扫描均值扫描。']],
-  ['real / actual', '词组', '真实的', '同义', ['同义词对比记忆'], ['real和actual可互换使用'], ['Both real and actual mean actual.|||真实和实际的意思都是实际的。']],
-  ['receive / accept', '词组', '收到', '同义', ['同义词对比记忆'], ['receive和accept可互换使用'], ['Both receive and accept mean accept.|||RECEIVE和ACCEPT均表示AC']],
-  ['refuse / reject', '词组', '拒绝', '同义', ['同义词对比记忆'], ['refuse和reject可互换使用'], ['Both refuse and reject mean reject.|||拒绝和拒绝都意味着拒绝。']],
-  ['remember / recall', '词组', '记住', '同义', ['同义词对比记忆'], ['remember和recall可互换使用'], ['Both remember and recall mean recall.|||记忆和回忆的意思都是回忆。']],
+  ['doubt / suspect', '词组', '怀疑', '同义', ['同义词对比记忆'], ['doubt和suspect可互换使用'], ['I doubt his story but suspect he is hiding something.|||我怀疑他的说法，但猜想他在隐瞒什么。']],
+  ['dream / vision', '词组', '梦想', '同义', ['同义词对比记忆'], ['dream和vision可互换使用'], ['She had a dream of becoming a doctor with a clear vision for her future.|||她梦想成为一名医生，对未来有着清晰的愿景。']],
+  ['drink / sip', '词组', '喝', '同义', ['同义词对比记忆'], ['drink和sip可互换使用'], ['He likes to drink tea and sip it slowly.|||他喜欢喝茶，慢慢地小口品尝。']],
+  ['eat / consume', '词组', '吃', '同义', ['同义词对比记忆'], ['eat和consume可互换使用'], ['We eat breakfast and consume about 500 calories.|||我们吃早餐，消耗大约500卡路里。']],
+  ['enjoy / like', '词组', '喜欢', '同义', ['同义词对比记忆'], ['enjoy和like可互换使用'], ['I enjoy reading books and I like watching movies too.|||我喜欢读书，也喜欢看电影。']],
+  ['enter / go into', '词组', '进入', '同义', ['同义词对比记忆'], ['enter和go into可互换使用'], ['Please enter the room and go into the office.|||请进入房间，走进办公室。']],
+  ['explain / clarify', '词组', '解释', '同义', ['同义词对比记忆'], ['explain和clarify可互换使用'], ['The teacher will explain the rule to clarify any confusion.|||老师会解释规则来澄清疑惑。']],
+  ['follow / pursue', '词组', '跟随', '同义', ['同义词对比记忆'], ['follow和pursue可互换使用'], ['Follow your passion and pursue your dreams bravely.|||追随你的热情，勇敢地追求梦想。']],
+  ['guess / estimate', '词组', '猜测', '同义', ['同义词对比记忆'], ['guess和estimate可互换使用'], ['Don\'t just guess the answer; try to estimate the cost accurately.|||不要只是猜测答案；尽量准确估算成本。']],
+  ['happen / occur', '词组', '发生', '同义', ['同义词对比记忆'], ['happen和occur可互换使用'], ['Accidents can happen anytime and problems may occur unexpectedly.|||事故随时可能发生，问题也可能意外出现。']],
+  ['hate / dislike', '词组', '讨厌', '同义', ['同义词对比记忆'], ['hate和dislike可互换使用'], ['I hate lying and I dislike people who are dishonest.|||我讨厌说谎，也不喜欢不诚实的人。']],
+  ['hear / listen', '词组', '听', '同义', ['同义词对比记忆'], ['hear和listen可互换使用'], ['I can hear the music but I don\'t listen to it carefully.|||我能听到音乐，但我没有认真去听。']],
+  ['hurry / rush', '词组', '匆忙', '同义', ['同义词对比记忆'], ['hurry和rush可互换使用'], ['Don\'t hurry through your work or rush to a conclusion.|||不要匆忙赶工，也不要急于下结论。']],
+  ['hurt / injure', '词组', '伤害', '同义', ['同义词对比记忆'], ['hurt和injure可互换使用'], ['The fall hurt his arm but did not injure the bone.|||摔倒弄疼了他的手臂，但没有伤到骨头。']],
+  ['improve / better', '词组', '改善', '同义', ['同义词对比记忆'], ['improve和better可互换使用'], ['We must improve our skills to better ourselves.|||我们必须提高技能来完善自我。']],
+  ['join / participate', '词组', '参加', '同义', ['同义词对比记忆'], ['join和participate可互换使用'], ['She decided to join the club and participate in the competition.|||她决定加入俱乐部并参加比赛。']],
+  ['kill / murder', '词组', '杀死', '同义', ['同义词对比记忆'], ['kill和murder可互换使用'], ['The soldier had to kill in battle, but murder is a crime.|||士兵在战斗中不得不杀人，但谋杀是犯罪。']],
+  ['know / realize', '词组', '知道', '同义', ['同义词对比记忆'], ['know和realize可互换使用'], ['I know the rules now, but I didn\'t realize them before.|||我现在知道规则了，但以前没有意识到。']],
+  ['laugh / smile', '词组', '笑', '同义', ['同义词对比记忆'], ['laugh和smile可互换使用'], ['The audience began to laugh and the speaker smiled back.|||观众开始大笑，演讲者微笑着回应。']],
+  ['leave / depart', '词组', '离开', '同义', ['同义词对比记忆'], ['leave和depart可互换使用'], ['They will leave the city and depart for Paris tomorrow.|||他们将离开这座城市，明天启程前往巴黎。']],
+  ['lend / loan', '词组', '借出', '同义', ['同义词对比记忆'], ['lend和loan可互换使用'], ['Banks lend money and offer loan services to customers.|||银行借钱给客户，并提供贷款服务。']],
+  ['like / enjoy', '词组', '喜欢', '同义', ['同义词对比记忆'], ['like和enjoy可互换使用'], ['I like swimming and I also enjoy playing tennis.|||我喜欢游泳，也享受打网球。']],
+  ['live / exist', '词组', '生活', '同义', ['同义词对比记忆'], ['live和exist可互换使用'], ['People live meaningful lives while animals merely exist in the wild.|||人们过着有意义的生活，而动物只是在野外生存。']],
+  ['lose / miss', '词组', '丢失', '同义', ['同义词对比记忆'], ['lose和miss可互换使用'], ['Don\'t lose your keys or miss the bus.|||别弄丢钥匙，也别错过公交车。']],
+  ['love / adore', '词组', '爱', '同义', ['同义词对比记忆'], ['love和adore可互换使用'], ['I love music and I adore classical composers.|||我热爱音乐，也崇拜古典作曲家。']],
+  ['move / shift', '词组', '移动', '同义', ['同义词对比记忆'], ['move和shift可互换使用'], ['Please move the chair and shift the table.|||请移动椅子，挪一下桌子。']],
+  ['need / require', '词组', '需要', '同义', ['同义词对比记忆'], ['need和require可互换使用'], ['We need help and require more time.|||我们需要帮助，需要更多时间。']],
+  ['open / unfold', '词组', '打开', '同义', ['同义词对比记忆'], ['open和unfold可互换使用'], ['Open the letter and unfold the map inside.|||打开信件，展开里面的地图。']],
+  ['pay / compensate', '词组', '支付', '同义', ['同义词对比记忆'], ['pay和compensate可互换使用'], ['You must pay the bill and compensate for the damage.|||你必须付账单，并赔偿损失。']],
+  ['pick / choose', '词组', '挑选', '同义', ['同义词对比记忆'], ['pick和choose可互换使用'], ['Pick a card and choose your favorite color.|||挑一张卡片，选择你最喜欢的颜色。']],
+  ['plan / arrange', '词组', '计划', '同义', ['同义词对比记忆'], ['plan和arrange可互换使用'], ['We plan the event and arrange the schedule.|||我们策划活动并安排日程。']],
+  ['play / perform', '词组', '玩', '同义', ['同义词对比记忆'], ['play和perform可互换使用'], ['Children play games and actors perform on stage.|||孩子们玩游戏，演员在舞台上表演。']],
+  ['point / indicate', '词组', '指向', '同义', ['同义词对比记忆'], ['point和indicate可互换使用'], ['She pointed at the map and indicated the direction.|||她指着地图，指明了方向。']],
+  ['prove / demonstrate', '词组', '证明', '同义', ['同义词对比记忆'], ['prove和demonstrate可互换使用'], ['The test proves the theory and demonstrates the result.|||测试证明了理论，展示了结果。']],
+  ['pull / draw', '词组', '拉', '同义', ['同义词对比记忆'], ['pull和draw可互换使用'], ['He pulled the door and drew the curtains.|||他拉开门，拉上窗帘。']],
+  ['push / shove', '词组', '推', '同义', ['同义词对比记忆'], ['push和shove可互换使用'], ['Don\'t push others or shove your way through the crowd.|||不要推搡他人，也不要挤过人群。']],
+  ['put / place', '词组', '放', '同义', ['同义词对比记忆'], ['put和place可互换使用'], ['Put the book on the shelf and place the vase on the table.|||把书放到书架上，把花瓶摆在桌上。']],
+  ['raise / lift', '词组', '举起', '同义', ['同义词对比记忆'], ['raise和lift可互换使用'], ['Please raise your hand and lift the box.|||请举手，抬起箱子。']],
+  ['reach / arrive', '词组', '到达', '同义', ['同义词对比记忆'], ['reach和arrive可互换使用'], ['They reached the airport and arrived just in time.|||他们到达了机场，刚好按时抵达。']],
+  ['read / scan', '词组', '阅读', '同义', ['同义词对比记忆'], ['read和scan可互换使用'], ['Read the text carefully and scan for key words.|||仔细阅读文本，并浏览关键词。']],
+  ['real / actual', '词组', '真实的', '同义', ['同义词对比记忆'], ['real和actual可互换使用'], ['The real situation was worse than the actual report suggested.|||真实的情况比实际报告所示的更糟。']],
+  ['receive / accept', '词组', '收到', '同义', ['同义词对比记忆'], ['receive和accept可互换使用'], ['I received a gift and accepted it happily.|||我收到了礼物，高兴地接受了。']],
+  ['refuse / reject', '词组', '拒绝', '同义', ['同义词对比记忆'], ['refuse和reject可互换使用'], ['She refused the offer and the company rejected her application.|||她拒绝了提议，公司也驳回了她的申请。']],
+  ['remember / recall', '词组', '记住', '同义', ['同义词对比记忆'], ['remember和recall可互换使用'], ['I remember his face but can\'t recall his name.|||我记得他的脸，但想不起他的名字。']],
   ['return / come back', '词组', '返回', '同义', ['同义词对比记忆'], ['return和come back可互换使用'], ['Both return and come back mean come back.|||回归和回归都意味着回归。']],
-  ['run / dash', '词组', '跑', '同义', ['同义词对比记忆'], ['run和dash可互换使用'], ['Both run and dash mean dash.|||RUN和DASH都意味着DASH。']],
-  ['sad / sorrowful', '词组', '悲伤的', '同义', ['同义词对比记忆'], ['sad和sorrowful可互换使用'], ['Both sad and sorrowful mean sorrowful.|||悲伤和悲伤都意味着悲伤。']],
-  ['save / rescue', '词组', '拯救', '同义', ['同义词对比记忆'], ['save和rescue可互换使用'], ['Both save and rescue mean rescue.|||拯救和救援都意味着救援。']],
-  ['send / dispatch', '词组', '发送', '同义', ['同义词对比记忆'], ['send和dispatch可互换使用'], ['Both send and dispatch mean dispatch.|||发送和调度均值调度。']],
-  ['shut / close', '词组', '关闭', '同义', ['同义词对比记忆'], ['shut和close可互换使用'], ['Both shut and close mean close.|||关闭和关闭都意味着关闭。']],
-  ['sing / chant', '词组', '唱歌', '同义', ['同义词对比记忆'], ['sing和chant可互换使用'], ['Both sing and chant mean chant.|||唱歌和吟诵都意味着吟诵。']],
-  ['sleep / rest', '词组', '睡觉', '同义', ['同义词对比记忆'], ['sleep和rest可互换使用'], ['Both sleep and rest mean rest.|||睡眠和休息都意味着休息。']],
-  ['speak / talk', '词组', '说话', '同义', ['同义词对比记忆'], ['speak和talk可互换使用'], ['Both speak and talk mean talk.|||说话和说话都是刻薄的谈话。']],
+  ['run / dash', '词组', '跑', '同义', ['同义词对比记忆'], ['run和dash可互换使用'], ['He can run long distances and dash across the finish line.|||他能长跑，也能冲过终点线。']],
+  ['sad / sorrowful', '词组', '悲伤的', '同义', ['同义词对比记忆'], ['sad和sorrowful可互换使用'], ['She looked sad and her sorrowful eyes told everything.|||她看起来很悲伤，哀伤的眼神说明了一切。']],
+  ['save / rescue', '词组', '拯救', '同义', ['同义词对比记忆'], ['save和rescue可互换使用'], ['Firefighters save lives and rescue people from danger.|||消防员拯救生命，从危险中营救人们。']],
+  ['send / dispatch', '词组', '发送', '同义', ['同义词对比记忆'], ['send和dispatch可互换使用'], ['We send emails and dispatch orders every day.|||我们每天发送邮件，派发订单。']],
+  ['shut / close', '词组', '关闭', '同义', ['同义词对比记忆'], ['shut和close可互换使用'], ['Please shut the window and close the door behind you.|||请关上窗户，并随手关门。']],
+  ['sing / chant', '词组', '唱歌', '同义', ['同义词对比记忆'], ['sing和chant可互换使用'], ['The children sing songs and chant rhymes in class.|||孩子们在课上唱歌，也吟诵歌谣。']],
+  ['sleep / rest', '词组', '睡觉', '同义', ['同义词对比记忆'], ['sleep和rest可互换使用'], ['You need to sleep well and rest during the break.|||你需要好好睡觉，在休息时间放松。']],
+  ['speak / talk', '词组', '说话', '同义', ['同义词对比记忆'], ['speak和talk可互换使用'], ['She can speak three languages and loves to talk with foreigners.|||她会说三种语言，也喜欢和外国人交谈。']],
   ['spend / use up', '词组', '花费', '同义', ['同义词对比记忆'], ['spend和use up可互换使用'], ['Both spend and use up mean use up.|||花钱和用完都意味着用完。']],
-  ['steal / rob', '词组', '偷', '同义', ['同义词对比记忆'], ['steal和rob可互换使用'], ['Both steal and rob mean rob.|||偷窃和抢劫都意味着抢劫。']],
-  ['study / learn', '词组', '学习', '同义', ['同义词对比记忆'], ['study和learn可互换使用'], ['Both study and learn mean learn.|||学习和学习都意味着学习。']],
-  ['supply / provide', '词组', '供应', '同义', ['同义词对比记忆'], ['supply和provide可互换使用'], ['Both supply and provide mean provide.|||供应和提供均值提供。']],
-  ['swim / dive', '词组', '游泳', '同义', ['同义词对比记忆'], ['swim和dive可互换使用'], ['Both swim and dive mean dive.|||游泳和潜水都意味着潜水。']],
-  ['teach / educate', '词组', '教', '同义', ['同义词对比记忆'], ['teach和educate可互换使用'], ['Both teach and educate mean educate.|||教学和教育都意味着教育。']],
-  ['tell / reveal', '词组', '告诉', '同义', ['同义词对比记忆'], ['tell和reveal可互换使用'], ['Both tell and reveal mean reveal.|||告诉和揭示平均揭示。']],
-  ['test / examine', '词组', '测试', '同义', ['同义词对比记忆'], ['test和examine可互换使用'], ['Both test and examine mean examine.|||检验和检查均值检查。']],
-  ['thank / appreciate', '词组', '感谢', '同义', ['同义词对比记忆'], ['thank和appreciate可互换使用'], ['Both thank and appreciate mean appreciate.|||感谢和欣赏都意味着欣赏。']],
-  ['throw / toss', '词组', '扔', '同义', ['同义词对比记忆'], ['throw和toss可互换使用'], ['Both throw and toss mean toss.|||投掷和抛掷均值抛掷。']],
-  ['touch / feel', '词组', '触摸', '同义', ['同义词对比记忆'], ['touch和feel可互换使用'], ['Both touch and feel mean feel.|||触觉和感觉都很卑鄙。']],
-  ['turn / rotate', '词组', '转动', '同义', ['同义词对比记忆'], ['turn和rotate可互换使用'], ['Both turn and rotate mean rotate.|||旋转和旋转均值旋转。']],
-  ['understand / comprehend', '词组', '理解', '同义', ['同义词对比记忆'], ['understand和comprehend可互换使用'], ['Both understand and comprehend mean comprehend.|||理解和理解都意味着理解。']],
-  ['visit / tour', '词组', '参观', '同义', ['同义词对比记忆'], ['visit和tour可互换使用'], ['Both visit and tour mean tour.|||无论是参观还是参观都意味着参观。']],
-  ['wait / stay', '词组', '等待', '同义', ['同义词对比记忆'], ['wait和stay可互换使用'], ['Both wait and stay mean stay.|||等待和入住都意味着入住。']],
-  ['walk / stroll', '词组', '步行', '同义', ['同义词对比记忆'], ['walk和stroll可互换使用'], ['Both walk and stroll mean stroll.|||步行和漫步都意味着漫步。']],
-  ['watch / observe', '词组', '观察', '同义', ['同义词对比记忆'], ['watch和observe可互换使用'], ['Both watch and observe mean observe.|||观察和观察均值观察。']],
-  ['win / gain', '词组', '赢得', '同义', ['同义词对比记忆'], ['win和gain可互换使用'], ['Both win and gain mean gain.|||双赢和增益都意味着增益。']],
-  ['worry / care', '词组', '担心', '同义', ['同义词对比记忆'], ['worry和care可互换使用'], ['Both worry and care mean care.|||忧虑和关怀都意味着关怀。']]
+  ['steal / rob', '词组', '偷', '同义', ['同义词对比记忆'], ['steal和rob可互换使用'], ['Thieves steal wallets while armed men rob banks.|||小偷偷钱包，而持械者抢劫银行。']],
+  ['study / learn', '词组', '学习', '同义', ['同义词对比记忆'], ['study和learn可互换使用'], ['Students study textbooks to learn new knowledge.|||学生通过学习课本获取新知识。']],
+  ['supply / provide', '词组', '供应', '同义', ['同义词对比记忆'], ['supply和provide可互换使用'], ['The farm supplies milk and provides fresh vegetables.|||农场供应牛奶，提供新鲜蔬菜。']],
+  ['swim / dive', '词组', '游泳', '同义', ['同义词对比记忆'], ['swim和dive可互换使用'], ['He can swim across the river and dive into the deep pool.|||他能游过河，也能潜入深池。']],
+  ['teach / educate', '词组', '教', '同义', ['同义词对比记忆'], ['teach和educate可互换使用'], ['Teachers teach subjects and schools educate students.|||老师教授学科，学校教育学生。']],
+  ['tell / reveal', '词组', '告诉', '同义', ['同义词对比记忆'], ['tell和reveal可互换使用'], ['Please tell me the truth and reveal what really happened.|||请告诉我真相，揭示到底发生了什么。']],
+  ['test / examine', '词组', '测试', '同义', ['同义词对比记忆'], ['test和examine可互换使用'], ['The doctor tested my blood and examined my eyes.|||医生验了我的血，检查了我的眼睛。']],
+  ['thank / appreciate', '词组', '感谢', '同义', ['同义词对比记忆'], ['thank和appreciate可互换使用'], ['I thank you for your help and I really appreciate your effort.|||感谢你的帮助，我真的很感激你的付出。']],
+  ['throw / toss', '词组', '扔', '同义', ['同义词对比记忆'], ['throw和toss可互换使用'], ['Throw the ball to me and toss me the keys.|||把球扔给我，把钥匙抛给我。']],
+  ['touch / feel', '词组', '触摸', '同义', ['同义词对比记忆'], ['touch和feel可互换使用'], ['Touch the fabric and feel how soft it is.|||摸摸这块布料，感受它有多柔软。']],
+  ['turn / rotate', '词组', '转动', '同义', ['同义词对比记忆'], ['turn和rotate可互换使用'], ['Turn the wheel and rotate the handle.|||转动轮子，旋转把手。']],
+  ['understand / comprehend', '词组', '理解', '同义', ['同义词对比记忆'], ['understand和comprehend可互换使用'], ['I understand the words but can\'t comprehend the full meaning.|||我理解这些词，但无法领会全部含义。']],
+  ['visit / tour', '词组', '参观', '同义', ['同义词对比记忆'], ['visit和tour可互换使用'], ['We plan to visit the museum and tour the old town.|||我们计划参观博物馆，并游览古镇。']],
+  ['wait / stay', '词组', '等待', '同义', ['同义词对比记忆'], ['wait和stay可互换使用'], ['Please wait here and stay until I return.|||请在这里等着，待到我回来。']],
+  ['walk / stroll', '词组', '步行', '同义', ['同义词对比记忆'], ['walk和stroll可互换使用'], ['We walk to school every day and stroll in the park on weekends.|||我们每天步行上学，周末在公园漫步。']],
+  ['watch / observe', '词组', '观察', '同义', ['同义词对比记忆'], ['watch和observe可互换使用'], ['We watch the game and observe the players closely.|||我们观看比赛，仔细观察球员。']],
+  ['win / gain', '词组', '赢得', '同义', ['同义词对比记忆'], ['win和gain可互换使用'], ['They win the game and gain confidence from the victory.|||他们赢了比赛，也从胜利中获得了信心。']],
+  ['worry / care', '词组', '担心', '同义', ['同义词对比记忆'], ['worry和care可互换使用'], ['Parents worry about their children because they care about them.|||父母担心孩子，是因为他们关爱孩子。']]
 ];
 
 // 反义词对比
@@ -2842,7 +2842,7 @@ const seedFamiliarNew = [
   ['letter', 'n.', '字母；信件；证书', '生义', ['熟词生义', 'capital letter'], ['字母；信件；证书', '注意一词多义'], ['The word has five letters.|||这个词有五个字母。']],
   ['live', 'v./adj.', '居住；现场的；直播的', '生义', ['熟词生义', 'live broadcast'], ['居住；现场的；直播的', '注意一词多义'], ['Many people live in apartments in big cities like Beijing.|||许多人住在北京这样的大城市的公寓里。']],
   ['match', 'n./v.', '比赛；火柴；匹配', '生义', ['熟词生义', 'a perfect match'], ['比赛；火柴；匹配', '注意一词多义'], ['The curtains match the sofa.|||窗帘与沙发相匹配。']],
-  ['mean', 'v./adj.', '意味着；吝啬的；平均的', '生义', ['熟词生义', 'mean temperature'], ['意味着；吝啬的；平均的', '注意一词多义'], ['What does this word mean in the context of the passage?']],
+  ['mean', 'v./adj.', '意味着；吝啬的；平均的', '生义', ['熟词生义', 'mean temperature'], ['意味着；吝啬的；平均的', '注意一词多义'], ['He is too mean to buy a gift for his mother.|||他太吝啬了，不愿给母亲买礼物。']],
   ['meet', 'v.', '遇见；满足；支付', '生义', ['熟词生义', 'meet the cost'], ['遇见；满足；支付', '注意一词多义'], ['The company met all the costs.|||公司承担了所有费用。']],
   ['mine', 'pron./n.', '我的；矿；地雷', '生义', ['熟词生义', 'a coal mine'], ['我的；矿；地雷', '注意一词多义'], ['He works in a coal mine.|||他在煤矿工作。']],
   ['mount', 'v.', '登上；增加； mounting', '生义', ['熟词生义', 'mount pressure'], ['登上；增加', '注意一词多义'], ['Pressure mounted on the team.|||团队承受的压力。']],
@@ -2932,106 +2932,106 @@ const seedFamiliarNew = [
 
 // 褒贬双性词
 const seedDualSentiment = [
-  ['aggressive', 'adj.', '褒义：有进取心的；贬义：好斗的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：有进取心的；贬义：好斗的'], ['The word aggressive can be positive or negative depending on context.|||攻击性一词可以是积极的，也可以是消极的，具体取决于上下文。']],
-  ['ambitious', 'adj.', '褒义：有雄心的；贬义：野心勃勃的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：有雄心的；贬义：野心勃勃的'], ['The word ambitious can be positive or negative depending on context.|||“雄心勃勃”一词可以是积极的，也可以是消极的，具体取决于上下文']],
-  ['bold', 'adj.', '褒义：勇敢的；贬义：鲁莽的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：勇敢的；贬义：鲁莽的'], ['The word bold can be positive or negative depending on context.|||根据上下文的不同，粗体一词可以是正面的，也可以是负面的。']],
-  ['complex', 'adj.', '中性偏褒：复杂的精妙；中性偏贬：复杂的麻烦', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['中性偏褒：复杂的精妙；中性偏贬：复杂的麻烦'], ['The word complex can be positive or negative depending on context.|||复杂一词可以是正面的，也可以是负面的，具体取决于上下文。']],
-  ['conservative', 'adj.', '褒义：保守稳健的；贬义：守旧的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：保守稳健的；贬义：守旧的'], ['The word conservative can be positive or negative depending on context.|||保守一词可以是正面的，也可以是负面的，具体取决于上下文。']],
-  ['critical', 'adj.', '褒义：关键的/批判性的；贬义：挑剔的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：关键的/批判性的；贬义：挑剔的'], ['The word critical can be positive or negative depending on context.|||关键词可以是正面的，也可以是负面的，具体取决于上下文。']],
-  ['demanding', 'adj.', '褒义：要求高的(高标准)；贬义：苛求的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：要求高的(高标准)；贬义：苛求的'], ['The word demanding can be positive or negative depending on context.|||“苛求”一词可以是正面的，也可以是负面的，具体取决于上下文。']],
-  ['extreme', 'adj.', '褒义：极端的(投入)；贬义：极端的(过分)', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：极端的(投入)；贬义：极端的(过分)'], ['The word extreme can be positive or negative depending on context.|||根据上下文， “极端”一词可以是正面的，也可以是负面的。']],
-  ['firm', 'adj.', '褒义：坚定的；贬义：固执的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：坚定的；贬义：固执的'], ['The word firm can be positive or negative depending on context.|||根据上下文， “公司”一词可以是正面的，也可以是负面的。']],
-  ['independent', 'adj.', '褒义：独立的/自主的；贬义：孤立的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：独立的/自主的；贬义：孤立的'], ['The word independent can be positive or negative depending on context.|||独立一词可以是正面的，也可以是负面的，具体取决于上下文。']],
-  ['passionate', 'adj.', '褒义：热情的；贬义：情绪化的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：热情的；贬义：情绪化的'], ['The word passionate can be positive or negative depending on context.|||根据上下文的不同，激情一词可以是积极的，也可以是消极的。']],
-  ['proud', 'adj.', '褒义：自豪的；贬义：骄傲的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：自豪的；贬义：骄傲的'], ['The word proud can be positive or negative depending on context.|||根据上下文， “自豪”一词可以是积极的，也可以是消极的。']],
-  ['radical', 'adj.', '褒义：彻底的/根本的；贬义：激进的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：彻底的/根本的；贬义：激进的'], ['The word radical can be positive or negative depending on context.|||激进一词可以是正面的，也可以是负面的，具体取决于上下文。']],
-  ['sensitive', 'adj.', '褒义：敏感的/善解人意的；贬义：过于敏感的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：敏感的/善解人意的；贬义：过于敏感的'], ['The word sensitive can be positive or negative depending on context.|||根据上下文的不同，敏感词可以是正面的，也可以是负面的。']],
-  ['serious', 'adj.', '褒义：认真的/严肃的；贬义：沉重的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：认真的/严肃的；贬义：沉重的'], ['The word serious can be positive or negative depending on context.|||严重一词可以是积极的，也可以是消极的，具体取决于上下文。']],
-  ['stubborn', 'adj.', '褒义：坚定的/不屈的；贬义：顽固的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：坚定的/不屈的；贬义：顽固的'], ['The word stubborn can be positive or negative depending on context.|||根据上下文的不同， “固执”一词可以是正面的，也可以是负面的。']],
-  ['strict', 'adj.', '褒义：严格的；贬义：严厉的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：严格的；贬义：严厉的'], ['The word strict can be positive or negative depending on context.|||这个词strict能是积极的或者消极的depending在context。']]
+  ['aggressive', 'adj.', '褒义：有进取心的；贬义：好斗的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：有进取心的；贬义：好斗的'], ['The word aggressive can be positive or negative depending on context.|||aggressive（有进取心的/好斗的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['ambitious', 'adj.', '褒义：有雄心的；贬义：野心勃勃的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：有雄心的；贬义：野心勃勃的'], ['The word ambitious can be positive or negative depending on context.|||ambitious（有雄心的/野心勃勃的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['bold', 'adj.', '褒义：勇敢的；贬义：鲁莽的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：勇敢的；贬义：鲁莽的'], ['The word bold can be positive or negative depending on context.|||bold（勇敢的/鲁莽的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['complex', 'adj.', '中性偏褒：复杂的精妙；中性偏贬：复杂的麻烦', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['中性偏褒：复杂的精妙；中性偏贬：复杂的麻烦'], ['The word complex can be positive or negative depending on context.|||complex（复杂的精妙/复杂的麻烦）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['conservative', 'adj.', '褒义：保守稳健的；贬义：守旧的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：保守稳健的；贬义：守旧的'], ['The word conservative can be positive or negative depending on context.|||conservative（保守稳健的/守旧的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['critical', 'adj.', '褒义：关键的/批判性的；贬义：挑剔的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：关键的/批判性的；贬义：挑剔的'], ['The word critical can be positive or negative depending on context.|||critical（关键的/挑剔的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['demanding', 'adj.', '褒义：要求高的(高标准)；贬义：苛求的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：要求高的(高标准)；贬义：苛求的'], ['The word demanding can be positive or negative depending on context.|||demanding（要求高的/苛求的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['extreme', 'adj.', '褒义：极端的(投入)；贬义：极端的(过分)', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：极端的(投入)；贬义：极端的(过分)'], ['The word extreme can be positive or negative depending on context.|||extreme（极端投入/极端过分）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['firm', 'adj.', '褒义：坚定的；贬义：固执的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：坚定的；贬义：固执的'], ['The word firm can be positive or negative depending on context.|||firm（坚定的/固执的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['independent', 'adj.', '褒义：独立的/自主的；贬义：孤立的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：独立的/自主的；贬义：孤立的'], ['The word independent can be positive or negative depending on context.|||independent（独立的/孤立的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['passionate', 'adj.', '褒义：热情的；贬义：情绪化的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：热情的；贬义：情绪化的'], ['The word passionate can be positive or negative depending on context.|||passionate（热情的/情绪化的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['proud', 'adj.', '褒义：自豪的；贬义：骄傲的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：自豪的；贬义：骄傲的'], ['The word proud can be positive or negative depending on context.|||proud（自豪的/骄傲的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['radical', 'adj.', '褒义：彻底的/根本的；贬义：激进的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：彻底的/根本的；贬义：激进的'], ['The word radical can be positive or negative depending on context.|||radical（彻底的/激进的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['sensitive', 'adj.', '褒义：敏感的/善解人意的；贬义：过于敏感的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：敏感的/善解人意的；贬义：过于敏感的'], ['The word sensitive can be positive or negative depending on context.|||sensitive（敏感的/善解人意的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['serious', 'adj.', '褒义：认真的/严肃的；贬义：沉重的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：认真的/严肃的；贬义：沉重的'], ['The word serious can be positive or negative depending on context.|||serious（认真的/沉重的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['stubborn', 'adj.', '褒义：坚定的/不屈的；贬义：顽固的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：坚定的/不屈的；贬义：顽固的'], ['The word stubborn can be positive or negative depending on context.|||stubborn（坚定的/顽固的）一词可以是褒义也可以是贬义，取决于语境。']],
+  ['strict', 'adj.', '褒义：严格的；贬义：严厉的', '褒贬', ['注意语境判断褒贬', '阅读理解常考'], ['褒义：严格的；贬义：严厉的'], ['The word strict can be positive or negative depending on context.|||strict（严格的/严厉的）一词可以是褒义也可以是贬义，取决于语境。']]
 ];
 
 // 常见拼写错误词
 const seedMisspelled = [
-  ['accommodate', 'v.', '常见错拼: acommodate/accomodate', '易错', ['注意拼写', '常见错拼: acommodate/accomodate'], ['常见错拼: acommodate/accomodate'], ['Pay attention to the spelling of accommodate.|||请注意“accommodate”的拼写。']],
-  ['achieve', 'v.', '常见错拼: acheive', '易错', ['注意拼写', '常见错拼: acheive'], ['常见错拼: acheive'], ['Pay attention to the spelling of achieve.|||注意Achieve的拼写。']],
-  ['believe', 'v.', '常见错拼: beleive', '易错', ['注意拼写', '常见错拼: beleive'], ['常见错拼: beleive'], ['Pay attention to the spelling of believe.|||注意信念的拼写。']],
-  ['beginning', 'n.', '常见错拼: begining', '易错', ['注意拼写', '常见错拼: begining'], ['常见错拼: begining'], ['Pay attention to the spelling of beginning.|||注意开头的拼写。']],
-  ['calendar', 'n.', '常见错拼: calender', '易错', ['注意拼写', '常见错拼: calender'], ['常见错拼: calender'], ['Pay attention to the spelling of calendar.|||注意日历的拼写。']],
-  ['category', 'n.', '常见错拼: catagory', '易错', ['注意拼写', '常见错拼: catagory'], ['常见错拼: catagory'], ['Pay attention to the spelling of category.|||注意类别的拼写。']],
-  ['committee', 'n.', '常见错拼: commitee', '易错', ['注意拼写', '常见错拼: commitee'], ['常见错拼: commitee'], ['Pay attention to the spelling of committee.|||注意委员会的拼写。']],
-  ['conscience', 'n.', '常见错拼: concience', '易错', ['注意拼写', '常见错拼: concience'], ['常见错拼: concience'], ['Pay attention to the spelling of conscience.|||注意良心的拼写。']],
-  ['definitely', 'adv.', '常见错拼: definately/definitley', '易错', ['注意拼写', '常见错拼: definately/definitley'], ['常见错拼: definately/definitley'], ['Pay attention to the spelling of definitely.|||注意绝对的拼写。']],
-  ['desperate', 'adj.', '常见错拼: desparate', '易错', ['注意拼写', '常见错拼: desparate'], ['常见错拼: desparate'], ['Pay attention to the spelling of desperate.|||注意绝望的拼写。']],
-  ['development', 'n.', '常见错拼: developement', '易错', ['注意拼写', '常见错拼: developement'], ['常见错拼: developement'], ['Pay attention to the spelling of development.|||注意发展的拼写。']],
-  ['environment', 'n.', '常见错拼: enviroment', '易错', ['注意拼写', '常见错拼: enviroment'], ['常见错拼: enviroment'], ['Pay attention to the spelling of environment.|||注意环境的拼写。']],
-  ['exaggerate', 'v.', '常见错拼: exagerate', '易错', ['注意拼写', '常见错拼: exagerate'], ['常见错拼: exagerate'], ['Pay attention to the spelling of exaggerate.|||注意夸张的拼写。']],
-  ['existence', 'n.', '常见错拼: existance', '易错', ['注意拼写', '常见错拼: existance'], ['常见错拼: existance'], ['Pay attention to the spelling of existence.|||注意存在的拼写。']],
-  ['foreign', 'adj.', '常见错拼: foriegn', '易错', ['注意拼写', '常见错拼: foriegn'], ['常见错拼: foriegn'], ['Pay attention to the spelling of foreign.|||注意外国语的拼写。']],
-  ['government', 'n.', '常见错拼: goverment', '易错', ['注意拼写', '常见错拼: goverment'], ['常见错拼: goverment'], ['Pay attention to the spelling of government.|||注意政府的拼写。']],
+  ['accommodate', 'v.', '常见错拼: acommodate/accomodate', '易错', ['注意拼写', '常见错拼: acommodate/accomodate'], ['常见错拼: acommodate/accomodate'], ['Pay attention to the spelling of accommodate.|||注意accommodate（容纳）的拼写，双c双m。']],
+  ['achieve', 'v.', '常见错拼: acheive', '易错', ['注意拼写', '常见错拼: acheive'], ['常见错拼: acheive'], ['Pay attention to the spelling of achieve.|||注意achieve（实现）的拼写，ie不是ei。']],
+  ['believe', 'v.', '常见错拼: beleive', '易错', ['注意拼写', '常见错拼: beleive'], ['常见错拼: beleive'], ['Pay attention to the spelling of believe.|||注意believe（相信）的拼写，ie不是ei。']],
+  ['beginning', 'n.', '常见错拼: begining', '易错', ['注意拼写', '常见错拼: begining'], ['常见错拼: begining'], ['Pay attention to the spelling of beginning.|||注意beginning（开始）的拼写，双n。']],
+  ['calendar', 'n.', '常见错拼: calender', '易错', ['注意拼写', '常见错拼: calender'], ['常见错拼: calender'], ['Pay attention to the spelling of calendar.|||注意calendar（日历）的拼写，ar不是er。']],
+  ['category', 'n.', '常见错拼: catagory', '易错', ['注意拼写', '常见错拼: catagory'], ['常见错拼: catagory'], ['Pay attention to the spelling of category.|||注意category（类别）的拼写，不是catagory。']],
+  ['committee', 'n.', '常见错拼: commitee', '易错', ['注意拼写', '常见错拼: commitee'], ['常见错拼: commitee'], ['Pay attention to the spelling of committee.|||注意committee（委员会）的拼写，双m双t双e。']],
+  ['conscience', 'n.', '常见错拼: concience', '易错', ['注意拼写', '常见错拼: concience'], ['常见错拼: concience'], ['Pay attention to the spelling of conscience.|||注意conscience（良心）的拼写，sci不是shi。']],
+  ['definitely', 'adv.', '常见错拼: definately/definitley', '易错', ['注意拼写', '常见错拼: definately/definitley'], ['常见错拼: definately/definitley'], ['Pay attention to the spelling of definitely.|||注意definitely（肯定地）的拼写，不要写成definately。']],
+  ['desperate', 'adj.', '常见错拼: desparate', '易错', ['注意拼写', '常见错拼: desparate'], ['常见错拼: desparate'], ['Pay attention to the spelling of desperate.|||注意desperate（绝望的）的拼写，有一个a。']],
+  ['development', 'n.', '常见错拼: developement', '易错', ['注意拼写', '常见错拼: developement'], ['常见错拼: developement'], ['Pay attention to the spelling of development.|||注意development（发展）的拼写，不要多e。']],
+  ['environment', 'n.', '常见错拼: enviroment', '易错', ['注意拼写', '常见错拼: enviroment'], ['常见错拼: enviroment'], ['Pay attention to the spelling of environment.|||注意environment（环境）的拼写，不要漏n。']],
+  ['exaggerate', 'v.', '常见错拼: exagerate', '易错', ['注意拼写', '常见错拼: exagerate'], ['常见错拼: exagerate'], ['Pay attention to the spelling of exaggerate.|||注意exaggerate（夸大）的拼写，双g。']],
+  ['existence', 'n.', '常见错拼: existance', '易错', ['注意拼写', '常见错拼: existance'], ['常见错拼: existance'], ['Pay attention to the spelling of existence.|||注意existence（存在）的拼写，结尾是ence。']],
+  ['foreign', 'adj.', '常见错拼: foriegn', '易错', ['注意拼写', '常见错拼: foriegn'], ['常见错拼: foriegn'], ['Pay attention to the spelling of foreign.|||注意foreign（外国的）的拼写，ei不是ie。']],
+  ['government', 'n.', '常见错拼: goverment', '易错', ['注意拼写', '常见错拼: goverment'], ['常见错拼: goverment'], ['Pay attention to the spelling of government.|||注意government（政府）的拼写，不要漏n。']],
   ['guarantee', 'v./n.', '常见错拼: gaurantee', '易错', ['注意拼写', '常见错拼: gaurantee'], ['常见错拼: gaurantee'], ['The company guarantees the quality of all its products.|||公司保证所有产品的质量。']],
-  ['harass', 'v.', '常见错拼: harrass', '易错', ['注意拼写', '常见错拼: harrass'], ['常见错拼: harrass'], ['Pay attention to the spelling of harass.|||注意骚扰的拼写。']],
-  ['immediately', 'adv.', '常见错拼: imediately', '易错', ['注意拼写', '常见错拼: imediately'], ['常见错拼: imediately'], ['Pay attention to the spelling of immediately.|||立即注意的拼写。']],
-  ['independent', 'adj.', '常见错拼: independant', '易错', ['注意拼写', '常见错拼: independant'], ['常见错拼: independant'], ['Pay attention to the spelling of independent.|||注意INDEPENDENT的拼写。']],
-  ['intelligent', 'adj.', '常见错拼: inteligent', '易错', ['注意拼写', '常见错拼: inteligent'], ['常见错拼: inteligent'], ['Pay attention to the spelling of intelligent.|||注意智能的拼写。']],
-  ['knowledge', 'n.', '常见错拼: knowlege', '易错', ['注意拼写', '常见错拼: knowlege'], ['常见错拼: knowlege'], ['Pay attention to the spelling of knowledge.|||注意知识的拼写。']],
-  ['library', 'n.', '常见错拼: libary', '易错', ['注意拼写', '常见错拼: libary'], ['常见错拼: libary'], ['Pay attention to the spelling of library.|||注意图书馆的拼写。']],
-  ['necessary', 'adj.', '常见错拼: neccessary/necesary', '易错', ['注意拼写', '常见错拼: neccessary/necesary'], ['常见错拼: neccessary/necesary'], ['Pay attention to the spelling of necessary.|||注意必要的的拼写。']],
-  ['occurrence', 'n.', '常见错拼: occurence', '易错', ['注意拼写', '常见错拼: occurence'], ['常见错拼: occurence'], ['Pay attention to the spelling of occurrence.|||注意事件的拼写。']],
-  ['parallel', 'adj./n.', '常见错拼: paralel', '易错', ['注意拼写', '常见错拼: paralel'], ['常见错拼: paralel'], ['Pay attention to the spelling of parallel.|||注意平行的拼写。']],
-  ['privilege', 'n.', '常见错拼: privelege', '易错', ['注意拼写', '常见错拼: privelege'], ['常见错拼: privelege'], ['Pay attention to the spelling of privilege.|||注意特权的拼写。']],
-  ['profession', 'n.', '常见错拼: proffesion', '易错', ['注意拼写', '常见错拼: proffesion'], ['常见错拼: proffesion'], ['Pay attention to the spelling of profession.|||注意职业的拼写。']],
-  ['receive', 'v.', '常见错拼: recieve', '易错', ['注意拼写', '常见错拼: recieve'], ['常见错拼: recieve'], ['Pay attention to the spelling of receive.|||注意接收的拼写。']],
-  ['recommend', 'v.', '常见错拼: recomend', '易错', ['注意拼写', '常见错拼: recomend'], ['常见错拼: recomend'], ['Pay attention to the spelling of recommend.|||注意推荐的拼写。']],
-  ['reference', 'n.', '常见错拼: refference', '易错', ['注意拼写', '常见错拼: refference'], ['常见错拼: refference'], ['Pay attention to the spelling of reference.|||注意参考文献的拼写。']],
+  ['harass', 'v.', '常见错拼: harrass', '易错', ['注意拼写', '常见错拼: harrass'], ['常见错拼: harrass'], ['Pay attention to the spelling of harass.|||注意harass（骚扰）的拼写，一个r两个s。']],
+  ['immediately', 'adv.', '常见错拼: imediately', '易错', ['注意拼写', '常见错拼: imediately'], ['常见错拼: imediately'], ['Pay attention to the spelling of immediately.|||注意immediately（立即）的拼写，有两个m。']],
+  ['independent', 'adj.', '常见错拼: independant', '易错', ['注意拼写', '常见错拼: independant'], ['常见错拼: independant'], ['Pay attention to the spelling of independent.|||注意independent（独立的）的拼写，结尾是ent不是ant。']],
+  ['intelligent', 'adj.', '常见错拼: inteligent', '易错', ['注意拼写', '常见错拼: inteligent'], ['常见错拼: inteligent'], ['Pay attention to the spelling of intelligent.|||注意intelligent（聪明的）的拼写，有两个l。']],
+  ['knowledge', 'n.', '常见错拼: knowlege', '易错', ['注意拼写', '常见错拼: knowlege'], ['常见错拼: knowlege'], ['Pay attention to the spelling of knowledge.|||注意knowledge（知识）的拼写，不要漏d。']],
+  ['library', 'n.', '常见错拼: libary', '易错', ['注意拼写', '常见错拼: libary'], ['常见错拼: libary'], ['Pay attention to the spelling of library.|||注意library（图书馆）的拼写，有一个r。']],
+  ['necessary', 'adj.', '常见错拼: neccessary/necesary', '易错', ['注意拼写', '常见错拼: neccessary/necesary'], ['常见错拼: neccessary/necesary'], ['Pay attention to the spelling of necessary.|||注意necessary（必要的）的拼写，一个c两个s。']],
+  ['occurrence', 'n.', '常见错拼: occurence', '易错', ['注意拼写', '常见错拼: occurence'], ['常见错拼: occurence'], ['Pay attention to the spelling of occurrence.|||注意occurrence（发生）的拼写，双c双r结尾ence。']],
+  ['parallel', 'adj./n.', '常见错拼: paralel', '易错', ['注意拼写', '常见错拼: paralel'], ['常见错拼: paralel'], ['Pay attention to the spelling of parallel.|||注意parallel（平行的）的拼写，双r双l。']],
+  ['privilege', 'n.', '常见错拼: privelege', '易错', ['注意拼写', '常见错拼: privelege'], ['常见错拼: privelege'], ['Pay attention to the spelling of privilege.|||注意privilege（特权）的拼写，不是privelege。']],
+  ['profession', 'n.', '常见错拼: proffesion', '易错', ['注意拼写', '常见错拼: proffesion'], ['常见错拼: proffesion'], ['Pay attention to the spelling of profession.|||注意profession（职业）的拼写，双s。']],
+  ['receive', 'v.', '常见错拼: recieve', '易错', ['注意拼写', '常见错拼: recieve'], ['常见错拼: recieve'], ['Pay attention to the spelling of receive.|||注意receive（收到）的拼写，ei不是ie。']],
+  ['recommend', 'v.', '常见错拼: recomend', '易错', ['注意拼写', '常见错拼: recomend'], ['常见错拼: recomend'], ['Pay attention to the spelling of recommend.|||注意recommend（推荐）的拼写，一个c两个m。']],
+  ['reference', 'n.', '常见错拼: refference', '易错', ['注意拼写', '常见错拼: refference'], ['常见错拼: refference'], ['Pay attention to the spelling of reference.|||注意reference（参考）的拼写，一个f。']],
   ['separate', 'v./adj.', '常见错拼: seperate', '易错', ['注意拼写', '常见错拼: seperate'], ['常见错拼: seperate'], ['The teacher separated the two boys who were arguing.|||老师将争吵的两个男孩分开。']],
-  ['tomorrow', 'n./adv.', '常见错拼: tomarrow', '易错', ['注意拼写', '常见错拼: tomarrow'], ['常见错拼: tomarrow'], ['Pay attention to the spelling of tomorrow.|||注意明天的拼写。']],
-  ['until', 'prep./conj.', '常见错拼: untill', '易错', ['注意拼写', '常见错拼: untill'], ['常见错拼: untill'], ['Pay attention to the spelling of until.|||注意“直到”的拼写。']],
-  ['weather', 'n.', '常见错拼: wether', '易错', ['注意拼写', '常见错拼: wether'], ['常见错拼: wether'], ['Pay attention to the spelling of weather.|||注意天气的拼写。']]
+  ['tomorrow', 'n./adv.', '常见错拼: tomarrow', '易错', ['注意拼写', '常见错拼: tomarrow'], ['常见错拼: tomarrow'], ['Pay attention to the spelling of tomorrow.|||注意tomorrow（明天）的拼写，双r双o。']],
+  ['until', 'prep./conj.', '常见错拼: untill', '易错', ['注意拼写', '常见错拼: untill'], ['常见错拼: untill'], ['Pay attention to the spelling of until.|||注意until（直到）的拼写，一个l。']],
+  ['weather', 'n.', '常见错拼: wether', '易错', ['注意拼写', '常见错拼: wether'], ['常见错拼: wether'], ['Pay attention to the spelling of weather.|||注意weather（天气）的拼写，ea不是ae。']]
 ];
 
 // 易混词辨析
 const seedConfused = [
-  ['affect / effect', '词组', 'affect与effect易混辨析', '易混', ['注意词义和用法区别'], ['affect和effect是常考易混词'], ['Be careful to distinguish affect from effect.|||小心区分情感和效果。']],
-  ['principal / principle', '词组', 'principal与principle易混辨析', '易混', ['注意词义和用法区别'], ['principal和principle是常考易混词'], ['Be careful to distinguish principal from principle.|||小心区分主体和主体。']],
-  ['stationary / stationery', '词组', 'stationary与stationery易混辨析', '易混', ['注意词义和用法区别'], ['stationary和stationery是常考易混词'], ['Be careful to distinguish stationary from stationery.|||请小心区分文具和文具。']],
-  ['complement / compliment', '词组', 'complement与compliment易混辨析', '易混', ['注意词义和用法区别'], ['complement和compliment是常考易混词'], ['Be careful to distinguish complement from compliment.|||注意区分complement和compliment。']],
-  ['disinterested / uninterested', '词组', 'disinterested与uninterested易混辨析', '易混', ['注意词义和用法区别'], ['disinterested和uninterested是常考易混词'], ['Be careful to distinguish disinterested from uninterested.|||小心区分不感兴趣和不感兴趣。']],
-  ['besides / except', '词组', 'besides与except易混辨析', '易混', ['注意词义和用法区别'], ['besides和except是常考易混词'], ['Be careful to distinguish besides from except.|||除了例外之外，要小心区分。']],
-  ['job / work', '词组', 'job与work易混辨析', '易混', ['注意词义和用法区别'], ['job和work是常考易混词'], ['Be careful to distinguish job from work.|||小心区分工作和工作。']],
-  ['cure / treat', '词组', 'cure与treat易混辨析', '易混', ['注意词义和用法区别'], ['cure和treat是常考易混词'], ['Be careful to distinguish cure from treat.|||注意区分cure和treat。']],
-  ['damage / destroy', '词组', 'damage与destroy易混辨析', '易混', ['注意词义和用法区别'], ['damage和destroy是常考易混词'], ['Be careful to distinguish damage from destroy.|||小心区分损坏和破坏。']],
-  ['emigrate / immigrate', '词组', 'emigrate与immigrate易混辨析', '易混', ['注意词义和用法区别'], ['emigrate和immigrate是常考易混词'], ['Be careful to distinguish emigrate from immigrate.|||注意区分emigrate和immigrate。']],
-  ['respectable / respectful', '词组', 'respectable与respectful易混辨析', '易混', ['注意词义和用法区别'], ['respectable和respectful是常考易混词'], ['Be careful to distinguish respectable from respectful.|||注意区分respectable和respectful。']],
-  ['none / one', '词组', 'none与one易混辨析', '易混', ['注意词义和用法区别'], ['none和one是常考易混词'], ['Be careful to distinguish none from one.|||注意区分none和one。']],
-  ['discreet / discrete', '词组', 'discreet与discrete易混辨析', '易混', ['注意词义和用法区别'], ['discreet和discrete是常考易混词'], ['Be careful to distinguish discreet from discrete.|||小心区分离散和离散。']],
-  ['cost / take、cost、pay', '词组', 'cost与take、cost、pay易混辨析', '易混', ['注意词义和用法区别'], ['cost和take、cost、pay是常考易混词'], ['Be careful to distinguish cost from take、cost、pay.|||小心区分成本和、承担、成本。']],
-  ['pay / take、cost、pay', '词组', 'pay与take、cost、pay易混辨析', '易混', ['注意词义和用法区别'], ['pay和take、cost、pay是常考易混词'], ['Be careful to distinguish pay from take、cost、pay.|||注意区分pay和take、cost、pay。']],
-  ['cost / pay', '词组', 'cost与pay易混辨析', '易混', ['注意词义和用法区别'], ['cost和pay是常考易混词'], ['Be careful to distinguish cost from pay.|||小心区分成本和薪酬。']],
-  ['fit、suit、match / suit', '词组', 'fit、suit、match与suit易混辨析', '易混', ['注意词义和用法区别'], ['fit、suit、match和suit是常考易混词'], ['Be careful to distinguish fit、suit、match from suit.|||是careful到distinguish合适的suitmatch从suit。']],
-  ['fit、suit、match / match', '词组', 'fit、suit、match与match易混辨析', '易混', ['注意词义和用法区别'], ['fit、suit、match和match是常考易混词'], ['Be careful to distinguish fit、suit、match from match.|||小心区分合身的、西装、搭配和匹配。']],
-  ['match / suit', '词组', 'match与suit易混辨析', '易混', ['注意词义和用法区别'], ['match和suit是常考易混词'], ['Be careful to distinguish match from suit.|||小心区分火柴和西装。']],
-  ['credible、credulous、creditable / credulous', '词组', 'credible、credulous、creditable与credulous易混辨析', '易混', ['注意词义和用法区别'], ['credible、credulous、creditable和credulous是常考易混词'], ['Be careful to distinguish credible、credulous、creditable from credulous.|||是careful到distinguishcrediblecredulouscreditable从credulous。']],
-  ['credible、credulous、creditable / creditable', '词组', 'credible、credulous、creditable与creditable易混辨析', '易混', ['注意词义和用法区别'], ['credible、credulous、creditable和creditable是常考易混词'], ['Be careful to distinguish credible、credulous、creditable from creditable.|||要小心区分可、信的可、信和可信。']],
-  ['creditable / credulous', '词组', 'creditable与credulous易混辨析', '易混', ['注意词义和用法区别'], ['creditable和credulous是常考易混词'], ['Be careful to distinguish creditable from credulous.|||要小心区分可信和轻信。']],
-  ['assure、ensure、insure / ensure', '词组', 'assure、ensure、insure与ensure易混辨析', '易混', ['注意词义和用法区别'], ['assure、ensure、insure和ensure是常考易混词'], ['Be careful to distinguish assure、ensure、insure from ensure.|||请谨慎区分“、确保”、和“确保”。']],
-  ['assure、ensure、insure / insure', '词组', 'assure、ensure、insure与insure易混辨析', '易混', ['注意词义和用法区别'], ['assure、ensure、insure和insure是常考易混词'], ['Be careful to distinguish assure、ensure、insure from insure.|||是careful到distinguishassureensureinsure从insure。']],
-  ['ensure / insure', '词组', 'ensure与insure易混辨析', '易混', ['注意词义和用法区别'], ['ensure和insure是常考易混词'], ['Be careful to distinguish ensure from insure.|||注意区分ensure和insure。']],
-  ['adapt、adjust、adopt / adjust', '词组', 'adapt、adjust、adopt与adjust易混辨析', '易混', ['注意词义和用法区别'], ['adapt、adjust、adopt和adjust是常考易混词'], ['Be careful to distinguish adapt、adjust、adopt from adjust.|||是careful到distinguish适应adjust采用从adjust。']],
-  ['adapt、adjust、adopt / adopt', '词组', 'adapt、adjust、adopt与adopt易混辨析', '易混', ['注意词义和用法区别'], ['adapt、adjust、adopt和adopt是常考易混词'], ['Be careful to distinguish adapt、adjust、adopt from adopt.|||是careful到distinguish适应adjust采用从采用。']],
-  ['adjust / adopt', '词组', 'adjust与adopt易混辨析', '易混', ['注意词义和用法区别'], ['adjust和adopt是常考易混词'], ['Be careful to distinguish adjust from adopt.|||注意区分adjust和adopt。']],
-  ['look、see、watch / see', '词组', 'look、see、watch与see易混辨析', '易混', ['注意词义和用法区别'], ['look、see、watch和see是常考易混词'], ['Be careful to distinguish look、see、watch from see.|||是careful到distinguish查看到手表从看到。']],
-  ['look、see、watch / watch', '词组', 'look、see、watch与watch易混辨析', '易混', ['注意词义和用法区别'], ['look、see、watch和watch是常考易混词'], ['Be careful to distinguish look、see、watch from watch.|||是careful到distinguish查看到手表从手表。']],
-  ['see / watch', '词组', 'see与watch易混辨析', '易混', ['注意词义和用法区别'], ['see和watch是常考易混词'], ['Be careful to distinguish see from watch.|||注意区分see和watch。']],
-  ['compose、consist、constitute / consist', '词组', 'compose、consist、constitute与consist易混辨析', '易混', ['注意词义和用法区别'], ['compose、consist、constitute和consist是常考易混词'], ['Be careful to distinguish compose、consist、constitute from consist.|||是careful到distinguishcomposeconsistconstitute从consist。']],
-  ['compose、consist、constitute / constitute', '词组', 'compose、consist、constitute与constitute易混辨析', '易混', ['注意词义和用法区别'], ['compose、consist、constitute和constitute是常考易混词'], ['Be careful to distinguish compose、consist、constitute from constitute.|||是careful到distinguishcomposeconsistconstitute从constitute。']],
-  ['consist / constitute', '词组', 'consist与constitute易混辨析', '易混', ['注意词义和用法区别'], ['consist和constitute是常考易混词'], ['Be careful to distinguish consist from constitute.|||注意区分consist和constitute。']],
-  ['continual、continuous、constant / continuous', '词组', 'continual、continuous、constant与continuous易混辨析', '易混', ['注意词义和用法区别'], ['continual、continuous、constant和continuous是常考易混词'], ['Be careful to distinguish continual、continuous、constant from continuous.|||是careful到distinguishcontinualcontinuousconstant从continuous。']],
-  ['constant / continual、continuous、constant', '词组', 'constant与continual、continuous、constant易混辨析', '易混', ['注意词义和用法区别'], ['constant和continual、continuous、constant是常考易混词'], ['Be careful to distinguish constant from continual、continuous、constant.|||注意区分constant和continual、continuous、constant。']],
-  ['constant / continuous', '词组', 'constant与continuous易混辨析', '易混', ['注意词义和用法区别'], ['constant和continuous是常考易混词'], ['Be careful to distinguish constant from continuous.|||注意区分constant和continuous。']],
-  ['dispel / repel、dispel、expel', '词组', 'dispel与repel、dispel、expel易混辨析', '易混', ['注意词义和用法区别'], ['dispel和repel、dispel、expel是常考易混词'], ['Be careful to distinguish dispel from repel、dispel、expel.|||注意区分dispel和repel、dispel、expel。']],
-  ['expel / repel、dispel、expel', '词组', 'expel与repel、dispel、expel易混辨析', '易混', ['注意词义和用法区别'], ['expel和repel、dispel、expel是常考易混词'], ['Be careful to distinguish expel from repel、dispel、expel.|||注意区分expel和repel、dispel、expel。']],
-  ['dispel / expel', '词组', 'dispel与expel易混辨析', '易混', ['注意词义和用法区别'], ['dispel和expel是常考易混词'], ['Be careful to distinguish dispel from expel.|||注意区分dispel和expel。']]
+  ['affect / effect', '词组', 'affect与effect易混辨析', '易混', ['注意词义和用法区别'], ['affect和effect是常考易混词'], ['The medicine affected his recovery, and the effect was remarkable.|||药物影响了他的康复，效果非常显著。']],
+  ['principal / principle', '词组', 'principal与principle易混辨析', '易混', ['注意词义和用法区别'], ['principal和principle是常考易混词'], ['The principal explained the principle of honesty to students.|||校长向学生们讲解了诚实这一原则。']],
+  ['stationary / stationery', '词组', 'stationary与stationery易混辨析', '易混', ['注意词义和用法区别'], ['stationary和stationery是常考易混词'], ['The car remained stationary while she bought stationery in the shop.|||汽车保持静止，她在店里买了文具。']],
+  ['complement / compliment', '词组', 'complement与compliment易混辨析', '易混', ['注意词义和用法区别'], ['complement和compliment是常考易混词'], ['The wine complements the dish; the chef received many compliments.|||红酒搭配这道菜很相得益彰，厨师收到了很多赞美。']],
+  ['disinterested / uninterested', '词组', 'disinterested与uninterested易混辨析', '易混', ['注意词义和用法区别'], ['disinterested和uninterested是常考易混词'], ['A disinterested judge is fair, but an uninterested student fails.|||公正无私的法官是公平的，但不感兴趣的学生会失败。']],
+  ['besides / except', '词组', 'besides与except易混辨析', '易混', ['注意词义和用法区别'], ['besides和except是常考易混词'], ['Besides English, she speaks French, but she knows no other language except these two.|||除了英语，她还会说法语，但除了这两种语言外，她不会其他语言了。']],
+  ['job / work', '词组', 'job与work易混辨析', '易混', ['注意词义和用法区别'], ['job和work是常考易混词'], ['She found a new job and started work right away.|||她找到了一份新工作，马上开始上班了。']],
+  ['cure / treat', '词组', 'cure与treat易混辨析', '易混', ['注意词义和用法区别'], ['cure和treat是常考易混词'], ['The doctor treated the wound but could not cure the disease.|||医生处理了伤口，但无法治愈这种疾病。']],
+  ['damage / destroy', '词组', 'damage与destroy易混辨析', '易混', ['注意词义和用法区别'], ['damage和destroy是常考易混词'], ['The flood damaged the house but the fire destroyed it completely.|||洪水损坏了房屋，但大火将其彻底摧毁了。']],
+  ['emigrate / immigrate', '词组', 'emigrate与immigrate易混辨析', '易混', ['注意词义和用法区别'], ['emigrate和immigrate是常考易混词'], ['They emigrated from China and immigrated to Canada.|||他们从中国移出，移居到了加拿大。']],
+  ['respectable / respectful', '词组', 'respectable与respectful易混辨析', '易混', ['注意词义和用法区别'], ['respectable和respectful是常考易混词'], ['The respectable teacher is always respectful to his colleagues.|||那位令人尊敬的老师对同事总是很有礼貌。']],
+  ['none / one', '词组', 'none与one易混辨析', '易混', ['注意词义和用法区别'], ['none和one是常考易混词'], ['None of the answers is correct, but one is close.|||没有一个答案是正确的，但有一个很接近。']],
+  ['discreet / discrete', '词组', 'discreet与discrete易混辨析', '易混', ['注意词义和用法区别'], ['discreet和discrete是常考易混词'], ['Be discreet when handling discrete data sets.|||处理离散数据集时要谨慎。']],
+  ['cost / take、cost、pay', '词组', 'cost与take、cost、pay易混辨析', '易混', ['注意词义和用法区别'], ['cost和take、cost、pay是常考易混词'], ['The book costs 50 yuan, it took me a day to read, and I paid in cash.|||这本书花费50元，我花了一天读完，用现金付的款。']],
+  ['pay / take、cost、pay', '词组', 'pay与take、cost、pay易混辨析', '易混', ['注意词义和用法区别'], ['pay和take、cost、pay是常考易混词'], ['I paid 100 yuan for the ticket; it cost me a lot and took two hours.|||我付了100元买票；这花了我不少钱，还花了两个小时。']],
+  ['cost / pay', '词组', 'cost与pay易混辨析', '易混', ['注意词义和用法区别'], ['cost和pay是常考易混词'], ['The phone costs 5000 yuan, but I only paid 4000 after the discount.|||这部手机售价5000元，但打折后我只付了4000元。']],
+  ['fit、suit、match / suit', '词组', 'fit、suit、match与suit易混辨析', '易混', ['注意词义和用法区别'], ['fit、suit、match和suit是常考易混词'], ['These shoes fit well, suit your style, and match your dress perfectly.|||这双鞋很合脚，适合你的风格，和你的裙子也完美搭配。']],
+  ['fit、suit、match / match', '词组', 'fit、suit、match与match易混辨析', '易混', ['注意词义和用法区别'], ['fit、suit、match和match是常考易混词'], ['The jacket fits you well, suits the occasion, and matches your trousers.|||这件夹克很合身，适合这个场合，和你的裤子也很搭配。']],
+  ['match / suit', '词组', 'match与suit易混辨析', '易混', ['注意词义和用法区别'], ['match和suit是常考易混词'], ['This tie matches your shirt and suits the formal occasion.|||这条领带和你的衬衫很配，也适合这个正式场合。']],
+  ['credible、credulous、creditable / credulous', '词组', 'credible、credulous、creditable与credulous易混辨析', '易混', ['注意词义和用法区别'], ['credible、credulous、creditable和credulous是常考易混词'], ['The credible report is creditable, but credulous people believe everything.|||这份可信的报告值得赞扬，但轻信的人会相信一切。']],
+  ['credible、credulous、creditable / creditable', '词组', 'credible、credulous、creditable与creditable易混辨析', '易混', ['注意词义和用法区别'], ['credible、credulous、creditable和creditable是常考易混词'], ['His creditable achievement is credible, unlike credulous rumors.|||他值得赞扬的成就是可信的，不像轻信的谣言。']],
+  ['creditable / credulous', '词组', 'creditable与credulous易混辨析', '易混', ['注意词义和用法区别'], ['creditable和credulous是常考易混词'], ['His creditable work earned praise, but credulous people doubted it.|||他值得赞扬的工作赢得了赞誉，但轻信的人却对此表示怀疑。']],
+  ['assure、ensure、insure / ensure', '词组', 'assure、ensure、insure与ensure易混辨析', '易混', ['注意词义和用法区别'], ['assure、ensure、insure和ensure是常考易混词'], ['I assure you the plan will ensure success; also insure your property.|||我向你保证这个计划能确保成功；另外记得给你的财产投保。']],
+  ['assure、ensure、insure / insure', '词组', 'assure、ensure、insure与insure易混辨析', '易混', ['注意词义和用法区别'], ['assure、ensure、insure和insure是常考易混词'], ['She assured me she would insure the car to ensure its safety.|||她向我保证她会给车投保以确保安全。']],
+  ['ensure / insure', '词组', 'ensure与insure易混辨析', '易混', ['注意词义和用法区别'], ['ensure和insure是常考易混词'], ['Ensure you insure your house against fire before moving in.|||入住前确保给你的房子投保火险。']],
+  ['adapt、adjust、adopt / adjust', '词组', 'adapt、adjust、adopt与adjust易混辨析', '易混', ['注意词义和用法区别'], ['adapt、adjust、adopt和adjust是常考易混词'], ['She adapted to the new environment, adjusted her schedule, and adopted a new method.|||她适应了新环境，调整了时间表，并采纳了新方法。']],
+  ['adapt、adjust、adopt / adopt', '词组', 'adapt、adjust、adopt与adopt易混辨析', '易混', ['注意词义和用法区别'], ['adapt、adjust、adopt和adopt是常考易混词'], ['They adapted the plan, adjusted the budget, and adopted the proposal.|||他们修改了计划，调整了预算，并采纳了提案。']],
+  ['adjust / adopt', '词组', 'adjust与adopt易混辨析', '易混', ['注意词义和用法区别'], ['adjust和adopt是常考易混词'], ['Please adjust the camera settings before you adopt the new policy.|||请在采纳新政策之前调整好相机设置。']],
+  ['look、see、watch / see', '词组', 'look、see、watch与see易混辨析', '易混', ['注意词义和用法区别'], ['look、see、watch和see是常考易混词'], ['Look at the screen to see the video and watch it carefully.|||看着屏幕来看到视频，并仔细观看。']],
+  ['look、see、watch / watch', '词组', 'look、see、watch与watch易混辨析', '易混', ['注意词义和用法区别'], ['look、see、watch和watch是常考易混词'], ['Look up to see the stars, then watch them move across the sky.|||抬头看去看见星星，然后观察它们划过天空。']],
+  ['see / watch', '词组', 'see与watch易混辨析', '易混', ['注意词义和用法区别'], ['see和watch是常考易混词'], ['I saw a movie yesterday, but I prefer to watch sports live.|||我昨天看了一部电影，但我更喜欢看现场体育比赛。']],
+  ['compose、consist、constitute / consist', '词组', 'compose、consist、constitute与consist易混辨析', '易混', ['注意词义和用法区别'], ['compose、consist、constitute和consist是常考易混词'], ['Water composes 60% of the body, which consists of cells that constitute tissues.|||水组成了人体的60%，人体由细胞构成，细胞构成组织。']],
+  ['compose、consist、constitute / constitute', '词组', 'compose、consist、constitute与constitute易混辨析', '易混', ['注意词义和用法区别'], ['compose、consist、constitute和constitute是常考易混词'], ['Twelve months constitute a year, which consists of four seasons composed of weeks.|||十二个月构成一年，一年由四季组成，每季由若干周组成。']],
+  ['consist / constitute', '词组', 'consist与constitute易混辨析', '易混', ['注意词义和用法区别'], ['consist和constitute是常考易混词'], ['The committee consists of ten members who constitute the board.|||委员会由十名成员组成，他们构成了董事会。']],
+  ['continual、continuous、constant / continuous', '词组', 'continual、continuous、constant与continuous易混辨析', '易混', ['注意词义和用法区别'], ['continual、continuous、constant和continuous是常考易混词'], ['Continual interruptions broke the continuous flow of his constant effort.|||频繁的打断打破了他持续不断的努力。']],
+  ['constant / continual、continuous、constant', '词组', 'constant与continual、continuous、constant易混辨析', '易混', ['注意词义和用法区别'], ['constant和continual、continuous、constant是常考易混词'], ['His constant practice, despite continual setbacks, led to continuous improvement.|||尽管频繁遇到挫折，他坚持不懈的练习带来了持续的进步。']],
+  ['constant / continuous', '词组', 'constant与continuous易混辨析', '易混', ['注意词义和用法区别'], ['constant和continuous是常考易混词'], ['The constant noise and continuous rain made it hard to sleep.|||恒定的噪音和连续不断的雨让人难以入睡。']],
+  ['dispel / repel、dispel、expel', '词组', 'dispel与repel、dispel、expel易混辨析', '易混', ['注意词义和用法区别'], ['dispel和repel、dispel、expel是常考易混词'], ['The teacher dispelled doubts, repelled criticism, and expelled the troublemaker.|||老师消除了疑虑，驳回了批评，并驱逐了捣乱者。']],
+  ['expel / repel、dispel、expel', '词组', 'expel与repel、dispel、expel易混辨析', '易混', ['注意词义和用法区别'], ['expel和repel、dispel、expel是常考易混词'], ['The school expelled the student who tried to repel the accusation and dispel the rumors.|||学校开除了那个试图反驳指控并平息谣言的学生。']],
+  ['dispel / expel', '词组', 'dispel与expel易混辨析', '易混', ['注意词义和用法区别'], ['dispel和expel是常考易混词'], ['The principal expelled the student and dispelled the rumors.|||校长开除了那个学生，并平息了谣言。']]
 ];
 
 /* ============================
@@ -3306,28 +3306,28 @@ function saveCustomSpelling(list) {
 
 // 原有核心短语库
 const seedPhrases = [
-  ['as a result', '短语', '结果；因此', '高频', ['常放句首或句中作结果状语'], ['as a result 后接句子；as a result of 后接名词/doing'], ['He worked hard. As a result, he passed the exam.|||他worked硬的作为一个结果他通过这个考试。']],
-  ['be absorbed in', '短语', '专心于', '高频', ['表示专注状态'], ['同义 be buried in/be devoted to/concentrate on'], ['She is absorbed in preparing for the exam.|||她是absorbed在preparing为了这个考试。']],
-  ['be concerned about', '短语', '担心；关心', '高频', ['about 表担心对象'], ['as far as... concerned 观点表达'], ['Parents are concerned about children\'s safety.']],
-  ['break down', '短语', '出故障；崩溃', '高频', ['机器坏了；情绪崩溃'], ['break up/out/through 区分'], ['The car broke down on the way.|||这个汽车打破向下在这个方式。']],
-  ['carry out', '短语', '执行；开展', '高频', ['carry out a plan/survey'], ['常用于活动、调查、实验'], ['A survey was carried out among students.|||一个调查是携带出其中students。']],
-  ['come up with', '短语', '提出；想出', '高频', ['提出想法/办法'], ['同 think of/put forward'], ['He came up with a good idea.|||他来上与一个好想法。']],
-  ['contribute to', '短语', '有助于；导致', '高频', ['to 是介词'], ['make contributions to'], ['Reading contributes to better writing.|||阅读contributes到better写。']],
-  ['deal with', '短语', '处理；涉及', '高频', ['how to deal with'], ['deal with 与 do with 疑问词搭配不同'], ['We must learn how to deal with stress.|||我们必须学习如何到deal与压力。']],
-  ['due to', '短语', '由于', '高频', ['后接名词/doing'], ['because of/owing to 同义'], ['The match was canceled due to heavy rain.|||这个match是canceleddue到大雨。']],
-  ['figure out', '短语', '弄清楚；计算出', '中频', ['figure out the meaning/problem'], ['同 work out'], ['Can you figure out the answer?']],
-  ['get along with', '短语', '与……相处', '高频', ['get along well with sb'], ['作文人际关系常用'], ['She gets along well with her classmates.|||她得到沿着well与她classmates。']],
-  ['give rise to', '短语', '引起；导致', '中频', ['正式表达 cause'], ['rise/arise/raise 易混'], ['Pollution gives rise to many health problems.|||Pollution给rise到许多健康problems。']],
-  ['in addition', '短语', '此外', '高频', ['句首连接补充信息'], ['besides/furthermore 同义'], ['In addition, students should exercise regularly.|||在additionstudents应该exerciseregularly。']],
-  ['in case', '短语', '以防；万一', '高频', ['引导目的或条件状语从句'], ['区别 in that case'], ['Take an umbrella in case it rains.|||拿一个umbrella在案例它rains。']],
-  ['in charge of', '短语', '负责', '高频', ['人 be in charge of 事'], ['charge 搭配辨析常考'], ['She is in charge of the English club.|||她是在charge的这个Englishclub。']],
-  ['make a difference', '短语', '有影响；起作用', '高频', ['make a difference to'], ['环保/志愿主题常用'], ['Small actions can make a big difference.|||小actions能做一个大的difference。']],
-  ['make full use of', '短语', '充分利用', '高频', ['后接时间/资源/机会'], ['同 take advantage of'], ['We should make full use of our time.|||我们应该做满的用途的我们的时间。']],
-  ['on behalf of', '短语', '代表', '中频', ['应用文开头常用'], ['正式表达'], ['On behalf of our class, I welcome you.|||在behalf的我们的课堂我welcome你。']],
-  ['put forward', '短语', '提出', '中频', ['put forward a suggestion/plan'], ['更正式'], ['A new plan was put forward.|||一个新计划是放向前。']],
-  ['refer to', '短语', '提到；查阅', '高频', ['refer to a dictionary'], ['一词多义常考'], ['The word refers to a useful method.|||这个词refers到一个有用的方法。']],
-  ['set up', '短语', '建立；设立', '高频', ['set up a club/company'], ['同 establish/found'], ['They set up a club to help others.|||他们树立上一个club到帮助others。']],
-  ['take measures to', '短语', '采取措施做', '高频', ['后接动词原形'], ['同 take steps/action to'], ['We should take measures to protect the environment.|||我们应该拿measures到protect这个环境。']],
+  ['as a result', '短语', '结果；因此', '高频', ['常放句首或句中作结果状语'], ['as a result 后接句子；as a result of 后接名词/doing'], ['He worked hard. As a result, he passed the exam.|||他努力学习，结果通过了考试。']],
+  ['be absorbed in', '短语', '专心于', '高频', ['表示专注状态'], ['同义 be buried in/be devoted to/concentrate on'], ['She is absorbed in preparing for the exam.|||她正专心致志地准备考试。']],
+  ['be concerned about', '短语', '担心；关心', '高频', ['about 表担心对象'], ['as far as... concerned 观点表达'], ['Parents are concerned about children\'s safety.|||父母担心孩子们的安全。']],
+  ['break down', '短语', '出故障；崩溃', '高频', ['机器坏了；情绪崩溃'], ['break up/out/through 区分'], ['The car broke down on the way.|||汽车在路上抛锚了。']],
+  ['carry out', '短语', '执行；开展', '高频', ['carry out a plan/survey'], ['常用于活动、调查、实验'], ['A survey was carried out among students.|||在学生中开展了一项调查。']],
+  ['come up with', '短语', '提出；想出', '高频', ['提出想法/办法'], ['同 think of/put forward'], ['He came up with a good idea.|||他想出了一个好主意。']],
+  ['contribute to', '短语', '有助于；导致', '高频', ['to 是介词'], ['make contributions to'], ['Reading contributes to better writing.|||阅读有助于提高写作水平。']],
+  ['deal with', '短语', '处理；涉及', '高频', ['how to deal with'], ['deal with 与 do with 疑问词搭配不同'], ['We must learn how to deal with stress.|||我们必须学会如何应对压力。']],
+  ['due to', '短语', '由于', '高频', ['后接名词/doing'], ['because of/owing to 同义'], ['The match was canceled due to heavy rain.|||比赛因大雨被取消了。']],
+  ['figure out', '短语', '弄清楚；计算出', '中频', ['figure out the meaning/problem'], ['同 work out'], ['Can you figure out the answer?|||你能算出答案吗？']],
+  ['get along with', '短语', '与……相处', '高频', ['get along well with sb'], ['作文人际关系常用'], ['She gets along well with her classmates.|||她和同学们相处融洽。']],
+  ['give rise to', '短语', '引起；导致', '中频', ['正式表达 cause'], ['rise/arise/raise 易混'], ['Pollution gives rise to many health problems.|||污染引发了许多健康问题。']],
+  ['in addition', '短语', '此外', '高频', ['句首连接补充信息'], ['besides/furthermore 同义'], ['In addition, students should exercise regularly.|||此外，学生应该定期锻炼。']],
+  ['in case', '短语', '以防；万一', '高频', ['引导目的或条件状语从句'], ['区别 in that case'], ['Take an umbrella in case it rains.|||带把伞，以防下雨。']],
+  ['in charge of', '短语', '负责', '高频', ['人 be in charge of 事'], ['charge 搭配辨析常考'], ['She is in charge of the English club.|||她负责英语社团。']],
+  ['make a difference', '短语', '有影响；起作用', '高频', ['make a difference to'], ['环保/志愿主题常用'], ['Small actions can make a big difference.|||小小的行动也能产生巨大的影响。']],
+  ['make full use of', '短语', '充分利用', '高频', ['后接时间/资源/机会'], ['同 take advantage of'], ['We should make full use of our time.|||我们应该充分利用时间。']],
+  ['on behalf of', '短语', '代表', '中频', ['应用文开头常用'], ['正式表达'], ['On behalf of our class, I welcome you.|||我代表全班欢迎你。']],
+  ['put forward', '短语', '提出', '中频', ['put forward a suggestion/plan'], ['更正式'], ['A new plan was put forward.|||一项新计划被提了出来。']],
+  ['refer to', '短语', '提到；查阅', '高频', ['refer to a dictionary'], ['一词多义常考'], ['The word refers to a useful method.|||这个词指的是一种有用的方法。']],
+  ['set up', '短语', '建立；设立', '高频', ['set up a club/company'], ['同 establish/found'], ['They set up a club to help others.|||他们成立了一个俱乐部来帮助他人。']],
+  ['take measures to', '短语', '采取措施做', '高频', ['后接动词原形'], ['同 take steps/action to'], ['We should take measures to protect the environment.|||我们应该采取措施保护环境。']],
 ];
 
 /* ============================
@@ -7533,9 +7533,9 @@ const builtInDownloads = [
       ['as a result','短语','结果；因此','高频',['常放句首或句中作结果状语'],['as a result of 后接名词'],['He worked hard. As a result, he passed.|||他worked硬的作为一个结果他通过。']],
       ['be absorbed in','短语','专心于','高频',['表示专注状态'],['同义 be buried in/concentrate on'],['She is absorbed in studying.|||她是absorbed在studying。']],
       ['be concerned about','短语','担心；关心','高频',['about 表担心对象'],['as far as...concerned'],['Parents are concerned about safety.|||Parents是concerned关于安全。']],
-      ['break down','短语','出故障；崩溃','高频',['机器坏了；情绪崩溃'],['break up/out/through 区分'],['The car broke down.|||这个汽车打破向下。']],
+      ['break down','短语','出故障；崩溃','高频',['机器坏了；情绪崩溃'],['break up/out/through 区分'],['The car broke down.|||汽车抛锚了。']],
       ['carry out','短语','执行；开展','高频',['carry out a plan/survey'],['常用于活动、调查'],['A survey was carried out.|||一个调查是携带出。']],
-      ['come up with','短语','提出；想出','高频',['提出想法/办法'],['同 think of/put forward'],['He came up with a good idea.|||他来上与一个好想法。']],
+      ['come up with','短语','提出；想出','高频',['提出想法/办法'],['同 think of/put forward'],['He came up with a good idea.|||他想出了一个好主意。']],
       ['contribute to','短语','有助于；导致','高频',['to 是介词'],['make contributions to'],['Reading contributes to writing.|||阅读contributes到写。']],
       ['deal with','短语','处理；涉及','高频',['how to deal with'],['deal with 与 do with 区别'],['We must deal with stress.|||我们必须deal与压力。']],
       ['due to','短语','由于','高频',['后接名词/doing'],['because of/owing to 同义'],['The match was canceled due to rain.|||这个match是canceleddue到雨。']],
@@ -7543,12 +7543,12 @@ const builtInDownloads = [
       ['get along with','短语','与...相处','高频',['get along well with sb'],['作文人际关系常用'],['She gets along well with classmates.|||她得到沿着well与classmates。']],
       ['give rise to','短语','引起；导致','中频',['正式表达 cause'],['rise/arise/raise 易混'],['Pollution gives rise to health problems.|||Pollution给rise到健康problems。']],
       ['in addition','短语','此外','高频',['句首连接补充信息'],['besides/furthermore 同义'],['In addition, exercise regularly.|||在additionexerciseregularly。']],
-      ['in case','短语','以防；万一','高频',['引导目的或条件状语从句'],['区别 in that case'],['Take an umbrella in case it rains.|||拿一个umbrella在案例它rains。']],
+      ['in case','短语','以防；万一','高频',['引导目的或条件状语从句'],['区别 in that case'],['Take an umbrella in case it rains.|||带把伞，以防下雨。']],
       ['in charge of','短语','负责','高频',['人 be in charge of 事'],['charge 搭配辨析常考'],['She is in charge of the club.|||她是在charge的这个club。']],
       ['make a difference','短语','有影响；起作用','高频',['make a difference to'],['环保/志愿主题常用'],['Small actions make a big difference.|||小actions做一个大的difference。']],
       ['make full use of','短语','充分利用','高频',['后接时间/资源/机会'],['同 take advantage of'],['We should make full use of time.|||我们应该做满的用途的时间。']],
-      ['on behalf of','短语','代表','中频',['应用文开头常用'],['正式表达'],['On behalf of our class, I welcome you.|||在behalf的我们的课堂我welcome你。']],
-      ['put forward','短语','提出','中频',['put forward a suggestion/plan'],['更正式'],['A new plan was put forward.|||一个新计划是放向前。']],
+      ['on behalf of','短语','代表','中频',['应用文开头常用'],['正式表达'],['On behalf of our class, I welcome you.|||我代表全班欢迎你。']],
+      ['put forward','短语','提出','中频',['put forward a suggestion/plan'],['更正式'],['A new plan was put forward.|||一项新计划被提了出来。']],
       ['refer to','短语','提到；查阅','高频',['refer to a dictionary'],['一词多义常考'],['The word refers to a method.|||这个词refers到一个方法。']],
     ]
   },
@@ -7931,6 +7931,199 @@ function findWordFamily(term, items) {
   return related.slice(0, 15); // 最多显示15个关联词
 }
 
+/* ============================
+   联网关联词检查：导入新单词时自动联网检查词族关系
+   ============================ */
+
+const WORD_FAMILY_CACHE_KEY = 'gaokao_word_family_cache';
+
+// 加载本地缓存的AI关联词数据
+function loadWordFamilyCache() {
+  try { return JSON.parse(localStorage.getItem(WORD_FAMILY_CACHE_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+// 保存AI关联词数据到本地
+function saveWordFamilyCache(cache) {
+  try { localStorage.setItem(WORD_FAMILY_CACHE_KEY, JSON.stringify(cache)); }
+  catch {}
+}
+
+// 获取某个单词的AI缓存关联词
+function getCachedFamily(word) {
+  const cache = loadWordFamilyCache();
+  return cache[word.toLowerCase()] || [];
+}
+
+// === 易混词AI缓存 ===
+const CONFUSING_CACHE_KEY = 'gaokao_confusing_cache';
+
+function loadConfusingCache() {
+  try { return JSON.parse(localStorage.getItem(CONFUSING_CACHE_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveConfusingCache(cache) {
+  try { localStorage.setItem(CONFUSING_CACHE_KEY, JSON.stringify(cache)); }
+  catch {}
+}
+
+function getCachedConfusing(word) {
+  const cache = loadConfusingCache();
+  return cache[word.toLowerCase()] || [];
+}
+
+// 使用AI大模型检查词族关系和易混词
+async function checkWordFamilyWithAI(word, candidateWords, aiConfig) {
+  if (!aiConfig.endpoint || !aiConfig.model || !aiConfig.apiKey) return null;
+  if (!candidateWords.length) return { related: [], confusing: [] };
+
+  const prompt = `你是英语词汇学专家。请分析单词"${word}"与以下词库中单词的关系。
+
+词库候选词（最多30个）：${candidateWords.slice(0, 30).join(', ')}
+
+请分别找出两类词：
+
+1. 同源词（词根变形）：同一个词根的不同形式变化
+   - 词性变化：success(n.) → successful(adj.) → successfully(adv.) → succeed(v.)
+   - 派生变化：create(v.) → creation(n.) → creative(adj.) → creativity(n.)
+   注意：仅仅拼写相似但词源不同的不算同源词（如 rely 和 relax 无关）
+
+2. 易混词：拼写相似但含义完全不同的词
+   - 如 affect(影响) vs effect(效果)
+   - 如 adapt(适应) vs adopt(收养)
+   - 如 accept(接受) vs except(除了)
+
+只返回JSON格式：
+{"related": ["同源词1", "同源词2"], "confusing": ["易混词1", "易混词2"]}
+没有则返回空数组：{"related": [], "confusing": []}`;
+
+  const resp = await fetch(aiConfig.endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${aiConfig.apiKey}` },
+    body: JSON.stringify({
+      model: aiConfig.model,
+      temperature: 0.1,
+      messages: [
+        { role: 'system', content: '只返回JSON，不要其他文字' },
+        { role: 'user', content: prompt }
+      ]
+    })
+  });
+  if (!resp.ok) throw new Error(`AI请求失败：${resp.status}`);
+  const data = await resp.json();
+  const json = extractJsonObject(data.choices?.[0]?.message?.content || '');
+  return { related: json.related || [], confusing: json.confusing || [] };
+}
+
+// 使用免费词典API补充词族信息（不需要API Key）
+// 通过获取单词的词源和定义，辅助判断词族关系
+async function checkWordFamilyWithDictApi(word) {
+  try {
+    const resp = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.toLowerCase())}`);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    if (!Array.isArray(data) || !data.length) return null;
+    const entry = data[0];
+    // 提取词源信息（如果有）
+    const origin = entry.origin || '';
+    // 提取所有词性
+    const meanings = entry.meanings || [];
+    const posList = meanings.map(m => m.partOfSpeech).join(', ');
+    // 提取定义
+    const definitions = meanings.flatMap(m => (m.definitions || []).slice(0, 2).map(d => d.definition));
+    return { origin, posList, definitions, word: entry.word };
+  } catch { return null; }
+}
+
+// 批量联网检查词族关系
+// newItems: 新导入的单词列表
+// allItems: 词库中所有单词
+// aiConfig: AI配置
+// onProgress: 进度回调 (current, total, word, found)
+async function autoTagWordFamily(newItems, allItems, aiConfig, onProgress) {
+  const cache = loadWordFamilyCache();
+  const confusingCache = loadConfusingCache();
+  const hasAi = aiConfig.endpoint && aiConfig.model && aiConfig.apiKey;
+  let totalChecked = 0;
+  let totalFound = 0;
+  let totalConfusing = 0;
+  const total = newItems.length;
+
+  for (const item of newItems) {
+    const word = item.term.toLowerCase().trim();
+    if (!word || word.length < 2) { totalChecked++; continue; }
+
+    // 如果已有缓存，跳过
+    if (cache[word]) { totalChecked++; continue; }
+
+    // 获取候选词：词库中所有其他单词（排除自身）
+    const candidates = allItems
+      .filter(i => i.term.toLowerCase() !== word)
+      .map(i => i.term.toLowerCase())
+      .filter((v, idx, arr) => arr.indexOf(v) === idx) // 去重
+      .slice(0, 100); // 限制候选词数量
+
+    let aiRelated = [];
+    let aiConfusing = [];
+
+    if (hasAi) {
+      // 使用AI检查词族和易混词
+      try {
+        const aiResult = await checkWordFamilyWithAI(word, candidates, aiConfig);
+        // 只保留词库中存在的词
+        aiRelated = (aiResult.related || [])
+          .map(w => w.toLowerCase().trim())
+          .filter(w => candidates.includes(w));
+        aiConfusing = (aiResult.confusing || [])
+          .map(w => w.toLowerCase().trim())
+          .filter(w => candidates.includes(w));
+      } catch (e) {
+        // AI失败，使用本地算法
+        aiRelated = findWordFamily(item.term, allItems).map(i => i.term.toLowerCase());
+      }
+    } else {
+      // 没有AI配置，使用本地算法 + 词典API补充
+      const localFamily = findWordFamily(item.term, allItems).map(i => i.term.toLowerCase());
+      aiRelated = localFamily;
+      // 本地易混词检查
+      aiConfusing = findConfusingWords(item.term, allItems).map(i => i.term.toLowerCase());
+
+      // 尝试用词典API获取额外信息（不阻塞，仅补充）
+      try {
+        const dictInfo = await checkWordFamilyWithDictApi(word);
+        if (dictInfo && dictInfo.origin) {
+          // 如果有词源信息，尝试从词源中提取可能的词根
+          // 这部分仅作为补充，不覆盖本地算法结果
+        }
+      } catch {}
+    }
+
+    if (aiRelated.length > 0) {
+      cache[word] = aiRelated;
+      totalFound++;
+    } else {
+      // 标记为已检查（空数组），避免重复检查
+      cache[word] = [];
+    }
+
+    // 存储易混词缓存
+    if (aiConfusing.length > 0) {
+      confusingCache[word] = aiConfusing;
+      totalConfusing++;
+    } else {
+      confusingCache[word] = [];
+    }
+
+    totalChecked++;
+    if (onProgress) onProgress(totalChecked, total, word, aiRelated.length + aiConfusing.length);
+  }
+
+  saveWordFamilyCache(cache);
+  saveConfusingCache(confusingCache);
+  return { totalChecked, totalFound, totalConfusing, cache };
+}
+
 // 易混词数据：拼写相似但含义完全不同的词对
 const confusingWordsData = [
   { word: 'rely', confuses: ['relax'], note: 'rely 依赖 vs relax 放松' },
@@ -8033,12 +8226,29 @@ const confusingWordsData = [
 // 查找易混词：返回与给定单词拼写相似但含义不同的词
 function findConfusingWords(term, items) {
   const key = term.toLowerCase().trim();
+  const result = [];
+  const seen = new Set();
+  // 1. 从静态易混词数据中查找
   const entry = confusingWordsData.find(e => e.word === key);
-  if (!entry) return [];
-  // 只返回词库中存在的易混词
-  return entry.confuses
-    .map(w => items.find(i => i.term.toLowerCase() === w.toLowerCase()))
-    .filter(Boolean);
+  if (entry) {
+    entry.confuses.forEach(w => {
+      const item = items.find(i => i.term.toLowerCase() === w.toLowerCase());
+      if (item && !seen.has(item.term.toLowerCase())) {
+        result.push(item);
+        seen.add(item.term.toLowerCase());
+      }
+    });
+  }
+  // 2. 从AI联网检查缓存中查找（补充静态数据未覆盖的）
+  const aiConfusing = getCachedConfusing(key);
+  aiConfusing.forEach(w => {
+    const item = items.find(i => i.term.toLowerCase() === w.toLowerCase());
+    if (item && !seen.has(item.term.toLowerCase())) {
+      result.push(item);
+      seen.add(item.term.toLowerCase());
+    }
+  });
+  return result;
 }
 
 // 获取易混词的说明
@@ -8046,6 +8256,12 @@ function getConfusingNote(term) {
   const key = term.toLowerCase().trim();
   const entry = confusingWordsData.find(e => e.word === key);
   return entry ? entry.note : '';
+}
+
+// 判断某个易混词是否来自AI联网标注
+function isAiConfusingWord(term, confusingTerm) {
+  const aiConfusing = getCachedConfusing(term.toLowerCase().trim());
+  return aiConfusing.includes(confusingTerm.toLowerCase().trim());
 }
 
 // 支持多种编号格式：1. / 1) / (1) / [1] / ① / 1、/ 第1 / 1.
@@ -8524,6 +8740,8 @@ function App() {
   });
   const updateCheckDone = useRef(false);
   const shuffleSeedRef = useRef(Date.now()); // 洗牌种子：仅词库变化时更新，进度变化时保持稳定
+  const extendScrollRef = useRef(0); // 拓展页滚动位置记忆
+  const prevSectionRef = useRef('learn'); // 记录上一个页面，用于滚动位置恢复
   const [search, setSearch] = useState('');
   const [libraryLimit, setLibraryLimit] = useState(60); // 词库页懒加载条数
   const [importText, setImportText] = useState('');
@@ -8551,6 +8769,9 @@ function App() {
   const [sessionTotal, setSessionTotal] = useState(0);
   // AI配置折叠
   const [showAiBox, setShowAiBox] = useState(false);
+  // 联网关联词检查状态
+  const [familyCheckStatus, setFamilyCheckStatus] = useState('');
+  const [familyChecking, setFamilyChecking] = useState(false);
   // 反馈弹窗（仅APP使用，网页版不渲染）
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
@@ -9000,6 +9221,22 @@ function App() {
     setLibraryLimit(60);
   }, [search, posFilter, typeFilter, libraryActiveBook.id]);
 
+  // 拓展页滚动位置记忆：离开时保存，回来时恢复
+  useEffect(() => {
+    const prevSection = prevSectionRef.current;
+    // 离开拓展页时保存滚动位置
+    if (prevSection === 'extend' && section !== 'extend') {
+      extendScrollRef.current = window.scrollY;
+    }
+    // 回到拓展页时恢复滚动位置
+    if (prevSection !== 'extend' && section === 'extend') {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, extendScrollRef.current);
+      });
+    }
+    prevSectionRef.current = section;
+  }, [section]);
+
   function nextCard() {
     // 把当前单词加入"已看"记录
     if (learnItems.length > 0) {
@@ -9312,6 +9549,68 @@ function App() {
     } else {
       updateBooks(books.map(b => b.id === targetId ? { ...b, items: [...b.items, ...items] } : b));
       setImportStatus(`导入成功：${items.length} 条 → ${targetBook.name}`);
+    }
+    // 导入后自动联网检查关联词（异步，不阻塞）
+    autoCheckFamilyAfterImport(items);
+  }
+
+  // 导入后自动联网检查关联词
+  async function autoCheckFamilyAfterImport(newItems) {
+    const hasAi = aiConfig.endpoint && aiConfig.model && aiConfig.apiKey;
+    if (!hasAi) {
+      // 没有AI配置，使用本地算法快速标注
+      setFamilyCheckStatus('正在使用本地算法检查关联词和易混词...');
+      setFamilyChecking(true);
+      try {
+        const allItems = books.flatMap(b => b.items);
+        const result = await autoTagWordFamily(newItems, allItems, aiConfig, (cur, total, word, found) => {
+          setFamilyCheckStatus(`本地检查中 ${cur}/${total}：${word} ${found > 0 ? `✓${found}个` : ''}`);
+        });
+        setFamilyCheckStatus(`检查完成：${result.totalChecked}个单词，发现${result.totalFound}个有关联词、${result.totalConfusing}个有易混词`);
+      } catch (e) {
+        setFamilyCheckStatus('关联词检查失败：' + e.message);
+      } finally {
+        setFamilyChecking(false);
+      }
+      return;
+    }
+
+    // 有AI配置，使用AI联网检查
+    setFamilyChecking(true);
+    setFamilyCheckStatus('正在联网检查关联词和易混词（AI）...');
+    try {
+      const allItems = books.flatMap(b => b.items);
+      const result = await autoTagWordFamily(newItems, allItems, aiConfig, (cur, total, word, found) => {
+        setFamilyCheckStatus(`联网检查中 ${cur}/${total}：${word} ${found > 0 ? `✓${found}个` : ''}`);
+      });
+      setFamilyCheckStatus(`联网检查完成：${result.totalChecked}个单词，发现${result.totalFound}个有关联词、${result.totalConfusing}个有易混词`);
+    } catch (e) {
+      setFamilyCheckStatus('联网检查失败：' + e.message);
+    } finally {
+      setFamilyChecking(false);
+    }
+  }
+
+  // 手动触发：检查当前词库所有单词的关联词
+  async function runManualFamilyCheck() {
+    if (familyChecking) return;
+    const hasAi = aiConfig.endpoint && aiConfig.model && aiConfig.apiKey;
+    const itemsToCheck = libraryActiveBook.items;
+    if (!itemsToCheck.length) { setFamilyCheckStatus('当前词库没有单词'); return; }
+
+    setFamilyChecking(true);
+    setFamilyCheckStatus(hasAi ? '正在联网检查关联词和易混词（AI）...' : '正在检查关联词和易混词（本地算法）...');
+    try {
+      const allItems = books.flatMap(b => b.items);
+      const result = await autoTagWordFamily(itemsToCheck, allItems, aiConfig, (cur, total, word, found) => {
+        setFamilyCheckStatus(`检查中 ${cur}/${total}：${word} ${found > 0 ? `✓${found}个` : ''}`);
+      });
+      const method = hasAi ? '联网(AI)' : '本地算法';
+      setFamilyCheckStatus(`${method}检查完成：${result.totalChecked}个单词，发现${result.totalFound}个有关联词、${result.totalConfusing}个有易混词${!hasAi ? '（配置AI可获更精准结果）' : ''}`);
+    } catch (e) {
+      setFamilyCheckStatus('检查失败：' + e.message);
+    } finally {
+      setFamilyChecking(false);
     }
   }
 
@@ -10124,17 +10423,35 @@ function App() {
                 {/* 关联词族 */}
                 {(() => {
                   const family = findWordFamily(detailItem.term, allWords);
-                  if (family.length === 0) return null;
+                  // 获取AI联网检查的关联词缓存
+                  const aiFamilyTerms = getCachedFamily(detailItem.term);
+                  const aiFamilyItems = aiFamilyTerms
+                    .map(w => allWords.find(i => i.term.toLowerCase() === w.toLowerCase()))
+                    .filter(Boolean);
+                  // AI发现但本地算法未发现的关联词
+                  const localTerms = new Set(family.map(i => i.term.toLowerCase()));
+                  const aiOnlyItems = aiFamilyItems.filter(i => !localTerms.has(i.term.toLowerCase()));
+                  // 合并：本地算法结果 + AI额外发现
+                  const allFamily = [...family, ...aiOnlyItems];
+                  const hasAiTag = aiFamilyTerms.length > 0;
+                  if (allFamily.length === 0 && !hasAiTag) return null;
                   return (
                     <div className="detailSection detailWordFamily">
-                      <p className="detailSectionTitle">🔗 关联词族</p>
+                      <p className="detailSectionTitle">
+                        🔗 关联词族
+                        {hasAiTag && <span className="aiBadge">AI联网标注</span>}
+                      </p>
                       <div className="detailTagWrap">
-                        {family.map(item => (
-                          <button key={item.id} className="detailFamilyBtn"
-                            onClick={() => setDetailItem(item)}>
-                            {item.term} <small>{item.pos}</small>
-                          </button>
-                        ))}
+                        {allFamily.map(item => {
+                          const isAiTagged = aiFamilyTerms.includes(item.term.toLowerCase());
+                          return (
+                            <button key={item.id} className={`detailFamilyBtn${isAiTagged ? ' aiTagged' : ''}`}
+                              onClick={() => setDetailItem(item)}>
+                              {item.term} <small>{item.pos}</small>
+                              {isAiTagged && !localTerms.has(item.term.toLowerCase()) && <span className="aiDot">AI</span>}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -10145,17 +10462,26 @@ function App() {
                   const confusing = findConfusingWords(detailItem.term, allWords);
                   if (confusing.length === 0) return null;
                   const note = getConfusingNote(detailItem.term);
+                  const aiConfusingTerms = getCachedConfusing(detailItem.term);
+                  const hasAiConfusing = aiConfusingTerms.length > 0;
                   return (
                     <div className="detailSection detailConfusing">
-                      <p className="detailSectionTitle">⚠️ 易混词辨析</p>
+                      <p className="detailSectionTitle">
+                        ⚠️ 易混词辨析
+                        {hasAiConfusing && <span className="aiBadge">AI联网标注</span>}
+                      </p>
                       {note && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 8px' }}>{note}</p>}
                       <div className="detailTagWrap">
-                        {confusing.map(item => (
-                          <button key={item.id} className="detailConfusingBtn"
-                            onClick={() => setDetailItem(item)}>
-                            {item.term} <small>{item.pos}</small>
-                          </button>
-                        ))}
+                        {confusing.map(item => {
+                          const isAiTagged = isAiConfusingWord(detailItem.term, item.term);
+                          return (
+                            <button key={item.id} className={`detailConfusingBtn${isAiTagged ? ' aiTagged' : ''}`}
+                              onClick={() => setDetailItem(item)}>
+                              {item.term} <small>{item.pos}</small>
+                              {isAiTagged && <span className="aiDot">AI</span>}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -10274,6 +10600,7 @@ function App() {
             // 从 confusingWordsData 中提取唯一的词对（只取每对的第一方向）
             const seenPairs = new Set();
             const pairs = [];
+            // 1. 静态易混词数据
             for (const entry of confusingWordsData) {
               for (const target of entry.confuses) {
                 const pairKey = [entry.word, target].sort().join('-');
@@ -10289,6 +10616,29 @@ function App() {
                     note: entry.note,
                     item1: wordItem,
                     item2: targetItem,
+                    isAi: false,
+                  });
+                }
+              }
+            }
+            // 2. AI联网检测的易混词
+            const aiConfusingCache = loadConfusingCache();
+            for (const [word, targets] of Object.entries(aiConfusingCache)) {
+              if (!Array.isArray(targets) || !targets.length) continue;
+              for (const target of targets) {
+                const pairKey = [word, target].sort().join('-');
+                if (seenPairs.has(pairKey)) continue;
+                seenPairs.add(pairKey);
+                const wordItem = allWords.find(w => w.term.toLowerCase() === word);
+                const targetItem = allWords.find(w => w.term.toLowerCase() === target);
+                if (wordItem && targetItem) {
+                  pairs.push({
+                    word1: word,
+                    word2: target,
+                    note: 'AI联网标注的易混词',
+                    item1: wordItem,
+                    item2: targetItem,
+                    isAi: true,
                   });
                 }
               }
@@ -10315,6 +10665,7 @@ function App() {
                       >
                         {pair.word2}
                       </span>
+                      {pair.isAi && <span className="aiBadge" style={{marginLeft: 4}}>AI</span>}
                     </div>
                     <p className="confusingNote">{pair.note}</p>
                   </article>
@@ -10656,6 +11007,30 @@ function App() {
               <button className="primary" onClick={() => addImportedItems(parseImportedText(importText, 'word'))}>导入到词库</button>
             </div>
             <p className="status">{importStatus || '粘贴或上传文件后点击导入，未选词库时自动创建新词库'}</p>
+
+            {/* 联网关联词检查 */}
+            <div className="familyCheckBox">
+              <div className="familyCheckHeader">
+                <span className="familyCheckTitle">🔗 联网关联词检查</span>
+                <button
+                  className={`familyCheckBtn${familyChecking ? ' checking' : ''}`}
+                  onClick={runManualFamilyCheck}
+                  disabled={familyChecking}
+                >
+                  {familyChecking ? '检查中...' : '检查当前词库关联词'}
+                </button>
+              </div>
+              <p className="familyCheckDesc">
+                导入新单词时自动联网检查词族关系。配置AI大模型可获得更精准的关联词标注。
+                {' '}
+                {aiConfig.endpoint && aiConfig.apiKey
+                  ? <span style={{color: 'var(--primary)'}}>✓ AI已配置</span>
+                  : <span style={{color: 'var(--text-tertiary)'}}>未配置AI，使用本地算法</span>}
+              </p>
+              {familyCheckStatus && (
+                <p className={`familyCheckStatus${familyChecking ? ' active' : ''}`}>{familyCheckStatus}</p>
+              )}
+            </div>
           </div>
         </section>
       )}

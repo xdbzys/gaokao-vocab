@@ -797,6 +797,108 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   margin-left: 2px;
 }
 
+/* ===== 联网关联词检查 ===== */
+.familyCheckBox {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--primary-bg);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+.familyCheckHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.familyCheckTitle {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+.familyCheckBtn {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.familyCheckBtn:hover { background: var(--primary-dark); }
+.familyCheckBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+.familyCheckBtn.checking {
+  background: var(--border);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.familyCheckDesc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.familyCheckStatus {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  border: 1px solid var(--border-light);
+}
+.familyCheckStatus.active {
+  color: var(--primary-dark);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* AI标注的关联词样式 */
+.aiBadge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-size: 0.7em;
+  font-weight: 600;
+  vertical-align: middle;
+}
+.detailFamilyBtn.aiTagged {
+  background: #6366f112;
+  border-color: #6366f140;
+  color: #4f46e5;
+}
+.detailFamilyBtn.aiTagged small {
+  color: #6366f1;
+}
+.aiDot {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: #6366f1;
+  color: white;
+  font-size: 0.7em;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* AI标注的易混词按钮 */
+.detailConfusingBtn.aiTagged {
+  background: #6366f112;
+  border-color: #6366f140;
+  color: #4f46e5;
+}
+.detailConfusingBtn.aiTagged small {
+  color: #6366f1;
+}
+
 /* ===== 首页快捷按钮优化 ===== */
 .quickToggleRow {
   display: grid;
