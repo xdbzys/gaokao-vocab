@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.18.1';
-const APP_VERSION_CODE = 162;
+const APP_VERSION = '2.21.0';
+const APP_VERSION_CODE = 167;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -7445,18 +7445,6 @@ const builtInBooks = [
     items: makeAllItems(seedWordsSuper, 'word')
   },
   {
-    id: 'gaokao-synonym',
-    name: '同义词对比(232组)',
-    editable: false,
-    items: makeAllItems(seedSynonyms, 'phrase')
-  },
-  {
-    id: 'gaokao-antonym',
-    name: '反义词对比(70组)',
-    editable: false,
-    items: makeAllItems(seedAntonyms, 'phrase')
-  },
-  {
     id: 'gaokao-conclusion',
     name: '逻辑结论词(13个)',
     editable: false,
@@ -8408,6 +8396,19 @@ function App() {
   useMemo(() => {
     try { if (!localStorage.getItem('gaokao_first_use')) localStorage.setItem('gaokao_first_use', getToday()); } catch {}
   }, []);
+
+  // 启动时自动清理已删除词库的引用（如旧的 synonym/antonym 词库）
+  useEffect(() => {
+    const validIds = books.map(b => b.id);
+    const removed = ['gaokao-synonym', 'gaokao-antonym'];
+    let needClean = false;
+    // 清理背诵页
+    const newStudy = studyBookIds.filter(id => validIds.includes(id) || id === 'wrong-words' || !removed.includes(id));
+    if (newStudy.length !== studyBookIds.length) { setStudyBookIds(newStudy); try { localStorage.setItem('gaokao_study_books', newStudy.join(',')); } catch {} needClean = true; }
+    // 清理词库页
+    const newLibrary = libraryBookIds.filter(id => validIds.includes(id) || !removed.includes(id));
+    if (newLibrary.length !== libraryBookIds.length) { setLibraryBookIds(newLibrary); try { localStorage.setItem('gaokao_library_books', newLibrary.join(',')); } catch {} needClean = true; }
+  }, []); // 仅启动时执行一次
 
   // APP启动时自动检查更新（仅原生APP且仅首次）
   useEffect(() => {
@@ -9462,10 +9463,10 @@ function App() {
     }
   }
 
-  // 对比记忆模块（问题3：基于全量词汇）
-  const compareBook = compareTab === 'synonym' ? books.find(b => b.id === 'gaokao-synonym') :
-                     compareTab === 'antonym' ? books.find(b => b.id === 'gaokao-antonym') :
-                     books.find(b => b.id === 'gaokao-confused') || books[0];
+  // 对比记忆模块（基于 seed 数据，不依赖词库列表）
+  const compareBook = compareTab === 'synonym' ? { items: makeAllItems(seedSynonyms, 'phrase') } :
+                     compareTab === 'antonym' ? { items: makeAllItems(seedAntonyms, 'phrase') } :
+                     { items: (books.find(b => b.id === 'gaokao-confused') || { items: [] }).items };
   const compareItems = compareBook ? compareBook.items : [];
   const compareCurrent = compareItems[compareIndex % Math.max(compareItems.length, 1)];
 
@@ -9524,7 +9525,7 @@ function App() {
                       <span className="bookCount">({wrongWords.length})</span>
                     </label>
                   )}
-                  {books.filter(b => !b.id.includes('synonym') && !b.id.includes('antonym') && !b.id.includes('confused') && !b.id.includes('dual-sentiment') && !hiddenBookIds.includes(b.id)).map(b => (
+                  {books.filter(b => !b.id.includes('confused') && !b.id.includes('dual-sentiment') && !hiddenBookIds.includes(b.id)).map(b => (
                     <label key={b.id} className="bookPickerItem">
                       <input type="checkbox" checked={studyBookIds.includes(b.id)} onChange={() => switchStudyBook(b.id)} />
                       <span>{b.name}</span>
@@ -10712,7 +10713,7 @@ function App() {
 
           {/* 每个词库的重置进度 */}
           <div className="resetSection">
-            <h3>词库进度管理</h3>
+            <h3>词库管理</h3>
             <button className="smallBtn" style={{ marginBottom: 12, background: '#f59e0b', color: '#fff' }} onClick={() => {
               const result = cleanDeletedBookRefs();
               const msgs = [];
@@ -10721,41 +10722,56 @@ function App() {
               alert(msgs.length > 0 ? `已清理不存在的词库引用：\n${msgs.join('\n')}` : '没有发现不存在的词库引用');
             }}>清理不存在的词库</button>
             <div className="list">
-              {books.filter(b => b.id !== 'mastered-words' && b.id !== 'wrong-words').map(b => {
+              {books.filter(b => b.id !== 'mastered-words' && b.id !== 'wrong-words' && !hiddenBookIds.includes(b.id)).map(b => {
                 const mastered = b.items.filter(i => progress[termKey(i.term)] === 'mastered').length;
                 const isBuiltIn = builtInBooks.some(bb => bb.id === b.id);
-                const isHidden = hiddenBookIds.includes(b.id);
                 return (
-                  <div key={b.id} className="listItem" style={isHidden ? { opacity: 0.5 } : {}}>
+                  <div key={b.id} className="listItem">
                     <div>
-                      <h3>{b.name} {isHidden && <small style={{ color: '#999' }}>(已隐藏)</small>}</h3>
+                      <h3>{b.name}</h3>
                       <small>已掌握 {mastered}/{b.items.length}</small>
                     </div>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       <button className="smallBtn dangerGhost" onClick={() => resetBookProgress(b.id)}>重置</button>
-                      {isBuiltIn ? (
-                        <button className="smallBtn" style={{ background: isHidden ? '#2563eb' : '#6b7280', color: '#fff' }} onClick={() => {
-                          const next = isHidden
-                            ? hiddenBookIds.filter(x => x !== b.id)
-                            : [...hiddenBookIds, b.id];
+                      <button className="smallBtn dangerGhost" style={{ color: '#dc2626' }} onClick={() => {
+                        if (!confirm(`确定删除词库「${b.name}」？\n${isBuiltIn ? '内置词库删除后可在下方恢复。' : '自定义词库删除后无法恢复。'}`)) return;
+                        if (isBuiltIn) {
+                          // 内置词库：加入隐藏列表
+                          const next = [...hiddenBookIds, b.id];
                           setHiddenBookIds(next);
                           localStorage.setItem('gaokao_hidden_books', JSON.stringify(next));
-                        }}>{isHidden ? '显示' : '隐藏'}</button>
-                      ) : (
-                        <button className="smallBtn dangerGhost" style={{ color: '#dc2626' }} onClick={() => {
-                          if (!confirm(`确定删除词库「${b.name}」及其进度？`)) return;
+                          setStudyBookIds(prev => { const n = prev.filter(x => x !== b.id); localStorage.setItem('gaokao_study_books', n.join(',')); return n; });
+                          setLibraryBookIds(prev => { const n = prev.filter(x => x !== b.id); localStorage.setItem('gaokao_library_books', n.join(',')); return n; });
+                        } else {
+                          // 自定义词库：彻底删除
                           const remaining = books.filter(x => x.id !== b.id);
                           setBooks(remaining);
                           updateBooks(remaining);
                           setStudyBookIds(prev => { const n = prev.filter(x => x !== b.id); localStorage.setItem('gaokao_study_books', n.join(',')); return n; });
                           setLibraryBookIds(prev => { const n = prev.filter(x => x !== b.id); localStorage.setItem('gaokao_library_books', n.join(',')); return n; });
-                        }}>删除词库</button>
-                      )}
+                        }
+                      }}>删除词库</button>
                     </div>
                   </div>
                 );
               })}
             </div>
+            {/* 已删除的内置词库恢复区 */}
+            {books.filter(b => b.id !== 'mastered-words' && b.id !== 'wrong-words' && hiddenBookIds.includes(b.id)).length > 0 && (
+              <div style={{ marginTop: 16, padding: 12, borderRadius: 10, background: 'var(--border-light)' }}>
+                <h4 style={{ margin: '0 0 8px', color: 'var(--text-secondary)', fontSize: 14 }}>已删除的词库（可恢复）</h4>
+                {books.filter(b => hiddenBookIds.includes(b.id)).map(b => (
+                  <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
+                    <span style={{ color: 'var(--text-tertiary)' }}>{b.name}</span>
+                    <button className="smallBtn" style={{ background: '#2563eb', color: '#fff' }} onClick={() => {
+                      const next = hiddenBookIds.filter(x => x !== b.id);
+                      setHiddenBookIds(next);
+                      localStorage.setItem('gaokao_hidden_books', JSON.stringify(next));
+                    }}>恢复</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* 开屏公告弹窗 */}

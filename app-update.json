@@ -1,7 +1,7 @@
 {
-  "version": "2.20.1",
-  "versionCode": 166,
-  "changelog": "v2.20.1 搜索优化：最接近的单词排在第一位\n\n【优化】\n- 搜索结果按相关度排序，最匹配的单词显示在最前面\n- 英文搜索：完全匹配 > 前缀匹配 > 单词边界包含 > 普通包含\n- 中文搜索：自动去除词性前缀，按义项拆分匹配\n- 义项完全匹配 > 义项前缀匹配 > 释义包含\n- 单词越短越优先（更精确匹配）\n- 错词本搜索同样支持相关度排序",
-  "devNotes": "implement relevance scoring for search: exact term match (1000) > prefix (900) > word-boundary contains (850) > regular contains (800) > exact Chinese definition match (750) > definition prefix (580) > meaning contains (500) > other (100); add boundary regex for word-boundary detection; strip POS prefixes and split meanings by delimiters for accurate Chinese matching",
+  "version": "2.21.0",
+  "versionCode": 167,
+  "changelog": "v2.21.0 修复版本号、删除无效词库、添加词库删除功能\n\n【修复】\n- 修复APP内显示版本号不正确的问题（之前显示2.18.1）\n- APP内版本号与下载提示版本号现已一致\n\n【删除】\n- 删除「同义词对比」和「反义词对比」词库（非实际词汇词库）\n- 扩展页对比记忆功能保留不受影响\n\n【新增】\n- 词库管理：所有词库均可删除（包括内置词库）\n- 内置词库删除后可在「已删除的词库」区域一键恢复\n- 自定义词库删除后彻底移除\n- 启动时自动清理已删除词库的引用",
+  "devNotes": "fix APP_VERSION from 2.18.1 to 2.21.0; remove gaokao-synonym and gaokao-antonym from builtInBooks; update compareBook to use seed data directly; replace hide/show with delete/restore for all books; add auto-cleanup effect for removed book IDs on mount",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
