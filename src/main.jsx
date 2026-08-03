@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.26.0';
-const APP_VERSION_CODE = 173;
+const APP_VERSION = '2.27.0';
+const APP_VERSION_CODE = 174;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -7769,7 +7769,10 @@ function getStem(word) {
   // 不包含 'ation'/'ition'，因为 'tion' 已能处理，避免 creation→cre 过度剥离
   // y→i 的还原在剥离其他后缀时处理（如 happiness→happi→happy）
   // 'sis' 用于 analysis→analy, 'yze'/'yse' 用于 analyze→anal
-  const suffixes = ['fully', 'tion', 'sion', 'ment', 'ness', 'ity', 'ly', 'ful', 'less', 'ous', 'ive', 'able', 'ible', 'al', 'ic', 'er', 'or', 'ist', 'ize', 'ise', 'en', 'ed', 'ing', 'sis', 'yze', 'yse'];
+  // 新增: 'th'(growth/warmth/width), 'dom'(freedom/wisdom), 'ance/ence'(distance/existence),
+  // 'ant/ent'(distant/student), 'ure'(mixture/failure), 'age'(storage/marriage),
+  // 'ship'(friendship/relationship), 'hood'(childhood/neighborhood)
+  const suffixes = ['fully', 'ation', 'ition', 'tion', 'sion', 'ment', 'ness', 'ity', 'ance', 'ence', 'ant', 'ent', 'ure', 'age', 'ship', 'hood', 'dom', 'th', 'ly', 'ful', 'less', 'ous', 'ive', 'able', 'ible', 'al', 'ic', 'er', 'or', 'ist', 'ize', 'ise', 'en', 'ed', 'ing', 'sis', 'yze', 'yse'];
   let result = word.toLowerCase();
   let prev = '';
   let rounds = 0;
@@ -7816,6 +7819,53 @@ function isConsonantAltMatch(a, b) {
     else return false;
   }
   return diffs === 1;
+}
+
+// 判断字符是否为元音（含y，用于派生词匹配）
+function isVowelLike(ch) {
+  return 'aeiouy'.includes(ch);
+}
+
+// 检查两个词干是否仅因元音变化或元音+辅音交替而不同
+// 如 choose/choice (oo→oi + s↔c), strong/strength (o→e)
+function isDerivationMatch(a, b) {
+  if (!a || !b || a.length < 4 || b.length < 4 || a.length !== b.length || a === b) return false;
+  const prefix = commonPrefixLen(a, b);
+  if (prefix < 3) return false;
+  let vowelDiffs = 0;
+  let consonantAltDiffs = 0;
+  for (let i = prefix; i < a.length; i++) {
+    if (a[i] === b[i]) continue;
+    const aVowel = isVowelLike(a[i]);
+    const bVowel = isVowelLike(b[i]);
+    if (aVowel && bVowel) {
+      vowelDiffs++;
+    } else {
+      const pair = [a[i], b[i]].sort().join('');
+      if (CONSONANT_ALT_PAIRS.has(pair)) consonantAltDiffs++;
+      else return false;
+    }
+  }
+  return (vowelDiffs + consonantAltDiffs) <= 2 && vowelDiffs <= 1;
+}
+
+// 检查两个词干是否仅因减少一个元音而不同
+// 如 deep/dep (ee→e), study/stud (y脱落)
+function isVowelReductionMatch(a, b) {
+  if (!a || !b) return false;
+  const longer = a.length >= b.length ? a : b;
+  const shorter = a.length >= b.length ? b : a;
+  if (longer.length !== shorter.length + 1) return false;
+  if (shorter.length < 3) return false;
+  const prefix = commonPrefixLen(longer, shorter);
+  if (prefix < 3) return false;
+  // 多出的字符必须是元音
+  if (!isVowelLike(longer[prefix])) return false;
+  // 其余部分必须完全匹配
+  for (let i = prefix; i < shorter.length; i++) {
+    if (longer[i + 1] !== shorter[i]) return false;
+  }
+  return true;
 }
 
 // 查找词族：与给定单词同一词根的不同形式
@@ -7888,7 +7938,23 @@ function findWordFamily(term, items) {
       (otherNoE && isConsonantAltMatch(termStem, otherNoE)) ||
       (termNoE && otherNoE && isConsonantAltMatch(termNoE, otherNoE));
 
-    const isRelated = prefixMatch || stemExactMatch || stemPrefixMatch || eDropMatch || shortStemEqual || consonantAltMatch;
+    // 规则6：元音变化+辅音交替混合匹配
+    // 如 choose/choice (oo→oi + s↔c), strong/strength (o→e), marry/marriage (y→i)
+    const derivationMatch =
+      isDerivationMatch(termStem, otherStem) ||
+      (termNoE && isDerivationMatch(termNoE, otherStem)) ||
+      (otherNoE && isDerivationMatch(termStem, otherNoE)) ||
+      (termNoE && otherNoE && isDerivationMatch(termNoE, otherNoE));
+
+    // 规则7：元音增减匹配（同一词根的元音脱落或增加）
+    // 如 deep/dep(th), study/stud(ent), party/part
+    const vowelReductionMatch =
+      isVowelReductionMatch(termStem, otherStem) ||
+      (termNoE && isVowelReductionMatch(termNoE, otherStem)) ||
+      (otherNoE && isVowelReductionMatch(termStem, otherNoE)) ||
+      (termNoE && otherNoE && isVowelReductionMatch(termNoE, otherNoE));
+
+    const isRelated = prefixMatch || stemExactMatch || stemPrefixMatch || eDropMatch || shortStemEqual || consonantAltMatch || derivationMatch || vowelReductionMatch;
 
     if (isRelated) {
       related.push(item);
@@ -10181,6 +10247,49 @@ function App() {
                       )}
                     </>
                   )}
+                  {/* 闪卡模式或答对时：显示关联词族和易混词 */}
+                  {(isFlashcard || isCorrect) && (() => {
+                    const family = findWordFamily(displayCurrent.term, allWords);
+                    const aiFamilyTerms = getCachedFamily(displayCurrent.term);
+                    const aiFamilyItems = aiFamilyTerms
+                      .map(w => allWords.find(i => i.term.toLowerCase() === w.toLowerCase()))
+                      .filter(Boolean);
+                    const localTerms = new Set(family.map(i => i.term.toLowerCase()));
+                    const aiOnlyItems = aiFamilyItems.filter(i => !localTerms.has(i.term.toLowerCase()));
+                    const allFamily = [...family, ...aiOnlyItems];
+                    const confusing = findConfusingWords(displayCurrent.term, allWords);
+                    if (allFamily.length === 0 && confusing.length === 0) return null;
+                    return (
+                      <>
+                        {allFamily.length > 0 && (
+                          <div className="points" style={{ marginTop: 8 }}>
+                            <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>🔗 关联词族</p>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                              {allFamily.map(item => (
+                                <span key={item.id} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }}
+                                  onClick={() => { setDetailItem(item); }}>
+                                  {item.term} <small style={{ opacity: 0.7 }}>{item.pos}</small>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {confusing.length > 0 && (
+                          <div className="points" style={{ marginTop: 8 }}>
+                            <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>⚠️ 易混词</p>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                              {confusing.map(item => (
+                                <span key={item.id} style={{ display: 'inline-block', background: 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }}
+                                  onClick={() => { setDetailItem(item); }}>
+                                  {item.term} <small style={{ opacity: 0.7 }}>{item.pos}</small>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                   {(showAll || isFlashcard) && displayCurrent.examples.length > 0 && (
                     <div className="examples">{displayCurrent.examples.map((e, i) => {
                       const [en, zh] = e.split('|||');

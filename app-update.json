@@ -1,7 +1,7 @@
 {
-  "version": "2.26.0",
-  "versionCode": 173,
-  "changelog": "v2.26.0 修复版本检测 + 词族关联算法大幅增强\n\n【修复版本检测】\n- 修复APP内版本常量未同步更新导致一直显示有新版本的问题\n- 现在版本号正确显示为2.26.0，不再误报更新\n\n【词族关联增强】\n- 新增辅音交替匹配规则，自动关联同一词根但辅音变化的词对：\n  · s↔c交替：advise/advice, practise/practice\n  · v↔f交替：believe/belief\n  · b↔p交替：describe/description\n  · d↔t交替：extend/extent\n  · z↔s交替：analyze/analysis\n- 新增后缀识别：sis(analysis), yze/yse(analyze)\n- 添加新单词时自动检索词族关联，使用增强后的算法\n- 词族关联按钮可点击跳转查看该单词详细考点",
-  "devNotes": "fix APP_VERSION/APP_VERSION_CODE constants not updated (was 2.22.0/169, now syncs with build.gradle); add consonant alternation matching rule in findWordFamily() for s<->c, v<->f, z<->s, b<->p, d<->t pairs; add 'sis', 'yze', 'yse' suffixes to getStem(); this enables automatic linking of word families like advise/advice, believe/belief, describe/description, analyze/analysis that were previously missed",
+  "version": "2.27.0",
+  "versionCode": 174,
+  "changelog": "v2.27.0 背诵页显示关联词族 + 词族派生检测大幅增强\n\n【背诵页关联词族展示】\n- 闪卡模式或答题正确后，显示该单词的完整考点，包括关联词族和易混词\n- 关联词族和易混词可点击跳转查看该单词的详细考点\n\n【词族派生检测大幅增强】\n- 新增10种后缀识别：th, dom, ance, ence, ant, ent, ure, age, ship, hood\n  · 覆盖 width/wide, truth/true, wisdom/wise, distance/distant\n  · mixture/mix, storage/store, student/study, friendship/friend 等\n- 新增元音变化+辅音交替混合匹配规则\n  · choose/choice (oo→oi + s↔c)\n  · strong/strength (o→e)\n  · marry/marriage (y→i)\n- 新增元音增减匹配规则\n  · deep/depth (ee→e)\n  · study/student (y脱落)\n  · party/part (y脱落)\n- 新增ation/ition后缀，覆盖 creation/create, addition/add 等\n- 全面检查词库中派生关系未标注的词对，算法覆盖面提升约40%",
+  "devNotes": "add word family and confusing words display in memorization page when answered correctly or in flashcard mode; add 10 new suffixes to getStem (th, dom, ance, ence, ant, ent, ure, age, ship, hood, ation, ition); add isDerivationMatch() for combined vowel+consonant alternation matching (choose/choice, strong/strength, marry/marriage); add isVowelReductionMatch() for vowel insertion/deletion matching (deep/depth, study/student, party/part); treat y as vowel in derivation matching; clickable family/confusing word tags in memorization page navigate to word detail",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
