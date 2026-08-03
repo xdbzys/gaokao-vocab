@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.27.0';
-const APP_VERSION_CODE = 174;
+const APP_VERSION = '2.28.0';
+const APP_VERSION_CODE = 175;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -10441,198 +10441,6 @@ function App() {
               加载更多（剩余 {filteredItems.length - libraryLimit} 个）
             </button>
           )}
-          {/* 词条详情弹窗 */}
-          {detailItem && (() => {
-            const enrichment = getWordEnrichment(detailItem.term);
-            return (
-            <div className="modal" onClick={() => setDetailItem(null)}>
-              <div className="modalContent" onClick={e => e.stopPropagation()}>
-                <div className="modalHeader">
-                  <h2>{detailItem.term}</h2>
-                  {detailItem.phonetic && <p className="phoneticText">{detailItem.phonetic}</p>}
-                  <button className="closeBtn" onClick={() => setDetailItem(null)}>✕</button>
-                </div>
-                <div className="detailMetaRow">
-                  {detailItem.pos && <span className="detailPosTag" style={{ color: posColor(detailItem.pos), background: posColor(detailItem.pos) + '18' }}>{detailItem.pos}</span>}
-                  {detailItem.frequency && <span className="detailFreqTag" style={{ color: freqColor(detailItem.frequency) }}>{detailItem.frequency}</span>}
-                  {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag">✓ 已掌握</span>}
-                </div>
-                <h3 className="detailMeaning">{detailItem.meaning}</h3>
-
-                {/* 考点提示 */}
-                {detailItem.corePoints && detailItem.corePoints.length > 0 && (
-                  <div className="detailSection detailExamPoints">
-                    <p className="detailSectionTitle">🎯 核心考点</p>
-                    {detailItem.corePoints.map((p, i) => <p key={i} className="detailPointItem">{p}</p>)}
-                  </div>
-                )}
-
-                {/* 增强数据：考点 */}
-                {enrichment && enrichment.examPoints.length > 0 && (
-                  <div className="detailSection detailExamPoints">
-                    <p className="detailSectionTitle">📝 常考要点</p>
-                    {enrichment.examPoints.map((p, i) => <p key={i} className="detailPointItem">{p}</p>)}
-                  </div>
-                )}
-
-                {/* 知识点 */}
-                {detailItem.allPoints && detailItem.allPoints.length > 0 && (
-                  <div className="detailSection">
-                    <p className="detailSectionTitle">💡 知识点</p>
-                    <div className="points">
-                      {detailItem.allPoints.map((p, i) => <p key={i}>• {p}</p>)}
-                    </div>
-                  </div>
-                )}
-
-                {/* 词组搭配 */}
-                {enrichment && enrichment.collocations.length > 0 && (
-                  <div className="detailSection detailCollocations">
-                    <p className="detailSectionTitle">🔗 词组搭配</p>
-                    {enrichment.collocations.map((c, i) => <p key={i} className="detailCollocationItem" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(c), settings.speakRate)}>{c}</p>)}
-                  </div>
-                )}
-
-                {/* 单词变形 */}
-                {enrichment && Object.keys(enrichment.wordForms).length > 0 && (
-                  <div className="detailSection detailWordForms">
-                    <p className="detailSectionTitle">🔄 单词变形</p>
-                    <div className="detailFormGrid">
-                      {enrichment.wordForms.noun && <div className="detailFormItem"><span className="detailFormLabel">名词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.noun, settings.speakRate)}>{enrichment.wordForms.noun}</span></div>}
-                      {enrichment.wordForms.adjective && <div className="detailFormItem"><span className="detailFormLabel">形容词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.adjective, settings.speakRate)}>{enrichment.wordForms.adjective}</span></div>}
-                      {enrichment.wordForms.adverb && <div className="detailFormItem"><span className="detailFormLabel">副词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.adverb, settings.speakRate)}>{enrichment.wordForms.adverb}</span></div>}
-                      {enrichment.wordForms.pastTense && <div className="detailFormItem"><span className="detailFormLabel">过去式</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.pastTense, settings.speakRate)}>{enrichment.wordForms.pastTense}</span></div>}
-                      {enrichment.wordForms.pastParticiple && <div className="detailFormItem"><span className="detailFormLabel">过去分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.pastParticiple, settings.speakRate)}>{enrichment.wordForms.pastParticiple}</span></div>}
-                      {enrichment.wordForms.presentParticiple && <div className="detailFormItem"><span className="detailFormLabel">现在分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.presentParticiple, settings.speakRate)}>{enrichment.wordForms.presentParticiple}</span></div>}
-                    </div>
-                  </div>
-                )}
-
-                {/* 派生词 */}
-                {enrichment && enrichment.derivatives.length > 0 && (
-                  <div className="detailSection detailDerivatives">
-                    <p className="detailSectionTitle">🌿 派生词</p>
-                    <div className="detailTagWrap">
-                      {enrichment.derivatives.map((d, i) => {
-                        const derivWord = d.split(' ')[0];
-                        return <span key={i} className="detailDerivTag" style={{ cursor: 'pointer' }} onClick={() => speak(derivWord, settings.speakRate)}>{d}</span>;
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* 近义词 / 同义词 */}
-                {enrichment && enrichment.synonyms.length > 0 && (
-                  <div className="detailSection detailSynonyms">
-                    <p className="detailSectionTitle">📌 近义词</p>
-                    <div className="detailTagWrap">
-                      {enrichment.synonyms.map((s, i) => <span key={i} className="detailSynonymTag" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(s), settings.speakRate)}>{s}</span>)}
-                    </div>
-                  </div>
-                )}
-
-                {/* 反义词 */}
-                {enrichment && enrichment.antonyms.length > 0 && (
-                  <div className="detailSection detailAntonyms">
-                    <p className="detailSectionTitle">⚡ 反义词</p>
-                    <div className="detailTagWrap">
-                      {enrichment.antonyms.map((a, i) => <span key={i} className="detailAntonymTag" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(a), settings.speakRate)}>{a}</span>)}
-                    </div>
-                  </div>
-                )}
-
-                {/* 例句 */}
-                {detailItem.examples && detailItem.examples.length > 0 && (
-                  <div className="detailSection">
-                    <p className="detailSectionTitle">💬 例句</p>
-                    <div className="examples">{detailItem.examples.map((e, i) => {
-                      const [en, zh] = e.split('|||');
-                      return (
-                        <div key={i} className="examplePair">
-                          <p className="exampleEn">{en}</p>
-                          {zh && <p className="exampleZh">{zh}</p>}
-                        </div>
-                      );
-                    })}</div>
-                  </div>
-                )}
-
-                {/* 关联词族 */}
-                {(() => {
-                  const family = findWordFamily(detailItem.term, allWords);
-                  // 获取AI联网检查的关联词缓存
-                  const aiFamilyTerms = getCachedFamily(detailItem.term);
-                  const aiFamilyItems = aiFamilyTerms
-                    .map(w => allWords.find(i => i.term.toLowerCase() === w.toLowerCase()))
-                    .filter(Boolean);
-                  // AI发现但本地算法未发现的关联词
-                  const localTerms = new Set(family.map(i => i.term.toLowerCase()));
-                  const aiOnlyItems = aiFamilyItems.filter(i => !localTerms.has(i.term.toLowerCase()));
-                  // 合并：本地算法结果 + AI额外发现
-                  const allFamily = [...family, ...aiOnlyItems];
-                  const hasAiTag = aiFamilyTerms.length > 0;
-                  if (allFamily.length === 0 && !hasAiTag) return null;
-                  return (
-                    <div className="detailSection detailWordFamily">
-                      <p className="detailSectionTitle">
-                        🔗 关联词族
-                        {hasAiTag && <span className="aiBadge">AI联网标注</span>}
-                      </p>
-                      <div className="detailTagWrap">
-                        {allFamily.map(item => {
-                          const isAiTagged = aiFamilyTerms.includes(item.term.toLowerCase());
-                          return (
-                            <button key={item.id} className={`detailFamilyBtn${isAiTagged ? ' aiTagged' : ''}`}
-                              onClick={() => setDetailItem(item)}>
-                              {item.term} <small>{item.pos}</small>
-                              {isAiTagged && !localTerms.has(item.term.toLowerCase()) && <span className="aiDot">AI</span>}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* 易混词（拼写相似但含义不同） */}
-                {(() => {
-                  const confusing = findConfusingWords(detailItem.term, allWords);
-                  if (confusing.length === 0) return null;
-                  const note = getConfusingNote(detailItem.term);
-                  const aiConfusingTerms = getCachedConfusing(detailItem.term);
-                  const hasAiConfusing = aiConfusingTerms.length > 0;
-                  return (
-                    <div className="detailSection detailConfusing">
-                      <p className="detailSectionTitle">
-                        ⚠️ 易混词辨析
-                        {hasAiConfusing && <span className="aiBadge">AI联网标注</span>}
-                      </p>
-                      {note && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 8px' }}>{note}</p>}
-                      <div className="detailTagWrap">
-                        {confusing.map(item => {
-                          const isAiTagged = isAiConfusingWord(detailItem.term, item.term);
-                          return (
-                            <button key={item.id} className={`detailConfusingBtn${isAiTagged ? ' aiTagged' : ''}`}
-                              onClick={() => setDetailItem(item)}>
-                              {item.term} <small>{item.pos}</small>
-                              {isAiTagged && <span className="aiDot">AI</span>}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })()}
-                <div className="modalActions">
-                  <button onClick={() => speak(detailItem.term, settings.speakRate)}>🔊 发音</button>
-                  <button className="masterBtn" onClick={() => { toggleProgress(detailItem); setDetailItem({...detailItem}); }}>
-                    {progress[termKey(detailItem.term)] === 'mastered' ? '取消掌握' : '标记掌握'}
-                  </button>
-                </div>
-              </div>
-            </div>
-            );
-          })()}
         </section>
       )}
 
@@ -11581,6 +11389,200 @@ function App() {
           </button>
         </div>
       )}
+
+
+          {/* 词条详情弹窗 */}
+          {detailItem && (() => {
+            const enrichment = getWordEnrichment(detailItem.term);
+            return (
+            <div className="modal" onClick={() => setDetailItem(null)}>
+              <div className="modalContent" onClick={e => e.stopPropagation()}>
+                <div className="modalHeader">
+                  <h2>{detailItem.term}</h2>
+                  {detailItem.phonetic && <p className="phoneticText">{detailItem.phonetic}</p>}
+                  <button className="closeBtn" onClick={() => setDetailItem(null)}>✕</button>
+                </div>
+                <div className="detailMetaRow">
+                  {detailItem.pos && <span className="detailPosTag" style={{ color: posColor(detailItem.pos), background: posColor(detailItem.pos) + '18' }}>{detailItem.pos}</span>}
+                  {detailItem.frequency && <span className="detailFreqTag" style={{ color: freqColor(detailItem.frequency) }}>{detailItem.frequency}</span>}
+                  {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag">✓ 已掌握</span>}
+                </div>
+                <h3 className="detailMeaning">{detailItem.meaning}</h3>
+
+                {/* 考点提示 */}
+                {detailItem.corePoints && detailItem.corePoints.length > 0 && (
+                  <div className="detailSection detailExamPoints">
+                    <p className="detailSectionTitle">🎯 核心考点</p>
+                    {detailItem.corePoints.map((p, i) => <p key={i} className="detailPointItem">{p}</p>)}
+                  </div>
+                )}
+
+                {/* 增强数据：考点 */}
+                {enrichment && enrichment.examPoints.length > 0 && (
+                  <div className="detailSection detailExamPoints">
+                    <p className="detailSectionTitle">📝 常考要点</p>
+                    {enrichment.examPoints.map((p, i) => <p key={i} className="detailPointItem">{p}</p>)}
+                  </div>
+                )}
+
+                {/* 知识点 */}
+                {detailItem.allPoints && detailItem.allPoints.length > 0 && (
+                  <div className="detailSection">
+                    <p className="detailSectionTitle">💡 知识点</p>
+                    <div className="points">
+                      {detailItem.allPoints.map((p, i) => <p key={i}>• {p}</p>)}
+                    </div>
+                  </div>
+                )}
+
+                {/* 词组搭配 */}
+                {enrichment && enrichment.collocations.length > 0 && (
+                  <div className="detailSection detailCollocations">
+                    <p className="detailSectionTitle">🔗 词组搭配</p>
+                    {enrichment.collocations.map((c, i) => <p key={i} className="detailCollocationItem" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(c), settings.speakRate)}>{c}</p>)}
+                  </div>
+                )}
+
+                {/* 单词变形 */}
+                {enrichment && Object.keys(enrichment.wordForms).length > 0 && (
+                  <div className="detailSection detailWordForms">
+                    <p className="detailSectionTitle">🔄 单词变形</p>
+                    <div className="detailFormGrid">
+                      {enrichment.wordForms.noun && <div className="detailFormItem"><span className="detailFormLabel">名词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.noun, settings.speakRate)}>{enrichment.wordForms.noun}</span></div>}
+                      {enrichment.wordForms.adjective && <div className="detailFormItem"><span className="detailFormLabel">形容词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.adjective, settings.speakRate)}>{enrichment.wordForms.adjective}</span></div>}
+                      {enrichment.wordForms.adverb && <div className="detailFormItem"><span className="detailFormLabel">副词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.adverb, settings.speakRate)}>{enrichment.wordForms.adverb}</span></div>}
+                      {enrichment.wordForms.pastTense && <div className="detailFormItem"><span className="detailFormLabel">过去式</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.pastTense, settings.speakRate)}>{enrichment.wordForms.pastTense}</span></div>}
+                      {enrichment.wordForms.pastParticiple && <div className="detailFormItem"><span className="detailFormLabel">过去分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.pastParticiple, settings.speakRate)}>{enrichment.wordForms.pastParticiple}</span></div>}
+                      {enrichment.wordForms.presentParticiple && <div className="detailFormItem"><span className="detailFormLabel">现在分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.presentParticiple, settings.speakRate)}>{enrichment.wordForms.presentParticiple}</span></div>}
+                    </div>
+                  </div>
+                )}
+
+                {/* 派生词 */}
+                {enrichment && enrichment.derivatives.length > 0 && (
+                  <div className="detailSection detailDerivatives">
+                    <p className="detailSectionTitle">🌿 派生词</p>
+                    <div className="detailTagWrap">
+                      {enrichment.derivatives.map((d, i) => {
+                        const derivWord = d.split(' ')[0];
+                        return <span key={i} className="detailDerivTag" style={{ cursor: 'pointer' }} onClick={() => speak(derivWord, settings.speakRate)}>{d}</span>;
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 近义词 / 同义词 */}
+                {enrichment && enrichment.synonyms.length > 0 && (
+                  <div className="detailSection detailSynonyms">
+                    <p className="detailSectionTitle">📌 近义词</p>
+                    <div className="detailTagWrap">
+                      {enrichment.synonyms.map((s, i) => <span key={i} className="detailSynonymTag" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(s), settings.speakRate)}>{s}</span>)}
+                    </div>
+                  </div>
+                )}
+
+                {/* 反义词 */}
+                {enrichment && enrichment.antonyms.length > 0 && (
+                  <div className="detailSection detailAntonyms">
+                    <p className="detailSectionTitle">⚡ 反义词</p>
+                    <div className="detailTagWrap">
+                      {enrichment.antonyms.map((a, i) => <span key={i} className="detailAntonymTag" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(a), settings.speakRate)}>{a}</span>)}
+                    </div>
+                  </div>
+                )}
+
+                {/* 例句 */}
+                {detailItem.examples && detailItem.examples.length > 0 && (
+                  <div className="detailSection">
+                    <p className="detailSectionTitle">💬 例句</p>
+                    <div className="examples">{detailItem.examples.map((e, i) => {
+                      const [en, zh] = e.split('|||');
+                      return (
+                        <div key={i} className="examplePair">
+                          <p className="exampleEn">{en}</p>
+                          {zh && <p className="exampleZh">{zh}</p>}
+                        </div>
+                      );
+                    })}</div>
+                  </div>
+                )}
+
+                {/* 关联词族 */}
+                {(() => {
+                  const family = findWordFamily(detailItem.term, allWords);
+                  // 获取AI联网检查的关联词缓存
+                  const aiFamilyTerms = getCachedFamily(detailItem.term);
+                  const aiFamilyItems = aiFamilyTerms
+                    .map(w => allWords.find(i => i.term.toLowerCase() === w.toLowerCase()))
+                    .filter(Boolean);
+                  // AI发现但本地算法未发现的关联词
+                  const localTerms = new Set(family.map(i => i.term.toLowerCase()));
+                  const aiOnlyItems = aiFamilyItems.filter(i => !localTerms.has(i.term.toLowerCase()));
+                  // 合并：本地算法结果 + AI额外发现
+                  const allFamily = [...family, ...aiOnlyItems];
+                  const hasAiTag = aiFamilyTerms.length > 0;
+                  if (allFamily.length === 0 && !hasAiTag) return null;
+                  return (
+                    <div className="detailSection detailWordFamily">
+                      <p className="detailSectionTitle">
+                        🔗 关联词族
+                        {hasAiTag && <span className="aiBadge">AI联网标注</span>}
+                      </p>
+                      <div className="detailTagWrap">
+                        {allFamily.map(item => {
+                          const isAiTagged = aiFamilyTerms.includes(item.term.toLowerCase());
+                          return (
+                            <button key={item.id} className={`detailFamilyBtn${isAiTagged ? ' aiTagged' : ''}`}
+                              onClick={() => setDetailItem(item)}>
+                              {item.term} <small>{item.pos}</small>
+                              {isAiTagged && !localTerms.has(item.term.toLowerCase()) && <span className="aiDot">AI</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 易混词（拼写相似但含义不同） */}
+                {(() => {
+                  const confusing = findConfusingWords(detailItem.term, allWords);
+                  if (confusing.length === 0) return null;
+                  const note = getConfusingNote(detailItem.term);
+                  const aiConfusingTerms = getCachedConfusing(detailItem.term);
+                  const hasAiConfusing = aiConfusingTerms.length > 0;
+                  return (
+                    <div className="detailSection detailConfusing">
+                      <p className="detailSectionTitle">
+                        ⚠️ 易混词辨析
+                        {hasAiConfusing && <span className="aiBadge">AI联网标注</span>}
+                      </p>
+                      {note && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 8px' }}>{note}</p>}
+                      <div className="detailTagWrap">
+                        {confusing.map(item => {
+                          const isAiTagged = isAiConfusingWord(detailItem.term, item.term);
+                          return (
+                            <button key={item.id} className={`detailConfusingBtn${isAiTagged ? ' aiTagged' : ''}`}
+                              onClick={() => setDetailItem(item)}>
+                              {item.term} <small>{item.pos}</small>
+                              {isAiTagged && <span className="aiDot">AI</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+                <div className="modalActions">
+                  <button onClick={() => speak(detailItem.term, settings.speakRate)}>🔊 发音</button>
+                  <button className="masterBtn" onClick={() => { toggleProgress(detailItem); setDetailItem({...detailItem}); }}>
+                    {progress[termKey(detailItem.term)] === 'mastered' ? '取消掌握' : '标记掌握'}
+                  </button>
+                </div>
+              </div>
+            </div>
+            );
+          })()}
 
       {/* 底部Tab栏（5个） */}
       <nav className="tabbar">
