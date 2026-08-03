@@ -1,7 +1,7 @@
 {
-  "version": "2.28.0",
-  "versionCode": 175,
-  "changelog": "v2.28.0 背诵页关联词跳转 + 高考考点全面扩充\n\n【背诵页关联词跳转】\n- 词条详情弹窗移至全局，背诵页点击关联词/易混词可直接跳转查看详情\n- 不再局限于词库页才能查看单词完整考点\n\n【高考考点全面扩充】\n- 新增49个高考高频动词的详细考点数据（共189个词条）\n- 重点覆盖高考核心语法考点：\n  · to do vs doing 搭配：forget/remember/stop/try/mean/regret/continue等\n  · 只接doing的动词：enjoy/finish/avoid/mind/suggest/admit/deny/risk等\n  · 只接to do的动词：refuse/promise/pretend/happen/seem/offer等\n  · 介词搭配（to为介词）：look forward to/get down to/devote...to/be used to doing\n  · 使役动词：make/let/have sb do vs get sb to do\n  · 虚拟语气：suggest/demand/insist that + (should) do\n  · it句型：It takes sb time to do / It turns out that / I would appreciate it if\n  · 双宾语结构：offer/give/tell sb sth\n  · 情态动词+have done：needn't have done / didn't need to do\n  · wish虚拟语气：wish + 过去时/过去完成时",
-  "devNotes": "move detailItem modal from inside library section to global scope so it renders on all pages including memorization/study page; add 49 high-frequency gaokao verb entries to wordEnrichment.js with examPoints covering to-do/doing patterns, preposition collocations (to as preposition), causative verbs (make/let/have sb do), subjunctive mood (suggest/demand/insist + should do), it patterns (It takes...to do / It turns out that), double object constructions, and modal+have done patterns; total enrichment entries now 189 words",
+  "version": "2.28.1",
+  "versionCode": 176,
+  "changelog": "v2.28.1 背诵页关联词点击跳转优化\n\n【关联词点击行为优化】\n- 派生词、近义词、反义词点击时，如该词在词库中存在则跳转详情并发音\n- 词库中不存在的词保持原有行为（仅发音）\n- 详情弹窗中同样支持点击跳转\n- 词库中存在的关联词以高亮背景区分（蓝/红底），不存在的为灰底",
+  "devNotes": "update derivatives/synonyms/antonyms click behavior in both memorization page and detail modal: check if word exists in allWords, if found setDetailItem and speak, otherwise only speak; use different background colors to visually distinguish in-library vs not-in-library words",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

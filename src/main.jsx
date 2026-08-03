@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.28.0';
-const APP_VERSION_CODE = 175;
+const APP_VERSION = '2.28.1';
+const APP_VERSION_CODE = 176;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -10224,7 +10224,8 @@ function App() {
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                             {enrichment.derivatives.map((d, i) => {
                               const derivWord = d.split(' ')[0];
-                              return <span key={i} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => speak(derivWord, settings.speakRate)}>{d}</span>;
+                              const derivItem = allWords.find(w => w.term.toLowerCase() === derivWord.toLowerCase());
+                              return <span key={i} style={{ display: 'inline-block', background: derivItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (derivItem) { setDetailItem(derivItem); speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
                             })}
                           </div>
                         </div>
@@ -10233,7 +10234,11 @@ function App() {
                         <div className="points" style={{ marginTop: 8 }}>
                           <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>📌 近义词</p>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {enrichment.synonyms.map((s, i) => <span key={i} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => speak(extractEnglish(s), settings.speakRate)}>{s}</span>)}
+                            {enrichment.synonyms.map((s, i) => {
+                              const synWord = extractEnglish(s).split(/\s+/)[0];
+                              const synItem = allWords.find(w => w.term.toLowerCase() === synWord.toLowerCase());
+                              return <span key={i} style={{ display: 'inline-block', background: synItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (synItem) { setDetailItem(synItem); speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
+                            })}
                           </div>
                         </div>
                       )}
@@ -10241,7 +10246,11 @@ function App() {
                         <div className="points" style={{ marginTop: 8 }}>
                           <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>⚡ 反义词</p>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {enrichment.antonyms.map((a, i) => <span key={i} style={{ display: 'inline-block', background: 'var(--danger-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => speak(extractEnglish(a), settings.speakRate)}>{a}</span>)}
+                            {enrichment.antonyms.map((a, i) => {
+                              const antWord = extractEnglish(a).split(/\s+/)[0];
+                              const antItem = allWords.find(w => w.term.toLowerCase() === antWord.toLowerCase());
+                              return <span key={i} style={{ display: 'inline-block', background: antItem ? 'var(--danger-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (antItem) { setDetailItem(antItem); speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}</span>;
+                            })}
                           </div>
                         </div>
                       )}
@@ -11465,7 +11474,8 @@ function App() {
                     <div className="detailTagWrap">
                       {enrichment.derivatives.map((d, i) => {
                         const derivWord = d.split(' ')[0];
-                        return <span key={i} className="detailDerivTag" style={{ cursor: 'pointer' }} onClick={() => speak(derivWord, settings.speakRate)}>{d}</span>;
+                        const derivItem = allWords.find(w => w.term.toLowerCase() === derivWord.toLowerCase());
+                        return <span key={i} className="detailDerivTag" style={{ cursor: 'pointer' }} onClick={() => { if (derivItem) { setDetailItem(derivItem); speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
                       })}
                     </div>
                   </div>
@@ -11476,7 +11486,11 @@ function App() {
                   <div className="detailSection detailSynonyms">
                     <p className="detailSectionTitle">📌 近义词</p>
                     <div className="detailTagWrap">
-                      {enrichment.synonyms.map((s, i) => <span key={i} className="detailSynonymTag" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(s), settings.speakRate)}>{s}</span>)}
+                      {enrichment.synonyms.map((s, i) => {
+                        const synWord = extractEnglish(s).split(/\s+/)[0];
+                        const synItem = allWords.find(w => w.term.toLowerCase() === synWord.toLowerCase());
+                        return <span key={i} className="detailSynonymTag" style={{ cursor: 'pointer' }} onClick={() => { if (synItem) { setDetailItem(synItem); speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
+                      })}
                     </div>
                   </div>
                 )}
@@ -11486,7 +11500,11 @@ function App() {
                   <div className="detailSection detailAntonyms">
                     <p className="detailSectionTitle">⚡ 反义词</p>
                     <div className="detailTagWrap">
-                      {enrichment.antonyms.map((a, i) => <span key={i} className="detailAntonymTag" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(a), settings.speakRate)}>{a}</span>)}
+                      {enrichment.antonyms.map((a, i) => {
+                        const antWord = extractEnglish(a).split(/\s+/)[0];
+                        const antItem = allWords.find(w => w.term.toLowerCase() === antWord.toLowerCase());
+                        return <span key={i} className="detailAntonymTag" style={{ cursor: 'pointer' }} onClick={() => { if (antItem) { setDetailItem(antItem); speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}</span>;
+                      })}
                     </div>
                   </div>
                 )}
