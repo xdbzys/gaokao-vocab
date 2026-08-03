@@ -1,7 +1,7 @@
 {
-  "version": "2.24.0",
-  "versionCode": 171,
-  "changelog": "v2.24.0 例句全面整改 + 拓展页滚动位置记忆\n\n【例句修复】\n- 替换96条占位符例句（frequently/appears in gaokao exams）为真实考点语境例句\n- 重写82条同义词循环定义（Both X and Y mean Y）为同时使用两个词的真实对比例句\n- 重写40条易混词模板例句（Be careful to distinguish）为真实辨析语境例句\n- 修复60条机器翻译错误（褒贬词误译、拼写错误词乱译、易混词无释义）\n- 修复985词汇中模板例句（The interview covered several topics related to...）\n- 修正多处撇号转义、截断句子、缺失翻译等问题\n\n【体验优化】\n- 拓展页跳转其他界面后返回时，保持之前浏览的滚动位置，不再回到顶部",
-  "devNotes": "fix ~280 example sentences across seedWordsExam/seedSynonyms/seedConfused/seedDualSentiment/seedMisspelled/seedPhrases; replace template placeholders with real exam-context sentences; rewrite circular synonym definitions; rewrite confused word template examples; fix machine translation errors in dual sentiment/misspelled/confused sections; fix unescaped apostrophes in data strings; add extendScrollRef + prevSectionRef for extension page scroll position memory",
+  "version": "2.25.0",
+  "versionCode": 172,
+  "changelog": "v2.25.0 易混词功能重构 + 例句质量提升\n\n【易混词功能重构】\n- 删除拓展页的易混词模块，改为在单词详情页直接显示\n- 自动检测拼写相似的单词（如com开头的单词），标注为易混词\n- 易混词必须是词库中存在的单词，可点击跳转查看该单词详细考点\n- 背诵页回答正确或闪卡模式显示译意时，展示该单词所有考点\n- 添加新单词时自动检索是否与其他单词相似，相似则自动添加易混词\n\n【例句质量提升】\n- 修复6条同义词循环定义模板例句（Both X and Y mean Y），替换为真实对比例句\n- 修复多处音标撇号转义问题（granny等单词）\n- 修复mastered-words字符串错误转义导致的构建失败",
+  "devNotes": "restructure confusing words: remove seedConfused module from extension page, add automatic similar word detection using Levenshtein distance in findConfusingWords(), clickable confusing word tags in detail page navigate to that word's details, show all exam points when answered correctly in memorization page or in flashcard mode, auto-detect similar words when adding new words; fix 6 remaining circular synonym template sentences; fix unescaped apostrophes in phonetic notations (granny); fix incorrectly escaped apostrophes in string literals (mastered-words)",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
