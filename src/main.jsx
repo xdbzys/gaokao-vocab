@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.29.0';
-const APP_VERSION_CODE = 177;
+const APP_VERSION = '2.30.0';
+const APP_VERSION_CODE = 178;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -7565,28 +7565,37 @@ const builtInDownloads = [
 const PROGRESS_KEY = 'gaokao_progress';
 const SETTINGS_KEY = 'gaokao_settings';
 const STUDYLOG_KEY = 'gaokao_study_log';
+const STUDY_WORDS_KEY = 'gaokao_study_words_log';
 const DOWNLOAD_KEY = 'gaokao_downloaded';
 const WRONG_KEY = 'gaokao_wrong_words';
 
 function loadProgress() {
   try {
     const raw = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
-    // 兼容旧数据：如果 key 包含 '-' 说明是旧的 item.id 格式，尝试转换为 term-based
-    const hasOldKeys = Object.keys(raw).some(k => k.includes('-'));
+    // 兼容旧数据：旧格式 key 如 "word-0-abandon" 或 "phrase-5-take-off"
+    // 注意：不能简单地用 includes('-') 判断，因为合法 term 也可能含连字符（如 pass-by）
+    // 旧格式特征：以 "word-" 或 "phrase-" 开头，后跟数字，再跟连字符和 term
+    const oldKeyPattern = /^(word|phrase)-\d+-/;
+    const hasOldKeys = Object.keys(raw).some(k => oldKeyPattern.test(k));
     // 检查是否有非小写 key（旧数据大小写敏感迁移）
     const hasMixedCase = Object.keys(raw).some(k => k !== k.toLowerCase());
     if (hasOldKeys || hasMixedCase) {
       const converted = {};
       Object.entries(raw).forEach(([k, v]) => {
         let key = k;
-        if (k.includes('-')) {
-          // 旧格式 key 如 "word-0-abandon"，提取 term（最后一个 '-' 之后的部分）
-          const term = k.split('-').pop();
-          if (term) key = term;
+        const oldMatch = k.match(oldKeyPattern);
+        if (oldMatch) {
+          // 旧格式 key 如 "word-0-abandon"，提取 term（去掉前缀 "word-0-" 部分）
+          key = k.slice(oldMatch[0].length);
         }
         // 统一转为小写，确保大小写不敏感匹配
         key = key.toLowerCase();
-        converted[key] = v;
+        // 如果转换后 key 已存在（如旧数据中 "word-0-pass-by" 和 "pass-by" 同时存在），保留 mastered 状态
+        if (converted[key] !== 'mastered' && v === 'mastered') {
+          converted[key] = v;
+        } else if (!(key in converted)) {
+          converted[key] = v;
+        }
       });
       // 保存转换后的数据
       localStorage.setItem(PROGRESS_KEY, JSON.stringify(converted));
@@ -7643,6 +7652,14 @@ function loadStudyLog() {
 
 function saveStudyLog(log) {
   localStorage.setItem(STUDYLOG_KEY, JSON.stringify(log));
+}
+
+function loadStudyWordsLog() {
+  try { return JSON.parse(localStorage.getItem(STUDY_WORDS_KEY) || '{}'); } catch { return {}; }
+}
+
+function saveStudyWordsLog(log) {
+  localStorage.setItem(STUDY_WORDS_KEY, JSON.stringify(log));
 }
 
 function loadDownloadedIds() {
@@ -8419,17 +8436,28 @@ function stripPosPrefix(text) {
     .trim();
 }
 
-// 获取简短释义（用于背诵页选项），只取常见意思
+// 提取词性标记前缀（如 "n." "vt." "adj." 等）
+function extractPosPrefix(text) {
+  if (!text) return '';
+  const m = String(text).match(/^(n\.|vt\.|vi\.|v\.|adj\.|adv\.|prep\.|pron\.|conj\.|interj\.|det\.|art\.)/);
+  return m ? m[1] : '';
+}
+
+// 获取简短释义（用于背诵页选项），保留词性标记
 function getShortMeaning(text) {
   if (!text) return '';
-  const stripped = stripPosPrefix(text);
-  // 如果去除词性后还是很长，只取第一个主要义项（按中文分号或逗号分隔）
-  if (stripped.length > 12) {
-    // 尝试按中文分号/逗号分隔取第一个义项
-    const first = stripped.split(/[，；;]/)[0].trim();
-    if (first && first.length >= 2) return first;
+  // 按中文分号/逗号分割，取第一个义项（保留词性标记）
+  const segments = String(text).split(/[，；;]/);
+  const firstSeg = segments[0] ? segments[0].trim() : '';
+  // 如果第一个义项很长，去除词性标记只保留中文
+  if (firstSeg.length > 14) {
+    const stripped = stripPosPrefix(firstSeg);
+    if (stripped && stripped.length >= 2) return stripped;
   }
-  return stripped;
+  // 否则保留词性标记（如 "n.塑料"）
+  if (firstSeg && firstSeg.length >= 2) return firstSeg;
+  // 回退：返回去除词性的完整释义
+  return stripPosPrefix(text);
 }
 
 function extractExamples(text) {
@@ -8648,19 +8676,29 @@ function speak(text, rate) {
   if (!text) return;
   const normalized = String(text).trim();
   const r = rate || 0.78;
-  const fallback = () => {
-    if (!('speechSynthesis' in window)) { alert('当前设备不支持发音'); return; }
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(normalized);
-    u.lang = /^[a-zA-Z\s''-]+$/.test(normalized) ? 'en-US' : 'zh-CN';
-    u.rate = r; u.pitch = 1;
-    window.speechSynthesis.speak(u);
+  const isEnglish = /^[a-zA-Z\s''.,!?-]+$/.test(normalized);
+  const synthSpeak = () => {
+    if (!('speechSynthesis' in window)) return false;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(normalized);
+      u.lang = isEnglish ? 'en-US' : 'zh-CN';
+      u.rate = r; u.pitch = 1;
+      window.speechSynthesis.speak(u);
+      return true;
+    } catch { return false; }
   };
-  if (/^[a-zA-Z\s''-]+$/.test(normalized)) {
-    const audio = new Audio(`https://dict.youdao.com/dictvoice?type=2&audio=${encodeURIComponent(normalized)}`);
-    audio.preload = 'auto'; audio.play().catch(fallback); return;
+  // 原生App环境优先使用 speechSynthesis（更稳定），网页版优先使用有道发音
+  if (isNativeApp) {
+    if (synthSpeak()) return;
   }
-  fallback();
+  if (isEnglish) {
+    const audio = new Audio(`https://dict.youdao.com/dictvoice?type=2&audio=${encodeURIComponent(normalized)}`);
+    audio.preload = 'auto';
+    audio.play().catch(() => { synthSpeak(); });
+    return;
+  }
+  if (!synthSpeak()) { /* 静默失败，不打扰用户 */ }
 }
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
@@ -8768,10 +8806,19 @@ const MeIcon = () => (
   </svg>
 );
 
+const ReviewIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10" />
+    <polyline points="1 20 1 14 7 14" />
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+  </svg>
+);
+
 const TABS = [
   { id: 'learn', label: '背诵', icon: LearnIcon },
-  { id: 'wrong', label: '错词本', icon: WrongIcon },
   { id: 'library', label: '词库', icon: LibraryIcon },
+  { id: 'wrong', label: '错词本', icon: WrongIcon },
+  { id: 'review', label: '温习', icon: ReviewIcon },
   { id: 'extend', label: '扩展', icon: ExtendIcon },
   { id: 'import', label: '导入', icon: ImportIcon },
   { id: 'me', label: '我的', icon: MeIcon },
@@ -8846,10 +8893,17 @@ function App() {
   const [progress, setProgress] = useState(loadProgress);
   const [settings, setSettings] = useState(loadSettings);
   const [studyLog, setStudyLog] = useState(loadStudyLog);
+  const [studyWordsLog, setStudyWordsLog] = useState(loadStudyWordsLog);
   const [downloadedIds, setDownloadedIds] = useState(loadDownloadedIds);
   const [wrongWords, setWrongWords] = useState(loadWrongWords);
   // 扩展页面的子tab
   const [extendTab, setExtendTab] = useState('affix');
+  // 温习功能
+  const [reviewDate, setReviewDate] = useState(getToday());
+  const [reviewMode, setReviewMode] = useState('list'); // 'list' or 'practice'
+  const [reviewIndex, setReviewIndex] = useState(0);
+  const [reviewShowBack, setReviewShowBack] = useState(false);
+  const [reviewSelected, setReviewSelected] = useState('');
   const [affixTab, setAffixTab] = useState('prefix');
   const [compareTab, setCompareTab] = useState('synonym');
   const [compareIndex, setCompareIndex] = useState(0);
@@ -8858,6 +8912,26 @@ function App() {
   const [scenePage, setScenePage] = useState(0);
   // 词库详情
   const [detailItem, setDetailItem] = useState(null);
+  // 详情弹窗导航历史栈（点击关联词跳转后，关闭返回上一个而非全部关闭）
+  const [detailHistory, setDetailHistory] = useState([]);
+  // 打开详情弹窗（如果当前已有详情，则将当前详情压入历史栈）
+  function openDetailItem(item) {
+    if (detailItem) {
+      const prevItem = detailItem;
+      setDetailHistory(h => [...h, prevItem]);
+    }
+    setDetailItem(item);
+  }
+  // 关闭详情弹窗（如果有历史记录则返回上一个，否则完全关闭）
+  function closeDetailItem() {
+    if (detailHistory.length > 0) {
+      const prev = detailHistory[detailHistory.length - 1];
+      setDetailHistory(h => h.slice(0, -1));
+      setDetailItem(prev);
+    } else {
+      setDetailItem(null);
+    }
+  }
   // 正确率统计
   const [sessionCorrect, setSessionCorrect] = useState(0);
   const [sessionTotal, setSessionTotal] = useState(0);
@@ -8885,6 +8959,23 @@ function App() {
   // 确保首次使用日期被记录
   useMemo(() => {
     try { if (!localStorage.getItem('gaokao_first_use')) localStorage.setItem('gaokao_first_use', getToday()); } catch {}
+  }, []);
+
+  // 启动时清理过期的温习记录（保留最近90天）
+  useEffect(() => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 90);
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
+    setStudyWordsLog(prev => {
+      const next = {};
+      let changed = false;
+      Object.entries(prev).forEach(([date, words]) => {
+        if (date >= cutoffStr) next[date] = words;
+        else changed = true;
+      });
+      if (changed) saveStudyWordsLog(next);
+      return changed ? next : prev;
+    });
   }, []);
 
   // 启动时自动清理已删除词库的引用（如旧的 synonym/antonym 词库）
@@ -9223,10 +9314,23 @@ function App() {
       const next = { ...prev };
       if (next[key] === 'mastered') delete next[key];
       else next[key] = 'mastered';
-      saveProgress(next);
       return next;
     });
   }
+
+  // 仅标记为已掌握（不切换），用于自动标记掌握功能
+  function markAsMastered(item) {
+    const key = termKey(item.term);
+    setProgress(prev => {
+      if (prev[key] === 'mastered') return prev; // 已掌握则不重复设置
+      return { ...prev, [key]: 'mastered' };
+    });
+  }
+
+  // 自动保存进度到 localStorage
+  useEffect(() => {
+    saveProgress(progress);
+  }, [progress]);
 
   // 问题5：重置某词库进度
   function resetBookProgress(bookId) {
@@ -9235,8 +9339,7 @@ function App() {
     if (!confirm(`确定重置「${book.name}」的背诵进度吗？`)) return;
     setProgress(prev => {
       const next = { ...prev };
-      book.items.forEach(item => { delete next[item.term]; });
-      saveProgress(next);
+      book.items.forEach(item => { delete next[termKey(item.term)]; });
       return next;
     });
   }
@@ -9258,15 +9361,12 @@ function App() {
     }
     // 清理 progress 中不属于任何词库的残留数据
     const allTerms = new Set();
-    books.forEach(b => b.items.forEach(item => allTerms.add(item.term)));
+    books.forEach(b => b.items.forEach(item => allTerms.add(termKey(item.term))));
     setProgress(prev => {
       const next = {};
-      let removed = 0;
       Object.entries(prev).forEach(([term, val]) => {
-        if (allTerms.has(term)) next[term] = val;
-        else removed++;
+        if (allTerms.has(term.toLowerCase())) next[term] = val;
       });
-      if (removed > 0) saveProgress(next);
       return next;
     });
     // 清理错词本中不属于任何词库的残留数据
@@ -9278,14 +9378,25 @@ function App() {
     return { study: beforeStudy - newStudyIds.length, library: beforeLibrary - newLibraryIds.length };
   }
 
-  // 记录今日学习
-  function recordStudy() {
+  // 记录今日学习（同时记录具体学了哪些单词）
+  function recordStudy(item) {
     const today = getToday();
     setStudyLog(prev => {
       const next = { ...prev, [today]: (prev[today] || 0) + 1 };
       saveStudyLog(next);
       return next;
     });
+    // 记录具体学的单词（用于温习功能）
+    if (item && item.term) {
+      setStudyWordsLog(prev => {
+        const dayWords = prev[today] || [];
+        // 去重：同一天同一个单词只记录一次
+        if (dayWords.some(w => termKey(w.term) === termKey(item.term))) return prev;
+        const next = { ...prev, [today]: [...dayWords, { term: item.term, meaning: item.meaning, pos: item.pos, phonetic: item.phonetic, examples: item.examples, corePoints: item.corePoints, allPoints: item.allPoints, source: item.source, frequency: item.frequency }] };
+        saveStudyWordsLog(next);
+        return next;
+      });
+    }
   }
 
   // 使用 ref 确保异步回调中总是调用最新的 nextCard/prevCard
@@ -9304,6 +9415,20 @@ function App() {
     recentSeenRef.current = [];
     recentWrongRef.current = [];
   }, [learnActiveBook.id]);
+
+  // 自动发音：当当前单词变化时自动朗读（仅在背诵页、未答题时）
+  const lastSpokenTermRef = useRef('');
+  useEffect(() => {
+    if (section !== 'learn') return;
+    if (!settings.autoSpeak) return;
+    if (!current || !current.term) return;
+    if (selected || showBack) return; // 答题中或翻面中不朗读
+    const termKey = current.term.toLowerCase();
+    if (lastSpokenTermRef.current === termKey) return; // 同一个词不重复朗读
+    lastSpokenTermRef.current = termKey;
+    const timer = setTimeout(() => speak(current.term, settings.speakRate), 200);
+    return () => clearTimeout(timer);
+  }, [current, selected, showBack, settings.autoSpeak, section]);
 
   // 同步 practiceMode 与 settings.mode（设置页修改模式后生效）
   useEffect(() => {
@@ -9327,6 +9452,14 @@ function App() {
       requestAnimationFrame(() => {
         window.scrollTo(0, extendScrollRef.current);
       });
+    }
+    // 进入温习页时，自动选择最近有学习记录的日期
+    if (prevSection !== 'review' && section === 'review') {
+      const dates = Object.keys(studyWordsLog).filter(d => studyWordsLog[d] && studyWordsLog[d].length > 0).sort().reverse();
+      if (dates.length > 0) {
+        setReviewDate(dates[0]);
+        setReviewIndex(0); setReviewShowBack(false); setReviewSelected('');
+      }
     }
     prevSectionRef.current = section;
   }, [section]);
@@ -9364,13 +9497,6 @@ function App() {
     setShowBack(false); setSelected('');
     lockedCurrent.current = null;
     setForceShowItem(null);
-    // 自动朗读新单词
-    if (settings.autoSpeak && learnItems.length > 0) {
-      const nextWord = learnItems[nextIdx];
-      if (nextWord && nextWord.term) {
-        setTimeout(() => speak(nextWord.term, settings.speakRate), 100);
-      }
-    }
   }
 
   function prevCard() {
@@ -9447,7 +9573,7 @@ function App() {
   // 数据备份：导出所有 localStorage 数据为 JSON 文件
   async function exportData() {
     const keys = [
-      'gaokao_progress', 'gaokao_settings', 'gaokao_study_log', 'gaokao_downloaded',
+      'gaokao_progress', 'gaokao_settings', 'gaokao_study_log', 'gaokao_study_words_log', 'gaokao_downloaded',
       'gaokao_wrong_words', 'customBooks', 'customSpelling', 'aiImportConfig',
       'gaokao_study_books', 'gaokao_library_books', 'gaokao_hide_mastered',
       'gaokao_dismissed_version', 'gaokao_avatar', 'gaokao_first_use'
@@ -9576,10 +9702,10 @@ function App() {
     const isWrongWordBook = currentBookIds.includes('wrong-words');
     if (option === right) {
       setSessionCorrect(co => co + 1);
-      recordStudy();
+      recordStudy(c);
       // 自动标记已掌握（仅非错词本模式，且开关开启且当前未标记）
       if (!isWrongWordBook && settings.autoMaster && progress[termKey(c.term)] !== 'mastered') {
-        toggleProgress(c);
+        markAsMastered(c);
       }
       if (!isWrongWordBook && settings.autoJump) {
         setAutoJumping(true);
@@ -10142,6 +10268,7 @@ function App() {
             </div>
             <div className="progressInfo">
               <span>已掌握 {progressStats.mastered}/{progressStats.total}</span>
+              <span>剩余 {progressStats.remaining}词</span>
               <span>今日 {todayCount}词</span>
               {sessionTotal > 0 && <span>正确率 {accuracy}%</span>}
               <button className="smallBtn" onClick={() => {
@@ -10182,7 +10309,7 @@ function App() {
 
               {/* 闪卡模式 */}
               {practiceMode === 'flashcard' && !showBack && (
-                <button className="primary" onClick={() => { setShowBack(true); recordStudy(); }}>显示释义</button>
+                <button className="primary" onClick={() => { setShowBack(true); recordStudy(displayCurrent); }}>显示释义</button>
               )}
 
               {/* 答题后选项消失，解释内容顶替选项位置 */}
@@ -10198,7 +10325,7 @@ function App() {
                       {selected === (practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning) ? '✅ 回答正确' : `❌ 回答错误（你选了：${selected}）`}
                     </p>
                   )}
-                  <h3>{displayCurrent.term} &middot; {stripPosPrefix(displayCurrent.meaning)}</h3>
+                  <h3>{displayCurrent.term} &middot; {displayCurrent.meaning}</h3>
                   <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>
                   <div className="points">
                     {(showAll ? displayCurrent.allPoints : displayCurrent.corePoints.slice(0, 2)).map(p => <p key={p}>• {p}</p>)}
@@ -10225,7 +10352,7 @@ function App() {
                             {enrichment.derivatives.map((d, i) => {
                               const derivWord = d.split(' ')[0];
                               const derivItem = allWords.find(w => w.term.toLowerCase() === derivWord.toLowerCase());
-                              return <span key={i} style={{ display: 'inline-block', background: derivItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (derivItem) { setDetailItem(derivItem); speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
+                              return <span key={i} style={{ display: 'inline-block', background: derivItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (derivItem) { openDetailItem(derivItem); speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
                             })}
                           </div>
                         </div>
@@ -10237,7 +10364,7 @@ function App() {
                             {enrichment.synonyms.map((s, i) => {
                               const synWord = extractEnglish(s).split(/\s+/)[0];
                               const synItem = allWords.find(w => w.term.toLowerCase() === synWord.toLowerCase());
-                              return <span key={i} style={{ display: 'inline-block', background: synItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (synItem) { setDetailItem(synItem); speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
+                              return <span key={i} style={{ display: 'inline-block', background: synItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (synItem) { openDetailItem(synItem); speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
                             })}
                           </div>
                         </div>
@@ -10249,7 +10376,7 @@ function App() {
                             {enrichment.antonyms.map((a, i) => {
                               const antWord = extractEnglish(a).split(/\s+/)[0];
                               const antItem = allWords.find(w => w.term.toLowerCase() === antWord.toLowerCase());
-                              return <span key={i} style={{ display: 'inline-block', background: antItem ? 'var(--danger-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (antItem) { setDetailItem(antItem); speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}</span>;
+                              return <span key={i} style={{ display: 'inline-block', background: antItem ? 'var(--danger-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (antItem) { openDetailItem(antItem); speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}</span>;
                             })}
                           </div>
                         </div>
@@ -10276,7 +10403,7 @@ function App() {
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                               {allFamily.map(item => (
                                 <span key={item.id} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }}
-                                  onClick={() => { setDetailItem(item); }}>
+                                  onClick={() => { openDetailItem(item); }}>
                                   {item.term} <small style={{ opacity: 0.7 }}>{item.pos}</small>
                                 </span>
                               ))}
@@ -10289,7 +10416,7 @@ function App() {
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                               {confusing.map(item => (
                                 <span key={item.id} style={{ display: 'inline-block', background: 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }}
-                                  onClick={() => { setDetailItem(item); }}>
+                                  onClick={() => { openDetailItem(item); }}>
                                   {item.term} <small style={{ opacity: 0.7 }}>{item.pos}</small>
                                 </span>
                               ))}
@@ -10361,7 +10488,7 @@ function App() {
             return (
             <div className="list">
               {filteredWrong.map(item => (
-                <article key={item.id} className="listItem" onClick={() => setDetailItem(item)}>
+                <article key={item.id} className="listItem" onClick={() => openDetailItem(item)}>
                   <div className="listItemMain">
                     <div className="listItemTitle">
                       <h3 style={{ color: '#ef4444' }}>{item.term}</h3>
@@ -10425,7 +10552,7 @@ function App() {
           {/* 词条列表 */}
           <div className="list">
             {filteredItems.slice(0, libraryLimit).map(item => (
-              <article key={item.id} className="listItem" onClick={() => setDetailItem(item)}>
+              <article key={item.id} className="listItem" onClick={() => openDetailItem(item)}>
                 <div className="listItemMain">
                   <div className="listItemTitle">
                     <h3 style={{ color: wordStatusColor(item, progress, wrongWords) || freqColor(item.frequency) }}>{item.term}</h3>
@@ -10450,6 +10577,138 @@ function App() {
               加载更多（剩余 {filteredItems.length - libraryLimit} 个）
             </button>
           )}
+        </section>
+      )}
+
+      {/* ====== 温习页 ====== */}
+      {section === 'review' && (
+        <section className="panel">
+          <div className="libraryHeader">
+            <h2 className="sectionTitle">温习</h2>
+          </div>
+          <p className="muted">按日期回顾每天学习的单词，支持列表浏览和背诵两种模式。</p>
+
+          {/* 日期选择器：显示有学习记录的日期 */}
+          {(() => {
+            const studyDates = Object.keys(studyWordsLog).filter(d => studyWordsLog[d] && studyWordsLog[d].length > 0).sort().reverse();
+            if (studyDates.length === 0) {
+              return <div className="empty" style={{ marginTop: 16 }}>还没有学习记录，去背诵几个单词吧！</div>;
+            }
+            return (
+              <>
+                <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+                  {studyDates.map(d => {
+                    const dateObj = new Date(d);
+                    const isToday = d === getToday();
+                    const isSelected = d === reviewDate;
+                    const count = studyWordsLog[d].length;
+                    return (
+                      <button key={d} style={{
+                        flexShrink: 0, padding: '8px 12px', borderRadius: 8, border: '1px solid',
+                        borderColor: isSelected ? 'var(--primary)' : 'var(--border)',
+                        background: isSelected ? 'var(--primary-light)' : 'transparent',
+                        fontWeight: isSelected ? 700 : 400, fontSize: 13, cursor: 'pointer',
+                        color: isSelected ? 'var(--primary-dark)' : 'var(--text)',
+                      }} onClick={() => { setReviewDate(d); setReviewIndex(0); setReviewShowBack(false); setReviewSelected(''); }}>
+                        <div>{isToday ? '今天' : `${dateObj.getMonth() + 1}月${dateObj.getDate()}日`}</div>
+                        <small style={{ opacity: 0.7 }}>{count}词</small>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 模式切换 */}
+                <div className="segmented" style={{ marginTop: 12 }}>
+                  <button className={reviewMode === 'list' ? 'active' : ''} onClick={() => setReviewMode('list')}>📋 列表模式</button>
+                  <button className={reviewMode === 'practice' ? 'active' : ''} onClick={() => { setReviewMode('practice'); setReviewIndex(0); setReviewShowBack(false); setReviewSelected(''); }}>📖 背诵模式</button>
+                </div>
+
+                {/* 列表模式 */}
+                {reviewMode === 'list' && (() => {
+                  const words = studyWordsLog[reviewDate] || [];
+                  if (words.length === 0) return <div className="empty" style={{ marginTop: 16 }}>该日期没有学习记录</div>;
+                  return (
+                    <div className="list" style={{ marginTop: 12 }}>
+                      {words.map((item, i) => (
+                        <article key={i} className="listItem" onClick={() => openDetailItem(item)}>
+                          <div className="listItemMain">
+                            <div className="listItemTitle">
+                              <h3>{item.term}</h3>
+                              {item.phonetic && <span className="phoneticSmall">{item.phonetic}</span>}
+                              {item.pos && <span className="posTag" style={{ color: posColor(item.pos), background: posColor(item.pos) + '18' }}>{item.pos}</span>}
+                              {progress[termKey(item.term)] === 'mastered' && <span className="masteredTag">已掌握</span>}
+                            </div>
+                            <p>{getShortMeaning(item.meaning)}</p>
+                          </div>
+                          <div className="listActions" onClick={e => e.stopPropagation()}>
+                            <button className="smallBtn" onClick={() => speak(item.term, settings.speakRate)}>🔊</button>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* 背诵模式 */}
+                {reviewMode === 'practice' && (() => {
+                  const words = studyWordsLog[reviewDate] || [];
+                  if (words.length === 0) return <div className="empty" style={{ marginTop: 16 }}>该日期没有学习记录</div>;
+                  const reviewItem = words[reviewIndex % words.length];
+                  if (!reviewItem) return null;
+                  return (
+                    <div className="card" style={{ marginTop: 12 }}>
+                      <div className="cardMeta">
+                        <span className="progressTag">{reviewIndex + 1}/{words.length}</span>
+                        {reviewItem.pos && <span className="posTag" style={{ color: posColor(reviewItem.pos), background: posColor(reviewItem.pos) + '18' }}>{reviewItem.pos}</span>}
+                        {progress[termKey(reviewItem.term)] === 'mastered' && <span className="masteredTag">已掌握</span>}
+                      </div>
+                      <div className="questionArea">
+                        <h2>{reviewItem.term}</h2>
+                        {reviewItem.phonetic && <p className="phoneticText">{reviewItem.phonetic}</p>}
+                        <button className="sound" onClick={() => speak(reviewItem.term, settings.speakRate)}>🔊 发音</button>
+                      </div>
+                      {!reviewShowBack && !reviewSelected && (
+                        <button className="primary" onClick={() => setReviewShowBack(true)}>显示释义</button>
+                      )}
+                      {(reviewShowBack || reviewSelected) && (
+                        <div className="answerBox">
+                          <h3>{reviewItem.term} &middot; {reviewItem.meaning}</h3>
+                          {reviewItem.pos && <p className="muted">{reviewItem.pos} &middot; {reviewItem.source || ''}</p>}
+                          {reviewItem.corePoints && reviewItem.corePoints.length > 0 && (
+                            <div className="points">
+                              {reviewItem.corePoints.map((p, i) => <p key={i}>• {p}</p>)}
+                            </div>
+                          )}
+                          {reviewItem.examples && reviewItem.examples.length > 0 && (
+                            <div className="examples" style={{ marginTop: 8 }}>
+                              {reviewItem.examples.map((e, i) => {
+                                const [en, zh] = e.split('|||');
+                                return (
+                                  <div key={i} className="examplePair">
+                                    <p className="exampleEn" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(en), settings.speakRate)}>{en}</p>
+                                    {zh && <p className="exampleZh">{zh}</p>}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                          <div className="answerActions">
+                            <button className="masterBtn" onClick={() => toggleProgress(reviewItem)}>
+                              {progress[termKey(reviewItem.term)] === 'mastered' ? '取消掌握' : '标记掌握'}
+                            </button>
+                          </div>
+                          <div className="navButtons">
+                            <button className="navBtn" onClick={() => { setReviewIndex(i => (i - 1 + words.length) % words.length); setReviewShowBack(false); setReviewSelected(''); }}>◀ 上一个</button>
+                            <button className="navBtn" onClick={() => { setReviewIndex(i => (i + 1) % words.length); setReviewShowBack(false); setReviewSelected(''); }}>下一个 ▶</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </>
+            );
+          })()}
         </section>
       )}
 
@@ -10529,7 +10788,7 @@ function App() {
                     <h3 className="errorSectionTitle">{b.name}</h3>
                     <div className="list">
                       {b.items.map(item => (
-                        <article key={item.id} className="listItem" onClick={() => setDetailItem(item)}>
+                        <article key={item.id} className="listItem" onClick={() => openDetailItem(item)}>
                           <div>
                             <h3 style={{ color: freqColor(item.frequency) }}>{item.term}</h3>
                             <p>{getShortMeaning(item.meaning)}</p>
@@ -10944,7 +11203,10 @@ function App() {
                   const studied = studyLog[key] && studyLog[key] > 0;
                   const isToday = key === todayKey;
                   cells.push(
-                    <div key={key} className={`calDay ${studied ? 'calStudied' : ''} ${isToday ? 'calToday' : ''}`}>
+                    <div key={key} className={`calDay ${studied ? 'calStudied' : ''} ${isToday ? 'calToday' : ''}`}
+                      style={studied ? { cursor: 'pointer' } : {}}
+                      onClick={studied ? () => { setReviewDate(key); setReviewMode('list'); setSection('review'); } : undefined}
+                      title={studied ? `点击温习 ${key} 的单词` : ''}>
                       {d}
                     </div>
                   );
@@ -11404,12 +11666,12 @@ function App() {
           {detailItem && (() => {
             const enrichment = getWordEnrichment(detailItem.term);
             return (
-            <div className="modal" onClick={() => setDetailItem(null)}>
+            <div className="modal" onClick={() => { setDetailHistory([]); setDetailItem(null); }}>
               <div className="modalContent" onClick={e => e.stopPropagation()}>
                 <div className="modalHeader">
                   <h2>{detailItem.term}</h2>
                   {detailItem.phonetic && <p className="phoneticText">{detailItem.phonetic}</p>}
-                  <button className="closeBtn" onClick={() => setDetailItem(null)}>✕</button>
+                  <button className="closeBtn" onClick={() => closeDetailItem()} title={detailHistory.length > 0 ? '返回上一个（' + detailHistory.length + '层）' : '关闭'}>{detailHistory.length > 0 ? '◀' : '✕'}</button>
                 </div>
                 <div className="detailMetaRow">
                   {detailItem.pos && <span className="detailPosTag" style={{ color: posColor(detailItem.pos), background: posColor(detailItem.pos) + '18' }}>{detailItem.pos}</span>}
@@ -11417,6 +11679,22 @@ function App() {
                   {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag">✓ 已掌握</span>}
                 </div>
                 <h3 className="detailMeaning">{detailItem.meaning}</h3>
+
+                {/* 例句（紧跟释义显示，确保每个单词详情都有例句） */}
+                {detailItem.examples && detailItem.examples.length > 0 && (
+                  <div className="detailSection">
+                    <p className="detailSectionTitle">💬 例句</p>
+                    <div className="examples">{detailItem.examples.map((e, i) => {
+                      const [en, zh] = e.split('|||');
+                      return (
+                        <div key={i} className="examplePair">
+                          <p className="exampleEn" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(en), settings.speakRate)}>{en}</p>
+                          {zh && <p className="exampleZh">{zh}</p>}
+                        </div>
+                      );
+                    })}</div>
+                  </div>
+                )}
 
                 {/* 考点提示 */}
                 {detailItem.corePoints && detailItem.corePoints.length > 0 && (
@@ -11475,7 +11753,7 @@ function App() {
                       {enrichment.derivatives.map((d, i) => {
                         const derivWord = d.split(' ')[0];
                         const derivItem = allWords.find(w => w.term.toLowerCase() === derivWord.toLowerCase());
-                        return <span key={i} className="detailDerivTag" style={{ cursor: 'pointer' }} onClick={() => { if (derivItem) { setDetailItem(derivItem); speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
+                        return <span key={i} className="detailDerivTag" style={{ cursor: 'pointer' }} onClick={() => { if (derivItem) { openDetailItem(derivItem); speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
                       })}
                     </div>
                   </div>
@@ -11489,7 +11767,7 @@ function App() {
                       {enrichment.synonyms.map((s, i) => {
                         const synWord = extractEnglish(s).split(/\s+/)[0];
                         const synItem = allWords.find(w => w.term.toLowerCase() === synWord.toLowerCase());
-                        return <span key={i} className="detailSynonymTag" style={{ cursor: 'pointer' }} onClick={() => { if (synItem) { setDetailItem(synItem); speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
+                        return <span key={i} className="detailSynonymTag" style={{ cursor: 'pointer' }} onClick={() => { if (synItem) { openDetailItem(synItem); speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
                       })}
                     </div>
                   </div>
@@ -11503,25 +11781,9 @@ function App() {
                       {enrichment.antonyms.map((a, i) => {
                         const antWord = extractEnglish(a).split(/\s+/)[0];
                         const antItem = allWords.find(w => w.term.toLowerCase() === antWord.toLowerCase());
-                        return <span key={i} className="detailAntonymTag" style={{ cursor: 'pointer' }} onClick={() => { if (antItem) { setDetailItem(antItem); speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}</span>;
+                        return <span key={i} className="detailAntonymTag" style={{ cursor: 'pointer' }} onClick={() => { if (antItem) { openDetailItem(antItem); speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}</span>;
                       })}
                     </div>
-                  </div>
-                )}
-
-                {/* 例句 */}
-                {detailItem.examples && detailItem.examples.length > 0 && (
-                  <div className="detailSection">
-                    <p className="detailSectionTitle">💬 例句</p>
-                    <div className="examples">{detailItem.examples.map((e, i) => {
-                      const [en, zh] = e.split('|||');
-                      return (
-                        <div key={i} className="examplePair">
-                          <p className="exampleEn">{en}</p>
-                          {zh && <p className="exampleZh">{zh}</p>}
-                        </div>
-                      );
-                    })}</div>
                   </div>
                 )}
 
@@ -11551,7 +11813,7 @@ function App() {
                           const isAiTagged = aiFamilyTerms.includes(item.term.toLowerCase());
                           return (
                             <button key={item.id} className={`detailFamilyBtn${isAiTagged ? ' aiTagged' : ''}`}
-                              onClick={() => setDetailItem(item)}>
+                              onClick={() => openDetailItem(item)}>
                               {item.term} <small>{item.pos}</small>
                               {isAiTagged && !localTerms.has(item.term.toLowerCase()) && <span className="aiDot">AI</span>}
                             </button>
@@ -11581,7 +11843,7 @@ function App() {
                           const isAiTagged = isAiConfusingWord(detailItem.term, item.term);
                           return (
                             <button key={item.id} className={`detailConfusingBtn${isAiTagged ? ' aiTagged' : ''}`}
-                              onClick={() => setDetailItem(item)}>
+                              onClick={() => openDetailItem(item)}>
                               {item.term} <small>{item.pos}</small>
                               {isAiTagged && <span className="aiDot">AI</span>}
                             </button>
