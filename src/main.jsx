@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.22.0';
-const APP_VERSION_CODE = 169;
+const APP_VERSION = '2.26.0';
+const APP_VERSION_CODE = 173;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -7768,7 +7768,8 @@ function getStem(word) {
   // 注意：不包含 'y' 作为独立后缀，因为 rely→rel 会误匹配 relax
   // 不包含 'ation'/'ition'，因为 'tion' 已能处理，避免 creation→cre 过度剥离
   // y→i 的还原在剥离其他后缀时处理（如 happiness→happi→happy）
-  const suffixes = ['fully', 'tion', 'sion', 'ment', 'ness', 'ity', 'ly', 'ful', 'less', 'ous', 'ive', 'able', 'ible', 'al', 'ic', 'er', 'or', 'ist', 'ize', 'ise', 'en', 'ed', 'ing'];
+  // 'sis' 用于 analysis→analy, 'yze'/'yse' 用于 analyze→anal
+  const suffixes = ['fully', 'tion', 'sion', 'ment', 'ness', 'ity', 'ly', 'ful', 'less', 'ous', 'ive', 'able', 'ible', 'al', 'ic', 'er', 'or', 'ist', 'ize', 'ise', 'en', 'ed', 'ing', 'sis', 'yze', 'yse'];
   let result = word.toLowerCase();
   let prev = '';
   let rounds = 0;
@@ -7797,6 +7798,24 @@ function getStem(word) {
     rounds++;
   }
   return result;
+}
+
+// 辅音交替对：同一词根在不同词性中常见的辅音变化
+const CONSONANT_ALT_PAIRS = new Set(['cs', 'fv', 'sz', 'bp', 'dt']);
+
+// 检查两个词干是否仅因辅音交替而不同（如 advise/advice, believe/belief, describe/description）
+function isConsonantAltMatch(a, b) {
+  if (!a || !b || a.length < 5 || b.length < 5 || a.length !== b.length || a === b) return false;
+  const prefix = commonPrefixLen(a, b);
+  if (prefix < 4) return false;
+  let diffs = 0;
+  for (let i = prefix; i < a.length; i++) {
+    if (a[i] === b[i]) continue;
+    const pair = [a[i], b[i]].sort().join('');
+    if (CONSONANT_ALT_PAIRS.has(pair)) diffs++;
+    else return false;
+  }
+  return diffs === 1;
 }
 
 // 查找词族：与给定单词同一词根的不同形式
@@ -7861,7 +7880,15 @@ function findWordFamily(term, items) {
       termNoE && otherStem === termNoE && termNoE.length >= 3 ||
       otherNoE && termStem === otherNoE && otherNoE.length >= 3;
 
-    const isRelated = prefixMatch || stemExactMatch || stemPrefixMatch || eDropMatch || shortStemEqual;
+    // 规则5：辅音交替匹配（同一词根的辅音变化）
+    // 如 advise/advice (s↔c), believe/belief (v↔f), describe/description (b↔p), extend/extent (d↔t)
+    const consonantAltMatch =
+      isConsonantAltMatch(termStem, otherStem) ||
+      (termNoE && isConsonantAltMatch(termNoE, otherStem)) ||
+      (otherNoE && isConsonantAltMatch(termStem, otherNoE)) ||
+      (termNoE && otherNoE && isConsonantAltMatch(termNoE, otherNoE));
+
+    const isRelated = prefixMatch || stemExactMatch || stemPrefixMatch || eDropMatch || shortStemEqual || consonantAltMatch;
 
     if (isRelated) {
       related.push(item);

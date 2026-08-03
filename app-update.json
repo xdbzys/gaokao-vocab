@@ -1,7 +1,7 @@
 {
-  "version": "2.25.0",
-  "versionCode": 172,
-  "changelog": "v2.25.0 易混词功能重构 + 例句质量提升\n\n【易混词功能重构】\n- 删除拓展页的易混词模块，改为在单词详情页直接显示\n- 自动检测拼写相似的单词（如com开头的单词），标注为易混词\n- 易混词必须是词库中存在的单词，可点击跳转查看该单词详细考点\n- 背诵页回答正确或闪卡模式显示译意时，展示该单词所有考点\n- 添加新单词时自动检索是否与其他单词相似，相似则自动添加易混词\n\n【例句质量提升】\n- 修复6条同义词循环定义模板例句（Both X and Y mean Y），替换为真实对比例句\n- 修复多处音标撇号转义问题（granny等单词）\n- 修复mastered-words字符串错误转义导致的构建失败",
-  "devNotes": "restructure confusing words: remove seedConfused module from extension page, add automatic similar word detection using Levenshtein distance in findConfusingWords(), clickable confusing word tags in detail page navigate to that word's details, show all exam points when answered correctly in memorization page or in flashcard mode, auto-detect similar words when adding new words; fix 6 remaining circular synonym template sentences; fix unescaped apostrophes in phonetic notations (granny); fix incorrectly escaped apostrophes in string literals (mastered-words)",
+  "version": "2.26.0",
+  "versionCode": 173,
+  "changelog": "v2.26.0 修复版本检测 + 词族关联算法大幅增强\n\n【修复版本检测】\n- 修复APP内版本常量未同步更新导致一直显示有新版本的问题\n- 现在版本号正确显示为2.26.0，不再误报更新\n\n【词族关联增强】\n- 新增辅音交替匹配规则，自动关联同一词根但辅音变化的词对：\n  · s↔c交替：advise/advice, practise/practice\n  · v↔f交替：believe/belief\n  · b↔p交替：describe/description\n  · d↔t交替：extend/extent\n  · z↔s交替：analyze/analysis\n- 新增后缀识别：sis(analysis), yze/yse(analyze)\n- 添加新单词时自动检索词族关联，使用增强后的算法\n- 词族关联按钮可点击跳转查看该单词详细考点",
+  "devNotes": "fix APP_VERSION/APP_VERSION_CODE constants not updated (was 2.22.0/169, now syncs with build.gradle); add consonant alternation matching rule in findWordFamily() for s<->c, v<->f, z<->s, b<->p, d<->t pairs; add 'sis', 'yze', 'yse' suffixes to getStem(); this enables automatic linking of word families like advise/advice, believe/belief, describe/description, analyze/analysis that were previously missed",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
