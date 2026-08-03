@@ -1,7 +1,7 @@
 {
-  "version": "2.28.1",
-  "versionCode": 176,
-  "changelog": "v2.28.1 背诵页关联词点击跳转优化\n\n【关联词点击行为优化】\n- 派生词、近义词、反义词点击时，如该词在词库中存在则跳转详情并发音\n- 词库中不存在的词保持原有行为（仅发音）\n- 详情弹窗中同样支持点击跳转\n- 词库中存在的关联词以高亮背景区分（蓝/红底），不存在的为灰底",
-  "devNotes": "update derivatives/synonyms/antonyms click behavior in both memorization page and detail modal: check if word exists in allWords, if found setDetailItem and speak, otherwise only speak; use different background colors to visually distinguish in-library vs not-in-library words",
+  "version": "2.29.0",
+  "versionCode": 177,
+  "changelog": "v2.29.0 全面补全中文翻译\n\n【考点中文翻译补全】\n- 修复148条常考要点(examPoints)缺少中文翻译的问题\n- 涵盖所有动词搭配、同义词比较、语法说明等考点\n- 如：enable sb to do sth 使某人能够做某事、focus on = concentrate on 集中于\n\n【派生词中文补全】\n- 修复1条派生词缺少中文释义：missingly adv. 缺失地\n\n【例句中文翻译补全】\n- 替换17条占位例句(appears in recent gaokao exams)为真实带中文翻译的例句\n- 为5条数字日期例句补充中文翻译（情人节、妇女节、儿童节等）\n\n确保软件内所有英文内容都有对应中文翻译",
+  "devNotes": "fix 148 examPoints entries in wordEnrichment.js missing Chinese translations; fix 1 derivatives entry (missingly adv.); replace 17 placeholder example sentences (appears in recent gaokao exams) with real sentences with Chinese translations; add Chinese translations to 5 number/date example sentences; ensure all English content in the app has corresponding Chinese translation",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

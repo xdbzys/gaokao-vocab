@@ -19,7 +19,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'able', adverb: 'ably' },
     synonyms: ['capability 能力', 'capacity 容量', 'competence 能力', 'skill 技能'],
     antonyms: ['inability 无能', 'incapacity 无能力', 'incompetence 不胜任'],
-    examPoints: ['ability 后接不定式 to do', 'able → unable (加 un-)', 'enable sb to do sth']
+    examPoints: ['ability 后接不定式 to do', 'able → unable (加 un-)', 'enable sb to do sth 使某人能够做某事']
   },
   absent: {
     collocations: ['be absent from 缺席', 'absent-minded 心不在焉的'],
@@ -35,7 +35,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'absorption', adjective: 'absorbing', pastTense: 'absorbed', pastParticiple: 'absorbed', presentParticiple: 'absorbing' },
     synonyms: ['engage 参与', 'soak up 吸收', 'take in 吸收', 'assimilate 吸收'],
     antonyms: ['emit 发射', 'release 释放', 'exude 散发'],
-    examPoints: ['be absorbed in 后接 doing/名词', 'absorbing = fascinating']
+    examPoints: ['be absorbed in 后接 doing/名词', 'absorbing = fascinating 引人入胜的']
   },
   accept: {
     collocations: ['accept an offer 接受提议', 'accept responsibility 承担责任', 'accept the truth 接受事实'],
@@ -51,7 +51,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'accessible', adverb: 'accessibly' },
     synonyms: ['entry 进入', 'approach 接近', 'admission 准入'],
     antonyms: ['denial 否认', 'exclusion 排斥', 'barrier 障碍'],
-    examPoints: ['have access to 中 to 是介词后接 doing', 'accessible to sb']
+    examPoints: ['have access to 中 to 是介词后接 doing', 'accessible to sb 某人可接近/使用的']
   },
   account: {
     collocations: ['account for 解释；占比', 'on account of 因为', 'take account of 考虑到', 'open an account 开户'],
@@ -67,7 +67,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'achievement', adjective: 'achievable', pastTense: 'achieved', pastParticiple: 'achieved', presentParticiple: 'achieving' },
     synonyms: ['accomplish 完成', 'attain 达到', 'reach 到达', 'fulfill 实现'],
     antonyms: ['fail 失败', 'miss 错过', 'lose 失去'],
-    examPoints: ['achievement 可数名词', 'make a great achievement']
+    examPoints: ['achievement 可数名词', 'make a great achievement 取得巨大成就']
   },
   adapt: {
     collocations: ['adapt to 适应', 'adapt from 改编自', 'adapt oneself to 使自己适应'],
@@ -91,7 +91,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'advantageous', adverb: 'advantageously' },
     synonyms: ['benefit 有益', 'edge 优势', 'upper hand 优势', 'merit 值得'],
     antonyms: ['disadvantage 劣势', 'drawback 缺点', 'shortcoming 缺点'],
-    examPoints: ['take advantage of = make use of', '反义词加 dis- 前缀']
+    examPoints: ['take advantage of = make use of 利用', '反义词加 dis- 前缀']
   },
   affect: {
     collocations: ['be affected by 受...影响', 'affect sb deeply 深深影响某人'],
@@ -107,7 +107,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'affordable', pastTense: 'afforded', pastParticiple: 'afforded', presentParticiple: 'affording' },
     synonyms: ['bear 承受', 'manage 管理', 'sustain 维持', 'support 支持'],
     antonyms: ['cannot afford 负担不起', 'be unable to 不能'],
-    examPoints: ['常与 can/could/be able to 连用', 'afford to do sth']
+    examPoints: ['常与 can/could/be able to 连用', 'afford to do sth 负担得起做某事']
   },
   agree: {
     collocations: ['agree with sb 同意某人', 'agree on sth 就...达成一致', 'agree to do 同意做'],
@@ -123,7 +123,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'allowance', adjective: 'allowable', pastTense: 'allowed', pastParticiple: 'allowed', presentParticiple: 'allowing' },
     synonyms: ['permit 允许', 'let 允许', 'authorize 授权', 'enable 使能够'],
     antonyms: ['forbid 禁止', 'prohibit 禁止', 'ban 禁止', 'prevent 阻止'],
-    examPoints: ['allow sb to do vs allow doing', 'allow for = take into consideration']
+    examPoints: ['allow sb to do vs allow doing 允许某人做 vs 允许做', 'allow for = take into consideration 考虑到']
   },
   amaze: {
     collocations: ['be amazed at 对...感到惊讶', 'amaze sb 使某人惊讶'],
@@ -131,7 +131,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'amazement', adjective: 'amazing', pastTense: 'amazed', pastParticiple: 'amazed', presentParticiple: 'amazing' },
     synonyms: ['astonish 使惊讶', 'surprise 使惊讶', 'stun 使震惊', 'astound 使震惊'],
     antonyms: ['expect 期待', 'anticipate 预期'],
-    examPoints: ['amazing(令人惊讶) vs amazed(感到惊讶)', 'be amazed at/by']
+    examPoints: ['amazing(令人惊讶) vs amazed(感到惊讶)', 'be amazed at/by 对...感到惊讶']
   },
   analyze: {
     collocations: ['analyze data 分析数据', 'analyze the cause 分析原因'],
@@ -147,7 +147,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'announcement', pastTense: 'announced', pastParticiple: 'announced', presentParticiple: 'announcing' },
     synonyms: ['declare 宣布', 'proclaim 宣告', 'broadcast 广播', 'reveal 揭示'],
     antonyms: ['conceal 隐藏', 'hide 隐藏', 'withhold 保留'],
-    examPoints: ['announce + that 从句', 'make an announcement']
+    examPoints: ['announce + that 从句', 'make an announcement 宣布']
   },
   anxious: {
     collocations: ['be anxious about 担心', 'be anxious to do 急于做', 'anxious for 渴望'],
@@ -155,7 +155,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'anxiety', adverb: 'anxiously' },
     synonyms: ['worried 担心的', 'nervous 紧张的', 'uneasy 不安的', 'concerned 关心的'],
     antonyms: ['calm 平静的', 'relaxed 放松的', 'confident 自信的', 'composed 镇定的'],
-    examPoints: ['be anxious about + 名词', 'be anxious to do = be eager to do']
+    examPoints: ['be anxious about + 名词', 'be anxious to do = be eager to do 急于做']
   },
   apply: {
     collocations: ['apply for 申请', 'apply to 适用于', 'apply oneself to 致力于', 'apply A to B 把A应用于B'],
@@ -187,7 +187,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'arrangement', pastTense: 'arranged', pastParticiple: 'arranged', presentParticiple: 'arranging' },
     synonyms: ['organize 组织', 'plan 计划', 'schedule 安排', 'prepare 准备'],
     antonyms: ['disarrange 打乱', 'disrupt 破坏'],
-    examPoints: ['arrange for sb to do sth', 'make arrangements for']
+    examPoints: ['arrange for sb to do sth 安排某人做某事', 'make arrangements for 为...做安排']
   },
   assume: {
     collocations: ['assume responsibility 承担责任', 'assume that 假定'],
@@ -195,7 +195,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'assumption', pastTense: 'assumed', pastParticiple: 'assumed', presentParticiple: 'assuming' },
     synonyms: ['suppose 假设', 'presume 假定', 'take for granted 视为理所当然', 'believe 相信'],
     antonyms: ['prove 证明', 'demonstrate 证明', 'verify 核实'],
-    examPoints: ['assuming that = supposing 假如', 'make an assumption']
+    examPoints: ['assuming that = supposing 假如', 'make an assumption 做出假设']
   },
   avoid: {
     collocations: ['avoid doing 避免做', 'avoid sb 避开某人'],
@@ -203,7 +203,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'avoidance', adjective: 'avoidable', pastTense: 'avoided', pastParticiple: 'avoided', presentParticiple: 'avoiding' },
     synonyms: ['evade 逃避', 'escape 逃跑', 'dodge 躲避', 'shun 避开'],
     antonyms: ['face 面对', 'confront 面对', 'encounter 遭遇', 'meet 满足'],
-    examPoints: ['后接 doing 不接 to do', 'unavoidable = inevitable']
+    examPoints: ['后接 doing 不接 to do', 'unavoidable = inevitable 不可避免的']
   },
   aware: {
     collocations: ['be aware of 意识到', 'become aware of 逐渐意识到'],
@@ -235,7 +235,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'causal', pastTense: 'caused', pastParticiple: 'caused', presentParticiple: 'causing' },
     synonyms: ['lead to 导致', 'result in 导致', 'bring about 引起', 'trigger 触发'],
     antonyms: ['prevent 阻止', 'stop 停止', 'hinder 阻碍'],
-    examPoints: ['cause sb to do sth', 'cause 作名词 = reason']
+    examPoints: ['cause sb to do sth 导致某人做某事', 'cause 作名词 = reason']
   },
   challenge: {
     collocations: ['challenge sb to do 向某人挑战', 'take up the challenge 接受挑战', 'face a challenge 面临挑战'],
@@ -243,7 +243,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'challenging', pastTense: 'challenged', pastParticiple: 'challenged', presentParticiple: 'challenging' },
     synonyms: ['defy 违抗', 'confront 面对', 'dare 敢于', 'test 测试'],
     antonyms: ['accept 接受', 'yield to 屈服于', 'surrender to 屈服于'],
-    examPoints: ['challenging = demanding', 'a challenging task']
+    examPoints: ['challenging = demanding 有挑战性的', 'a challenging task 一项挑战性任务']
   },
   charge: {
     collocations: ['in charge of 负责', 'take charge of 掌管', 'charge sb with 指控某人', 'free of charge 免费'],
@@ -251,7 +251,7 @@ const wordEnrichmentData = {
     wordForms: { pastTense: 'charged', pastParticiple: 'charged', presentParticiple: 'charging' },
     synonyms: ['accuse 指控', 'blame 责备', 'fee 费用', 'cost 花费', 'responsibility 责任'],
     antonyms: ['discharge 排出', 'free 释放', 'release 释放'],
-    examPoints: ['in charge of (主动负责)', 'in the charge of (被...管理)', 'charge sb with sth']
+    examPoints: ['in charge of (主动负责)', 'in the charge of (被...管理)', 'charge sb with sth 指控某人某事']
   },
   claim: {
     collocations: ['claim that 声称', 'claim to have done 声称做过', 'make a claim 提出索赔'],
@@ -259,7 +259,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'claim', pastTense: 'claimed', pastParticiple: 'claimed', presentParticiple: 'claiming' },
     synonyms: ['assert 断言', 'declare 宣布', 'state 陈述', 'maintain 维持'],
     antonyms: ['deny 否认', 'disclaim 否认', 'reject 拒绝'],
-    examPoints: ['claim to do / claim that', 'claim 作名词=索赔']
+    examPoints: ['claim to do / claim that 声称做/声称', 'claim 作名词=索赔']
   },
   collect: {
     collocations: ['collect data 收集数据', 'collect stamps 集邮', 'collect oneself 镇定下来'],
@@ -275,7 +275,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'commitment', adjective: 'committed', pastTense: 'committed', pastParticiple: 'committed', presentParticiple: 'committing' },
     synonyms: ['pledge 保证', 'promise 承诺', 'dedicate 致力于', 'devote 奉献'],
     antonyms: ['abandon 放弃', 'withdraw 撤回', 'quit 放弃'],
-    examPoints: ['commit a crime/suicide/error', 'be committed to + doing']
+    examPoints: ['commit a crime/suicide/error 犯罪/自杀/犯错', 'be committed to + doing 致力于做(接动名词)']
   },
   communicate: {
     collocations: ['communicate with 与...交流', 'communicate sth to 把...传达给'],
@@ -283,7 +283,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'communication', adjective: 'communicative', pastTense: 'communicated', pastParticiple: 'communicated', presentParticiple: 'communicating' },
     synonyms: ['convey 传达', 'transmit 传输', 'share 分享', 'express 表达'],
     antonyms: ['withhold 保留', 'conceal 隐藏', 'hide 隐藏'],
-    examPoints: ['communicate with sb', 'communication 不可数名词']
+    examPoints: ['communicate with sb 与某人交流', 'communication 不可数名词']
   },
   compare: {
     collocations: ['compare A with B 把A与B比较', 'compare A to B 把A比作B', 'compared with/to 与...相比', 'beyond compare 无与伦比'],
@@ -299,7 +299,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'competition', adjective: 'competitive', pastTense: 'competed', pastParticiple: 'competed', presentParticiple: 'competing' },
     synonyms: ['contend 争夺', 'rival 竞争', 'contest 竞争', 'vie 竞争'],
     antonyms: ['cooperate 合作', 'collaborate 合作', 'yield 屈服'],
-    examPoints: ['compete against/with sb for sth', 'competition 可数']
+    examPoints: ['compete against/with sb for sth 与某人竞争某物', 'competition 可数']
   },
   complain: {
     collocations: ['complain about 抱怨', 'complain to sb 向某人投诉', 'complain that 抱怨说'],
@@ -307,7 +307,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'complaint', pastTense: 'complained', pastParticiple: 'complained', presentParticiple: 'complaining' },
     synonyms: ['protest 抗议', 'grumble 抱怨', 'object 反对', 'criticize 批评'],
     antonyms: ['praise 赞扬', 'commend 表扬', 'applaud 鼓掌'],
-    examPoints: ['complain to sb about sth', 'make a complaint']
+    examPoints: ['complain to sb about sth 向某人抱怨某事', 'make a complaint 投诉']
   },
   concern: {
     collocations: ['be concerned about 关心', 'as far as...be concerned 就...而言', 'concern oneself with 关心', 'of concern 令人担忧的'],
@@ -323,7 +323,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'conclusion', adjective: 'conclusive', pastTense: 'concluded', pastParticiple: 'concluded', presentParticiple: 'concluding' },
     synonyms: ['finish 完成', 'end 结束', 'decide 决定', 'determine 决定'],
     antonyms: ['begin 开始', 'start 开始', 'commence 开始'],
-    examPoints: ['draw/reach a conclusion', 'in conclusion 最后']
+    examPoints: ['draw/reach a conclusion 得出结论', 'in conclusion 最后']
   },
   condition: {
     collocations: ['on condition that 条件是', 'in good condition 状况良好', 'under...conditions 在...条件下'],
@@ -331,7 +331,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'conditional' },
     synonyms: ['state 陈述', 'situation 情况', 'circumstance 情况', 'requirement 要求'],
     antonyms: [],
-    examPoints: ['on condition that = provided that', 'conditions 复数=环境/条件']
+    examPoints: ['on condition that = provided that 条件是', 'conditions 复数=环境/条件']
   },
   conduct: {
     collocations: ['conduct a survey 进行调查', 'conduct an experiment 做实验', 'conduct oneself 表现'],
@@ -347,7 +347,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'confident', adverb: 'confidently' },
     synonyms: ['assurance 保证', 'certainty 确定', 'trust 信任', 'faith 信任'],
     antonyms: ['doubt 怀疑', 'uncertainty 不确定', 'timidity 胆怯'],
-    examPoints: ['be confident of/about', 'have confidence in sb']
+    examPoints: ['be confident of/about 对...有信心', 'have confidence in sb 对某人有信心']
   },
   confirm: {
     collocations: ['confirm that 确认', 'confirm sb in 使某人坚定', 'confirm a booking 确认预订'],
@@ -371,7 +371,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'contribution', adjective: 'contributory', pastTense: 'contributed', pastParticiple: 'contributed', presentParticiple: 'contributing' },
     synonyms: ['donate 捐赠', 'provide 提供', 'add to 增加', 'lead to 导致'],
     antonyms: ['withhold 保留', 'detract 减损', 'subtract 减去'],
-    examPoints: ['contribute to = lead to (to是介词)', 'make a contribution to']
+    examPoints: ['contribute to = lead to (to是介词)', 'make a contribution to 对...做出贡献']
   },
   convince: {
     collocations: ['convince sb of 使某人确信', 'convince sb to do 说服某人做', 'be convinced that 确信'],
@@ -379,7 +379,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'conviction', adjective: 'convincing', pastTense: 'convinced', pastParticiple: 'convinced', presentParticiple: 'convincing' },
     synonyms: ['persuade 说服', 'assure 保证', 'satisfy 满足', 'prove to 证明'],
     antonyms: ['doubt 怀疑', 'disbelieve 不信', 'dissuade 劝阻'],
-    examPoints: ['convince sb of sth', 'be convinced that', 'convincing argument']
+    examPoints: ['convince sb of sth 使某人确信某事', 'be convinced that 确信', 'convincing argument 令人信服的论点']
   },
   create: {
     collocations: ['create jobs 创造就业', 'create a good impression 留下好印象', 'create conditions 创造条件'],
@@ -387,7 +387,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'creation', adjective: 'creative', pastTense: 'created', pastParticiple: 'created', presentParticiple: 'creating' },
     synonyms: ['produce 生产', 'make 制造', 'generate 产生', 'invent 发明', 'establish 建立'],
     antonyms: ['destroy 破坏', 'demolish 拆除', 'ruin 毁坏', 'annihilate 消灭'],
-    examPoints: ['creative = innovative', 'creature = living being']
+    examPoints: ['creative = innovative 有创造力的', 'creature = living being 生物']
   },
   decide: {
     collocations: ['decide to do 决定做', 'decide on 决定选用', 'decide against 决定不'],
@@ -395,7 +395,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'decision', adjective: 'decisive', adverb: 'decidedly', pastTense: 'decided', pastParticiple: 'decided', presentParticiple: 'deciding' },
     synonyms: ['determine 决定', 'resolve 解决', 'settle 解决', 'conclude 得出结论'],
     antonyms: ['hesitate 犹豫', 'waver 动摇', 'delay 延迟'],
-    examPoints: ['decide to do = make a decision to do', 'decisive = determining']
+    examPoints: ['decide to do = make a decision to do 决定做', 'decisive = determining 决定性的']
   },
   declare: {
     collocations: ['declare war on 对...宣战', 'declare that 宣布', 'declare oneself 表明立场'],
@@ -403,7 +403,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'declaration', pastTense: 'declared', pastParticiple: 'declared', presentParticiple: 'declaring' },
     synonyms: ['announce 宣布', 'proclaim 宣告', 'state 陈述', 'assert 断言'],
     antonyms: ['conceal 隐藏', 'hide 隐藏', 'withhold 保留'],
-    examPoints: ['declare + that 从句', 'Declaration of Independence']
+    examPoints: ['declare + that 从句', 'Declaration of Independence 独立宣言']
   },
   decline: {
     collocations: ['decline to do 拒绝做', 'on the decline 在下降', 'a sharp decline 急剧下降'],
@@ -411,7 +411,7 @@ const wordEnrichmentData = {
     wordForms: { pastTense: 'declined', pastParticiple: 'declined', presentParticiple: 'declining' },
     synonyms: ['decrease 减少', 'drop 下降', 'fall 落下', 'refuse 拒绝', 'reject 拒绝'],
     antonyms: ['increase 增加', 'rise 上升', 'accept 接受', 'improve 改善'],
-    examPoints: ['decline to do = refuse to do', 'decline 作名词=下降趋势']
+    examPoints: ['decline to do = refuse to do 拒绝做', 'decline 作名词=下降趋势']
   },
   defend: {
     collocations: ['defend against 防御', 'defend sb from 保护某人免受', 'defend one\'s rights 捍卫权利'],
@@ -419,7 +419,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'defense', adjective: 'defensive', pastTense: 'defended', pastParticiple: 'defended', presentParticiple: 'defending' },
     synonyms: ['protect 保护', 'guard 守卫', 'shield 保护', 'safeguard 保护'],
     antonyms: ['attack 攻击', 'assault 袭击', 'invade 入侵'],
-    examPoints: ['defend sb from/against', 'in defense of']
+    examPoints: ['defend sb from/against 保护某人免受', 'in defense of 保卫']
   },
   deliver: {
     collocations: ['deliver a speech 发表演讲', 'deliver goods 送货', 'deliver a baby 接生'],
@@ -427,7 +427,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'delivery', pastTense: 'delivered', pastParticiple: 'delivered', presentParticiple: 'delivering' },
     synonyms: ['convey 传达', 'transport 运输', 'hand over 移交', 'give 给予'],
     antonyms: ['receive 收到', 'collect 收集', 'retain 保留'],
-    examPoints: ['deliver a speech/lecture', 'take delivery of 收货']
+    examPoints: ['deliver a speech/lecture 发表演讲/讲座', 'take delivery of 收货']
   },
   demand: {
     collocations: ['demand to do 要求做', 'in demand 有需求', 'meet the demand 满足需求', 'on demand 一经要求'],
@@ -435,7 +435,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'demanding', pastTense: 'demanded', pastParticiple: 'demanded', presentParticiple: 'demanding' },
     synonyms: ['require 需要', 'request 请求', 'insist 坚持', 'need 需要'],
     antonyms: ['supply 供应', 'offer 提供', 'grant 授予'],
-    examPoints: ['demand + that 从句用虚拟语气(should + do)', 'in demand ≠ on demand']
+    examPoints: ['demand + that 从句用虚拟语气(should + do)', 'in demand ≠ on demand 有需求 ≠ 按需(易混)']
   },
   depend: {
     collocations: ['depend on 依赖', 'depend on sb to do 指望某人做', 'it depends 视情况而定'],
@@ -443,7 +443,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'dependence', adjective: 'dependent' },
     synonyms: ['rely 依赖', 'count on 依靠', 'hinge on 取决于', 'rest on 依靠'],
     antonyms: ['independent 独立的', 'autonomous 自主的', 'self-sufficient 自给自足的'],
-    examPoints: ['depend on = rely on', 'dependent on ≠ independent of']
+    examPoints: ['depend on = rely on 依赖', 'dependent on ≠ independent of 依赖 ≠ 独立']
   },
   describe: {
     collocations: ['describe...as 把...描述为', 'describe in detail 详细描述'],
@@ -451,7 +451,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'description', adjective: 'descriptive', pastTense: 'described', pastParticiple: 'described', presentParticiple: 'describing' },
     synonyms: ['depict 描绘', 'portray 描绘', 'characterize 描述', 'illustrate 说明'],
     antonyms: [],
-    examPoints: ['describe A as B', 'beyond description 难以描述']
+    examPoints: ['describe A as B 把A描述为B', 'beyond description 难以描述']
   },
   desire: {
     collocations: ['desire to do 渴望做', 'desire for 渴望', 'at sb\'s desire 应某人要求'],
@@ -459,7 +459,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'desirable', pastTense: 'desired', pastParticiple: 'desired', presentParticiple: 'desiring' },
     synonyms: ['want 想要', 'wish 希望', 'long for 渴望', 'crave 渴望'],
     antonyms: ['dislike 不喜欢', 'despise 鄙视', 'reject 拒绝'],
-    examPoints: ['desire to do', 'desirable ≠ desirous(渴望的)']
+    examPoints: ['desire to do 渴望做', 'desirable ≠ desirous(渴望的)']
   },
   determine: {
     collocations: ['determine to do 决心做', 'be determined to do 下定决心', 'determine on 决定'],
@@ -491,7 +491,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'discovery', pastTense: 'discovered', pastParticiple: 'discovered', presentParticiple: 'discovering' },
     synonyms: ['find 找到', 'detect 察觉', 'uncover 揭露', 'reveal 揭示', 'unearth 发掘'],
     antonyms: ['hide 隐藏', 'conceal 隐藏', 'cover 覆盖', 'bury 埋葬'],
-    examPoints: ['make a discovery', 'discover sb doing sth']
+    examPoints: ['make a discovery 做出发现', 'discover sb doing sth 发现某人正在做']
   },
   effective: {
     collocations: ['effective measures 有效措施', 'become effective 生效', 'effective in 在...方面有效'],
@@ -507,7 +507,7 @@ const wordEnrichmentData = {
     wordForms: {},
     synonyms: ['attempt 尝试', 'endeavor 努力', 'struggle 挣扎', 'exertion 努力'],
     antonyms: ['ease 减轻', 'laziness 懒惰', 'idleness 懒惰'],
-    examPoints: ['make an effort/efforts to do', 'spare no effort to do']
+    examPoints: ['make an effort/efforts to do 努力做', 'spare no effort to do 不遗余力做']
   },
   employ: {
     collocations: ['employ sb to do 雇佣某人做', 'be employed in 从事于', 'employ a method 使用方法'],
@@ -515,7 +515,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'employment', adjective: 'employed', pastTense: 'employed', pastParticiple: 'employed', presentParticiple: 'employing' },
     synonyms: ['hire 雇佣', 'engage 参与', 'recruit 招募', 'use 使用', 'apply 申请'],
     antonyms: ['fire 解雇', 'dismiss 解雇', 'lay off 解雇', 'unemploy 解雇'],
-    examPoints: ['employ = use (使用方法)', 'be employed in doing']
+    examPoints: ['employ = use (使用方法)', 'be employed in doing 从事于']
   },
   encourage: {
     collocations: ['encourage sb to do 鼓励某人做', 'encourage sb in sth 在...方面鼓励'],
@@ -523,7 +523,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'encouragement', adjective: 'encouraging', pastTense: 'encouraged', pastParticiple: 'encouraged', presentParticiple: 'encouraging' },
     synonyms: ['inspire 激励', 'motivate 激励', 'urge 催促', 'support 支持'],
     antonyms: ['discourage 使气馁', 'deter 阻止', 'dishearten 使灰心'],
-    examPoints: ['encourage sb to do (反义: discourage sb from doing)', 'encouraging news']
+    examPoints: ['encourage sb to do (反义: discourage sb from doing)', 'encouraging news 令人鼓舞的消息']
   },
   environment: {
     collocations: ['protect the environment 保护环境', 'in a...environment 在...环境中'],
@@ -531,7 +531,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'environmental', adverb: 'environmentally' },
     synonyms: ['surroundings 环境', 'setting 环境', 'habitat 栖息地', 'context 背景'],
     antonyms: [],
-    examPoints: ['environmental protection', 'environmentally friendly']
+    examPoints: ['environmental protection 环境保护', 'environmentally friendly 环保的']
   },
   establish: {
     collocations: ['establish a company 创办公司', 'establish a relationship 建立关系', 'establish oneself as 确立自己为'],
@@ -539,7 +539,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'establishment', adjective: 'established', pastTense: 'established', pastParticiple: 'established', presentParticiple: 'establishing' },
     synonyms: ['set up 建立', 'found 建立', 'create 创造', 'institute 建立'],
     antonyms: ['abolish 废除', 'dismantle 拆除', 'destroy 破坏'],
-    examPoints: ['establish = set up', 'an established fact 既定事实']
+    examPoints: ['establish = set up 建立', 'an established fact 既定事实']
   },
   evaluate: {
     collocations: ['evaluate the effect 评估效果', 'evaluate performance 评估表现'],
@@ -547,7 +547,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'evaluation', pastTense: 'evaluated', pastParticiple: 'evaluated', presentParticiple: 'evaluating' },
     synonyms: ['assess 评估', 'appraise 评估', 'judge 判断', 'rate 评估'],
     antonyms: ['guess 猜测', 'speculate 推测', 'ignore 忽视'],
-    examPoints: ['evaluate = assess', 'make an evaluation']
+    examPoints: ['evaluate = assess 评估', 'make an evaluation 做出评估']
   },
   evidence: {
     collocations: ['evidence for...的证据', 'in evidence 显而易见', 'provide evidence 提供证据'],
@@ -555,7 +555,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'evident', adverb: 'evidently' },
     synonyms: ['proof 证明', 'indication 指示', 'sign 标志', 'testimony 证词'],
     antonyms: ['concealment 隐藏', 'hiding 隐藏'],
-    examPoints: ['evidence 不可数名词', 'evident = obvious']
+    examPoints: ['evidence 不可数名词', 'evident = obvious 明显的']
   },
   examine: {
     collocations: ['examine carefully 仔细检查', 'examine sb on 考查某人'],
@@ -563,7 +563,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'examination', pastTense: 'examined', pastParticiple: 'examined', presentParticiple: 'examining' },
     synonyms: ['inspect 检查', 'investigate 调查', 'analyze 分析', 'test 测试'],
     antonyms: ['ignore 忽视', 'overlook 忽略', 'neglect 忽视'],
-    examPoints: ['examination = exam', 'medical examination 体检']
+    examPoints: ['examination = exam 考试(缩写)', 'medical examination 体检']
   },
   exist: {
     collocations: ['exist in 存在于', 'exist on 靠...生存', 'come into existence 产生'],
@@ -571,7 +571,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'existence', adjective: 'existent' },
     synonyms: ['be 是', 'live 生活', 'survive 幸存', 'occur 发生'],
     antonyms: ['die 死亡', 'disappear 消失', 'vanish 消失', 'cease 停止'],
-    examPoints: ['come into existence = come into being', 'in existence 现存的']
+    examPoints: ['come into existence = come into being 形成', 'in existence 现存的']
   },
   expand: {
     collocations: ['expand into 扩展到', 'expand on 详述'],
@@ -587,7 +587,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'explanation', adjective: 'explanatory', pastTense: 'explained', pastParticiple: 'explained', presentParticiple: 'explaining' },
     synonyms: ['clarify 澄清', 'elucidate 阐明', 'illustrate 说明', 'demonstrate 证明'],
     antonyms: ['confuse 混淆', 'obscure 掩盖', 'muddle 混淆'],
-    examPoints: ['explain sth to sb (不是 explain sb sth)', 'give an explanation']
+    examPoints: ['explain sth to sb (不是 explain sb sth)', 'give an explanation 做出解释']
   },
   explore: {
     collocations: ['explore the possibility 探索可能性', 'explore the world 探索世界'],
@@ -603,7 +603,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'exposure', adjective: 'exposed', pastTense: 'exposed', pastParticiple: 'exposed', presentParticiple: 'exposing' },
     synonyms: ['reveal 揭示', 'uncover 揭露', 'disclose 揭露', 'show 展示'],
     antonyms: ['hide 隐藏', 'conceal 隐藏', 'cover 覆盖', 'shield 保护'],
-    examPoints: ['be exposed to + 名词', 'exposure to sth']
+    examPoints: ['be exposed to + 名词', 'exposure to sth 暴露于某物']
   },
   express: {
     collocations: ['express oneself 表达自己', 'express concern 表达关切', 'express one\'s thanks 表达感谢'],
@@ -611,7 +611,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'expression', adjective: 'expressive', adverb: 'expressly', pastTense: 'expressed', pastParticiple: 'expressed', presentParticiple: 'expressing' },
     synonyms: ['convey 传达', 'communicate 交流', 'state 陈述', 'articulate 表达'],
     antonyms: ['suppress 镇压', 'repress 压抑', 'conceal 隐藏'],
-    examPoints: ['expression 可数(表情)不可数(表达)', 'freedom of expression']
+    examPoints: ['expression 可数(表情)不可数(表达)', 'freedom of expression 言论自由']
   },
   fail: {
     collocations: ['fail to do 未能做', 'fail in 在...失败', 'without fail 务必'],
@@ -619,7 +619,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'failure', pastTense: 'failed', pastParticiple: 'failed', presentParticiple: 'failing' },
     synonyms: ['not succeed 失败', 'fall short 未达到', 'miss 错过'],
     antonyms: ['succeed 成功', 'achieve 实现', 'accomplish 完成'],
-    examPoints: ['fail to do = fail in doing', 'failure is the mother of success']
+    examPoints: ['fail to do = fail in doing 做某事失败', 'failure is the mother of success 失败是成功之母']
   },
   familiar: {
     collocations: ['be familiar with 熟悉', 'be familiar to 为...所熟知'],
@@ -635,7 +635,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'financial', adverb: 'financially' },
     synonyms: ['fund 资助', 'back 后退', 'sponsor 赞助', 'bankroll 资助'],
     antonyms: ['bankrupt 破产的', 'default 违约'],
-    examPoints: ['financial crisis 金融危机', 'financially stable']
+    examPoints: ['financial crisis 金融危机', 'financially stable 财务稳定的']
   },
   focus: {
     collocations: ['focus on 集中于', 'focus one\'s attention on 集中注意力于', 'bring into focus 使明确'],
@@ -643,7 +643,7 @@ const wordEnrichmentData = {
     wordForms: { pastTense: 'focused', pastParticiple: 'focused', presentParticiple: 'focusing' },
     synonyms: ['concentrate 集中', 'center 集中', 'fix 修理', 'direct 指导'],
     antonyms: ['distract 分散', 'divert 转移', 'scatter 分散'],
-    examPoints: ['focus on = concentrate on', 'focus 复数 focuses/foci']
+    examPoints: ['focus on = concentrate on 集中于', 'focus 复数 focuses/foci']
   },
   function: {
     collocations: ['function as 起...作用', 'perform a function 发挥功能'],
@@ -651,7 +651,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'functional', adverb: 'functionally', pastTense: 'functioned', pastParticiple: 'functioned', presentParticiple: 'functioning' },
     synonyms: ['work 工作', 'operate 操作', 'serve 服务', 'role 角色'],
     antonyms: ['malfunction 故障', 'fail 失败', 'break down 崩溃'],
-    examPoints: ['function as = serve as', 'functional = working']
+    examPoints: ['function as = serve as 充当', 'functional = working 功能性的']
   },
   generate: {
     collocations: ['generate electricity 发电', 'generate income 创造收入', 'generate interest 引起兴趣'],
@@ -659,7 +659,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'generation', adjective: 'generative', pastTense: 'generated', pastParticiple: 'generated', presentParticiple: 'generating' },
     synonyms: ['produce 生产', 'create 创造', 'make 制造', 'yield 屈服'],
     antonyms: ['destroy 破坏', 'eliminate 消除', 'consume 消耗'],
-    examPoints: ['generate heat/electricity/income', 'the younger generation']
+    examPoints: ['generate heat/electricity/income 产生热/电/收入', 'the younger generation 年轻一代']
   },
   handle: {
     collocations: ['handle a problem 处理问题', 'handle with care 小心轻放'],
@@ -667,7 +667,7 @@ const wordEnrichmentData = {
     wordForms: { pastTense: 'handled', pastParticiple: 'handled', presentParticiple: 'handling' },
     synonyms: ['deal with 处理', 'manage 管理', 'tackle 处理', 'address 处理；演说'],
     antonyms: ['ignore 忽视', 'neglect 忽视', 'avoid 避免'],
-    examPoints: ['handle = deal with', 'handle with care']
+    examPoints: ['handle = deal with 处理', 'handle with care 小心轻放']
   },
   identify: {
     collocations: ['identify A with B 把A等同于B', 'identify oneself 自我介绍', 'be identified as 被认定为'],
@@ -691,7 +691,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'improvement', pastTense: 'improved', pastParticiple: 'improved', presentParticiple: 'improving' },
     synonyms: ['enhance 增强', 'better 改善', 'upgrade 升级', 'refine 精炼'],
     antonyms: ['worsen 恶化', 'deteriorate 恶化', 'decline 拒绝；下降'],
-    examPoints: ['improve on = do better than', 'room for improvement']
+    examPoints: ['improve on = do better than 改进', 'room for improvement 改进空间']
   },
   include: {
     collocations: ['include sth in 把...包括在', 'including... 包括...', 'included 包括在内的'],
@@ -707,7 +707,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'influential', pastTense: 'influenced', pastParticiple: 'influenced', presentParticiple: 'influencing' },
     synonyms: ['affect 影响', 'impact 影响', 'shape 塑造', 'persuade 说服'],
     antonyms: ['ignore 忽视', 'neglect 忽视', 'disregard 无视'],
-    examPoints: ['have an influence on = have an effect on', 'influential figure']
+    examPoints: ['have an influence on = have an effect on 对...有影响', 'influential figure 有影响力的人物']
   },
   inform: {
     collocations: ['inform sb of sth 告知某人', 'inform sb that 通知某人', 'keep sb informed 让某人知情'],
@@ -723,7 +723,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'insistence', adjective: 'insistent', pastTense: 'insisted', pastParticiple: 'insisted', presentParticiple: 'insisting' },
     synonyms: ['persist 坚持', 'maintain 维持', 'demand 要求', 'urge 催促'],
     antonyms: ['yield 屈服', 'give in 屈服', 'concede 让步'],
-    examPoints: ['insist on doing', 'insist that + 虚拟语气(should + do) 表示"坚持要求"']
+    examPoints: ['insist on doing 坚持做', 'insist that + 虚拟语气(should + do) 表示"坚持要求"']
   },
   intend: {
     collocations: ['intend to do 打算做', 'intend sb for 打算让某人做', 'be intended for 专为...设计'],
@@ -731,7 +731,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'intention', adjective: 'intentional', adverb: 'intentionally', pastTense: 'intended', pastParticiple: 'intended', presentParticiple: 'intending' },
     synonyms: ['plan 计划', 'mean 意味着', 'aim 瞄准', 'design 设计'],
     antonyms: ['improvise 即兴', 'happen by chance 偶然发生'],
-    examPoints: ['intend to do = mean to do', 'be intended for = be designed for']
+    examPoints: ['intend to do = mean to do 打算做', 'be intended for = be designed for 专为...设计']
   },
   involve: {
     collocations: ['involve sb in 让某人参与', 'be involved in 参与', 'involve doing 需要做'],
@@ -739,7 +739,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'involvement', adjective: 'involved', pastTense: 'involved', pastParticiple: 'involved', presentParticiple: 'involving' },
     synonyms: ['include 包含', 'entail 需要', 'engage 参与', 'implicate 牵连'],
     antonyms: ['exclude 排除', 'eliminate 消除', 'omit 省略'],
-    examPoints: ['involve doing (后接 doing)', 'be involved in = participate in']
+    examPoints: ['involve doing (后接 doing)', 'be involved in = participate in 参与']
   },
   justify: {
     collocations: ['justify doing 为...辩护', 'be justified in 有理由做'],
@@ -747,7 +747,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'justification', adjective: 'justified', pastTense: 'justified', pastParticiple: 'justified', presentParticiple: 'justifying' },
     synonyms: ['defend 保卫', 'vindicate 证明', 'warrant 保证', 'excuse 原谅'],
     antonyms: ['condemn 谴责', 'blame 责备', 'criticize 批评'],
-    examPoints: ['justify + doing/名词', 'be justified in doing']
+    examPoints: ['justify + doing/名词', 'be justified in doing 做某事是有正当理由的']
   },
   maintain: {
     collocations: ['maintain order 维持秩序', 'maintain contact 保持联系', 'maintain that 坚持'],
@@ -755,7 +755,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'maintenance', adjective: 'maintainable', pastTense: 'maintained', pastParticiple: 'maintained', presentParticiple: 'maintaining' },
     synonyms: ['keep 保持', 'preserve 保存', 'sustain 维持', 'uphold 维护'],
     antonyms: ['abandon 放弃', 'neglect 忽视', 'discontinue 中断'],
-    examPoints: ['maintain = keep up', 'maintenance 不可数']
+    examPoints: ['maintain = keep up 维持', 'maintenance 不可数']
   },
   observe: {
     collocations: ['observe sb do/doing 观察某人做', 'observe that 注意到', 'observe the rules 遵守规则'],
@@ -771,7 +771,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'obtainable', pastTense: 'obtained', pastParticiple: 'obtained', presentParticiple: 'obtaining' },
     synonyms: ['get 得到', 'acquire 获得', 'gain 获得', 'secure 确保'],
     antonyms: ['lose 失去', 'forfeit 丧失', 'give up 放弃'],
-    examPoints: ['obtain = acquire', 'formal usage']
+    examPoints: ['obtain = acquire 获得', 'formal usage 正式用法']
   },
   occur: {
     collocations: ['occur to sb 突然想到', 'it occurs to sb that 某人想到', 'occur unexpectedly 意外发生'],
@@ -779,7 +779,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'occurrence', pastTense: 'occurred', pastParticiple: 'occurred', presentParticiple: 'occurring' },
     synonyms: ['happen 发生', 'take place 发生', 'arise 出现', 'come about 发生'],
     antonyms: ['cease 停止', 'stop 停止', 'fail to happen 未发生'],
-    examPoints: ['双写 r: occurred/occurring', 'it occurs to sb that = sb suddenly realizes']
+    examPoints: ['双写 r: occurred/occurring', 'it occurs to sb that = sb suddenly realizes 某人突然想到']
   },
   offer: {
     collocations: ['offer to do 主动提出做', 'offer sb sth 提供某人某物', 'make an offer 提议'],
@@ -787,7 +787,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'offer', pastTense: 'offered', pastParticiple: 'offered', presentParticiple: 'offering' },
     synonyms: ['provide 提供', 'give 给予', 'present 呈现', 'propose 提议'],
     antonyms: ['refuse 拒绝', 'reject 拒绝', 'withdraw 撤回'],
-    examPoints: ['offer sb sth = offer sth to sb', 'offer to do (主动提出)']
+    examPoints: ['offer sb sth = offer sth to sb 提供某人某物', 'offer to do (主动提出)']
   },
   oppose: {
     collocations: ['oppose doing 反对做', 'be opposed to 反对', 'as opposed to 与...相对'],
@@ -795,7 +795,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'opposition', adjective: 'opposite', pastTense: 'opposed', pastParticiple: 'opposed', presentParticiple: 'opposing' },
     synonyms: ['resist 抵抗', 'object to 反对', 'fight 战斗', 'combat 对抗'],
     antonyms: ['support 支持', 'favor 支持', 'endorse 认可', 'back 后退'],
-    examPoints: ['be opposed to + doing/名词', 'as opposed to = rather than']
+    examPoints: ['be opposed to + doing/名词', 'as opposed to = rather than 而不是']
   },
   organize: {
     collocations: ['organize an activity 组织活动', 'organize one\'s thoughts 整理思路'],
@@ -803,7 +803,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'organization', adjective: 'organized', pastTense: 'organized', pastParticiple: 'organized', presentParticiple: 'organizing' },
     synonyms: ['arrange 安排', 'coordinate 协调', 'plan 计划', 'structure 结构'],
     antonyms: ['disorganize 打乱', 'disrupt 破坏', 'scatter 分散'],
-    examPoints: ['organize = arrange', 'disorganized 杂乱无章的']
+    examPoints: ['organize = arrange 组织', 'disorganized 杂乱无章的']
   },
   perform: {
     collocations: ['perform an operation 做手术', 'perform a play 演出', 'perform well 表现好'],
@@ -811,7 +811,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'performance', pastTense: 'performed', pastParticiple: 'performed', presentParticiple: 'performing' },
     synonyms: ['carry out 执行', 'execute 执行', 'do 做', 'act 行动'],
     antonyms: ['fail 失败', 'neglect 忽视', 'ignore 忽视'],
-    examPoints: ['perform a task/duty', 'give a performance']
+    examPoints: ['perform a task/duty 执行任务/职责', 'give a performance 进行表演']
   },
   possess: {
     collocations: ['possess sth 拥有某物', 'be possessed of 具有'],
@@ -835,7 +835,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'prevention', adjective: 'preventive', pastTense: 'prevented', pastParticiple: 'prevented', presentParticiple: 'preventing' },
     synonyms: ['stop 停止', 'hinder 阻碍', 'obstruct 阻碍', 'deter 阻止'],
     antonyms: ['allow 允许', 'permit 允许', 'enable 使能够', 'facilitate 促进'],
-    examPoints: ['prevent sb from doing = stop sb from doing', 'prevention is better than cure']
+    examPoints: ['prevent sb from doing = stop sb from doing 阻止某人做', 'prevention is better than cure 预防胜于治疗']
   },
   produce: {
     collocations: ['produce results 产生结果', 'produce evidence 提供证据'],
@@ -843,7 +843,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'product', adjective: 'productive', pastTense: 'produced', pastParticiple: 'produced', presentParticiple: 'producing' },
     synonyms: ['make 制造', 'create 创造', 'generate 产生', 'yield 屈服', 'manufacture 制造'],
     antonyms: ['consume 消耗', 'destroy 破坏', 'waste 浪费'],
-    examPoints: ['product(产品) ≠ produce(n.农产品 /v.生产)', 'productive = fruitful']
+    examPoints: ['product(产品) ≠ produce(n.农产品 /v.生产)', 'productive = fruitful 多产的']
   },
   promote: {
     collocations: ['promote development 促进发展', 'be promoted to 被提升为', 'promote a product 推销产品'],
@@ -851,7 +851,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'promotion', adjective: 'promotional', pastTense: 'promoted', pastParticiple: 'promoted', presentParticiple: 'promoting' },
     synonyms: ['advance 前进', 'boost 提升', 'further 促进', 'elevate 提升'],
     antonyms: ['demote 降职', 'hinder 阻碍', 'impede 阻碍', 'discourage 使气馁'],
-    examPoints: ['promote sb to + 职位', 'get a promotion']
+    examPoints: ['promote sb to + 职位', 'get a promotion 获得晋升']
   },
   propose: {
     collocations: ['propose to do 提议做', 'propose doing 建议做', 'propose that 提议', 'propose to sb 向某人求婚'],
@@ -859,7 +859,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'proposal', pastTense: 'proposed', pastParticiple: 'proposed', presentParticiple: 'proposing' },
     synonyms: ['suggest 建议', 'recommend 推荐', 'put forward 提出', 'offer 提供'],
     antonyms: ['withdraw 撤回', 'retract 撤回', 'oppose 反对'],
-    examPoints: ['propose + that + 虚拟语气(should + do)', 'make a proposal']
+    examPoints: ['propose + that + 虚拟语气(should + do)', 'make a proposal 提出建议']
   },
   prove: {
     collocations: ['prove that 证明', 'prove sb wrong 证明某人错了', 'prove to be 结果是'],
@@ -867,7 +867,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'proof', adjective: 'proven', pastTense: 'proved', pastParticiple: 'proved/proven', presentParticiple: 'proving' },
     synonyms: ['demonstrate 证明', 'confirm 确认', 'verify 核实', 'establish 建立'],
     antonyms: ['disprove 反驳', 'refute 反驳', 'contradict 反驳'],
-    examPoints: ['prove to be = turn out to be', 'proof = evidence']
+    examPoints: ['prove to be = turn out to be 结果是', 'proof = evidence 证据']
   },
   provide: {
     collocations: ['provide sb with sth 提供某人某物', 'provide sth for sb 为某人提供', 'provide that 规定'],
@@ -875,7 +875,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'provision', pastTense: 'provided', pastParticiple: 'provided', presentParticiple: 'providing' },
     synonyms: ['supply 供应', 'furnish 提供', 'give 给予', 'equip 装备'],
     antonyms: ['deprive 剥夺', 'withhold 保留', 'deny 否认'],
-    examPoints: ['provide sb with sth = provide sth for sb', 'provided that = if']
+    examPoints: ['provide sb with sth = provide sth for sb 提供某人某物', 'provided that = if 如果(条件)']
   },
   realize: {
     collocations: ['realize one\'s dream 实现梦想', 'realize that 意识到', 'come to realize 逐渐意识到'],
@@ -891,7 +891,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'recognition', adjective: 'recognizable', pastTense: 'recognized', pastParticiple: 'recognized', presentParticiple: 'recognizing' },
     synonyms: ['identify 识别', 'acknowledge 承认', 'admit 承认', 'realize 意识到'],
     antonyms: ['ignore 忽视', 'overlook 忽略', 'deny 否认'],
-    examPoints: ['recognize = identify', 'beyond recognition 认不出来']
+    examPoints: ['recognize = identify 识别', 'beyond recognition 认不出来']
   },
   reduce: {
     collocations: ['reduce by 减少了', 'reduce to 减少到', 'reduce costs 降低成本'],
@@ -907,7 +907,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'reflection', adjective: 'reflective', pastTense: 'reflected', pastParticiple: 'reflected', presentParticiple: 'reflecting' },
     synonyms: ['mirror 反映', 'show 展示', 'demonstrate 证明', 'consider 考虑'],
     antonyms: ['absorb 吸收', 'ignore 忽视', 'overlook 忽略'],
-    examPoints: ['reflect on = think carefully about', 'reflection in the mirror']
+    examPoints: ['reflect on = think carefully about 反思', 'reflection in the mirror 镜中倒影']
   },
   regulate: {
     collocations: ['regulate the market 规范市场', 'regulate temperature 调节温度'],
@@ -915,7 +915,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'regulation', adjective: 'regulatory', pastTense: 'regulated', pastParticiple: 'regulated', presentParticiple: 'regulating' },
     synonyms: ['control 控制', 'manage 管理', 'govern 统治', 'adjust 调整'],
     antonyms: ['deregulate 放松管制', 'free 释放', 'release 释放'],
-    examPoints: ['regulations = rules', 'regulatory body 监管机构']
+    examPoints: ['regulations = rules 规章制度', 'regulatory body 监管机构']
   },
   relate: {
     collocations: ['relate to 与...有关', 'be related to 与...相关', 'relate A to B 把A与B联系起来'],
@@ -923,7 +923,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'relation', adjective: 'relative', adverb: 'relatively', pastTense: 'related', pastParticiple: 'related', presentParticiple: 'relating' },
     synonyms: ['connect 连接', 'link 连接', 'associate 联想', 'correlate 相关'],
     antonyms: ['disconnect 断开', 'separate 分离', 'dissociate 分离'],
-    examPoints: ['relate to = be connected with', 'in relation to = regarding']
+    examPoints: ['relate to = be connected with 与...有关', 'in relation to = regarding 关于']
   },
   rely: {
     collocations: ['rely on 依赖', 'rely on sb to do 指望某人做', 'rely on doing 依靠做'],
@@ -931,7 +931,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'reliance', adjective: 'reliable', pastTense: 'relied', pastParticiple: 'relied', presentParticiple: 'relying' },
     synonyms: ['depend 依赖', 'count on 依靠', 'trust 信任', 'lean on 依靠'],
     antonyms: ['distrust 不信任', 'doubt 怀疑', 'suspect 怀疑'],
-    examPoints: ['rely on = depend on', 'reliable = dependable']
+    examPoints: ['rely on = depend on 依赖', 'reliable = dependable 可靠的']
   },
   remain: {
     collocations: ['remain silent 保持沉默', 'remain to be done 尚待完成', 'remain in power 继续执政'],
@@ -955,7 +955,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'representation', adjective: 'representative', pastTense: 'represented', pastParticiple: 'represented', presentParticiple: 'representing' },
     synonyms: ['stand for 代表', 'symbolize 象征', 'act for 代理', 'depict 描绘'],
     antonyms: ['misrepresent 歪曲', 'distort 歪曲'],
-    examPoints: ['represent = stand for', 'representative of 典型的']
+    examPoints: ['represent = stand for 代表', 'representative of 典型的']
   },
   require: {
     collocations: ['require sb to do 要求某人做', 'require doing 需要被做', 'require that 要求'],
@@ -963,7 +963,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'requirement', adjective: 'required', pastTense: 'required', pastParticiple: 'required', presentParticiple: 'requiring' },
     synonyms: ['need 需要', 'demand 要求', 'ask 询问', 'necessitate 需要'],
     antonyms: ['excuse 原谅', 'exempt 豁免', 'waive 放弃'],
-    examPoints: ['require doing = require to be done (被动含义)', 'meet the requirements']
+    examPoints: ['require doing = require to be done (被动含义)', 'meet the requirements 满足要求']
   },
   resolve: {
     collocations: ['resolve to do 决心做', 'resolve a problem 解决问题', 'resolve that 决定'],
@@ -971,7 +971,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'resolution', adjective: 'resolute', pastTense: 'resolved', pastParticiple: 'resolved', presentParticiple: 'resolving' },
     synonyms: ['decide 决定', 'determine 决定', 'settle 解决', 'solve 解决'],
     antonyms: ['waver 动摇', 'hesitate 犹豫', 'delay 延迟'],
-    examPoints: ['resolve a problem = solve a problem', 'make a resolution']
+    examPoints: ['resolve a problem = solve a problem 解决问题', 'make a resolution 做出决定']
   },
   respond: {
     collocations: ['respond to 回应', 'respond by doing 以...回应'],
@@ -979,7 +979,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'response', adjective: 'responsible', pastTense: 'responded', pastParticiple: 'responded', presentParticiple: 'responding' },
     synonyms: ['reply 回复', 'answer 回答', 'react 反应', 'acknowledge 承认'],
     antonyms: ['ignore 忽视', 'disregard 无视', 'neglect 忽视'],
-    examPoints: ['respond to = reply to', 'in response to 作为对...的回应']
+    examPoints: ['respond to = reply to 回复', 'in response to 作为对...的回应']
   },
   result: {
     collocations: ['result in 导致', 'result from 由...引起', 'as a result 因此', 'as a result of 由于'],
@@ -995,7 +995,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'revelation', adjective: 'revealing', pastTense: 'revealed', pastParticiple: 'revealed', presentParticiple: 'revealing' },
     synonyms: ['disclose 揭露', 'uncover 揭露', 'expose 暴露', 'unveil 揭示'],
     antonyms: ['hide 隐藏', 'conceal 隐藏', 'cover 覆盖', 'mask 掩饰'],
-    examPoints: ['reveal = disclose', 'revelation 不可数']
+    examPoints: ['reveal = disclose 揭示', 'revelation 不可数']
   },
   satisfy: {
     collocations: ['satisfy one\'s needs 满足需求', 'be satisfied with 对...满意', 'satisfy the conditions 满足条件'],
@@ -1019,7 +1019,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'seeker', pastTense: 'sought', pastParticiple: 'sought', presentParticiple: 'seeking' },
     synonyms: ['look for 寻找', 'search 搜索', 'pursue 追求', 'try 尝试'],
     antonyms: ['find 找到', 'discover 发现', 'ignore 忽视'],
-    examPoints: ['不规则变形: seek-sought-sought', 'seek to do = try to do']
+    examPoints: ['不规则变形: seek-sought-sought', 'seek to do = try to do 试图做']
   },
   solve: {
     collocations: ['solve a problem 解决问题', 'solve a puzzle 解谜'],
@@ -1027,7 +1027,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'solution', adjective: 'solvable', pastTense: 'solved', pastParticiple: 'solved', presentParticiple: 'solving' },
     synonyms: ['resolve 解决', 'settle 解决', 'work out 解决', 'figure out 弄明白'],
     antonyms: ['create 创造', 'cause 导致', 'complicate 使复杂'],
-    examPoints: ['a solution to a problem', 'solve ≠ settle(安顿)']
+    examPoints: ['a solution to a problem 问题的解决方法', 'solve ≠ settle(安顿)']
   },
   succeed: {
     collocations: ['succeed in doing 成功做', 'succeed sb as 接替某人', 'succeed to the throne 继承王位'],
@@ -1035,7 +1035,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'success', adjective: 'successful', adverb: 'successfully', pastTense: 'succeeded', pastParticiple: 'succeeded', presentParticiple: 'succeeding' },
     synonyms: ['achieve 实现', 'accomplish 完成', 'triumph 胜利', 'follow 跟随'],
     antonyms: ['fail 失败', 'lose 失去', 'precede 先于'],
-    examPoints: ['succeed in doing (不是 to do)', 'succeed sb = take over from sb']
+    examPoints: ['succeed in doing (不是 to do)', 'succeed sb = take over from sb 继任某人']
   },
   suffer: {
     collocations: ['suffer from 患...病；遭受', 'suffer loss 遭受损失', 'suffer pain 忍受痛苦'],
@@ -1059,7 +1059,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'survival', pastTense: 'survived', pastParticiple: 'survived', presentParticiple: 'surviving' },
     synonyms: ['live through 经历', 'endure 忍受', 'outlast 比...持久', 'withstand 经受'],
     antonyms: ['die 死亡', 'perish 消亡', 'succumb 屈服'],
-    examPoints: ['survive 是及物动词不加 from', 'survive the earthquake']
+    examPoints: ['survive 是及物动词不加 from', 'survive the earthquake 在地震中幸存']
   },
   tend: {
     collocations: ['tend to do 倾向于做', 'tend towards 倾向于', 'tend sb 照料某人'],
@@ -1067,7 +1067,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'tendency', adjective: 'tender', pastTense: 'tended', pastParticiple: 'tended', presentParticiple: 'tending' },
     synonyms: ['be inclined to 倾向于', 'lean towards 倾向于', 'be likely to 可能', 'care for 照顾'],
     antonyms: ['avoid 避免', 'shun 避开', 'neglect 忽视'],
-    examPoints: ['tend to do = be likely to do', 'have a tendency to do']
+    examPoints: ['tend to do = be likely to do 倾向于做', 'have a tendency to do 有做某事的倾向']
   },
   transform: {
     collocations: ['transform A into B 把A变成B', 'transform one\'s life 改变生活'],
@@ -1075,7 +1075,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'transformation', pastTense: 'transformed', pastParticiple: 'transformed', presentParticiple: 'transforming' },
     synonyms: ['change 改变', 'convert 转换', 'alter 改变', 'turn 转动'],
     antonyms: ['preserve 保存', 'maintain 维持', 'keep 保持'],
-    examPoints: ['transform A into B', 'transformation 不可数']
+    examPoints: ['transform A into B 把A变成B', 'transformation 不可数']
   },
   value: {
     collocations: ['value sth at 估价', 'place a high value on 高度重视', 'of great value 很有价值'],
@@ -1083,7 +1083,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'valuable', noun: 'valuation', pastTense: 'valued', pastParticiple: 'valued', presentParticiple: 'valuing' },
     synonyms: ['worth 值得', 'prize 珍视', 'treasure 珍视', 'appreciate 欣赏；感激'],
     antonyms: ['disregard 无视', 'devalue 贬值', 'ignore 忽视'],
-    examPoints: ['valuable(有价值的) ≠ valued(被重视的)', 'invaluable = priceless']
+    examPoints: ['valuable(有价值的) ≠ valued(被重视的)', 'invaluable = priceless 无价的']
   },
   vary: {
     collocations: ['vary from 不同于', 'vary with 随...变化', 'vary in 在...方面不同'],
@@ -1091,7 +1091,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'variety', adjective: 'various', pastTense: 'varied', pastParticiple: 'varied', presentParticiple: 'varying' },
     synonyms: ['differ 不同', 'change 改变', 'fluctuate 波动', 'diversify 多样化'],
     antonyms: ['remain 保持', 'stay 停留', 'be constant 不变的'],
-    examPoints: ['a variety of = various', 'vary from...to...']
+    examPoints: ['a variety of = various 多种多样的', 'vary from...to... 从...到...不等']
   },
   volunteer: {
     collocations: ['volunteer to do 自愿做', 'volunteer for 自愿参加'],
@@ -1099,7 +1099,7 @@ const wordEnrichmentData = {
     wordForms: { adjective: 'voluntary', adverb: 'voluntarily', pastTense: 'volunteered', pastParticiple: 'volunteered', presentParticiple: 'volunteering' },
     synonyms: ['offer 提供', 'step forward 站出来', 'enlist 征募'],
     antonyms: ['be forced 被迫', 'be drafted 被征召'],
-    examPoints: ['volunteer to do', 'voluntary work']
+    examPoints: ['volunteer to do 志愿做', 'voluntary work 志愿工作']
   },
   warn: {
     collocations: ['warn sb of sth 警告某人', 'warn sb against doing 警告某人不要', 'warn sb not to do 警告某人不要做'],
@@ -1107,7 +1107,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'warning', pastTense: 'warned', pastParticiple: 'warned', presentParticiple: 'warning' },
     synonyms: ['caution 警告', 'alert 警觉的', 'advise 建议', 'notify 通知'],
     antonyms: ['reassure 使安心', 'encourage 鼓励', 'urge 催促'],
-    examPoints: ['warn sb against doing = warn sb not to do', 'give a warning']
+    examPoints: ['warn sb against doing = warn sb not to do 警告某人不要做', 'give a warning 给予警告']
   },
   forget: {
     collocations: ['forget to do 忘记要做', 'forget doing 忘记做过', 'forget about 忘记关于'],
@@ -1115,7 +1115,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'forgetfulness', adjective: 'forgetful', pastTense: 'forgot', pastParticiple: 'forgotten', presentParticiple: 'forgetting' },
     synonyms: ['overlook 忽略', 'neglect 忽视'],
     antonyms: ['remember 记得', 'recall 回想'],
-    examPoints: ['forget to do 忘记要做(未做)', 'forget doing 忘记做过(已做)', 'unforgettable = memorable']
+    examPoints: ['forget to do 忘记要做(未做)', 'forget doing 忘记做过(已做)', 'unforgettable = memorable 难忘的']
   },
   stop: {
     collocations: ['stop to do 停下来去做', 'stop doing 停止做某事', 'stop sb from doing 阻止某人做', 'come to a stop 停下来'],
@@ -1171,7 +1171,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'beginning', noun2: 'beginner', pastTense: 'began', pastParticiple: 'begun', presentParticiple: 'beginning' },
     synonyms: ['start 开始', 'commence 开始', 'initiate 发起'],
     antonyms: ['end 结束', 'finish 完成', 'conclude 总结'],
-    examPoints: ['begin to do = begin doing 通常可互换', 'beginning 双写n再加ing', 'to begin with = first of all']
+    examPoints: ['begin to do = begin doing 通常可互换', 'beginning 双写n再加ing', 'to begin with = first of all 首先']
   },
   start: {
     collocations: ['start to do 开始做', 'start doing 开始做', 'start off 出发', 'start out 出发', 'to start with 首先'],
@@ -1179,7 +1179,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'start', pastTense: 'started', pastParticiple: 'started', presentParticiple: 'starting' },
     synonyms: ['begin 开始', 'commence 开始', 'initiate 发起'],
     antonyms: ['stop 停止', 'finish 结束', 'end 结束'],
-    examPoints: ['start to do = start doing 通常可互换', 'start sb doing 使某人开始做', 'to start with = to begin with']
+    examPoints: ['start to do = start doing 通常可互换', 'start sb doing 使某人开始做', 'to start with = to begin with 首先']
   },
   like: {
     collocations: ['like to do 喜欢做', 'like doing 喜欢做', 'would like to do 想要做', 'feel like doing 想要做', 'if you like 如果你愿意'],
@@ -1187,7 +1187,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'liking', adjective: 'likely', adverb: 'likely', pastTense: 'liked', pastParticiple: 'liked', presentParticiple: 'liking' },
     synonyms: ['enjoy 享受', 'love 喜爱', 'be fond of 喜欢'],
     antonyms: ['dislike 不喜欢', 'hate 讨厌'],
-    examPoints: ['would like to do = want to do', 'feel like doing = want to do', 'likely 作副词: sb is likely to do = it is likely that']
+    examPoints: ['would like to do = want to do 想要做', 'feel like doing = want to do 想要做', 'likely 作副词: sb is likely to do = it is likely that']
   },
   prefer: {
     collocations: ['prefer to do 更喜欢做', 'prefer doing to doing 宁愿...而不', 'prefer to do rather than do 宁愿做而不做', 'have a preference for 偏爱'],
@@ -1195,7 +1195,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'preference', adjective: 'preferable', pastTense: 'preferred', pastParticiple: 'preferred', presentParticiple: 'preferring' },
     synonyms: ['favor 偏爱', 'choose 选择'],
     antonyms: ['reject 拒绝', 'dislike 不喜欢'],
-    examPoints: ['prefer A to B (A/B为名词或动名词)', 'prefer to do rather than do', '双写r再加ed/ing', 'have a preference for sth']
+    examPoints: ['prefer A to B (A/B为名词或动名词)', 'prefer to do rather than do 宁愿做而不做', '双写r再加ed/ing', 'have a preference for sth 偏爱某物']
   },
   need: {
     collocations: ['need to do 需要做', 'need doing 需要被做', 'in need of 需要', 'there is no need to do 没必要做'],
@@ -1235,7 +1235,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'enjoyment', adjective: 'enjoyable', pastTense: 'enjoyed', pastParticiple: 'enjoyed', presentParticiple: 'enjoying' },
     synonyms: ['like 喜欢', 'appreciate 欣赏', 'relish 享受'],
     antonyms: ['dislike 不喜欢', 'hate 讨厌', 'suffer 受苦'],
-    examPoints: ['enjoy 后接 doing 不接 to do', 'enjoy oneself = have a good time', 'enjoyable = pleasant']
+    examPoints: ['enjoy 后接 doing 不接 to do', 'enjoy oneself = have a good time 玩得开心', 'enjoyable = pleasant 愉快的']
   },
   finish: {
     collocations: ['finish doing 完成做', 'finish off 完成;吃完', 'finish with 完成;与...分手'],
@@ -1243,7 +1243,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'finish', adjective: 'finished', pastTense: 'finished', pastParticiple: 'finished', presentParticiple: 'finishing' },
     synonyms: ['complete 完成', 'accomplish 完成', 'conclude 结束'],
     antonyms: ['start 开始', 'begin 开始'],
-    examPoints: ['finish 后接 doing 不接 to do', 'finish doing sth = complete doing sth']
+    examPoints: ['finish 后接 doing 不接 to do', 'finish doing sth = complete doing sth 完成做某事']
   },
   avoid: {
     collocations: ['avoid doing 避免做', 'avoid sth 避免某事'],
@@ -1251,7 +1251,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'avoidance', adjective: 'unavoidable', pastTense: 'avoided', pastParticiple: 'avoided', presentParticiple: 'avoiding' },
     synonyms: ['evade 逃避', 'escape 逃避', 'shun 避开'],
     antonyms: ['face 面对', 'confront 面对', 'encounter 遭遇'],
-    examPoints: ['avoid 后接 doing 不接 to do', 'avoid doing = keep from doing']
+    examPoints: ['avoid 后接 doing 不接 to do', 'avoid doing = keep from doing 避免做']
   },
   consider: {
     collocations: ['consider doing 考虑做', 'consider sb to be 认为某人是', 'consider...as 把...看作', 'take into consideration 考虑到'],
@@ -1275,7 +1275,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'practice', adjective: 'practical', adverb: 'practically', pastTense: 'practiced', pastParticiple: 'practiced', presentParticiple: 'practicing' },
     synonyms: ['rehearse 排练', 'train 训练', 'drill 操练'],
     antonyms: ['theory 理论'],
-    examPoints: ['practice doing 练习做某事(美式practice=英式practise)', 'practical vs practicable: practical 实用的, practicable 可行的', 'put theory into practice']
+    examPoints: ['practice doing 练习做某事(美式practice=英式practise)', 'practical vs practicable: practical 实用的, practicable 可行的', 'put theory into practice 将理论付诸实践']
   },
   permit: {
     collocations: ['permit doing 允许做', 'permit sb to do 允许某人做', 'if time permits 如果时间允许', 'with permission 经许可'],
@@ -1355,11 +1355,11 @@ const wordEnrichmentData = {
     wordForms: { noun: 'delay', pastTense: 'delayed', pastParticiple: 'delayed', presentParticiple: 'delaying' },
     synonyms: ['postpone 推迟', 'put off 推迟', 'defer 延期'],
     antonyms: ['hasten 催促', 'expedite 加快'],
-    examPoints: ['delay doing 推迟做(后接动名词)', 'without delay = immediately', 'delay = put off = postpone']
+    examPoints: ['delay doing 推迟做(后接动名词)', 'without delay = immediately 毫不迟延', 'delay = put off = postpone 推迟']
   },
   miss: {
     collocations: ['miss doing 错过做', 'miss the bus 错过公交', 'miss home 想家', 'miss out 错过'],
-    derivatives: ['missing adj. 缺失的', 'missingly adv.'],
+    derivatives: ['missing adj. 缺失的', 'missingly adv. 缺失地'],
     wordForms: { adjective: 'missing', pastTense: 'missed', pastParticiple: 'missed', presentParticiple: 'missing' },
     synonyms: ['lose 丢失', 'overlook 忽略', 'skip 跳过'],
     antonyms: ['catch 赶上', 'find 找到'],
@@ -1379,7 +1379,7 @@ const wordEnrichmentData = {
     wordForms: { adverb: 'seemingly', pastTense: 'seemed', pastParticiple: 'seemed', presentParticiple: 'seeming' },
     synonyms: ['appear 似乎', 'look 看起来'],
     antonyms: ['be 确定'],
-    examPoints: ['seem to do 似乎做', 'It seems that... = sb seems to do', 'seem 无被动语态和进行时']
+    examPoints: ['seem to do 似乎做', 'It seems that... = sb seems to do 似乎...', 'seem 无被动语态和进行时']
   },
   offer: {
     collocations: ['offer to do 主动提出做', 'offer sb sth 提供某人某物', 'offer sth to sb 提供某物给某人', 'make an offer 提出提议'],
@@ -1467,7 +1467,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'devotion', adjective: 'devoted', pastTense: 'devoted', pastParticiple: 'devoted', presentParticiple: 'devoting' },
     synonyms: ['dedicate 奉献', 'commit 致力', 'pledge 保证'],
     antonyms: ['neglect 忽视', 'abandon 放弃'],
-    examPoints: ['devote...to doing 中 to 是介词后接动名词', 'devote oneself to = dedicate oneself to', 'be devoted to doing = be dedicated to doing 专心于']
+    examPoints: ['devote...to doing 中 to 是介词后接动名词', 'devote oneself to = dedicate oneself to 致力于', 'be devoted to doing = be dedicated to doing 专心于']
   },
   look: {
     collocations: ['look forward to doing 期待做', 'look at 看', 'look after 照顾', 'look into 调查', 'look up 查阅', 'look down upon 蔑视', 'look up to 尊敬', 'look for 寻找', 'look out 当心', 'look like 看起来像', 'look over 检查'],
@@ -1499,7 +1499,7 @@ const wordEnrichmentData = {
     wordForms: { pastTense: 'let', pastParticiple: 'let', presentParticiple: 'letting' },
     synonyms: ['allow 允许', 'permit 许可', 'enable 使能够'],
     antonyms: ['forbid 禁止', 'prevent 阻止'],
-    examPoints: ['let sb do 让某人做(省略to,不用let sb to do)', 'let alone + do/doing/noun 更不用说', 'let sb down = disappoint sb']
+    examPoints: ['let sb do 让某人做(省略to,不用let sb to do)', 'let alone + do/doing/noun 更不用说', 'let sb down = disappoint sb 使某人失望']
   },
   have: {
     collocations: ['have sb do 让某人做', 'have sth done 使某事被做', 'have sb doing 让某人一直做', 'have to do 不得不做', 'have sth to do 有事要做', 'have difficulty (in) doing 做某事有困难', 'have a good time doing 做某事很开心'],
@@ -1555,7 +1555,7 @@ const wordEnrichmentData = {
     wordForms: { noun: 'help', adjective: 'helpful', adjective2: 'helpless', pastTense: 'helped', pastParticiple: 'helped', presentParticiple: 'helping' },
     synonyms: ['assist 协助', 'aid 援助', 'support 支持'],
     antonyms: ['hinder 阻碍', 'obstruct 妨碍'],
-    examPoints: ['help sb (to) do to可省略', 'can\'t help doing 忍不住做(动名词)', 'can\'t help but do 不得不做(不定式省to)', 'can\'t help but do = cannot but do']
+    examPoints: ['help sb (to) do to可省略', 'can\'t help doing 忍不住做(动名词)', 'can\'t help but do 不得不做(不定式省to)', 'can\'t help but do = cannot but do 不得不做']
   },
 };
 
