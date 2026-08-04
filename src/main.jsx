@@ -8806,19 +8806,10 @@ const MeIcon = () => (
   </svg>
 );
 
-const ReviewIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 4 23 10 17 10" />
-    <polyline points="1 20 1 14 7 14" />
-    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-  </svg>
-);
-
 const TABS = [
   { id: 'learn', label: '背诵', icon: LearnIcon },
   { id: 'library', label: '词库', icon: LibraryIcon },
   { id: 'wrong', label: '错词本', icon: WrongIcon },
-  { id: 'review', label: '温习', icon: ReviewIcon },
   { id: 'extend', label: '扩展', icon: ExtendIcon },
   { id: 'import', label: '导入', icon: ImportIcon },
   { id: 'me', label: '我的', icon: MeIcon },
@@ -8899,6 +8890,7 @@ function App() {
   // 扩展页面的子tab
   const [extendTab, setExtendTab] = useState('affix');
   // 温习功能
+  const [showReview, setShowReview] = useState(false);
   const [reviewDate, setReviewDate] = useState(getToday());
   const [reviewMode, setReviewMode] = useState('list'); // 'list' or 'practice'
   const [reviewIndex, setReviewIndex] = useState(0);
@@ -9453,16 +9445,16 @@ function App() {
         window.scrollTo(0, extendScrollRef.current);
       });
     }
-    // 进入温习页时，自动选择最近有学习记录的日期
-    if (prevSection !== 'review' && section === 'review') {
+    // 打开温习页时，自动选择最近有学习记录的日期
+    if (showReview) {
       const dates = Object.keys(studyWordsLog).filter(d => studyWordsLog[d] && studyWordsLog[d].length > 0).sort().reverse();
-      if (dates.length > 0) {
+      if (dates.length > 0 && !studyWordsLog[reviewDate]) {
         setReviewDate(dates[0]);
         setReviewIndex(0); setReviewShowBack(false); setReviewSelected('');
       }
     }
     prevSectionRef.current = section;
-  }, [section]);
+  }, [section, showReview]);
 
   function nextCard() {
     // 把当前单词加入"已看"记录
@@ -10580,13 +10572,15 @@ function App() {
         </section>
       )}
 
-      {/* ====== 温习页 ====== */}
-      {section === 'review' && (
-        <section className="panel">
-          <div className="libraryHeader">
-            <h2 className="sectionTitle">温习</h2>
-          </div>
-          <p className="muted">按日期回顾每天学习的单词，支持列表浏览和背诵两种模式。</p>
+      {/* ====== 温习页面（全屏弹窗，从"我的"页面打开） ====== */}
+      {showReview && (
+        <div className="modal" style={{ zIndex: 1000 }} onClick={() => setShowReview(false)}>
+          <div className="modalContent" style={{ maxWidth: 600, paddingTop: 0 }} onClick={e => e.stopPropagation()}>
+            <div className="modalHeader">
+              <h2>温习</h2>
+              <button className="closeBtn" onClick={() => setShowReview(false)}>✕</button>
+            </div>
+            <p className="muted" style={{ margin: '8px 0' }}>按日期回顾每天学习的单词，支持列表浏览和背诵两种模式。</p>
 
           {/* 日期选择器：显示有学习记录的日期 */}
           {(() => {
@@ -10709,7 +10703,8 @@ function App() {
               </>
             );
           })()}
-        </section>
+          </div>
+        </div>
       )}
 
       {/* ====== 扩展页（词根词缀+对比+易错词） ====== */}
@@ -11205,7 +11200,7 @@ function App() {
                   cells.push(
                     <div key={key} className={`calDay ${studied ? 'calStudied' : ''} ${isToday ? 'calToday' : ''}`}
                       style={studied ? { cursor: 'pointer' } : {}}
-                      onClick={studied ? () => { setReviewDate(key); setReviewMode('list'); setSection('review'); } : undefined}
+                      onClick={studied ? () => { setReviewDate(key); setReviewMode('list'); setShowReview(true); } : undefined}
                       title={studied ? `点击温习 ${key} 的单词` : ''}>
                       {d}
                     </div>
@@ -11245,6 +11240,20 @@ function App() {
               </svg>
               <div className="ringLabel">/ {settings.dailyGoal} 词</div>
             </div>
+          </div>
+
+          {/* 温习入口 */}
+          <div style={{ marginTop: 12 }}>
+            <button className="primary" style={{ width: '100%', padding: '12px 0', fontSize: 15 }}
+              onClick={() => { setShowReview(true); }}>
+              📖 温习历史单词
+            </button>
+            {(() => {
+              const studyDates = Object.keys(studyWordsLog).filter(d => studyWordsLog[d] && studyWordsLog[d].length > 0);
+              if (studyDates.length === 0) return null;
+              const totalWords = studyDates.reduce((sum, d) => sum + studyWordsLog[d].length, 0);
+              return <p className="muted" style={{ textAlign: 'center', marginTop: 6, fontSize: 13 }}>共 {studyDates.length} 天、{totalWords} 词可温习</p>;
+            })()}
           </div>
 
           {/* 设置区域 */}
