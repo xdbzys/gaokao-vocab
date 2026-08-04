@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.31.0';
-const APP_VERSION_CODE = 180;
+const APP_VERSION = '2.32.0';
+const APP_VERSION_CODE = 181;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -69,7 +69,7 @@ const seedWords985 = [
   ['amount', 'n.', '总数,数量', '985', ['总数,数量'], ['总数,数量'], ['A large amount of money was spent on the research project.|||在研究项目上花费了大量资金。']],
   ['amuse', 'vt.', '逗…乐,给…娱乐', '985', ['逗…乐,给…娱乐'], ['逗…乐,给…娱乐'], ['The committee decided to amuse the proposal after careful discussion.|||委员会在仔细讨论后决定逗乐该提案。']],
   ['analyze', 'vt.', '分析,分解,解析', '985', ['分析,分解,解析'], ['分析,分解,解析'], ['The students were asked to analyze the poem for hidden meanings.|||学生们被要求分析这首诗的隐藏含义。']],
-  ['ancestor', 'n.', '祖宗,祖先', '985', ['祖宗,祖先'], ['祖宗,祖先'], ['Many people visit their ancestors\' graves during the Qingming Festival.']],
+  ['ancestor', 'n.', '祖宗,祖先', '985', ['祖宗,祖先'], ['祖宗,祖先'], ['Many people visit their ancestors\' graves during the Qingming Festival.|||许多人在清明节期间祭拜祖先的坟墓。']],
   ['anger', 'n.', '怒,愤怒，vt.使发怒', '985', ['怒,愤怒，vt.使发怒'], ['怒,愤怒，vt.使发怒'], ['The essay examines how anger shapes our decisions.|||这篇文章探讨了愤怒如何塑造我们的决定。']],
   ['angle', 'n.', '角,角度', '985', ['角,角度'], ['角,角度'], ['The photographer captured the building from a unique angle.|||摄影师从独特的角度拍摄了这栋建筑。']],
   ['anniversary', 'n.', '周年纪念日', '985', ['周年纪念日'], ['周年纪念日'], ['The couple celebrated their 25th wedding anniversary last weekend.|||这对夫妇上周末庆祝了他们的25周年结婚纪念日。']],
@@ -78,7 +78,7 @@ const seedWords985 = [
   ['anxious', 'adj.', '忧虑的,渴望的', '985', ['忧虑的,渴望的'], ['忧虑的,渴望的'], ['She felt anxious about the upcoming college entrance examination.|||她对即将到来的高考感到焦虑。']],
   ['anyhow', 'adv.', '无论如何', '985', ['无论如何'], ['无论如何'], ['Anyhow, we managed to finish the project before the deadline.|||总之，我们设法在截止日期前完成了项目。']],
   ['apart', 'adv.', '相隔,分开,除去', '985', ['相隔,分开,除去'], ['相隔,分开,除去'], ['The two buildings stood fifty meters apart from each other.|||两栋楼相距五十米。']],
-  ['apartment', 'n.', '一套公寓房间', '985', ['一套公寓房间'], ['一套公寓房间'], ['Understanding apartment is crucial for grasping the author\'s main message.']],
+  ['apartment', 'n.', '一套公寓房间', '985', ['一套公寓房间'], ['一套公寓房间'], ['Understanding apartment is crucial for grasping the author\'s main message.|||理解公寓的含义对于把握作者的主要信息至关重要。']],
   ['apologize', 'vi.', '道歉,谢罪,认错', '985', ['道歉,谢罪,认错'], ['道歉,谢罪,认错'], ['He apologized to his teacher for being late to class.|||他为上课迟到向老师道歉。']],
   ['appearance', 'n.', '出现,来到,外观', '985', ['出现,来到,外观'], ['出现,来到,外观'], ['Her neat appearance left a good impression on the interviewers.|||她整洁的外表给面试官留下了很好的印象。']],
   ['apply', 'vt.', '申请，应用', '985', ['申请，应用'], ['申请，应用'], ['She decided to apply for a part-time job at the bookstore.|||她决定在书店申请一份兼职工作。']],
@@ -95,9 +95,9 @@ const seedWords985 = [
   ['ashamed', 'adj.', '惭愧(的),羞耻(的)', '985', ['惭愧(的),羞耻(的'], ['惭愧(的),羞耻(的)'], ['He felt ashamed of himself for cheating on the test.|||他为自己在考试中作弊而感到羞愧。']],
   ['aside', 'adv.', '在旁边,到旁边', '985', ['在旁边,到旁边'], ['在旁边,到旁边'], ['She set aside some money each month for her college fund.|||她每个月都会为自己的大学基金留出一些钱。']],
   ['aspect', 'n.', '方面,样子,外表', '985', ['方面,样子,外表'], ['方面,样子,外表'], ['We must consider every aspect of the problem before making a decision.|||在做出决定之前，我们必须考虑问题的各个方面。']],
-  ['assistant', 'n.', '助手,助教', '985', ['助手,助教'], ['助手,助教'], ['The professor\'s assistant helped students with their lab reports.']],
+  ['assistant', 'n.', '助手,助教', '985', ['助手,助教'], ['助手,助教'], ['The professor\'s assistant helped students with their lab reports.|||教授的助手帮助学生完成实验报告。']],
   ['assume', 'vt.', '假定,承担,呈现', '985', ['假定,承担,呈现'], ['假定,承担,呈现'], ['Do not assume that everyone shares your point of view.|||不要假设每个人都同意你的观点。']],
-  ['astonish', 'vt.', '使惊讶,使吃惊', '985', ['使惊讶,使吃惊'], ['使惊讶,使吃惊'], ['The magician\'s performance astonished the entire audience.']],
+  ['astonish', 'vt.', '使惊讶,使吃惊', '985', ['使惊讶,使吃惊'], ['使惊讶,使吃惊'], ['The magician\'s performance astonished the entire audience.|||魔术师的表演使全场观众惊叹不已。']],
   ['athlete', 'n.', '运动员', '985', ['运动员'], ['运动员'], ['The athlete trained for years to compete in the Olympics.|||这位运动员经过多年的训练，参加了奥运会。']],
   ['atmosphere', 'n.', '大气,气氛', '985', ['大气,气氛'], ['大气,气氛'], ['The restaurant has a warm and romantic atmosphere.|||餐厅氛围温馨浪漫。']],
   ['attach', 'vt.', '缚,系,贴,附加', '985', ['缚,系,贴,附加'], ['缚,系,贴,附加'], ['Please attach your resume to the email before sending it.|||请在发送之前将您的简历附在电子邮件中。']],
@@ -131,13 +131,13 @@ const seedWords985 = [
   ['battery', 'n.', '电池', '985', ['电池'], ['电池'], ['My phone battery runs out quickly when I play games.|||当我玩游戏时，我的手机电池很快就用完了。']],
   ['battle', 'n.', '战役,斗争，vi.作战', '985', ['战役,斗争，vi.作战'], ['战役,斗争，vi.作战'], ['The soldiers fought a fierce battle to defend their homeland.|||士兵们为保卫家园进行了一场激烈的战斗。']],
   ['beard', 'n.', '胡须,络腮胡子', '985', ['胡须,络腮胡子'], ['胡须,络腮胡子'], ['Santa Claus is known for his long white beard.|||圣诞老人以长长的白胡子而闻名。']],
-  ['beauty', 'n.', '美,美丽,美人', '985', ['美,美丽,美人'], ['美,美丽,美人'], ['The beauty of the sunset took everyone\'s breath away.']],
+  ['beauty', 'n.', '美,美丽,美人', '985', ['美,美丽,美人'], ['美,美丽,美人'], ['The beauty of the sunset took everyone\'s breath away.|||日落的美景让所有人叹为观止。']],
   ['beer', 'n.', '啤酒', '985', ['啤酒'], ['啤酒'], ['Researchers have published new findings about beer.|||研究人员发表了关于啤酒的新发现。']],
   ['beg', 'vt.', 'vi.乞求,请求', '985', ['vi.乞求,请求'], ['vi.乞求,请求'], ['The students must beg the passage before answering the questions.|||学生必须在回答问题之前乞求段落。']],
   ['beginning', 'n.', '开始,开端,起源', '985', ['开始,开端,起源'], ['开始,开端,起源'], ['The essay examines how beginning shapes our decisions.|||这篇文章探讨了开始是如何塑造我们的决策的。']],
   ['behave', 'vi.', '表现,举止', '985', ['表现,举止'], ['表现,举止'], ['He managed to behave the difficult task without any help.|||他设法在没有任何帮助的情况下完成了这项艰巨的任务。']],
   ['belly', 'n.', '腹部,胃', '985', ['腹部,胃'], ['腹部,胃'], ['The report highlights the significance of belly in education.|||该报告强调了腹部在教育中的重要性。']],
-  ['belong', 'vi.', '属于,附属', '985', ['属于,附属'], ['属于,附属'], ['The author attempts to belong readers\' attention to this issue.']],
+  ['belong', 'vi.', '属于,附属', '985', ['属于,附属'], ['属于,附属'], ['The author attempts to belong readers\' attention to this issue.|||作者试图将读者的注意力吸引到这个问题上。']],
   ['belt', 'n.', '带,腰带,区', '985', ['带,腰带,区'], ['带,腰带,区'], ['The report highlights the significance of belt in education.|||报告强调了“一带一路”在教育中的重要性。']],
   ['bench', 'n.', '长凳,条凳,工作台', '985', ['长凳,条凳,工作台'], ['长凳,条凳,工作台'], ['We sat on the bench in the park and enjoyed the sunset.|||我们坐在公园的长椅上，欣赏日落。']],
   ['bend', 'vt.', '使弯曲，vi.弯曲', '985', ['使弯曲，vi.弯曲'], ['使弯曲，vi.弯曲'], ['The experiment shows how plants bend sunlight for growth.|||实验展示了植物如何弯曲阳光以促进生长。']],
@@ -172,7 +172,7 @@ const seedWords985 = [
   ['burden', 'n.', '负担,责任，装载量，vt.使负担，装货于', '985', ['负担,责任，装载量v'], ['负担,责任，装载量，vt.使负担，装货于'], ['The survey reveals public attitudes toward burden.|||调查揭示了公众对负担的态度。']],
   ['burst', 'v/', 'n.爆发，突发，爆炸', '985', ['n.爆发，突发，爆炸'], ['n.爆发，突发，爆炸'], ['Students should learn to burst their knowledge in real practice.|||学生应该学会在实际实践中突破他们的知识。']],
   ['bury', 'vt.', '埋葬,埋藏', '985', ['埋葬,埋藏'], ['埋葬,埋藏'], ['He managed to bury the difficult task without any help.|||他设法在没有任何帮助的情况下埋葬了这项艰巨的任务。']],
-  ['bush', 'n.', '灌木', '985', ['灌木'], ['灌木'], ['Many exam questions test students\' knowledge of bush.']],
+  ['bush', 'n.', '灌木', '985', ['灌木'], ['灌木'], ['Many exam questions test students\' knowledge of bush.|||许多考试题目考查学生对灌木丛的掌握。']],
   ['butcher', 'n.', '屠夫,屠户', '985', ['屠夫,屠户'], ['屠夫,屠户'], ['The essay examines how butcher shapes our decisions.|||这篇文章探讨了屠夫如何塑造我们的决定。']],
   ['button', 'n.', '扣子,按钮，vt.扣紧', '985', ['扣子,按钮，vt.扣紧'], ['扣子,按钮，vt.扣紧'], ['The teacher explained button with real-life examples in class.|||老师在课堂上用现实生活中的例子解释了按钮。']],
   ['café', 'n.', '咖啡馆,小餐厅', '985', ['咖啡馆,小餐厅'], ['咖啡馆,小餐厅'], ['The experiment demonstrates the properties of café.|||实验演示了咖啡馆的特性。']],
@@ -202,7 +202,7 @@ const seedWords985 = [
   ['characteristic', 'adj.', '特有的，n.特性', '985', ['特有的，n.特性'], ['特有的，n.特性'], ['Heavy rain is characteristic of the monsoon season in southern China.|||大雨是中国南方季风季节的特征。']],
   ['charge', 'vt.', '索价,控告，充电，使承担，n.费用，控告，电荷，掌管', '985', ['索价,控告，充电，使'], ['索价,控告，充电，使承担，n.费用，控告，电荷，掌管'], ['The manager is in charge of the entire sales department.|||经理负责整个销售部门。']],
   ['chat', 'vi.', 'n.闲谈,聊天', '985', ['n.闲谈,聊天'], ['n.闲谈,聊天'], ['The two friends chatted happily over coffee at the cafe.|||两位朋友在咖啡馆边喝咖啡边愉快地聊天。']],
-  ['cheek', 'n.', '面颊,脸蛋', '985', ['面颊,脸蛋'], ['面颊,脸蛋'], ['The baby\'s cheeks turned red from the cold winter wind.']],
+  ['cheek', 'n.', '面颊,脸蛋', '985', ['面颊,脸蛋'], ['面颊,脸蛋'], ['The baby\'s cheeks turned red from the cold winter wind.|||婴儿的脸颊因寒冬的风而变红了。']],
   ['chief', 'adj.', '主要的,首席的', '985', ['主要的,首席的'], ['主要的,首席的'], ['The chief editor approved the article for publication.|||主编批准了这篇文章的出版。']],
   ['chimney', 'n.', '烟囱', '985', ['烟囱'], ['烟囱'], ['The report highlights the significance of chimney in education.|||该报告强调了烟囱在教育中的重要性。']],
   ['cigar', 'n.', '雪茄', '985', ['雪茄'], ['雪茄'], ['The businessman lit a cigar after signing the big contract.|||商人在签下大合同后点燃了一支雪茄。']],
@@ -214,7 +214,7 @@ const seedWords985 = [
   ['clinic', 'n.', '诊所,医务室,会诊', '985', ['诊所,医务室,会诊'], ['诊所,医务室,会诊'], ['The community clinic offers free health check-ups every month.|||社区诊所每月提供免费健康检查。']],
   ['clothing', 'n.', '衣服', '985', ['衣服'], ['衣服'], ['The experiment demonstrates the properties of clothing.|||实验演示了服装的性能。']],
   ['cock', 'n.', '公鸡,龙头', '985', ['公鸡,龙头'], ['公鸡,龙头'], ['The cock crowed at dawn, waking everyone in the village.|||公鸡在黎明时啼叫，唤醒了村里的每个人。']],
-  ['collar', 'n.', '衣领', '985', ['衣领'], ['衣领'], ['The dog\'s collar has a tag with the owner\'s phone number.']],
+  ['collar', 'n.', '衣领', '985', ['衣领'], ['衣领'], ['The dog\'s collar has a tag with the owner\'s phone number.|||狗的项圈上有一个标签，上面有主人的电话号码。']],
   ['comb', 'n.', '梳子，vt.梳理', '985', ['梳子，vt.梳理'], ['梳子，vt.梳理'], ['She combed her hair carefully before the interview.|||面试前她仔细梳理了头发。']],
   ['combine', 'vt.', '使联合', '985', ['使联合'], ['使联合'], ['The chef combined fresh ingredients to create a delicious dish.|||厨师将新鲜食材融合在一起，打造出一道美味佳肴。']],
   ['comedy', 'n.', '喜剧', '985', ['喜剧'], ['喜剧'], ['The report highlights the significance of comedy in education.|||报告强调了喜剧在教育中的重要性。']],
@@ -223,7 +223,7 @@ const seedWords985 = [
   ['commercial', 'adj.', '商业的，n.商业广告', '985', ['商业的，n.商业广告'], ['商业的，n.商业广告'], ['Students found the topic commercial but ultimately rewarding.|||学生们认为这个主题是商业性的，但最终是有益的。']],
   ['committee', 'n.', '委员会', '985', ['委员会'], ['委员会'], ['The report highlights the significance of committee in education.|||报告强调了委员会在教育中的重要性。']],
   ['communism', 'n.', '共产主义', '985', ['共产主义'], ['共产主义'], ['The lecture focused on the role of communism in daily life.|||讲座的重点是共产主义在日常生活中的作用。']],
-  ['communist', 'n.', '共产党员', '985', ['共产党员'], ['共产党员'], ['Many exam questions test students\' knowledge of communist.']],
+  ['communist', 'n.', '共产党员', '985', ['共产党员'], ['共产党员'], ['Many exam questions test students\' knowledge of communist.|||许多考试题目考查学生对共产主义者相关知识的掌握。']],
   ['companion', 'n.', '同伴，vt.陪伴', '985', ['同伴，vt.陪伴'], ['同伴，vt.陪伴'], ['The essay examines how companion shapes our decisions.|||这篇文章探讨了伴侣如何塑造我们的决策。']],
   ['compete', 'vi.', '比赛,竞争', '985', ['比赛,竞争'], ['比赛,竞争'], ['Students from different schools compete in the annual science fair.|||来自不同学校的学生参加年度科学博览会。']],
   ['complex', 'adj.', '综合的,复杂的', '985', ['综合的,复杂的'], ['综合的,复杂的'], ['The novel tells a complex story about personal growth and resilience.|||这部小说讲述了一个关于个人成长和复原力的复杂故事。']],
@@ -252,22 +252,22 @@ const seedWords985 = [
   ['corn', 'n.', '谷物,玉米', '985', ['谷物,玉米'], ['谷物,玉米'], ['The essay examines how corn shapes our decisions.|||这篇文章探讨了玉米如何塑造我们的决策。']],
   ['cottage', 'n.', '村舍,小屋', '985', ['村舍,小屋'], ['村舍,小屋'], ['The textbook defines cottage clearly in chapter three.|||教科书在第三章中清楚地定义了乡村小屋。']],
   ['counter', 'n.', '柜台,计数器', '985', ['柜台,计数器'], ['柜台,计数器'], ['The author mentions counter to support the main argument.|||作者提到反驳以支持主要论点。']],
-  ['court', 'n.', '法庭，球场，朝廷', '985', ['法庭，球场，朝廷'], ['法庭，球场，朝廷'], ['Understanding court is crucial for grasping the author\'s main message.']],
+  ['court', 'n.', '法庭，球场，朝廷', '985', ['法庭，球场，朝廷'], ['法庭，球场，朝廷'], ['Understanding court is crucial for grasping the author\'s main message.|||理解法庭的含义对于把握作者的主要信息至关重要。']],
   ['courtyard', 'n.', '庭院,院子', '985', ['庭院,院子'], ['庭院,院子'], ['The teacher explained courtyard with real-life examples in class.|||老师在课堂上用真实的例子解释了庭院。']],
   ['crash', 'vi.', '碰撞,坠落，n.碰撞，坠毁，破产', '985', ['碰撞,坠落，n.碰撞，'], ['碰撞,坠落，n.碰撞，坠毁，破产'], ['The professor urged students to crash beyond the textbook.|||这位教授敦促学生超越教科书。']],
   ['cream', 'n.', '奶油', '985', ['奶油'], ['奶油'], ['The lecture focused on the role of cream in daily life.|||讲座的重点是奶油在日常生活中的作用。']],
   ['creature', 'n.', '生物,创造物', '985', ['生物,创造物'], ['生物,创造物'], ['The documentary explores the history of creature in China.|||这部纪录片探讨了中国生物的历史。']],
   ['credit', 'n.', '信用,信任，分数，vt.信任', '985', ['信用,信任，分数vt'], ['信用,信任，分数，vt.信任'], ['The passage provides a detailed analysis of credit.|||该段提供了对信贷的详细分析。']],
   ['crew', 'n.', '全体船员', '985', ['全体船员'], ['全体船员'], ['The flight crew ensured all passengers were safe and comfortable.|||机组人员确保所有乘客安全舒适。']],
-  ['crime', 'n.', '罪,罪行,犯罪', '985', ['罪,罪行,犯罪'], ['罪,罪行,犯罪'], ['Understanding crime is crucial for grasping the author\'s main message.']],
-  ['crop', 'n.', '农作物,庄稼', '985', ['农作物,庄稼'], ['农作物,庄稼'], ['Many exam questions test students\' knowledge of crop.']],
+  ['crime', 'n.', '罪,罪行,犯罪', '985', ['罪,罪行,犯罪'], ['罪,罪行,犯罪'], ['Understanding crime is crucial for grasping the author\'s main message.|||理解犯罪的含义对于把握作者的主要信息至关重要。']],
+  ['crop', 'n.', '农作物,庄稼', '985', ['农作物,庄稼'], ['农作物,庄稼'], ['Many exam questions test students\' knowledge of crop.|||许多考试题目考查学生对农作物的掌握。']],
   ['crossing', 'n.', '十字路口', '985', ['十字路口'], ['十字路口'], ['The passage provides a detailed analysis of crossing.|||该通道提供了对过境点的详细分析。']],
   ['crowd', 'n.', '群,大众,一伙人', '985', ['群,大众,一伙人'], ['群,大众,一伙人'], ['A large crowd gathered in the square to celebrate the festival.|||一大群人聚集在广场上庆祝节日。']],
   ['cupboard', 'n.', '碗柜', '985', ['碗柜'], ['碗柜'], ['She stored the clean dishes in the kitchen cupboard.|||她把干净的盘子放在厨房的橱柜里。']],
   ['cure', 'vt.', 'n.治疗，治愈', '985', ['n.治疗，治愈'], ['n.治疗，治愈'], ['The experiment shows how plants cure sunlight for growth.|||该实验展示了植物如何治愈阳光以促进生长。']],
   ['curious', 'adj.', '好奇的', '985', ['好奇的'], ['好奇的'], ['The curious candidate stood out among all the applicants.|||好奇的候选人在所有申请人中脱颖而出。']],
   ['curtain', 'n.', '帘,窗帘,幕(布)', '985', ['帘,窗帘,幕(布)'], ['帘,窗帘,幕(布)'], ['The committee discussed the topic of curtain at length during the meeting.|||委员会在会议期间详细讨论了窗帘问题。']],
-  ['cushion', 'n.', '垫子,坐垫,靠垫', '985', ['垫子,坐垫,靠垫'], ['垫子,坐垫,靠垫'], ['Many exam questions test students\' knowledge of cushion.']],
+  ['cushion', 'n.', '垫子,坐垫,靠垫', '985', ['垫子,坐垫,靠垫'], ['垫子,坐垫,靠垫'], ['Many exam questions test students\' knowledge of cushion.|||许多考试题目考查学生对垫子的掌握。']],
   ['custom', 'n.', '习惯,风俗,海关', '985', ['习惯,风俗,海关'], ['习惯,风俗,海关'], ['The textbook defines custom clearly in chapter three.|||教科书在第三章中明确定义了习俗。']],
   ['customer', 'n.', '顾客', '985', ['顾客'], ['顾客'], ['Knowing customer well gives students confidence in exams.|||了解客户使学生对考试充满信心。']],
   ['cycle', 'n.', '循环，自行车，v.(使)循环，骑自行车', '985', ['循环，自行车，v.(使'], ['循环，自行车，v.(使)循环，骑自行车'], ['The lecture focused on the role of cycle in daily life.|||讲座侧重于循环在日常生活中的作用。']],
@@ -281,19 +281,19 @@ const seedWords985 = [
   ['declare', 'vt.', '断言,声明', '985', ['断言,声明'], ['断言,声明'], ['The government declared a state of emergency after the earthquake.|||地震发生后，政府宣布进入紧急状态。']],
   ['decorate', 'vt.', '装饰', '985', ['装饰'], ['装饰'], ['She helped her friend decorate the challenging math problem.|||她帮助她的朋友装饰这个具有挑战性的数学问题。']],
   ['decrease', 'vi.', 'n.减少', '985', ['n.减少'], ['n.减少'], ['The number of smokers has decreased significantly in recent years.|||近年来，吸烟人数大幅减少。']],
-  ['deed', 'n.', '行为,功绩,契约', '985', ['行为,功绩,契约'], ['行为,功绩,契约'], ['Many exam questions test students\' knowledge of deed.']],
+  ['deed', 'n.', '行为,功绩,契约', '985', ['行为,功绩,契约'], ['行为,功绩,契约'], ['Many exam questions test students\' knowledge of deed.|||许多考试题目考查学生对行为/契约的掌握。']],
   ['defeat', 'vt.', '战胜,击败', '985', ['战胜,击败'], ['战胜,击败'], ['The underdog team defeated the champions in a thrilling match.|||弱者队在一场激动人心的比赛中击败了冠军。']],
   ['defence', 'n.', '防御,辩护', '985', ['防御,辩护'], ['防御,辩护'], ['The author mentions defence to support the main argument.|||提交人提到辩护以支持主要论点。']],
   ['defend', 'vt.', '保卫,防守，辩护', '985', ['保卫,防守，辩护'], ['保卫,防守，辩护'], ['The lawyer defended his client with compelling evidence.|||律师以令人信服的证据为他的当事人辩护。']],
   ['degree', 'n.', '程度,度,学位', '985', ['程度,度,学位'], ['程度,度,学位'], ['She earned a degree in computer science from Tsinghua University.|||她获得了清华大学计算机科学学位。']],
   ['delay', 'vt.', '推迟,耽搁,延误', '985', ['推迟,耽搁,延误'], ['推迟,耽搁,延误'], ['The flight was delayed by two hours due to bad weather.|||由于天气恶劣，航班延误了两个小时。']],
-  ['delete', 'vt.', '删除,擦掉', '985', ['删除,擦掉'], ['删除,擦掉'], ['The author attempts to delete readers\' attention to this issue.']],
+  ['delete', 'vt.', '删除,擦掉', '985', ['删除,擦掉'], ['删除,擦掉'], ['The author attempts to delete readers\' attention to this issue.|||作者试图将读者的注意力引向这个问题。']],
   ['delight', 'n.', '快乐，vt.使高兴', '985', ['快乐，vt.使高兴'], ['快乐，vt.使高兴'], ['The lecture focused on the role of delight in daily life.|||讲座的重点是快乐在日常生活中的作用。']],
   ['deliver', 'vt.', '投递,送交', '985', ['投递,送交'], ['投递,送交'], ['The committee decided to deliver the proposal after careful discussion.|||委员会经过仔细讨论后决定提交提案。']],
   ['demand', 'vt.', '要求,需要', '985', ['要求,需要'], ['要求,需要'], ['Customers demand higher quality products at reasonable prices.|||客户要求以合理的价格获得更高质量的产品。']],
   ['department', 'n.', '部,司,局,处,系', '985', ['部,司,局,处,系'], ['部,司,局,处,系'], ['Knowing department well gives students confidence in exams.|||熟悉部门让学生对考试充满信心。']],
   ['depth', 'n.', '深度,深处', '985', ['深度,深处'], ['深度,深处'], ['Researchers have published new findings about depth.|||研究人员发表了关于深度的新发现。']],
-  ['desert', 'n.', '沙漠，荒原，vt.遗弃，放弃', '985', ['沙漠，荒原，vt.遗弃'], ['沙漠，荒原，vt.遗弃，放弃'], ['Understanding desert is crucial for grasping the author\'s main message.']],
+  ['desert', 'n.', '沙漠，荒原，vt.遗弃，放弃', '985', ['沙漠，荒原，vt.遗弃'], ['沙漠，荒原，vt.遗弃，放弃'], ['Understanding desert is crucial for grasping the author\'s main message.|||理解沙漠的含义对于把握作者的主要信息至关重要。']],
   ['deserve', 'vt.', '应受,值得', '985', ['应受,值得'], ['应受,值得'], ['She deserves the award after years of dedicated service.|||经过多年的奉献，她应该得到这个奖项。']],
   ['design', 'vt.', '设计，n.设计', '985', ['设计，n.设计'], ['设计，n.设计'], ['The engineer designed a more efficient engine for the car.|||工程师为汽车设计了一种更高效的发动机。']],
   ['desire', 'vt.', '想要,要求，n.愿望，要求', '985', ['想要,要求，n.愿望，'], ['想要,要求，n.愿望，要求'], ['Many readers fail to desire the hidden message in the passage.|||许多读者不希望看到这段经文中隐藏的信息。']],
@@ -316,7 +316,7 @@ const seedWords985 = [
   ['disappear', 'vi.', '不见,失踪,消失', '985', ['不见,失踪,消失'], ['不见,失踪,消失'], ['The sun slowly disappeared behind the mountains at dusk.|||黄昏时分，太阳慢慢消失在山后。']],
   ['disappoint', 'vt.', '使失望', '985', ['使失望'], ['使失望'], ['Many readers fail to disappoint the hidden message in the passage.|||许多读者不会让这段经文中隐藏的信息失望。']],
   ['disaster', 'n.', '灾难', '985', ['灾难'], ['灾难'], ['The novel uses the theme of disaster throughout the story.|||这部小说在整个故事中使用了灾难的主题。']],
-  ['discount', 'n.', '折扣，v.打折', '985', ['折扣，v.打折'], ['折扣，v.打折'], ['Understanding discount is crucial for grasping the author\'s main message.']],
+  ['discount', 'n.', '折扣，v.打折', '985', ['折扣，v.打折'], ['折扣，v.打折'], ['Understanding discount is crucial for grasping the author\'s main message.|||理解折扣的含义对于把握作者的主要信息至关重要。']],
   ['discriminate', 'vt.', 'vi.区别对待,歧视', '985', ['vi.区别对待,歧视'], ['vi.区别对待,歧视'], ['Many readers fail to discriminate the hidden message in the passage.|||许多读者没有区分段落中隐藏的信息。']],
   ['dislike', 'vt.', 'n.不喜爱,厌恶', '985', ['n.不喜爱,厌恶'], ['n.不喜爱,厌恶'], ['The speaker continued to dislike the audience with fascinating stories.|||演讲者继续用引人入胜的故事来讨厌观众。']],
   ['distance', 'n.', '距离,远处', '985', ['距离,远处'], ['距离,远处'], ['The committee discussed the topic of distance at length during the meeting.|||委员会在会议期间详细讨论了距离问题。']],
@@ -328,7 +328,7 @@ const seedWords985 = [
   ['dormitory', 'n.', '集体寝室,宿舍', '985', ['集体寝室,宿舍'], ['集体寝室,宿舍'], ['The author mentions dormitory to support the main argument.|||作者提到宿舍以支持主要论点。']],
   ['dot', 'n.', '点,圆点，vt.打点于', '985', ['点,圆点，vt.打点于'], ['点,圆点，vt.打点于'], ['The small dot on the map marks the location of the village.|||地图上的小点标出了村庄的位置。']],
   ['download', 'n.', '下装,卸载', '985', ['下装,卸载'], ['下装,卸载'], ['The novel uses the theme of download throughout the story.|||这部小说在整个故事中使用了下载的主题。']],
-  ['downtown', 'adv.', '在市区,往市区', '985', ['在市区,往市区'], ['在市区,往市区'], ['The students responded downtown to the teacher\'s challenging question.']],
+  ['downtown', 'adv.', '在市区,往市区', '985', ['在市区,往市区'], ['在市区,往市区'], ['The students responded downtown to the teacher\'s challenging question.|||学生们对老师提出的挑战性问题作出了回应。']],
   ['drawing', 'n.', '绘画', '985', ['绘画'], ['绘画'], ['The experiment demonstrates the properties of drawing.|||实验演示了绘图的属性。']],
   ['drill', 'n.', '钻孔机，训练，vi.钻孔，训练', '985', ['钻孔机，训练，vi.钻'], ['钻孔机，训练，vi.钻孔，训练'], ['The survey reveals public attitudes toward drill.|||调查揭示了公众对钻探的态度。']],
   ['drown', 'v.', '淹没，溺死', '985', ['淹没，溺死'], ['淹没，溺死'], ['The speaker continued to drown the audience with fascinating stories.|||演讲者继续用引人入胜的故事淹没观众。']],
@@ -342,7 +342,7 @@ const seedWords985 = [
   ['earthquake', 'n.', '地震', '985', ['地震'], ['地震'], ['The documentary explores the history of earthquake in China.|||这部纪录片探讨了中国地震的历史。']],
   ['eastern', 'adj.', '东方的,朝东的', '985', ['东方的,朝东的'], ['东方的,朝东的'], ['The book provides a eastern analysis of the topic.|||这本书对这个话题进行了东方分析。']],
   ['edit', 'vt.', '编辑,编纂,校订', '985', ['编辑,编纂,校订'], ['编辑,编纂,校订'], ['It is important to edit the instructions carefully before starting.|||在开始之前，请务必仔细编辑说明。']],
-  ['effect', 'n.', '影响，效果,作用', '985', ['影响，效果,作用'], ['影响，效果,作用'], ['Understanding effect is crucial for grasping the author\'s main message.']],
+  ['effect', 'n.', '影响，效果,作用', '985', ['影响，效果,作用'], ['影响，效果,作用'], ['Understanding effect is crucial for grasping the author\'s main message.|||理解效果的含义对于把握作者的主要信息至关重要。']],
   ['elect', 'vt.', '选举,推选', '985', ['选举,推选'], ['选举,推选'], ['The guide began to elect the history of the ancient city.|||导游开始选择古城的历史。']],
   ['electricity', 'n.', '电,电流', '985', ['电,电流'], ['电,电流'], ['The author mentions electricity to support the main argument.|||作者提到电力来支持主要论点。']],
   ['electronic', 'adj.', '电子的', '985', ['电子的'], ['电子的'], ['The electronic design of the building won several international awards.|||该建筑的电子设计赢得了多项国际奖项。']],
@@ -351,7 +351,7 @@ const seedWords985 = [
   ['employ', 'vt.', '雇用', '985', ['雇用'], ['雇用'], ['You need to employ the situation before making a final decision.|||在做出最终决定之前，您需要利用这种情况。']],
   ['endless', 'adj.', '无止境的', '985', ['无止境的'], ['无止境的'], ['Her endless attitude inspired those around her to do better.|||她无休止的态度激励着周围的人做得更好。']],
   ['engine', 'n.', '发动机,引擎', '985', ['发动机,引擎'], ['发动机,引擎'], ['The lecture focused on the role of engine in daily life.|||讲座的重点是发动机在日常生活中的作用。']],
-  ['enjoyable', 'adj.', '使人快乐的，有乐趣的', '985', ['使人快乐的，有乐趣的'], ['使人快乐的，有乐趣的'], ['The author\'s enjoyable style attracted a wide and loyal readership.']],
+  ['enjoyable', 'adj.', '使人快乐的，有乐趣的', '985', ['使人快乐的，有乐趣的'], ['使人快乐的，有乐趣的'], ['The author\'s enjoyable style attracted a wide and loyal readership.|||作者令人愉悦的风格吸引了广泛而忠实的读者群。']],
   ['entertainment', 'n.', '娱乐,款待,娱乐表演', '985', ['娱乐,款待,娱乐表演'], ['娱乐,款待,娱乐表演'], ['The essay examines how entertainment shapes our decisions.|||这篇文章探讨了娱乐如何塑造我们的决策。']],
   ['entire', 'adj.', '全部的,彻底的', '985', ['全部的,彻底的'], ['全部的,彻底的'], ['Her entire attitude inspired those around her to do better.|||她的整个态度激励着她周围的人做得更好。']],
   ['entrance', 'n.', '入口,进入', '985', ['入口,进入'], ['入口,进入'], ['The textbook defines entrance clearly in chapter three.|||教科书在第三章中明确定义了入学。']],
@@ -362,7 +362,7 @@ const seedWords985 = [
   ['error', 'n.', '错误,误差，过失', '985', ['错误,误差，过失'], ['错误,误差，过失'], ['The article discusses the impact of error on modern society.|||本文讨论了错误对现代社会的影响。']],
   ['escape', 'vi.', '逃脱，逃避，n.逃跑，逃亡', '985', ['逃脱，逃避，n.逃跑，'], ['逃脱，逃避，n.逃跑，逃亡'], ['The prisoner attempted to escape but was caught at the border.|||这名囚犯试图逃跑，但在边境被抓获。']],
   ['especially', 'adv.', '特别,尤其,格外', '985', ['特别,尤其,格外'], ['特别,尤其,格外'], ['The professor especially analyzed the research findings for the class.|||教授特别分析了全班的研究成果。']],
-  ['essay', 'n.', '散文,文章，随笔', '985', ['散文,文章，随笔'], ['散文,文章，随笔'], ['Understanding essay is crucial for grasping the author\'s main message.']],
+  ['essay', 'n.', '散文,文章，随笔', '985', ['散文,文章，随笔'], ['散文,文章，随笔'], ['Understanding essay is crucial for grasping the author\'s main message.|||理解文章的含义对于把握作者的主要信息至关重要。']],
   ['evaluate', 'vt.', '评价,估价', '985', ['评价,估价'], ['评价,估价'], ['The committee will evaluate all proposals before making a decision.|||委员会将在做出决定之前对所有提案进行评估。']],
   ['event', 'n.', '事件,大事', '985', ['事件,大事'], ['事件,大事'], ['Students often encounter the term "event" in gaokao reading passages.|||学生经常在高考阅读段落中遇到“事件”一词。']],
   ['evidence', 'n.', '根据,依据', '985', ['根据,依据'], ['根据,依据'], ['The report highlights the significance of evidence in education.|||报告强调了证据在教育中的重要性。']],
@@ -371,7 +371,7 @@ const seedWords985 = [
   ['exchange', 'vt.', 'n.交换,交流，交易，兑换', '985', ['n.交换,交流，交易'], ['n.交换,交流，交易，兑换'], ['Students can exchange ideas during the group discussion.|||学生可以在小组讨论期间交换意见。']],
   ['exciting', 'adj.', '令人兴奋的', '985', ['令人兴奋的'], ['令人兴奋的'], ['Students found the topic exciting but ultimately rewarding.|||学生们发现这个主题令人兴奋，但最终是有益的。']],
   ['exhibition', 'n.', '展览,陈列,展览会', '985', ['展览,陈列,展览会'], ['展览,陈列,展览会'], ['The teacher explained exhibition with real-life examples in class.|||老师在课堂上用真实的例子解释了展览。']],
-  ['exist', 'vi.', '存在,生存', '985', ['存在,生存'], ['存在,生存'], ['The author attempts to exist readers\' attention to this issue.']],
+  ['exist', 'vi.', '存在,生存', '985', ['存在,生存'], ['存在,生存'], ['The author attempts to exist readers\' attention to this issue.|||作者试图将读者的注意力引向这个问题。']],
   ['exit', 'n.', '出口,退场，vi.退出', '985', ['出口,退场，vi.退出'], ['出口,退场，vi.退出'], ['The report highlights the significance of exit in education.|||报告强调了退出教育的重要性。']],
   ['expand', 'vt.', '扩大,使膨胀,发展', '985', ['扩大,使膨胀,发展'], ['扩大,使膨胀,发展'], ['The company plans to expand its business into Southeast Asia.|||该公司计划将业务扩展到东南亚。']],
   ['expense', 'n.', '花费,消费,费用', '985', ['花费,消费,费用'], ['花费,消费,费用'], ['The article discusses the impact of expense on modern society.|||本文探讨了费用对现代社会的影响。']],
@@ -380,31 +380,31 @@ const seedWords985 = [
   ['explode', 'vt.', '使爆炸，vi.爆炸', '985', ['使爆炸，vi.爆炸'], ['使爆炸，vi.爆炸'], ['The experiment shows how plants explode sunlight for growth.|||实验展示了植物如何利用阳光来生长。']],
   ['exploit', 'vt.', '剥削,开发，开采', '985', ['剥削,开发，开采'], ['剥削,开发，开采'], ['The guide began to exploit the history of the ancient city.|||导游开始探索古城的历史。']],
   ['explore', 'vt.', 'vi.探险,探索', '985', ['vi.探险,探索'], ['vi.探险,探索'], ['The team explored the cave system for over six hours.|||该团队对洞穴系统进行了六个多小时的探索。']],
-  ['export', 'vt.', '输出,出口', '985', ['输出,出口'], ['输出,出口'], ['The author attempts to export readers\' attention to this issue.']],
+  ['export', 'vt.', '输出,出口', '985', ['输出,出口'], ['输出,出口'], ['The author attempts to export readers\' attention to this issue.|||作者试图将读者的注意力引向这个问题。']],
   ['expression', 'n.', '措辞,词句，表达,表情', '985', ['措辞,词句，表达,表'], ['措辞,词句，表达,表情'], ['She wrote a research paper about expression last semester.|||她上学期写了一篇关于表达的研究论文。']],
   ['extra', 'adj.', '额外的，ad.另外', '985', ['额外的，ad.另外'], ['额外的，ad.另外'], ['A extra diet is essential for maintaining good health.|||额外的饮食对于保持身体健康至关重要。']],
   ['extraordinary', 'adj.', '非同寻常的,非凡的，特别的', '985', ['非同寻常的,非凡的，'], ['非同寻常的,非凡的，特别的'], ['The extraordinary changes in the climate worry many scientists worldwide.|||气候的巨大变化令全世界许多科学家感到担忧。']],
   ['extremely', 'adv.', '极其，极端地', '985', ['极其，极端地'], ['极其，极端地'], ['She completed the assignment extremely and submitted it early.|||她极大地完成了作业，并提前递交了作业。']],
   ['fade', 'vi.', '褪色,逐渐消失', '985', ['褪色,逐渐消失'], ['褪色,逐渐消失'], ['The old photograph had faded over the years, losing its color.|||多年来，这张旧照片已经褪色，失去了色彩。']],
   ['failure', 'n.', '失败,失败的人/事', '985', ['失败,失败的人/事'], ['失败,失败的人/事'], ['The essay examines how failure shapes our decisions.|||这篇文章探讨了失败如何塑造我们的决策。']],
-  ['fairly', 'adv.', '相当,公平地', '985', ['相当,公平地'], ['相当,公平地'], ['The results fairly reflect the team\'s combined efforts.']],
+  ['fairly', 'adv.', '相当,公平地', '985', ['相当,公平地'], ['相当,公平地'], ['The results fairly reflect the team\'s combined efforts.|||结果公正地反映了团队的共同努力。']],
   ['faith', 'n.', '信任,信心,信仰', '985', ['信任,信心,信仰'], ['信任,信心,信仰'], ['The author mentions faith to support the main argument.|||作者提到了支持主要论点的信念。']],
   ['false', 'adj.', '不真实的,伪造的', '985', ['不真实的,伪造的'], ['不真实的,伪造的'], ['The false design of the building won several international awards.|||这座建筑的虚假设计赢得了多项国际奖项。']],
   ['familiar', 'adj.', '熟悉的', '985', ['熟悉的'], ['熟悉的'], ['The familiar design of the building won several international awards.|||熟悉的建筑设计赢得了多项国际奖项。']],
   ['farther', 'adv.', '更远地，a.更远的', '985', ['更远地，a.更远的'], ['更远地，a.更远的'], ['The students worked farther throughout the entire semester.|||学生们在整个学期都工作得更远。']],
   ['fasten', 'vt.', '扎牢,使固定', '985', ['扎牢,使固定'], ['扎牢,使固定'], ['Please fasten your seatbelt before the plane takes off.|||请在飞机起飞前系好安全带。']],
-  ['fault', 'n.', '错误，缺点,毛病,故障', '985', ['错误，缺点,毛病,故'], ['错误，缺点,毛病,故障'], ['Many exam questions test students\' knowledge of fault.']],
+  ['fault', 'n.', '错误，缺点,毛病,故障', '985', ['错误，缺点,毛病,故'], ['错误，缺点,毛病,故障'], ['Many exam questions test students\' knowledge of fault.|||许多考试题目考查学生对错误/故障的掌握。']],
   ['favor', 'n.', '好感,赞同,恩惠', '985', ['好感,赞同,恩惠'], ['好感,赞同,恩惠'], ['The survey reveals public attitudes toward favor.|||该调查揭示了公众对青睐的态度。']],
   ['fax', 'n.', 'vt.传真', '985', ['vt.传真'], ['vt.传真'], ['The report highlights the significance of fax in education.|||报告强调了传真在教育中的重要性。']],
-  ['feather', 'n.', '羽毛,翎毛,羽状物', '985', ['羽毛,翎毛,羽状物'], ['羽毛,翎毛,羽状物'], ['Understanding feather is crucial for grasping the author\'s main message.']],
+  ['feather', 'n.', '羽毛,翎毛,羽状物', '985', ['羽毛,翎毛,羽状物'], ['羽毛,翎毛,羽状物'], ['Understanding feather is crucial for grasping the author\'s main message.|||理解羽毛的含义对于把握作者的主要信息至关重要。']],
   ['federal', 'adj.', '联邦的,联盟的', '985', ['联邦的,联盟的'], ['联邦的,联盟的'], ['The findings have federal implications for future research.|||这些发现对未来的研究具有联邦意义。']],
   ['fee', 'n.', '费用，酬金，小费，v.付费给', '985', ['费用，酬金，小费，v.'], ['费用，酬金，小费，v.付费给'], ['The experiment demonstrates the properties of fee.|||实验演示了费用的属性。']],
   ['fellow', 'n.', '家伙,伙伴', '985', ['家伙,伙伴'], ['家伙,伙伴'], ['The essay examines how fellow shapes our decisions.|||这篇文章探讨了同事如何塑造我们的决策。']],
-  ['female', 'n.', 'a.女性的,雌性的', '985', ['a.女性的,雌性的'], ['a.女性的,雌性的'], ['Understanding female is crucial for grasping the author\'s main message.']],
+  ['female', 'n.', 'a.女性的,雌性的', '985', ['a.女性的,雌性的'], ['a.女性的,雌性的'], ['Understanding female is crucial for grasping the author\'s main message.|||理解女性的含义对于把握作者的主要信息至关重要。']],
   ['fence', 'n.', '栅栏，v.围以栅栏', '985', ['栅栏，v.围以栅栏'], ['栅栏，v.围以栅栏'], ['The committee discussed the topic of fence at length during the meeting.|||委员会在会议期间详细讨论了围栏问题。']],
   ['fiction', 'n.', '小说,虚构,谎言', '985', ['小说,虚构,谎言'], ['小说,虚构,谎言'], ['Science fiction novels often imagine future technologies.|||科幻小说经常想象未来的技术。']],
   ['fierce', 'adj.', '凶猛的,猛烈的', '985', ['凶猛的,猛烈的'], ['凶猛的,猛烈的'], ['She remained fierce despite the difficulties she faced.|||面对种种困难，她依旧凶狠。']],
-  ['figure', 'n.', '数字,人物，体形，画像，图形，v.计算，认为', '985', ['数字,人物，体形，画'], ['数字,人物，体形，画像，图形，v.计算，认为'], ['Many exam questions test students\' knowledge of figure.']],
+  ['figure', 'n.', '数字,人物，体形，画像，图形，v.计算，认为', '985', ['数字,人物，体形，画'], ['数字,人物，体形，画像，图形，v.计算，认为'], ['Many exam questions test students\' knowledge of figure.|||许多考试题目考查学生对数字/人物形象的掌握。']],
   ['file', 'n.', '文件，档案，文件夹，vt.把…归档', '985', ['文件，档案，文件夹v'], ['文件，档案，文件夹，vt.把…归档'], ['I saved the file to my desktop for easy access.|||我把文件保存到桌面上以便访问。']],
   ['finance', 'n.', '财政,金融', '985', ['财政,金融'], ['财政,金融'], ['Researchers have published new findings about finance.|||研究人员发表了关于金融的新发现。']],
   ['fireworks', 'n.', '[pl.]爆竹,烟花', '985', ['[pl.]爆竹,烟花'], ['[pl.]爆竹,烟花'], ['Students often encounter the term "fireworks" in gaokao reading passages.|||学生经常在高考阅读段落中遇到“烟花”一词。']],
@@ -416,7 +416,7 @@ const seedWords985 = [
   ['flight', 'n.', '航班,飞行,逃跑', '985', ['航班,飞行,逃跑'], ['航班,飞行,逃跑'], ['The lecture focused on the role of flight in daily life.|||讲座的重点是飞行在日常生活中的作用。']],
   ['float', 'vi.', '漂浮，vt.使漂浮', '985', ['漂浮，vt.使漂浮'], ['漂浮，vt.使漂浮'], ['The leaves floated gently on the surface of the calm lake.|||叶子轻轻地漂浮在平静的湖面上。']],
   ['flood', 'n.', '洪水', '985', ['洪水'], ['洪水'], ['The novel uses the theme of flood throughout the story.|||这部小说在整个故事中使用了洪水的主题。']],
-  ['flour', 'n.', '面粉,粉状物质', '985', ['面粉,粉状物质'], ['面粉,粉状物质'], ['Many exam questions test students\' knowledge of flour.']],
+  ['flour', 'n.', '面粉,粉状物质', '985', ['面粉,粉状物质'], ['面粉,粉状物质'], ['Many exam questions test students\' knowledge of flour.|||许多考试题目考查学生对面粉的掌握。']],
   ['flow', 'vi.', '流动，n.流动，流量', '985', ['流动，n.流动，流量'], ['流动，n.流动，流量'], ['Parents should flow their children to develop good study habits.|||父母应该让孩子养成良好的学习习惯。']],
   ['fluent', 'adj.', '流利的,流畅的', '985', ['流利的,流畅的'], ['流利的,流畅的'], ['Students found the topic fluent but ultimately rewarding.|||学生们发现这个话题很流利，但最终是有益的。']],
   ['focus', 'vi.', '聚焦,注视，n.焦点', '985', ['聚焦,注视，n.焦点'], ['聚焦,注视，n.焦点'], ['The government plans to focus the policy nationwide next year.|||政府计划明年将该政策的重点放在全国范围内。']],
@@ -434,7 +434,7 @@ const seedWords985 = [
   ['fortnight', 'n.', '两星期,十四天', '985', ['两星期,十四天'], ['两星期,十四天'], ['She wrote a research paper about fortnight last semester.|||她写了一篇关于上学期两周的研究论文。']],
   ['fortunate', 'adj.', '幸运的', '985', ['幸运的'], ['幸运的'], ['We need a more fortunate plan to address this complex issue.|||我们需要一个更幸运的计划来解决这个复杂的问题。']],
   ['fortunately', 'adv.', '幸运地,', '985', ['幸运地,'], ['幸运地,'], ['Fortunately, no one was injured in the minor earthquake.|||幸运的是，在小地震中没有人受伤。']],
-  ['fortune', 'n.', '命运,运气,财富', '985', ['命运,运气,财富'], ['命运,运气,财富'], ['Many exam questions test students\' knowledge of fortune.']],
+  ['fortune', 'n.', '命运,运气,财富', '985', ['命运,运气,财富'], ['命运,运气,财富'], ['Many exam questions test students\' knowledge of fortune.|||许多考试题目考查学生对财富/命运的掌握。']],
   ['found', 'vt.', '创立,创办', '985', ['创立,创办'], ['创立,创办'], ['She helped her friend found the challenging math problem.|||她帮助她的朋友找到了具有挑战性的数学问题。']],
   ['fountain', 'n.', '泉水,喷泉，源泉', '985', ['泉水,喷泉，源泉'], ['泉水,喷泉，源泉'], ['The experiment demonstrates the properties of fountain.|||实验演示了喷泉的性质。']],
   ['freedom', 'n.', '自由', '985', ['自由'], ['自由'], ['The novel uses the theme of freedom throughout the story.|||这部小说在整个故事中使用了自由的主题。']],
@@ -453,7 +453,7 @@ const seedWords985 = [
   ['gay', 'adj.', '快乐的,艳丽的，n.同性恋者', '985', ['快乐的,艳丽的，n.同'], ['快乐的,艳丽的，n.同性恋者'], ['A gay diet is essential for maintaining good health.|||同性恋饮食对于保持身体健康至关重要。']],
   ['generally', 'adv.', '一般地,通常地，普遍地', '985', ['一般地,通常地，普遍'], ['一般地,通常地，普遍地'], ['She remembered the details generally, even after many years.|||即使过了很多年，她也大致记得这些细节。']],
   ['generation', 'n.', '一代,一代人,产生', '985', ['一代,一代人,产生'], ['一代,一代人,产生'], ['The textbook defines generation clearly in chapter three.|||教科书在第三章中明确定义了世代。']],
-  ['generous', 'adj.', '慷慨的,宽宏大量的', '985', ['慷慨的,宽宏大量的'], ['慷慨的,宽宏大量的'], ['The author\'s generous style attracted a wide and loyal readership.']],
+  ['generous', 'adj.', '慷慨的,宽宏大量的', '985', ['慷慨的,宽宏大量的'], ['慷慨的,宽宏大量的'], ['The author\'s generous style attracted a wide and loyal readership.|||作者慷慨的风格吸引了广泛而忠实的读者群。']],
   ['gentle', 'adj.', '温和的，文雅的', '985', ['温和的，文雅的'], ['温和的，文雅的'], ['The gentle design of the building won several international awards.|||这栋建筑的温柔设计赢得了多项国际奖项。']],
   ['glance', 'v.', '瞥见，n.一瞥', '985', ['瞥见，n.一瞥'], ['瞥见，n.一瞥'], ['She glanced at her watch and realized she was late.|||她瞥了一眼手表，发现自己迟到了。']],
   ['globe', 'n.', '地球,地球仪，球体', '985', ['地球,地球仪，球体'], ['地球,地球仪，球体'], ['The report highlights the significance of globe in education.|||该报告强调了全球在教育中的重要性。']],
@@ -462,7 +462,7 @@ const seedWords985 = [
   ['gradual', 'adj.', '逐渐的,渐进的', '985', ['逐渐的,渐进的'], ['逐渐的,渐进的'], ['The gradual atmosphere in the classroom encouraged open discussion.|||课堂上的渐进气氛鼓励公开讨论。']],
   ['gradually', 'adv.', '逐渐地，逐步地', '985', ['逐渐地，逐步地'], ['逐渐地，逐步地'], ['The weather gradually improved as the storm moved away.|||随着风暴的消退，天气逐渐好转。']],
   ['graduate', 'n.', '大学毕业生，vi.毕业', '985', ['大学毕业生，vi.毕业'], ['大学毕业生，vi.毕业'], ['The report highlights the significance of graduate in education.|||报告强调了毕业生在教育中的重要性。']],
-  ['graduation', 'n.', '毕业', '985', ['毕业'], ['毕业'], ['Many exam questions test students\' knowledge of graduation.']],
+  ['graduation', 'n.', '毕业', '985', ['毕业'], ['毕业'], ['Many exam questions test students\' knowledge of graduation.|||许多考试题目考查学生对毕业的掌握。']],
   ['grain', 'n.', '谷物,颗粒', '985', ['谷物,颗粒'], ['谷物,颗粒'], ['The report highlights the significance of grain in education.|||报告强调了谷物在教育中的重要性。']],
   ['grand', 'adj.', '宏伟的,豪华的，极重要的', '985', ['宏伟的,豪华的，极重'], ['宏伟的,豪华的，极重要的'], ['Her grand attitude inspired those around her to do better.|||她宏伟的态度激励着周围的人做得更好。']],
   ['grasp', 'vt.', 'n.抓住，领会', '985', ['n.抓住，领会'], ['n.抓住，领会'], ['The student grasped the concept quickly after the explanation.|||学生在解释后很快掌握了这个概念。']],
@@ -471,10 +471,10 @@ const seedWords985 = [
   ['greet', 'vt.', '问候,欢迎', '985', ['问候,欢迎'], ['问候,欢迎'], ['The speaker continued to greet the audience with fascinating stories.|||演讲者继续用引人入胜的故事来迎接观众。']],
   ['grey', 'n.', '/a.灰色(的)', '985', ['/a.灰色(的)'], ['/a.灰色(的)'], ['The lecture focused on the role of grey in daily life.|||讲座的重点是灰色在日常生活中的作用。']],
   ['grocer', 'n.', '杂货店，食品商', '985', ['杂货店，食品商'], ['杂货店，食品商'], ['The author mentions grocer to support the main argument.|||作者提到杂货店来支持主要论点。']],
-  ['grocery', 'n.', '食品杂货店，食品杂货', '985', ['食品杂货店，食品杂货'], ['食品杂货店，食品杂货'], ['Understanding grocery is crucial for grasping the author\'s main message.']],
+  ['grocery', 'n.', '食品杂货店，食品杂货', '985', ['食品杂货店，食品杂货'], ['食品杂货店，食品杂货'], ['Understanding grocery is crucial for grasping the author\'s main message.|||理解杂货店的含义对于把握作者的主要信息至关重要。']],
   ['guide', 'n.', '导游，vt.指导', '985', ['导游，vt.指导'], ['导游，vt.指导'], ['The lecture focused on the role of guide in daily life.|||讲座的重点是向导在日常生活中的作用。']],
   ['guilty', 'adj.', '内疚的,有罪的', '985', ['内疚的,有罪的'], ['内疚的,有罪的'], ['The guilty nature of the problem became clear over time.|||随着时间的推移，问题的罪恶本质变得清晰。']],
-  ['haircut', 'n.', '理发;发型，发式', '985', ['理发;发型，发式'], ['理发;发型，发式'], ['Understanding haircut is crucial for grasping the author\'s main message.']],
+  ['haircut', 'n.', '理发;发型，发式', '985', ['理发;发型，发式'], ['理发;发型，发式'], ['Understanding haircut is crucial for grasping the author\'s main message.|||理解理发的含义对于把握作者的主要信息至关重要。']],
   ['hammer', 'n.', '锤子，vt.锤击', '985', ['锤子，vt.锤击'], ['锤子，vt.锤击'], ['The passage provides a detailed analysis of hammer.|||该通道提供了对锤子的详细分析。']],
   ['handkerchief', 'n.', '手帕', '985', ['手帕'], ['手帕'], ['The committee discussed the topic of handkerchief at length during the meeting.|||委员会在会议期间详细讨论了手帕问题。']],
   ['handle', 'n.', '柄,把手，vt.处理', '985', ['柄,把手，vt.处理'], ['柄,把手，vt.处理'], ['She handled the difficult situation with great professionalism.|||她以极大的专业精神处理了这一困难局面。']],
@@ -494,7 +494,7 @@ const seedWords985 = [
   ['horrible', 'adj.', '可怕的,极可厌的', '985', ['可怕的,极可厌的'], ['可怕的,极可厌的'], ['His horrible response showed great maturity and wisdom.|||他那可怕的反应显示出极大的成熟和智慧。']],
   ['host', 'n.', '主人,主持人，v.主持，做主人', '985', ['主人,主持人，v.主持'], ['主人,主持人，v.主持，做主人'], ['The experiment demonstrates the properties of host.|||实验演示了宿主的特性。']],
   ['housewife', 'n.', '家庭主妇', '985', ['家庭主妇'], ['家庭主妇'], ['Knowing housewife well gives students confidence in exams.|||熟悉家庭主妇让学生对考试充满信心。']],
-  ['humour', 'n.', '幽默，诙谐，v.迁就?', '985', ['幽默，诙谐，v.迁就?'], ['幽默，诙谐，v.迁就?'], ['Many exam questions test students\' knowledge of humour.']],
+  ['humour', 'n.', '幽默，诙谐，v.迁就?', '985', ['幽默，诙谐，v.迁就?'], ['幽默，诙谐，v.迁就?'], ['Many exam questions test students\' knowledge of humour.|||许多考试题目考查学生对幽默的掌握。']],
   ['hunger', 'n.', '饥饿,渴望', '985', ['饥饿,渴望'], ['饥饿,渴望'], ['The experiment demonstrates the properties of hunger.|||实验证明了饥饿的特性。']],
   ['hunt', 'n.', 'vt.打猎,搜寻', '985', ['vt.打猎,搜寻'], ['vt.打猎,搜寻'], ['In ancient times, people hunted wild animals for food.|||在古代，人们以猎杀野生动物为食。']],
   ['identity', 'n.', '身份,一致，vt.确定身份', '985', ['身份,一致，vt.确定'], ['身份,一致，vt.确定身份'], ['Please show your identity card before entering the building.|||请在进入大楼前出示您的身份证。']],
@@ -514,7 +514,7 @@ const seedWords985 = [
   ['innocent', 'adj.', '清白的,无辜的，天真的', '985', ['清白的,无辜的，天真'], ['清白的,无辜的，天真的'], ['The lawyer proved that his client was innocent of all charges.|||律师证明他的当事人对所有指控都是无辜的。']],
   ['insect', 'n.', '昆虫', '985', ['昆虫'], ['昆虫'], ['The boy observed the insect carefully under a magnifying glass.|||男孩在放大镜下仔细观察昆虫。']],
   ['insert', 'vt.', '插入,嵌入', '985', ['插入,嵌入'], ['插入,嵌入'], ['The students must insert the passage before answering the questions.|||学生必须在回答问题之前插入段落。']],
-  ['inspire', 'vt.', '鼓舞,给…以灵感', '985', ['鼓舞,给…以灵感'], ['鼓舞,给…以灵感'], ['The teacher\'s words inspired the students to work harder.']],
+  ['inspire', 'vt.', '鼓舞,给…以灵感', '985', ['鼓舞,给…以灵感'], ['鼓舞,给…以灵感'], ['The teacher\'s words inspired the students to work harder.|||老师的话激励了学生们更加努力学习。']],
   ['instant', 'n.', '瞬间，a.立即的', '985', ['瞬间，a.立即的'], ['瞬间，a.立即的'], ['The novel uses the theme of instant throughout the story.|||这部小说在整个故事中使用了即时主题。']],
   ['institute', 'n.', '研究所,学院', '985', ['研究所,学院'], ['研究所,学院'], ['He works at a research institute focused on renewable energy.|||他在一家专注于可再生能源的研究机构工作。']],
   ['instrument', 'n.', '工具,乐器', '985', ['工具,乐器'], ['工具,乐器'], ['She learned to play three different musical instruments.|||她学会了演奏三种不同的乐器。']],
@@ -527,7 +527,7 @@ const seedWords985 = [
   ['jam', 'n.', '果酱，拥挤，困境', '985', ['果酱，拥挤，困境'], ['果酱，拥挤，困境'], ['I spread strawberry jam on my toast every morning.|||我每天早上在吐司上撒草莓酱。']],
   ['jar', 'n.', '罐子,坛子,广口瓶', '985', ['罐子,坛子,广口瓶'], ['罐子,坛子,广口瓶'], ['The cookie jar was empty; someone had eaten them all.|||饼干罐是空的；有人把它们都吃光了。']],
   ['jazz', 'n.', '爵士音乐,爵士舞曲', '985', ['爵士音乐,爵士舞曲'], ['爵士音乐,爵士舞曲'], ['Jazz music originated in the African American communities of New Orleans.|||爵士音乐起源于新奥尔良的非裔美国人社区。']],
-  ['journalist', 'n.', '记者,新闻工作者', '985', ['记者,新闻工作者'], ['记者,新闻工作者'], ['Many exam questions test students\' knowledge of journalist.']],
+  ['journalist', 'n.', '记者,新闻工作者', '985', ['记者,新闻工作者'], ['记者,新闻工作者'], ['Many exam questions test students\' knowledge of journalist.|||许多考试题目考查学生对记者的掌握。']],
   ['journey', 'n.', '旅行,旅程', '985', ['旅行,旅程'], ['旅行,旅程'], ['The journey from Beijing to Shanghai takes about five hours by train.|||乘坐火车从北京到上海大约需要5个小时。']],
   ['judge', 'n.', '法官,裁判员，v.审判，判断', '985', ['法官,裁判员，v.审判'], ['法官,裁判员，v.审判，判断'], ['Do not judge a person by their appearance alone.|||不要仅凭外表来判断一个人。']],
   ['jungle', 'n.', '丛林,密林', '985', ['丛林,密林'], ['丛林,密林'], ['Researchers have published new findings about jungle.|||研究人员发表了关于丛林的新发现。']],
@@ -546,7 +546,7 @@ const seedWords985 = [
   ['legal', 'adj.', '合法的', '985', ['合法的'], ['合法的'], ['The situation turned out to be more legal than we had expected.|||事实证明，这种情况比我们预期的要合法。']],
   ['length', 'n.', '长度', '985', ['长度'], ['长度'], ['The novel uses the theme of length throughout the story.|||这部小说在整个故事中使用了长度的主题。']],
   ['less', 'adj.', '更少的，ad.更少地', '985', ['更少的，ad.更少地'], ['更少的，ad.更少地'], ['She remained less despite the difficulties she faced.|||尽管面临着种种困难，但她依旧少了。']],
-  ['liberate', 'vt.', '解放,释放', '985', ['解放,释放'], ['解放,释放'], ['The author attempts to liberate readers\' attention to this issue.']],
+  ['liberate', 'vt.', '解放,释放', '985', ['解放,释放'], ['解放,释放'], ['The author attempts to liberate readers\' attention to this issue.|||作者试图将读者的注意力解放到这个问题上。']],
   ['librarian', 'n.', '图书馆馆员', '985', ['图书馆馆员'], ['图书馆馆员'], ['The documentary explores the history of librarian in China.|||这部纪录片探讨了中国图书管理员的历史。']],
   ['lifetime', 'n.', '终身', '985', ['终身'], ['终身'], ['The textbook defines lifetime clearly in chapter three.|||教科书在第三章中明确定义了寿命。']],
   ['lightning', 'n.', '闪电', '985', ['闪电'], ['闪电'], ['The essay examines how lightning shapes our decisions.|||这篇文章探讨了闪电如何塑造我们的决策。']],
@@ -558,7 +558,7 @@ const seedWords985 = [
   ['literature', 'n.', '文学(作品)', '985', ['文学(作品)'], ['文学(作品)'], ['The experiment demonstrates the properties of literature.|||实验演示了文献的属性。']],
   ['litre', 'n.', '公升', '985', ['公升'], ['公升'], ['Please buy two litres of milk and a litre of orange juice.|||请买两升牛奶和一升橙汁。']],
   ['living-room', 'n.', '起居室', '985', ['起居室'], ['起居室'], ['The experiment demonstrates the properties of living-room.|||实验演示了客厅的特性。']],
-  ['load', 'vt.', '装,装满，n.负载;负担', '985', ['装,装满，n.负载;负'], ['装,装满，n.负载;负担'], ['The author attempts to load readers\' attention to this issue.']],
+  ['load', 'vt.', '装,装满，n.负载;负担', '985', ['装,装满，n.负载;负'], ['装,装满，n.负载;负担'], ['The author attempts to load readers\' attention to this issue.|||作者试图将读者的注意力引向这个问题。']],
   ['loaf', 'n.', '一条面包', '985', ['一条面包'], ['一条面包'], ['The documentary explores the history of loaf in China.|||这部纪录片探讨了中国面包的历史。']],
   ['local', 'adj.', '当地的，局部的，n.当地居民，局部', '985', ['当地的，局部的，n.当'], ['当地的，局部的，n.当地居民，局部'], ['Her local attitude inspired those around her to do better.|||她当地的态度激励着她周围的人做得更好。']],
   ['loose', 'adj.', '宽松的;自由的', '985', ['宽松的;自由的'], ['宽松的;自由的'], ['The loose atmosphere in the classroom encouraged open discussion.|||课堂上宽松的气氛鼓励公开讨论。']],
@@ -589,22 +589,22 @@ const seedWords985 = [
   ['mercy', 'n.', '仁慈', '985', ['仁慈'], ['仁慈'], ['Students often encounter the term "mercy" in gaokao reading passages.|||学生经常在高考阅读段落中遇到“怜悯”一词。']],
   ['merely', 'adv.', '仅仅,只不过', '985', ['仅仅,只不过'], ['仅仅,只不过'], ['The team merely discussed the issue during the three-hour meeting.|||团队只是在三小时的会议上讨论了这个问题。']],
   ['merry', 'adj.', '欢乐的,愉快的', '985', ['欢乐的,愉快的'], ['欢乐的,愉快的'], ['The findings have merry implications for future research.|||这些发现对未来的研究有着愉快的启示。']],
-  ['midday', 'n.', '中午', '985', ['中午'], ['中午'], ['Understanding midday is crucial for grasping the author\'s main message.']],
+  ['midday', 'n.', '中午', '985', ['中午'], ['中午'], ['Understanding midday is crucial for grasping the author\'s main message.|||理解正午的含义对于把握作者的主要信息至关重要。']],
   ['midnight', 'n.', '午夜', '985', ['午夜'], ['午夜'], ['The fireworks display will begin at midnight.|||烟花表演将在午夜开始。']],
   ['mild', 'adj.', '温和的，文雅的', '985', ['温和的，文雅的'], ['温和的，文雅的'], ['The mild changes in the climate worry many scientists worldwide.|||气候的温和变化让全世界许多科学家感到担忧。']],
   ['million', '待标注', 'num.百万', '985', ['num.百万'], ['num.百万'], ['The exam often tests the usage of "million" in reading comprehension.|||考试经常测试“百万”在阅读理解中的用法。']],
   ['mine', 'pron.', '我的，n.矿，矿山;地雷，水雷，vt.开采', '985', ['我的，n.矿，矿山;地'], ['我的，n.矿，矿山;地雷，水雷，vt.开采'], ['The report highlights the significance of mine in education.|||报告强调了我在教育中的重要性。']],
-  ['mineral', 'n.', '矿物，a.矿物的', '985', ['矿物，a.矿物的'], ['矿物，a.矿物的'], ['Many exam questions test students\' knowledge of mineral.']],
+  ['mineral', 'n.', '矿物，a.矿物的', '985', ['矿物，a.矿物的'], ['矿物，a.矿物的'], ['Many exam questions test students\' knowledge of mineral.|||许多考试题目考查学生对矿物的掌握。']],
   ['minimum', 'n.', '最小量，a.最小的', '985', ['最小量，a.最小的'], ['最小量，a.最小的'], ['The textbook defines minimum clearly in chapter three.|||教科书在第三章中明确规定了最低要求。']],
   ['minister', 'n.', '部长,大臣', '985', ['部长,大臣'], ['部长,大臣'], ['The survey reveals public attitudes toward minister.|||调查揭示了公众对牧师的态度。']],
   ['minority', 'n.', '少数派;少数民族', '985', ['少数派;少数民族'], ['少数派;少数民族'], ['Knowing minority well gives students confidence in exams.|||了解少数民族使学生对考试充满信心。']],
-  ['miserable', 'adj.', '痛苦的,悲惨的', '985', ['痛苦的,悲惨的'], ['痛苦的,悲惨的'], ['The author\'s miserable style attracted a wide and loyal readership.']],
+  ['miserable', 'adj.', '痛苦的,悲惨的', '985', ['痛苦的,悲惨的'], ['痛苦的,悲惨的'], ['The author\'s miserable style attracted a wide and loyal readership.|||作者悲惨的风格吸引了广泛而忠实的读者群。']],
   ['misunderstand', 'vt.', '误解,误会', '985', ['误解,误会'], ['误解,误会'], ['The team will misunderstand the new strategy starting next quarter.|||从下个季度开始，团队将误解新战略。']],
   ['mix', 'vt.', '使混合;混淆', '985', ['使混合;混淆'], ['使混合;混淆'], ['Mix the flour and eggs together to make the cake batter.|||将面粉和鸡蛋混合在一起制成蛋糕面糊。']],
   ['mobile', 'adj.', '运动的,移动的', '985', ['运动的,移动的'], ['运动的,移动的'], ['The mobile approach helped students learn more effectively.|||移动方法帮助学生更有效地学习。']],
   ['modest', 'adj.', '谦虚的', '985', ['谦虚的'], ['谦虚的'], ['His modest response showed great maturity and wisdom.|||他谦虚的回应显示出极大的成熟和智慧。']],
-  ['moral', 'adj.', '合乎道德的，n.道德,品行', '985', ['合乎道德的，n.道德,'], ['合乎道德的，n.道德,品行'], ['The author\'s moral style attracted a wide and loyal readership.']],
-  ['motor', 'n.', '发动机,机动车', '985', ['发动机,机动车'], ['发动机,机动车'], ['The boat\'s motor broke down in the middle of the lake.']],
+  ['moral', 'adj.', '合乎道德的，n.道德,品行', '985', ['合乎道德的，n.道德,'], ['合乎道德的，n.道德,品行'], ['The author\'s moral style attracted a wide and loyal readership.|||作者富有道德感的风格吸引了广泛而忠实的读者群。']],
+  ['motor', 'n.', '发动机,机动车', '985', ['发动机,机动车'], ['发动机,机动车'], ['The boat\'s motor broke down in the middle of the lake.|||船的马达在湖中央抛锚了。']],
   ['mountainous', 'adj.', '多山的', '985', ['多山的'], ['多山的'], ['She remained mountainous despite the difficulties she faced.|||尽管面临种种困难，她依旧高山跋涉。']],
   ['mourn', 'vi.', '哀痛,哀悼', '985', ['哀痛,哀悼'], ['哀痛,哀悼'], ['You need to mourn the situation before making a final decision.|||在做出最终决定之前，您需要哀悼这种情况。']],
   ['movement', 'n.', '动作;活动;移动', '985', ['动作;活动;移动'], ['动作;活动;移动'], ['The civil rights movement brought about significant social change.|||民权运动带来了重大的社会变革。']],
@@ -614,7 +614,7 @@ const seedWords985 = [
   ['nation', 'n.', '民族,国家', '985', ['民族,国家'], ['民族,国家'], ['The entire nation mourned the loss of its beloved leader.|||整个国家都为失去心爱的领导人而哀悼。']],
   ['nationality', 'n.', '国籍，民族', '985', ['国籍，民族'], ['国籍，民族'], ['The committee discussed the topic of nationality at length during the meeting.|||委员会在会议期间详细讨论了国籍问题。']],
   ['native', 'adj.', '本土的，n.本地人', '985', ['本土的，n.本地人'], ['本土的，n.本地人'], ['A native diet is essential for maintaining good health.|||天然饮食对于保持身体健康至关重要。']],
-  ['navy', 'n.', '海军', '985', ['海军'], ['海军'], ['Many exam questions test students\' knowledge of navy.']],
+  ['navy', 'n.', '海军', '985', ['海军'], ['海军'], ['Many exam questions test students\' knowledge of navy.|||许多考试题目考查学生对海军的掌握。']],
   ['neat', 'adj.', '整洁的;简洁的', '985', ['整洁的;简洁的'], ['整洁的;简洁的'], ['The neat design of the building won several international awards.|||这栋建筑的整洁设计赢得了多项国际奖项。']],
   ['needle', 'n.', '针，vt.缝补,编织', '985', ['针，vt.缝补,编织'], ['针，vt.缝补,编织'], ['The essay examines how needle shapes our decisions.|||这篇文章探讨了针头如何塑造我们的决定。']],
   ['nephew', 'n.', '侄子,外甥', '985', ['侄子,外甥'], ['侄子,外甥'], ['The textbook defines nephew clearly in chapter three.|||教科书在第三章中清楚地定义了侄子。']],
@@ -626,7 +626,7 @@ const seedWords985 = [
   ['nowadays', 'adv.', '现今,现在，n.现今，当今', '985', ['现今,现在，n.现今，'], ['现今,现在，n.现今，当今'], ['The situation developed nowadays over the following weeks.|||在接下来的几周里，情况发生了变化。']],
   ['nowhere', 'adv.', '任何地方都不', '985', ['任何地方都不'], ['任何地方都不'], ['He worked nowhere to meet the challenging deadline.|||他没有在充满挑战的截止日期前完成任何工作。']],
   ['nuclear', 'adj.', '原子核的;核心的', '985', ['原子核的;核心的'], ['原子核的;核心的'], ['The nuclear nature of the problem became clear over time.|||随着时间的推移，问题的核性质变得清晰。']],
-  ['nut', 'n.', '坚果', '985', ['坚果'], ['坚果'], ['Understanding nut is crucial for grasping the author\'s main message.']],
+  ['nut', 'n.', '坚果', '985', ['坚果'], ['坚果'], ['Understanding nut is crucial for grasping the author\'s main message.|||理解坚果的含义对于把握作者的主要信息至关重要。']],
   ['nutrition', 'n.', '营养', '985', ['营养'], ['营养'], ['Proper nutrition is essential for growing children.|||适当的营养对成长中的儿童至关重要。']],
   ['obey', 'vt.', '顺从，vi.服从', '985', ['顺从，vi.服从'], ['顺从，vi.服从'], ['All citizens must obey the law of the country.|||所有公民都必须遵守国家法律。']],
   ['observe', 'vt.', '观察,遵守', '985', ['观察,遵守'], ['观察,遵守'], ['Scientists observe the stars using powerful telescopes.|||科学家使用强大的望远镜观察恒星。']],
@@ -634,7 +634,7 @@ const seedWords985 = [
   ['obvious', 'adj.', '显而易见的', '985', ['显而易见的'], ['显而易见的'], ['It is obvious that he has been practicing piano for years.|||很显然，他已经练习钢琴多年了。']],
   ['occupation', 'n.', '占领,占据;职业，工作', '985', ['占领,占据;职业，工'], ['占领,占据;职业，工作'], ['The committee discussed the topic of occupation at length during the meeting.|||委员会在会议期间详细讨论了职业问题。']],
   ['occupy', 'vt.', '占领,占有;使忙碌', '985', ['占领,占有;使忙碌'], ['占领,占有;使忙碌'], ['She helped her friend occupy the challenging math problem.|||她帮助她的朋友解决了具有挑战性的数学问题。']],
-  ['occur', 'vi.', '发生，突然想起', '985', ['发生，突然想起'], ['发生，突然想起'], ['Earthquakes often occur along fault lines in the earth\'s crust.']],
+  ['occur', 'vi.', '发生，突然想起', '985', ['发生，突然想起'], ['发生，突然想起'], ['Earthquakes often occur along fault lines in the earth\'s crust.|||地震经常沿着地壳中的断层线发生。']],
   ['official', 'adj.', '官方的，正式的，n.官员，行政人员', '985', ['官方的，正式的，n.官'], ['官方的，正式的，n.官员，行政人员'], ['The situation turned out to be more official than we had expected.|||事实证明，情况比我们预期的更为正式。']],
   ['onto', 'prep.', '到…上', '985', ['到…上'], ['到…上'], ['The store is open onto nine in the morning until evening.|||商店早上9点营业至晚上。']],
   ['opera', 'n.', '歌剧，歌剧团，歌剧院', '985', ['歌剧，歌剧团，歌剧院'], ['歌剧，歌剧团，歌剧院'], ['The survey reveals public attitudes toward opera.|||调查揭示了公众对歌剧的态度。']],
@@ -642,7 +642,7 @@ const seedWords985 = [
   ['opinion', 'n.', '意见,看法', '985', ['意见,看法'], ['意见,看法'], ['Everyone is entitled to express their own opinion freely.|||每个人都有权自由表达自己的意见。']],
   ['oppose', 'vt.', '反对,反抗', '985', ['反对,反抗'], ['反对,反抗'], ['Parents should oppose their children to develop good study habits.|||家长应反对孩子养成良好的学习习惯。']],
   ['opposite', 'adj.', '对面的，相反的，对立的，n.对立面，反义词', '985', ['对面的，相反的，对立'], ['对面的，相反的，对立的，n.对立面，反义词'], ['The opposite atmosphere in the classroom encouraged open discussion.|||课堂上相反的气氛鼓励公开讨论。']],
-  ['optimistic', 'adj.', '乐观的', '985', ['乐观的'], ['乐观的'], ['The author\'s optimistic style attracted a wide and loyal readership.']],
+  ['optimistic', 'adj.', '乐观的', '985', ['乐观的'], ['乐观的'], ['The author\'s optimistic style attracted a wide and loyal readership.|||作者乐观的风格吸引了广泛而忠实的读者群。']],
   ['oral', 'adj.', '口头的', '985', ['口头的'], ['口头的'], ['Her oral attitude inspired those around her to do better.|||她的口头态度激励着她周围的人做得更好。']],
   ['orbit', 'n.', '运行轨道，vt.环绕', '985', ['运行轨道，vt.环绕'], ['运行轨道，vt.环绕'], ['The experiment demonstrates the properties of orbit.|||实验演示了轨道的特性。']],
   ['ordinary', 'adj.', '普通的,平凡的', '985', ['普通的,平凡的'], ['普通的,平凡的'], ['The ordinary approach helped students learn more effectively.|||普通方法帮助学生更有效地学习。']],
@@ -658,19 +658,19 @@ const seedWords985 = [
   ['overcome', 'vt.', '战胜,克服', '985', ['战胜,克服'], ['战胜,克服'], ['She overcame her fear of public speaking through constant practice.|||她通过不断的练习克服了对公开演讲的恐惧。']],
   ['owe', 'vt.', '欠，归功于', '985', ['欠，归功于'], ['欠，归功于'], ['The experiment shows how plants owe sunlight for growth.|||实验显示了植物如何借助阳光生长。']],
   ['ox', 'n.', '公牛', '985', ['公牛'], ['公牛'], ['The essay examines how ox shapes our decisions.|||这篇文章探讨了牛如何塑造我们的决策。']],
-  ['oxygen', 'n.', '氧，氧气', '985', ['氧，氧气'], ['氧，氧气'], ['Many exam questions test students\' knowledge of oxygen.']],
+  ['oxygen', 'n.', '氧，氧气', '985', ['氧，氧气'], ['氧，氧气'], ['Many exam questions test students\' knowledge of oxygen.|||许多考试题目考查学生对氧气的掌握。']],
   ['pack', 'vt.', '捆扎，打包;挤满，n.包裹，背包', '985', ['捆扎，打包;挤满，n.'], ['捆扎，打包;挤满，n.包裹，背包'], ['We packed our bags the night before the trip.|||我们在旅行前一天晚上收拾了行李。']],
   ['packet', 'n.', '小包，口袋', '985', ['小包，口袋'], ['小包，口袋'], ['The article discusses the impact of packet on modern society.|||本文讨论了数据包对现代社会的影响。']],
-  ['pain', 'n.', '痛苦，疼痛，努力', '985', ['痛苦，疼痛，努力'], ['痛苦，疼痛，努力'], ['Many exam questions test students\' knowledge of pain.']],
+  ['pain', 'n.', '痛苦，疼痛，努力', '985', ['痛苦，疼痛，努力'], ['痛苦，疼痛，努力'], ['Many exam questions test students\' knowledge of pain.|||许多考试题目考查学生对疼痛的掌握。']],
   ['painful', 'adj.', '痛苦的', '985', ['痛苦的'], ['痛苦的'], ['Her painful attitude inspired those around her to do better.|||她痛苦的态度激励着周围的人做得更好。']],
-  ['painting', 'n.', '油画;绘画', '985', ['油画;绘画'], ['油画;绘画'], ['Understanding painting is crucial for grasping the author\'s main message.']],
+  ['painting', 'n.', '油画;绘画', '985', ['油画;绘画'], ['油画;绘画'], ['Understanding painting is crucial for grasping the author\'s main message.|||理解绘画的含义对于把握作者的主要信息至关重要。']],
   ['pan', 'n.', '平底锅', '985', ['平底锅'], ['平底锅'], ['Heat some oil in the pan and fry the eggs.|||在锅里热些油，然后煎鸡蛋。']],
   ['panic', 'n.', '恐慌,惊慌', '985', ['恐慌,惊慌'], ['恐慌,惊慌'], ['The survey reveals public attitudes toward panic.|||调查揭示了公众对恐慌的态度。']],
   ['paragraph', 'n.', '(文章的)段,节', '985', ['(文章的)段,节'], ['(文章的)段,节'], ['The survey reveals public attitudes toward paragraph.|||调查揭示了公众对段落的态度。']],
   ['parcel', 'n.', '包裹,邮包', '985', ['包裹,邮包'], ['包裹,邮包'], ['The survey reveals public attitudes toward parcel.|||调查揭示了公众对包裹的态度。']],
   ['parrot', 'n.', '鹦鹉', '985', ['鹦鹉'], ['鹦鹉'], ['The passage provides a detailed analysis of parrot.|||这篇文章对鹦鹉进行了详细的分析。']],
   ['participate', 'vi.', '参与,参加', '985', ['参与,参加'], ['参与,参加'], ['All students are encouraged to participate in extracurricular activities.|||鼓励所有学生参加课外活动。']],
-  ['particular', 'adj.', '特殊的,特定的', '985', ['特殊的,特定的'], ['特殊的,特定的'], ['Is there any particular reason why you chose this topic?']],
+  ['particular', 'adj.', '特殊的,特定的', '985', ['特殊的,特定的'], ['特殊的,特定的'], ['Is there any particular reason why you chose this topic?|||你选择这个话题有什么特别的原因吗？']],
   ['partly', 'adv.', '部分地', '985', ['部分地'], ['部分地'], ['partly, the experiment confirmed the theoretical hypothesis.']],
   ['partner', 'n.', '伙伴,搭挡，合伙人;配偶', '985', ['伙伴,搭挡，合伙人;'], ['伙伴,搭挡，合伙人;配偶'], ['The teacher explained partner with real-life examples in class.|||老师在课堂上用真实的例子解释了搭档。']],
   ['passer-by', 'n.', '过路人', '985', ['过路人'], ['过路人'], ['Knowing passer-by well gives students confidence in exams.|||熟悉路人可以让学生对考试充满信心。']],
@@ -680,7 +680,7 @@ const seedWords985 = [
   ['peaceful', 'adj.', '和平的;平静的', '985', ['和平的;平静的'], ['和平的;平静的'], ['The novel tells a peaceful story about personal growth and resilience.|||这部小说讲述了一个关于个人成长和复原力的和平故事。']],
   ['pence', 'n.', '便士；penny的复数', '985', ['便士；penny的复数'], ['便士；penny的复数'], ['Knowing pence well gives students confidence in exams.|||了解便士能让学生对考试充满信心。']],
   ['per', 'prep.', '每，每一', '985', ['每，每一'], ['每，每一'], ['Students should remain per the classroom during the break.|||休息期间，学生应留在每个教室。']],
-  ['perform', 'vt.', '执行，表演，表现', '985', ['执行，表演，表现'], ['执行，表演，表现'], ['The band will perform at the school\'s annual talent show.']],
+  ['perform', 'vt.', '执行，表演，表现', '985', ['执行，表演，表现'], ['执行，表演，表现'], ['The band will perform at the school\'s annual talent show.|||乐队将在学校年度才艺表演上演出。']],
   ['performance', 'n.', '履行;表演;表现', '985', ['履行;表演;表现'], ['履行;表演;表现'], ['The novel uses the theme of performance throughout the story.|||这部小说在整个故事中使用了表演的主题。']],
   ['permit', 'vt.', '允许，n.执照，许可证', '985', ['允许，n.执照，许可证'], ['允许，n.执照，许可证'], ['The school does not permit students to leave during lunch.|||学校不允许学生在午餐时间离开。']],
   ['persuade', 'vt.', '说服', '985', ['说服'], ['说服'], ['He persuaded his friend to join the volunteer program.|||他说服他的朋友加入志愿者计划。']],
@@ -693,7 +693,7 @@ const seedWords985 = [
   ['pin', 'n.', '别针，钉子，vt.钉住', '985', ['别针，钉子，vt.钉住'], ['别针，钉子，vt.钉住'], ['She used a pin to fasten the badge to her jacket.|||她用别针把徽章固定在夹克上。']],
   ['pipe', 'vt.', '用管道输送，n.管子,导管;烟斗', '985', ['用管道输送，n.管子,'], ['用管道输送，n.管子,导管;烟斗'], ['The government plans to pipe the policy nationwide next year.|||政府计划明年在全国范围内实施该政策。']],
   ['platform', 'n.', '站台,讲台，平台', '985', ['站台,讲台，平台'], ['站台,讲台，平台'], ['Researchers have published new findings about platform.|||研究人员发表了关于平台的新发现。']],
-  ['player', 'n.', '表演者,运动员，比赛者，游戏者', '985', ['表演者,运动员，比赛'], ['表演者,运动员，比赛者，游戏者'], ['Many exam questions test students\' knowledge of player.']],
+  ['player', 'n.', '表演者,运动员，比赛者，游戏者', '985', ['表演者,运动员，比赛'], ['表演者,运动员，比赛者，游戏者'], ['Many exam questions test students\' knowledge of player.|||许多考试题目考查学生对选手的掌握。']],
   ['playmate', 'n.', '玩伴,游伴', '985', ['玩伴,游伴'], ['玩伴,游伴'], ['Knowing playmate well gives students confidence in exams.|||熟悉玩伴可以让学生对考试充满信心。']],
   ['pleased', 'adj.', '高兴的', '985', ['高兴的'], ['高兴的'], ['She remained pleased despite the difficulties she faced.|||尽管面临种种困难，她还是很高兴。']],
   ['plough', 'n.', '犁，vt.犁,耕', '985', ['犁，vt.犁,耕'], ['犁，vt.犁,耕'], ['The novel uses the theme of plough throughout the story.|||这部小说在整个故事中使用了犁的主题。']],
@@ -726,7 +726,7 @@ const seedWords985 = [
   ['process', 'n.', '过程，vt.处理', '985', ['过程，vt.处理'], ['过程，vt.处理'], ['Learning a language is a long and gradual process.|||学习语言是一个漫长而渐进的过程。']],
   ['production', 'n.', '生产，产品，成果，作品', '985', ['生产，产品，成果，作'], ['生产，产品，成果，作品'], ['The textbook defines production clearly in chapter three.|||教科书在第三章中明确定义了生产。']],
   ['profession', 'n.', '职业，专业', '985', ['职业，专业'], ['职业，专业'], ['Teaching is a noble profession that shapes the future.|||教学是塑造未来的崇高职业。']],
-  ['professor', 'n.', '教授', '985', ['教授'], ['教授'], ['Understanding professor is crucial for grasping the author\'s main message.']],
+  ['professor', 'n.', '教授', '985', ['教授'], ['教授'], ['Understanding professor is crucial for grasping the author\'s main message.|||理解教授的含义对于把握作者的主要信息至关重要。']],
   ['profit', 'n.', '利润，vi.得益', '985', ['利润，vi.得益'], ['利润，vi.得益'], ['The lecture focused on the role of profit in daily life.|||讲座的重点是利润在日常生活中的作用。']],
   ['project', 'n.', '计划;工程;项目，vt.设计，规划', '985', ['计划;工程;项目vt'], ['计划;工程;项目，vt.设计，规划'], ['The science project won first prize at the national competition.|||该科学项目在全国大赛中获得一等奖。']],
   ['promote', 'vt.', '促进,提升;推销', '985', ['促进,提升;推销'], ['促进,提升;推销'], ['The campaign aims to promote healthy eating habits among teenagers.|||该活动旨在促进青少年的健康饮食习惯。']],
@@ -737,16 +737,16 @@ const seedWords985 = [
   ['purchase', 'vt.', '购买，n.购买;赃物', '985', ['购买，n.购买;赃物'], ['购买，n.购买;赃物'], ['You can purchase tickets online or at the box office.|||您可以在网上或售票处购买门票。']],
   ['pure', 'adj.', '纯洁的', '985', ['纯洁的'], ['纯洁的'], ['The pure atmosphere in the classroom encouraged open discussion.|||课堂上的纯净气氛鼓励公开讨论。']],
   ['puzzle', 'n.', '难题;谜，vi.使迷惑', '985', ['难题;谜，vi.使迷惑'], ['难题;谜，vi.使迷惑'], ['He enjoys solving crossword puzzles on weekends.|||他周末喜欢填字谜。']],
-  ['quality', 'n.', '质量，品质，特性', '985', ['质量，品质，特性'], ['质量，品质，特性'], ['The quality of education directly affects students\' future prospects.']],
+  ['quality', 'n.', '质量，品质，特性', '985', ['质量，品质，特性'], ['质量，品质，特性'], ['The quality of education directly affects students\' future prospects.|||教育质量直接影响学生的未来前景。']],
   ['quantity', 'n.', '数量，大量', '985', ['数量，大量'], ['数量，大量'], ['A large quantity of food was wasted at the buffet last night.|||昨晚的自助餐浪费了大量的食物。']],
   ['quarrel', 'vi.', '争吵，n.争吵,吵架', '985', ['争吵，n.争吵,吵架'], ['争吵，n.争吵,吵架'], ['The two neighbors quarreled over the noise late at night.|||两个邻居在深夜因噪音而争吵。']],
   ['queue', 'n.', '队列，vi.排队，将…梳成辫子', '985', ['队列，vi.排队，将…'], ['队列，vi.排队，将…梳成辫子'], ['The passage provides a detailed analysis of queue.|||该段提供了对队列的详细分析。']],
   ['quit', 'vt.', '离开,停止;辞职', '985', ['离开,停止;辞职'], ['离开,停止;辞职'], ['The teacher asked us to quit the main idea of the text.|||老师要求我们放弃文本的主要思想。']],
   ['range', 'vi.', '变动，变化，n.范围，幅度，', '985', ['变动，变化，n.范围，'], ['变动，变化，n.范围，幅度，'], ['The store offers a wide range of products for everyday needs.|||这家商店提供各种满足日常需求的产品。']],
-  ['rank', 'n.', '等级，军衔，队列，vt.排列，把…分等', '985', ['等级，军衔，队列vt'], ['等级，军衔，队列，vt.排列，把…分等'], ['Understanding rank is crucial for grasping the author\'s main message.']],
+  ['rank', 'n.', '等级，军衔，队列，vt.排列，把…分等', '985', ['等级，军衔，队列vt'], ['等级，军衔，队列，vt.排列，把…分等'], ['Understanding rank is crucial for grasping the author\'s main message.|||理解排名的含义对于把握作者的主要信息至关重要。']],
   ['rate', 'n.', '比率;速度;价格，vt.评价，估价', '985', ['比率;速度;价格vt'], ['比率;速度;价格，vt.评价，估价'], ['The unemployment rate has dropped for the third consecutive month.|||失业率连续第三个月下降。']],
   ['ray', 'n.', '光线;射线', '985', ['光线;射线'], ['光线;射线'], ['The passage provides a detailed analysis of ray.|||该段提供了对射线的详细分析。']],
-  ['react', 'vi.', '反应', '985', ['反应'], ['反应'], ['How did the audience react to the surprising ending of the play?']],
+  ['react', 'vi.', '反应', '985', ['反应'], ['反应'], ['How did the audience react to the surprising ending of the play?|||观众对戏剧出人意料的结局有何反应？']],
   ['reading', 'n.', '阅读;读物', '985', ['阅读;读物'], ['阅读;读物'], ['The committee discussed the topic of reading at length during the meeting.|||委员会在会议期间讨论了详细阅读的主题。']],
   ['reality', 'n.', '现实;真实', '985', ['现实;真实'], ['现实;真实'], ['Virtual reality technology has changed how we play games.|||虚拟现实技术改变了我们玩游戏的方式。']],
   ['reception', 'adj.', '接待，接收，接待处', '985', ['接待，接收，接待处'], ['接待，接收，接待处'], ['The reception approach helped students learn more effectively.|||接待方法帮助学生更有效地学习。']],
@@ -768,7 +768,7 @@ const seedWords985 = [
   ['religion', 'n.', '宗教，宗教信仰', '985', ['宗教，宗教信仰'], ['宗教，宗教信仰'], ['She wrote a research paper about religion last semester.|||她上学期写了一篇关于宗教的研究论文。']],
   ['rely', 'vi.', '依赖,依靠;信赖', '985', ['依赖,依靠;信赖'], ['依赖,依靠;信赖'], ['You cannot rely on luck alone; you must work hard.|||你不能只依靠运气，你必须努力工作。']],
   ['remark', 'vi.', '评论，n.评论;谈话', '985', ['评论，n.评论;谈话'], ['评论，n.评论;谈话'], ['The professor made a remark about the importance of critical thinking.|||教授谈到了批判性思维的重要性。']],
-  ['remind', 'vt.', '提醒', '985', ['提醒'], ['提醒'], ['The calendar reminds me of my mother\'s birthday next week.']],
+  ['remind', 'vt.', '提醒', '985', ['提醒'], ['提醒'], ['The calendar reminds me of my mother\'s birthday next week.|||日历提醒我下周是妈妈的生日。']],
   ['remote', 'adj.', '遥远的，偏僻的', '985', ['遥远的，偏僻的'], ['遥远的，偏僻的'], ['The book provides a remote analysis of the topic.|||本书对该主题进行了远程分析。']],
   ['remove', 'vt.', '移动，调动，迁移', '985', ['移动，调动，迁移'], ['移动，调动，迁移'], ['Please remove your shoes before entering the temple.|||进入寺庙前请脱鞋。']],
   ['rent', 'n.', '租金,租，vi.出租，租用，租借', '985', ['租金,租，vi.出租，'], ['租金,租，vi.出租，租用，租借'], ['They rent a small apartment near the university campus.|||他们在大学校园附近租了一套小公寓。']],
@@ -777,13 +777,13 @@ const seedWords985 = [
   ['reply', 'vi.', '回答,答复，n.答复', '985', ['回答,答复，n.答复'], ['回答,答复，n.答复'], ['She replied to the email immediately with the requested files.|||她立即回复了电子邮件，并提供了所请求的文件。']],
   ['represent', 'vt.', '描绘;代表,象征', '985', ['描绘;代表,象征'], ['描绘;代表,象征'], ['The delegate will represent our school at the national conference.|||代表将代表我们学校参加全国会议。']],
   ['republic', 'n.', '共和国，共和政体', '985', ['共和国，共和政体'], ['共和国，共和政体'], ['The experiment demonstrates the properties of republic.|||实验证明了共和国的特性。']],
-  ['reputation', 'n.', '名誉,声望', '985', ['名誉,声望'], ['名誉,声望'], ['Many exam questions test students\' knowledge of reputation.']],
+  ['reputation', 'n.', '名誉,声望', '985', ['名誉,声望'], ['名誉,声望'], ['Many exam questions test students\' knowledge of reputation.|||许多考试题目考查学生对声誉的掌握。']],
   ['request', 'n.', '请求,要求，vt.请求,要求', '985', ['请求,要求，vt.请求'], ['请求,要求，vt.请求,要求'], ['The lecture focused on the role of request in daily life.|||讲座侧重于请求在日常生活中的作用。']],
   ['rescue', 'vt.', '援救,营救', '985', ['援救,营救'], ['援救,营救'], ['The lifeguard rescued the drowning child from the pool.|||救生员从泳池里救出了溺水的孩子。']],
   ['reserve', 'vt.', '储备,保留;预订', '985', ['储备,保留;预订'], ['储备,保留;预订'], ['The teacher asked us to reserve the main idea of the text.|||老师要求我们保留文本的主要思想。']],
   ['resist', 'vt.', '抵抗,抗拒', '985', ['抵抗,抗拒'], ['抵抗,抗拒'], ['It is hard to resist the temptation of eating chocolate.|||很难抗拒吃巧克力的诱惑。']],
   ['respect', 'vt.', '尊敬,尊重，n.尊敬', '985', ['尊敬,尊重，n.尊敬'], ['尊敬,尊重，n.尊敬'], ['Students should respect their teachers and classmates.|||学生应尊重老师和同学。']],
-  ['respond', 'vi.', '回答;响应', '985', ['回答;响应'], ['回答;响应'], ['The company responded quickly to the customer\'s complaint.']],
+  ['respond', 'vi.', '回答;响应', '985', ['回答;响应'], ['回答;响应'], ['The company responded quickly to the customer\'s complaint.|||公司迅速回应了顾客的投诉。']],
   ['responsible', 'adj.', '有责任的;尽责的', '985', ['有责任的;尽责的'], ['有责任的;尽责的'], ['The situation turned out to be more responsible than we had expected.|||事实证明，这种情况比我们预期的更加负责任。']],
   ['retire', 'vi.', '退休', '985', ['退休'], ['退休'], ['My grandfather retired at the age of sixty-five.|||我爷爷六十五岁就退休了。']],
   ['revise', 'vt.', '校订,修改', '985', ['校订,修改'], ['校订,修改'], ['The teacher asked us to revise the main idea of the text.|||老师要求我们修改文本的主要思想。']],
@@ -804,7 +804,7 @@ const seedWords985 = [
   ['salary', 'n.', '薪水', '985', ['薪水'], ['薪水'], ['The committee discussed the topic of salary at length during the meeting.|||委员会在会议期间详细讨论了工资问题。']],
   ['satellite', 'n.', '卫星', '985', ['卫星'], ['卫星'], ['The report highlights the significance of satellite in education.|||该报告强调了卫星在教育中的重要性。']],
   ['satisfaction', 'n.', '满意', '985', ['满意'], ['满意'], ['The lecture focused on the role of satisfaction in daily life.|||讲座的重点是满足在日常生活中的作用。']],
-  ['scan', 'vt.', '浏览;扫描', '985', ['浏览;扫描'], ['浏览;扫描'], ['The guard scanned each visitor\'s ID before allowing entry.']],
+  ['scan', 'vt.', '浏览;扫描', '985', ['浏览;扫描'], ['浏览;扫描'], ['The guard scanned each visitor\'s ID before allowing entry.|||保安在允许进入之前扫描了每位访客的身份证。']],
   ['scare', 'vt.', '惊吓，vi.受惊', '985', ['惊吓，vi.受惊'], ['惊吓，vi.受惊'], ['The guide began to scare the history of the ancient city.|||导游开始吓唬古城的历史。']],
   ['scene', 'n.', '情景;景色', '985', ['情景;景色'], ['情景;景色'], ['The report highlights the significance of scene in education.|||报告强调了场景在教育中的重要性。']],
   ['schedule', 'vt.', '安排，n.时间表,计划表', '985', ['安排，n.时间表,计划'], ['安排，n.时间表,计划表'], ['The flight was delayed, disrupting the entire travel schedule.|||航班延误，扰乱了整个行程安排。']],
@@ -815,12 +815,12 @@ const seedWords985 = [
   ['seaside', 'n.', '海边', '985', ['海边'], ['海边'], ['The committee discussed the topic of seaside at length during the meeting.|||委员会在会议期间详细讨论了海滨主题。']],
   ['section', 'n.', '切片;部门;章节', '985', ['切片;部门;章节'], ['切片;部门;章节'], ['Please read the first section of the chapter before next class.|||请在下一节课之前阅读本章的第一节。']],
   ['secure', 'adj.', '安全的', '985', ['安全的'], ['安全的'], ['Make sure to secure your belongings before leaving the room.|||离开房间前，请务必妥善保管您的物品。']],
-  ['seed', 'n.', '种(子),籽', '985', ['种(子),籽'], ['种(子),籽'], ['Many exam questions test students\' knowledge of seed.']],
+  ['seed', 'n.', '种(子),籽', '985', ['种(子),籽'], ['种(子),籽'], ['Many exam questions test students\' knowledge of seed.|||许多考试题目考查学生对种子的掌握。']],
   ['seek', 'vt.', '寻找,探索', '985', ['寻找,探索'], ['寻找,探索'], ['Many students seek scholarships to help pay for tuition.|||许多学生寻求奖学金来帮助支付学费。']],
   ['seize', 'vt.', '抓住;夺取，占据', '985', ['抓住;夺取，占据'], ['抓住;夺取，占据'], ['The police seized a large quantity of illegal drugs.|||警方查获了大量非法毒品。']],
   ['select', 'vt.', '选择，vi.挑选', '985', ['选择，vi.挑选'], ['选择，vi.挑选'], ['The coach selected the best players for the tournament.|||教练为比赛选择了最好的球员。']],
   ['self', 'n.', '自我,自己', '985', ['自我,自己'], ['自我,自己'], ['The committee discussed the topic of self at length during the meeting.|||委员会在会议期间详细讨论了自我这个话题。']],
-  ['selfish', 'adj.', '自私的,利己的', '985', ['自私的,利己的'], ['自私的,利己的'], ['The author\'s selfish style attracted a wide and loyal readership.']],
+  ['selfish', 'adj.', '自私的,利己的', '985', ['自私的,利己的'], ['自私的,利己的'], ['The author\'s selfish style attracted a wide and loyal readership.|||作者自私的风格吸引了广泛而忠实的读者群。']],
   ['senior', 'adj.', '年长者;资格老的', '985', ['年长者;资格老的'], ['年长者;资格老的'], ['His senior response showed great maturity and wisdom.|||他的高级回应显示出极大的成熟和智慧。']],
   ['sensitive', 'adj.', '敏感的,灵敏的', '985', ['敏感的,灵敏的'], ['敏感的,灵敏的'], ['The topic of mental health requires sensitive handling.|||心理健康这个话题需要敏感的处理。']],
   ['settle', 'vt.', '安排,安放;解决，vi.定居', '985', ['安排,安放;解决vi'], ['安排,安放;解决，vi.定居'], ['The family decided to settle in a small town by the sea.|||一家人决定在海边的一个小镇上定居下来。']],
@@ -838,7 +838,7 @@ const seedWords985 = [
   ['shopping', 'n.', '购物', '985', ['购物'], ['购物'], ['The report highlights the significance of shopping in education.|||报告强调了购物在教育中的重要性。']],
   ['shore', 'n.', '滨,岸', '985', ['滨,岸'], ['滨,岸'], ['The article discusses the impact of shore on modern society.|||本文探讨了海岸对现代社会的影响。']],
   ['shortcoming', 'n.', '短处,缺点', '985', ['短处,缺点'], ['短处,缺点'], ['The textbook defines shortcoming clearly in chapter three.|||教科书在第三章中明确界定了缺点。']],
-  ['shot', 'n.', '射击，发射;投篮', '985', ['射击，发射;投篮'], ['射击，发射;投篮'], ['Understanding shot is crucial for grasping the author\'s main message.']],
+  ['shot', 'n.', '射击，发射;投篮', '985', ['射击，发射;投篮'], ['射击，发射;投篮'], ['Understanding shot is crucial for grasping the author\'s main message.|||理解射击的含义对于把握作者的主要信息至关重要。']],
   ['sigh', 'vi.', '叹气,叹息，n.叹息', '985', ['叹气,叹息，n.叹息'], ['叹气,叹息，n.叹息'], ['The professor urged students to sigh beyond the textbook.|||教授敦促学生在课本之外叹气。']],
   ['sign', 'n.', '符号;征兆，vt.签名', '985', ['符号;征兆，vt.签名'], ['符号;征兆，vt.签名'], ['Please sign your name at the bottom of the form.|||请在表格底部签名。']],
   ['signal', 'n.', '信号，vi.发信号', '985', ['信号，vi.发信号'], ['信号，vi.发信号'], ['The red light is a signal that you must stop your car immediately.|||红灯表示您必须立即停止行驶。']],
@@ -854,17 +854,17 @@ const seedWords985 = [
   ['slightly', 'adv.', '轻微地', '985', ['轻微地'], ['轻微地'], ['The project progressed slightly despite several unexpected setbacks.|||尽管遭遇了几次意想不到的挫折，但项目进展缓慢。']],
   ['slim', 'adj.', '苗条的，修长的', '985', ['苗条的，修长的'], ['苗条的，修长的'], ['The slim changes in the climate worry many scientists worldwide.|||气候的微小变化让全世界许多科学家感到担忧。']],
   ['smooth', 'adj.', '光滑的，平稳的，顺利的', '985', ['光滑的，平稳的，顺利'], ['光滑的，平稳的，顺利的'], ['The smooth report highlighted several key issues in the system.|||流畅的报告突出了系统中的几个关键问题。']],
-  ['sneaker', 'n.', '鬼鬼祟祟做事的人,卑鄙者,运动鞋', '985', ['鬼鬼祟祟做事的人,卑'], ['鬼鬼祟祟做事的人,卑鄙者,运动鞋'], ['Understanding sneaker is crucial for grasping the author\'s main message.']],
+  ['sneaker', 'n.', '鬼鬼祟祟做事的人,卑鄙者,运动鞋', '985', ['鬼鬼祟祟做事的人,卑'], ['鬼鬼祟祟做事的人,卑鄙者,运动鞋'], ['Understanding sneaker is crucial for grasping the author\'s main message.|||理解运动鞋的含义对于把握作者的主要信息至关重要。']],
   ['soccer', 'n.', '英式足球', '985', ['英式足球'], ['英式足球'], ['Soccer is the most popular sport in the world.|||足球是世界上最受欢迎的运动。']],
   ['socialism', 'n.', '社会主义', '985', ['社会主义'], ['社会主义'], ['The textbook defines socialism clearly in chapter three.|||教科书第三章对社会主义的定义非常清楚。']],
   ['socialist', 'adj.', '社会主义的', '985', ['社会主义的'], ['社会主义的'], ['Students found the topic socialist but ultimately rewarding.|||学生们发现这个话题是社会主义的，但最终是有益的。']],
-  ['software', 'n.', '软件', '985', ['软件'], ['软件'], ['Understanding software is crucial for grasping the author\'s main message.']],
+  ['software', 'n.', '软件', '985', ['软件'], ['软件'], ['Understanding software is crucial for grasping the author\'s main message.|||理解软件的含义对于把握作者的主要信息至关重要。']],
   ['soil', 'n.', '土壤;土地', '985', ['土壤;土地'], ['土壤;土地'], ['The author mentions soil to support the main argument.|||作者提到土壤来支持主要论点。']],
   ['solar', 'adj.', '太阳的,日光的', '985', ['太阳的,日光的'], ['太阳的,日光的'], ['The situation turned out to be more solar than we had expected.|||事实证明，情况比我们预期的要好。']],
   ['soul', 'n.', '灵魂,精神;人', '985', ['灵魂,精神;人'], ['灵魂,精神;人'], ['The committee discussed the topic of soul at length during the meeting.|||委员会在会议期间详细讨论了灵魂的话题。']],
   ['specific', 'adj.', '特定的，明确的，具体的', '985', ['特定的，明确的，具体'], ['特定的，明确的，具体的'], ['The teacher gave specific instructions for the lab experiment.|||老师为实验室实验给出了具体的指示。']],
   ['spit', 'vi.', '吐唾沫', '985', ['吐唾沫'], ['吐唾沫'], ['She was the first to spit the error in the report.|||她是第一个在报告中吐出这个错误的人。']],
-  ['splendid', 'adj.', '壮丽的,显著的', '985', ['壮丽的,显著的'], ['壮丽的,显著的'], ['The author\'s splendid style attracted a wide and loyal readership.']],
+  ['splendid', 'adj.', '壮丽的,显著的', '985', ['壮丽的,显著的'], ['壮丽的,显著的'], ['The author\'s splendid style attracted a wide and loyal readership.|||作者出色的风格吸引了广泛而忠实的读者群。']],
   ['split', 'vt.', '劈开', '985', ['劈开'], ['劈开'], ['The scientist managed to split the data accurately and efficiently.|||这位科学家设法准确有效地分割了数据。']],
   ['spoken', 'adj.', '口头讲的,口语的', '985', ['口头讲的,口语的'], ['口头讲的,口语的'], ['The spoken design of the building won several international awards.|||该建筑的口头设计赢得了多项国际奖项。']],
   ['speak', 'v.', '说；讲；发言', '985', ['说；讲；发言'], ['说；讲；发言'], ['She speaks three languages fluently: Chinese, English, and French.|||她能流利地说三种语言：中文、英文和法文。']],
@@ -887,7 +887,7 @@ const seedWords985 = [
   ['strike', 'vt.', '打,击;罢工，n.罢工;打击;殴打', '985', ['打,击;罢工，n.罢工'], ['打,击;罢工，n.罢工;打击;殴打'], ['The workers went on strike to demand better wages.|||工人们举行罢工，要求提高工资。']],
   ['struggle', 'n.', '奋斗，努力，挣扎，vi.奋斗，努力，挣扎', '985', ['奋斗，努力，挣扎vi'], ['奋斗，努力，挣扎，vi.奋斗，努力，挣扎'], ['Many freshmen struggle to adapt to college life in the first semester.|||许多新生在第一学期很难适应大学生活。']],
   ['studio', 'n.', '工作室,播音室', '985', ['工作室,播音室'], ['工作室,播音室'], ['The survey reveals public attitudes toward studio.|||调查揭示了公众对工作室的态度。']],
-  ['style', 'n.', '风格,式样', '985', ['风格,式样'], ['风格,式样'], ['The author\'s writing style is both elegant and accessible.']],
+  ['style', 'n.', '风格,式样', '985', ['风格,式样'], ['风格,式样'], ['The author\'s writing style is both elegant and accessible.|||作者的写作风格既优雅又通俗易懂。']],
   ['suck', 'vt.', '吸,吮', '985', ['吸,吮'], ['吸,吮'], ['Students should learn to suck their knowledge in real practice.|||学生应该学会在实际实践中吸取知识。']],
   ['suddenly', 'adv.', '突然', '985', ['突然'], ['突然'], ['The lights went out suddenly during the thunderstorm.|||雷雨期间，灯突然熄灭。']],
   ['suffer', 'v.', '遭受,忍受', '985', ['遭受,忍受'], ['遭受,忍受'], ['Many people suffer from allergies during spring.|||许多人在春天会过敏。']],
@@ -897,16 +897,16 @@ const seedWords985 = [
   ['summary', 'adj.', '简短的，扼要的，n.摘要,总结', '985', ['简短的，扼要的，n.摘'], ['简短的，扼要的，n.摘要,总结'], ['Please write a brief summary of the article for homework.|||请为家庭作业撰写文章的简短摘要。']],
   ['sunset', 'n.', '日落', '985', ['日落'], ['日落'], ['The survey reveals public attitudes toward sunset.|||调查揭示了公众对日落的态度。']],
   ['sunshine', 'n.', '阳光', '985', ['阳光'], ['阳光'], ['The passage provides a detailed analysis of sunshine.|||该段提供了对阳光的详细分析。']],
-  ['support', 'vt.', '支持;供养', '985', ['支持;供养'], ['支持;供养'], ['Parents should support their children\'s dreams and ambitions.']],
+  ['support', 'vt.', '支持;供养', '985', ['支持;供养'], ['支持;供养'], ['Parents should support their children\'s dreams and ambitions.|||父母应该支持孩子们的梦想和抱负。']],
   ['surround', 'vt.', '包围，环绕', '985', ['包围，环绕'], ['包围，环绕'], ['A tall fence surrounds the school to keep students safe.|||学校周围有一道高高的篱笆，以确保学生的安全。']],
   ['survive', 'vt.', '幸免于，vi.活下来', '985', ['幸免于，vi.活下来'], ['幸免于，vi.活下来'], ['Only two passengers survived the terrible car accident.|||在这场可怕的车祸中，只有两名乘客幸免于难']],
   ['swallow', 'vt.', '吞，咽，vi.吞，咽，n.燕子', '985', ['吞，咽，vi.吞，咽n'], ['吞，咽，vi.吞，咽，n.燕子'], ['She swallowed the medicine with a glass of water.|||她用一杯水吞下了药。']],
   ['switch', 'n.', '开关;转换，vt.转换', '985', ['开关;转换，vt.转换'], ['开关;转换，vt.转换'], ['Please switch off the lights when you leave the room.|||离开房间时，请关闭电灯。']],
   ['symbol', 'n.', '象征;符号', '985', ['象征;符号'], ['象征;符号'], ['The dove is a symbol of peace in many cultures.|||在许多文化中，鸽子是和平的象征。']],
-  ['sympathy', 'n.', '同情，同情心', '985', ['同情，同情心'], ['同情，同情心'], ['Understanding sympathy is crucial for grasping the author\'s main message.']],
+  ['sympathy', 'n.', '同情，同情心', '985', ['同情，同情心'], ['同情，同情心'], ['Understanding sympathy is crucial for grasping the author\'s main message.|||理解同情的含义对于把握作者的主要信息至关重要。']],
   ['system', 'n.', '系统;制度', '985', ['系统;制度'], ['系统;制度'], ['The public transport system in this city is very efficient.|||这座城市的公共交通系统非常高效。']],
   ['tailor', 'n.', '裁缝，vt.裁制衣服', '985', ['裁缝，vt.裁制衣服'], ['裁缝，vt.裁制衣服'], ['The survey reveals public attitudes toward tailor.|||该调查揭示了公众对裁缝的态度。']],
-  ['talent', 'n.', '天才，才能', '985', ['天才，才能'], ['天才，才能'], ['Understanding talent is crucial for grasping the author\'s main message.']],
+  ['talent', 'n.', '天才，才能', '985', ['天才，才能'], ['天才，才能'], ['Understanding talent is crucial for grasping the author\'s main message.|||理解才能的含义对于把握作者的主要信息至关重要。']],
   ['tank', 'n.', '坦克；大容器', '985', ['坦克；大容器'], ['坦克；大容器'], ['The committee discussed the topic of tank at length during the meeting.|||委员会在会议期间详细讨论了坦克的主题。']],
   ['tap', 'vt.', '轻打，轻敲，n.塞子，龙头；轻叩，轻拍', '985', ['轻打，轻敲，n.塞子，'], ['轻打，轻敲，n.塞子，龙头；轻叩，轻拍'], ['The professor urged students to tap beyond the textbook.|||教授敦促学生超越课本。']],
   ['target', 'n.', '靶；目标', '985', ['靶；目标'], ['靶；目标'], ['The company set a sales target of one million units this year.|||该公司今年的销售目标为100万辆。']],
@@ -915,7 +915,7 @@ const seedWords985 = [
   ['technical', 'adj.', '技术的，工艺的', '985', ['技术的，工艺的'], ['技术的，工艺的'], ['We need a more technical plan to address this complex issue.|||我们需要一个更具技术性的计划来解决这一复杂问题。']],
   ['technique', 'n.', '技巧，技能', '985', ['技巧，技能'], ['技巧，技能'], ['The artist developed a unique painting technique over the years.|||多年来，这位艺术家开发了一种独特的绘画技巧。']],
   ['teenager', 'n.', '青少年', '985', ['青少年'], ['青少年'], ['The passage provides a detailed analysis of teenager.|||这段经文对青少年进行了详细的分析。']],
-  ['telegram', 'n.', '电报', '985', ['电报'], ['电报'], ['Many exam questions test students\' knowledge of telegram.']],
+  ['telegram', 'n.', '电报', '985', ['电报'], ['电报'], ['Many exam questions test students\' knowledge of telegram.|||许多考试题目考查学生对电报的掌握。']],
   ['telegraph', 'n.', '电报(机)v.发电报', '985', ['电报(机)v.发电报'], ['电报(机)v.发电报'], ['The lecture focused on the role of telegraph in daily life.|||讲座的重点是电报在日常生活中的作用。']],
   ['telescope', 'n.', '望远镜', '985', ['望远镜'], ['望远镜'], ['The essay examines how telescope shapes our decisions.|||这篇文章探讨了望远镜如何塑造我们的决策。']],
   ['television', 'n.', '电视，电视机', '985', ['电视，电视机'], ['电视，电视机'], ['The textbook defines television clearly in chapter three.|||教科书在第三章中清楚地定义了电视。']],
@@ -932,7 +932,7 @@ const seedWords985 = [
   ['throat', 'n.', '咽喉', '985', ['咽喉'], ['咽喉'], ['She wrote a research paper about throat last semester.|||她上学期写了一篇关于喉咙的研究论文。']],
   ['throughout', 'prep.', '遍及，ad.到处', '985', ['遍及，ad.到处'], ['遍及，ad.到处'], ['The students sat throughout the tree to escape the summer heat.|||学生们坐在整棵树上，以躲避夏天的炎热。']],
   ['thus', 'adv.', '如此，这样；因而', '985', ['如此，这样；因而'], ['如此，这样；因而'], ['She remembered the details thus, even after many years.|||即使过了很多年，她还是记住了这些细节。']],
-  ['tick', 'n.', '滴答声；记号，vi.发出滴答声', '985', ['滴答声；记号，vi.发'], ['滴答声；记号，vi.发出滴答声'], ['Understanding tick is crucial for grasping the author\'s main message.']],
+  ['tick', 'n.', '滴答声；记号，vi.发出滴答声', '985', ['滴答声；记号，vi.发'], ['滴答声；记号，vi.发出滴答声'], ['Understanding tick is crucial for grasping the author\'s main message.|||理解滴答声的含义对于把握作者的主要信息至关重要。']],
   ['tight', 'adj.', '紧的；紧身的，ad.紧紧地', '985', ['紧的；紧身的，ad.紧'], ['紧的；紧身的，ad.紧紧地'], ['The tight design of the building won several international awards.|||这座建筑的紧凑设计赢得了多项国际奖项。']],
   ['timetable', 'n.', '时间表；时刻表', '985', ['时间表；时刻表'], ['时间表；时刻表'], ['Students often encounter the term "timetable" in gaokao reading passages.|||学生经常在高考阅读段落中遇到“时间表”一词。']],
   ['tin', 'n.', '锡；罐头', '985', ['锡；罐头'], ['锡；罐头'], ['The experiment demonstrates the properties of tin.|||实验演示了锡的性质。']],
@@ -940,7 +940,7 @@ const seedWords985 = [
   ['tire', 'vi.', '疲劳；厌倦，n.轮胎', '985', ['疲劳；厌倦，n.轮胎'], ['疲劳；厌倦，n.轮胎'], ['The teacher asked us to tire the main idea of the text.|||老师让我们厌倦了课文的主要思想。']],
   ['title', 'n.', '标题，题目；称号，头衔', '985', ['标题，题目；称号，头'], ['标题，题目；称号，头衔'], ['The experiment demonstrates the properties of title.|||实验演示了标题的属性。']],
   ['tobacco', 'n.', '烟草，烟叶', '985', ['烟草，烟叶'], ['烟草，烟叶'], ['The author mentions tobacco to support the main argument.|||作者提到烟草来支持主要论点。']],
-  ['tolerate', 'vt.', '忍受，容忍', '985', ['忍受，容忍'], ['忍受，容忍'], ['The author attempts to tolerate readers\' attention to this issue.']],
+  ['tolerate', 'vt.', '忍受，容忍', '985', ['忍受，容忍'], ['忍受，容忍'], ['The author attempts to tolerate readers\' attention to this issue.|||作者试图将读者的注意力引向这个问题。']],
   ['topic', 'n.', '题目；论题，话题', '985', ['题目；论题，话题'], ['题目；论题，话题'], ['The speaker addressed a wide range of topics during the lecture.|||演讲者在讲座中讨论了广泛的主题。']],
   ['tough', 'adj.', '坚韧的；健壮的', '985', ['坚韧的；健壮的'], ['坚韧的；健壮的'], ['Her tough attitude inspired those around her to do better.|||她的强硬态度激励着她周围的人做得更好。']],
   ['track', 'n.', '行踪，路径；轨道', '985', ['行踪，路径；轨道'], ['行踪，路径；轨道'], ['The essay examines how track shapes our decisions.|||这篇文章探讨了轨道如何塑造我们的决策。']],
@@ -954,7 +954,7 @@ const seedWords985 = [
   ['type', 'n.', '类型，vi.打字', '985', ['类型，vi.打字'], ['类型，vi.打字'], ['She types over eighty words per minute on the keyboard.|||她每分钟在键盘上打八十多个单词。']],
   ['typewriter', 'n.', '打字机', '985', ['打字机'], ['打字机'], ['Researchers have published new findings about typewriter.|||研究人员发表了关于打字机的新发现。']],
   ['typical', 'adj.', '典型的，代表性的', '985', ['典型的，代表性的'], ['典型的，代表性的'], ['This is a typical example of how cultural differences can cause misunderstandings.|||这是文化差异如何导致误解的典型例子。']],
-  ['typist', 'n.', '打字员', '985', ['打字员'], ['打字员'], ['Many exam questions test students\' knowledge of typist.']],
+  ['typist', 'n.', '打字员', '985', ['打字员'], ['打字员'], ['Many exam questions test students\' knowledge of typist.|||许多考试题目考查学生对打字员的掌握。']],
   ['tyre', 'n.', '轮胎', '985', ['轮胎'], ['轮胎'], ['The novel uses the theme of tyre throughout the story.|||这部小说在整个故事中使用了轮胎的主题。']],
   ['underline', 'vt.', '在…下划线；强调', '985', ['在…下划线；强调'], ['在…下划线；强调'], ['Many readers fail to underline the hidden message in the passage.|||许多读者没有在段落中强调隐藏的信息。']],
   ['understanding', 'n.', '理解，理解力', '985', ['理解，理解力'], ['理解，理解力'], ['The experiment demonstrates the properties of understanding.|||实验演示了理解的属性。']],
@@ -981,7 +981,7 @@ const seedWords985 = [
   ['victim', 'n.', '牺牲者，受害者', '985', ['牺牲者，受害者'], ['牺牲者，受害者'], ['The charity provides support for victims of natural disasters.|||该慈善机构为自然灾害的受害者提供支持。']],
   ['view', 'vt.', '看待；看，n.见解；风景', '985', ['看待；看，n.见解；风'], ['看待；看，n.见解；风景'], ['The hotel room offers a breathtaking view of the mountains.|||酒店客房可欣赏壮丽的山景。']],
   ['violent', 'adj.', '猛烈的，狂暴的', '985', ['猛烈的，狂暴的'], ['猛烈的，狂暴的'], ['The film contains violent scenes that may not be suitable for children.|||这部电影包含可能不适合儿童的暴力场景。']],
-  ['virus', 'n.', '病毒', '985', ['病毒'], ['病毒'], ['The computer virus spread rapidly through the company\'s network.']],
+  ['virus', 'n.', '病毒', '985', ['病毒'], ['病毒'], ['The computer virus spread rapidly through the company\'s network.|||电脑病毒通过公司网络迅速传播。']],
   ['visa', 'n.', '签证；信用卡', '985', ['签证；信用卡'], ['签证；信用卡'], ['You need a valid visa to enter the country for study purposes.|||您需要有效的签证才能进入该国进行学习。']],
   ['volunteer', 'n.', '志愿者，vt.志愿', '985', ['志愿者，vt.志愿'], ['志愿者，vt.志愿'], ['She works as a volunteer at the local animal shelter every weekend.|||她每个周末都是当地动物收容所的志愿者。']],
   ['vote', 'n.', '选举，投票', '985', ['选举，投票'], ['选举，投票'], ['Citizens voted in large numbers for the new president.|||公民为新总统投了大量票。']],
@@ -1040,7 +1040,7 @@ const seedWords536_科技创新 = [
   ['mathematics', 'n.', '数学', '话题', ['科技创新话题词'], ['数学'], ['Mathematics is the foundation of many sciences.|||数学是许多科学的基础。']],
   ['statistic', 'n.', '统计数值', '话题', ['科技创新话题词'], ['统计数值'], ['The statistic shows a decline in birth rates.|||统计数据显示出生率在下降。']],
   ['measurement', 'n.', '测量，衡量，尺寸，大小', '话题', ['科技创新话题词'], ['测量，衡量，尺寸，大小'], ['Accurate measurement is crucial in scientific research.|||精确的测量在科学研究中至关重要。']],
-  ['monitor', 'v./n.', '监控；监测仪器', '话题', ['科技创新话题词'], ['监控；监测仪器'], ['The teacher monitors each student\'s progress throughout the term.']],
+  ['monitor', 'v./n.', '监控；监测仪器', '话题', ['科技创新话题词'], ['监控；监测仪器'], ['The teacher monitors each student\'s progress throughout the term.|||老师在整个学期中监控每位学生的进度。']],
   ['navigation', 'n.', '航行，航海，导航', '话题', ['科技创新话题词'], ['航行，航海，导航'], ['Ships rely on satellite navigation to find their way.|||船只依靠卫星导航来寻找方向。']],
   ['optical', 'adj.', '视觉的，光学的', '话题', ['科技创新话题词'], ['视觉的，光学的'], ['The optical microscope can magnify objects hundreds of times.|||光学显微镜可以将物体放大数百倍。']],
   ['pesticide', 'n.', '杀虫剂，农药', '话题', ['科技创新话题词'], ['杀虫剂，农药'], ['Farmers use pesticides to protect their crops from insects.|||农民使用农药保护庄稼免受虫害。']],
@@ -1052,7 +1052,7 @@ const seedWords536_科技创新 = [
   ['solid', 'adj./n.', '固体的；固体，实心', '话题', ['科技创新话题词'], ['固体的；固体，实心'], ['Ice is the solid form of water.|||冰是水的固体形态。']],
   ['sustainability', 'n.', '持续性，永续性', '话题', ['科技创新话题词'], ['持续性，永续性'], ['Sustainability has become a key goal for modern businesses.|||可持续性已成为现代企业的关键目标。']],
   ['sustainable', 'adj.', '可持续的', '话题', ['科技创新话题词'], ['可持续的'], ['We need to find sustainable ways to produce energy.|||我们需要找到可持续的能源生产方式。']],
-  ['transform', 'v.', '使改变形态', '话题', ['科技创新话题词'], ['使改变形态'], ['Education can transform a person\'s life and future.']],
+  ['transform', 'v.', '使改变形态', '话题', ['科技创新话题词'], ['使改变形态'], ['Education can transform a person\'s life and future.|||教育可以改变一个人的生活和未来。']],
   ['universal', 'adj./n.', '通用的，宇宙的；通用', '话题', ['科技创新话题词'], ['通用的，宇宙的；通用'], ['Music is a universal language understood by everyone.|||音乐是人人都能理解的通用语言。']],
   ['understandable', 'adj.', '能懂的，可理解的', '话题', ['科技创新话题词'], ['能懂的，可理解的'], ['Her frustration was understandable given the circumstances.|||考虑到当时的情况，她的沮丧是可以理解的。']],
   ['visual', 'adj./n.', '视觉的；可视化', '话题', ['科技创新话题词'], ['视觉的；可视化'], ['The teacher used visual aids to explain the concept.|||老师使用视觉辅助工具来解释这个概念。']],
@@ -1608,7 +1608,7 @@ const seedWords105 = [
   ['revolution', 'n.', '革命', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['革命', '高考真题高频出现'], ['The industrial revolution changed the world dramatically.|||工业革命极大地改变了世界。']],
   ['downgraded', 'adj.', '降级的；被轻视的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['降级的；被轻视的', '高考真题高频出现'], ['The company was downgraded from AAA to AA in credit rating.|||该公司的信用评级从AAA下调至AA。']],
   ['grazing', 'adj./n.', '放牧的', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['放牧的', '高考真题高频出现'], ['The sheep were grazing peacefully on the hillside.|||羊群在山坡上安静地吃草。']],
-  ['monitor', 'v./n.', '监测；监控', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['监测；监控', '高考真题高频出现'], ['The teacher monitors each student\'s progress throughout the term.']],
+  ['monitor', 'v./n.', '监测；监控', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['监测；监控', '高考真题高频出现'], ['The teacher monitors each student\'s progress throughout the term.|||老师在整个学期中监控每位学生的进度。']],
   ['texture', 'n.', '质地；纹理', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['质地；纹理', '高考真题高频出现'], ['The fabric has a soft and smooth texture.|||这种面料质地柔软光滑。']],
   ['nutrition', 'n.', '营养', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['营养', '高考真题高频出现'], ['Good nutrition is essential for growing children.|||良好的营养对发育中的孩子至关重要。']],
   ['disguise', 'v./n.', '伪装；假扮', '必考', ['真题必考词', '一、2021 年高考英语真题'], ['伪装；假扮', '高考真题高频出现'], ['He wore a disguise to avoid being recognized.|||他化了装以免被认出来。']],
@@ -1711,8 +1711,8 @@ const seedWordsExam = [
   ['positive', 'adj.', '积极的；正面的', '真题', ['真题词频16次'], ['积极的；正面的'], ['A positive attitude can make a big difference in life.|||积极的态度能给生活带来很大改变。']],
   ['concept', 'n.', '概念', '真题', ['真题词频16次'], ['概念'], ['The concept of freedom means different things to different people.|||自由的概念对不同的人有不同的含义。']],
   ['personal', 'adj.', '私人的；个人的；亲自的', '真题', ['真题词频15次'], ['私人的；个人的；亲自的'], ['This is a personal matter that I\'d rather not discuss.|||这是个人私事，我不想讨论。']],
-  ['support', 'v./n.', 'v.支持；拥护；鼓励；帮助；支撑；供养；n.支持；拥护；鼓励；帮助；支撑物；支柱', '真题', ['真题词频15次'], ['v.支持；拥护；鼓励；帮助；支撑；供养；n.支持；拥护；鼓励；帮助；支撑物；支柱'], ['Parents should support their children\'s dreams and ambitions.']],
-  ['store', 'v./n.', 'v.储存；n.商店', '真题', ['真题词频15次'], ['v.储存；n.商店'], ['The data is stored securely on the company\'s servers.']],
+  ['support', 'v./n.', 'v.支持；拥护；鼓励；帮助；支撑；供养；n.支持；拥护；鼓励；帮助；支撑物；支柱', '真题', ['真题词频15次'], ['v.支持；拥护；鼓励；帮助；支撑；供养；n.支持；拥护；鼓励；帮助；支撑物；支柱'], ['Parents should support their children\'s dreams and ambitions.|||父母应该支持孩子们的梦想和抱负。']],
+  ['store', 'v./n.', 'v.储存；n.商店', '真题', ['真题词频15次'], ['v.储存；n.商店'], ['The data is stored securely on the company\'s servers.|||数据安全地存储在公司的服务器上。']],
   ['respect', 'v./n.', 'v./n.尊敬；尊重', '真题', ['真题词频15次'], ['v./n.尊敬；尊重'], ['Students should respect their teachers and classmates.|||学生应尊重老师和同学。']],
   ['promote', 'v.', '促进，推动某事的发展', '真题', ['真题词频15次'], ['促进，推动某事的发展'], ['The campaign aims to promote healthy eating habits.|||这项活动旨在推广健康的饮食习惯。']],
   ['ancient', 'adj.', '古老的', '真题', ['真题词频15次'], ['古老的'], ['The ancient temple attracts thousands of tourists every year.|||这座古庙每年吸引成千上万的游客。']],
@@ -1768,7 +1768,7 @@ const seedWordsExam = [
   ['stick', 'v.', 'v.粘住；坚持（to）', '真题', ['真题词频8次'], ['v.粘住；坚持（to）'], ['He stuck the note on the refrigerator with a magnet.|||他用磁铁把纸条贴在冰箱上。']],
   ['response', 'n.', '反应；响应（to）', '真题', ['真题词频8次'], ['反应；响应（to）'], ['Her response to the question surprised everyone in the room.|||她对问题的回答让在场所有人感到惊讶。']],
   ['significant', 'adj.', '重要的；有意义的；显著的', '真题', ['真题词频8次'], ['重要的；有意义的；显著的'], ['The discovery has significant implications for medical research.|||这一发现对医学研究有重大意义。']],
-  ['transform', 'v.', '使改变形态；使改观；使转化', '真题', ['真题词频8次'], ['使改变形态；使改观；使转化'], ['Education can transform a person\'s life and future.']],
+  ['transform', 'v.', '使改变形态；使改观；使转化', '真题', ['真题词频8次'], ['使改变形态；使改观；使转化'], ['Education can transform a person\'s life and future.|||教育可以改变一个人的生活和未来。']],
   ['artificial', 'adj.', '人造的；人工的；人为的；虚假的', '真题', ['真题词频8次'], ['人造的；人工的；人为的；虚假的'], ['Many people worry about the risks of artificial intelligence.|||许多人担心人工智能的风险。']],
   ['awkward', 'adj.', '令人尴尬的；难对付的；笨拙的；不灵活的', '真题', ['真题词频8次'], ['令人尴尬的；难对付的；笨拙的；不灵活的'], ['There was an awkward silence after his comment.|||他评论后出现了尴尬的沉默。']],
   ['addition', 'n.', '增加；加法；添加物', '真题', ['真题词频7次'], ['增加；加法；添加物'], ['In addition to English, she also speaks French and German.|||除了英语，她还会说法语和德语。']],
@@ -1954,7 +1954,7 @@ const seedWordsExam = [
   ['deliver', 'v.', '递送；发表（演讲）', '真题', ['真题词频2次'], ['递送；发表（演讲）'], ['The company promises to deliver products within two days.|||公司承诺两天内送货。']],
   ['spread', 'v.', '延伸；传播', '真题', ['真题词频2次'], ['延伸；传播'], ['The rumor spread quickly throughout the school.|||谣言迅速传遍全校。']],
   ['impress', 'v.', '使……有印象；留下深刻印象', '真题', ['真题词频2次'], ['使……有印象；留下深刻印象'], ['Her speech impressed everyone at the conference.|||她的演讲给与会者留下了深刻印象。']],
-  ['remind', 'v.', '提醒；使某人想起某事', '真题', ['真题词频2次'], ['提醒；使某人想起某事'], ['The calendar reminds me of my mother\'s birthday next week.']],
+  ['remind', 'v.', '提醒；使某人想起某事', '真题', ['真题词频2次'], ['提醒；使某人想起某事'], ['The calendar reminds me of my mother\'s birthday next week.|||日历提醒我下周是妈妈的生日。']],
   ['guidance', 'n.', '指导，给予方向或建议', '真题', ['真题词频2次'], ['指导，给予方向或建议'], ['With the teachers guidance, I improved my writing skills.|||在老师的指导下，我的写作水平提高了。']],
   ['emotion', 'n.', '情绪，强烈的感情或心情', '真题', ['真题词频2次'], ['情绪，强烈的感情或心情'], ['Music can evoke strong emotions in listeners.|||音乐能在听众中唤起强烈的情感。']],
   ['reward', 'n./v.', '奖赏，给予报酬或奖励', '真题', ['真题词频2次'], ['奖赏，给予报酬或奖励'], ['The school rewarded the top students with certificates.|||学校向优秀学生颁发证书。']],
@@ -2702,19 +2702,19 @@ const seedAntonyms = [
 
 // 逻辑连接词（结论词）
 const seedConclusion = [
-  ['in conclusion', '短语', '总之，总的来说', '逻辑', ['结论词，作文常用'], ['总之，总的来说，常用于段落结尾总结'], ['in conclusion, we should take action.']],
-  ['in summary', '短语', '概括地说', '逻辑', ['结论词，作文常用'], ['概括地说，常用于段落结尾总结'], ['in summary, we should take action.']],
-  ['to sum up', '短语', '概括起来', '逻辑', ['结论词，作文常用'], ['概括起来，常用于段落结尾总结'], ['to sum up, we should take action.']],
-  ['all in all', '短语', '总而言之', '逻辑', ['结论词，作文常用'], ['总而言之，常用于段落结尾总结'], ['all in all, we should take action.']],
-  ['in a word', '短语', '简而言之', '逻辑', ['结论词，作文常用'], ['简而言之，常用于段落结尾总结'], ['in a word, we should take action.']],
-  ['overall', 'adv.', '总体而言', '逻辑', ['结论词，作文常用'], ['总体而言，常用于段落结尾总结'], ['overall, we should take action.']],
-  ['to conclude', '短语', '综上所述', '逻辑', ['结论词，作文常用'], ['综上所述，常用于段落结尾总结'], ['to conclude, we should take action.']],
-  ['therefore', 'adv.', '因此，所以', '逻辑', ['结论词，作文常用'], ['因此，所以，常用于段落结尾总结'], ['therefore, we should take action.']],
-  ['thus', 'adv.', '因此，从而', '逻辑', ['结论词，作文常用'], ['因此，从而，常用于段落结尾总结'], ['thus, we should take action.']],
-  ['hence', 'adv.', '因此，由此', '逻辑', ['结论词，作文常用'], ['因此，由此，常用于段落结尾总结'], ['hence, we should take action.']],
-  ['consequently', 'adv.', '所以，结果', '逻辑', ['结论词，作文常用'], ['所以，结果，常用于段落结尾总结'], ['consequently, we should take action.']],
-  ['as a result', '短语', '结果，因此', '逻辑', ['结论词，作文常用'], ['结果，因此，常用于段落结尾总结'], ['as a result, we should take action.']],
-  ['as a consequence', '短语', '因此，结果', '逻辑', ['结论词，作文常用'], ['因此，结果，常用于段落结尾总结'], ['as a consequence, we should take action.']]
+  ['in conclusion', '短语', '总之，总的来说', '逻辑', ['结论词，作文常用'], ['总之，总的来说，常用于段落结尾总结'], ['in conclusion, we should take action.|||总之，我们应该采取行动。']],
+  ['in summary', '短语', '概括地说', '逻辑', ['结论词，作文常用'], ['概括地说，常用于段落结尾总结'], ['in summary, we should take action.|||概括地说，我们应该采取行动。']],
+  ['to sum up', '短语', '概括起来', '逻辑', ['结论词，作文常用'], ['概括起来，常用于段落结尾总结'], ['to sum up, we should take action.|||概括起来，我们应该采取行动。']],
+  ['all in all', '短语', '总而言之', '逻辑', ['结论词，作文常用'], ['总而言之，常用于段落结尾总结'], ['all in all, we should take action.|||总而言之，我们应该采取行动。']],
+  ['in a word', '短语', '简而言之', '逻辑', ['结论词，作文常用'], ['简而言之，常用于段落结尾总结'], ['in a word, we should take action.|||简而言之，我们应该采取行动。']],
+  ['overall', 'adv.', '总体而言', '逻辑', ['结论词，作文常用'], ['总体而言，常用于段落结尾总结'], ['overall, we should take action.|||总体而言，我们应该采取行动。']],
+  ['to conclude', '短语', '综上所述', '逻辑', ['结论词，作文常用'], ['综上所述，常用于段落结尾总结'], ['to conclude, we should take action.|||综上所述，我们应该采取行动。']],
+  ['therefore', 'adv.', '因此，所以', '逻辑', ['结论词，作文常用'], ['因此，所以，常用于段落结尾总结'], ['therefore, we should take action.|||因此，我们应该采取行动。']],
+  ['thus', 'adv.', '因此，从而', '逻辑', ['结论词，作文常用'], ['因此，从而，常用于段落结尾总结'], ['thus, we should take action.|||因此，我们应该采取行动。']],
+  ['hence', 'adv.', '因此，由此', '逻辑', ['结论词，作文常用'], ['因此，由此，常用于段落结尾总结'], ['hence, we should take action.|||因此，我们应该采取行动。']],
+  ['consequently', 'adv.', '所以，结果', '逻辑', ['结论词，作文常用'], ['所以，结果，常用于段落结尾总结'], ['consequently, we should take action.|||所以，我们应该采取行动。']],
+  ['as a result', '短语', '结果，因此', '逻辑', ['结论词，作文常用'], ['结果，因此，常用于段落结尾总结'], ['as a result, we should take action.|||结果，我们应该采取行动。']],
+  ['as a consequence', '短语', '因此，结果', '逻辑', ['结论词，作文常用'], ['因此，结果，常用于段落结尾总结'], ['as a consequence, we should take action.|||因此，我们应该采取行动。']]
 ];
 
 // 高考高频主题词汇
@@ -2795,10 +2795,10 @@ const seedFamiliarNew = [
   ['beat', 'v.', '打败；跳动；搅拌', '生义', ['熟词生义', 'beat the eggs'], ['打败；跳动；搅拌', '注意一词多义'], ['Beat the eggs before adding flour.|||在添加面粉之前搅打鸡蛋。']],
   ['block', 'n./v.', '街区；阻塞；一批', '生义', ['熟词生义', 'a block of tickets'], ['街区；阻塞；一批', '注意一词多义'], ['I bought a block of tickets.|||我买了一大块票。']],
   ['board', 'n./v.', '木板；委员会；上(车/船)', '生义', ['熟词生义', 'board the train'], ['木板；委员会；上(车/船)', '注意一词多义'], ['Passengers boarded the train.|||乘客登上了火车。']],
-  ['break', 'n.', '休息；机会；裂口', '生义', ['熟词生义', 'take a break'], ['休息；机会；裂口', '注意一词多义'], ['Let\'s take a coffee break.']],
+  ['break', 'n.', '休息；机会；裂口', '生义', ['熟词生义', 'take a break'], ['休息；机会；裂口', '注意一词多义'], ['Let\'s take a coffee break.|||我们休息一下喝杯咖啡吧。']],
   ['breed', 'v./n.', '繁殖；品种；培育', '生义', ['熟词生义', 'a rare breed'], ['繁殖；品种；培育', '注意一词多义'], ['These dogs are a rare breed.|||这些狗是稀有品种。']],
   ['capital', 'n.', '首都；资本；大写字母', '生义', ['熟词生义', 'capital letter'], ['首都；资本；大写字母', '注意一词多义'], ['Write your name in capital letters.|||用大写字母书写姓名。']],
-  ['catch', 'v.', '抓住；理解；赶上；感染', '生义', ['熟词生义', 'catch a cold / catch on'], ['抓住；理解；赶上；感染', '注意一词多义'], ['I didn\'t catch what you said.']],
+  ['catch', 'v.', '抓住；理解；赶上；感染', '生义', ['熟词生义', 'catch a cold / catch on'], ['抓住；理解；赶上；感染', '注意一词多义'], ['I didn\'t catch what you said.|||我没听清你说的话。']],
   ['channel', 'n.', '频道；渠道；海峡', '生义', ['熟词生义', 'diplomatic channels'], ['频道；渠道；海峡', '注意一词多义'], ['The news spread through official channels.|||消息通过官方渠道传播开来。']],
   ['charge', 'v./n.', '收费；充电；指控；负责', '生义', ['熟词生义', 'in charge of'], ['收费；充电；指控；负责', '注意一词多义'], ['She is in charge of the project.|||她负责该项目。']],
   ['claim', 'v.', '声称；索取；认领', '生义', ['熟词生义', 'claim luggage'], ['声称；索取；认领', '注意一词多义'], ['Passengers should claim their luggage.|||乘客应领取行李。']],
@@ -2817,7 +2817,7 @@ const seedFamiliarNew = [
   ['exit', 'n./v.', '出口；退出；离开', '生义', ['熟词生义', 'exit the market'], ['出口；退出；离开', '注意一词多义'], ['The company exited the market.|||这家公司退出了市场。']],
   ['fair', 'adj./n.', '公平的；集市；博览会', '生义', ['熟词生义', 'trade fair'], ['公平的；集市；博览会', '注意一词多义'], ['They met at the trade fair.|||他们在贸易展览会上相遇。']],
   ['field', 'n.', '田野；领域；球场；(电/磁)场', '生义', ['熟词生义', 'magnetic field'], ['田野；领域；球场；(电/磁)场', '注意一词多义'], ['She works in the medical field.|||她在医学领域工作。']],
-  ['figure', 'n./v.', '数字；人物；计算；理解', '生义', ['熟词生义', 'figure out'], ['数字；人物；计算；理解', '注意一词多义'], ['I can\'t figure out the answer.']],
+  ['figure', 'n./v.', '数字；人物；计算；理解', '生义', ['熟词生义', 'figure out'], ['数字；人物；计算；理解', '注意一词多义'], ['I can\'t figure out the answer.|||我想不出答案。']],
   ['fire', 'v.', '解雇；开火；激发', '生义', ['熟词生义', 'fire an employee'], ['解雇；开火；激发', '注意一词多义'], ['He was fired for being late.|||他因迟到而被解雇。']],
   ['flat', 'adj./n.', '平坦的；公寓；平淡的', '生义', ['熟词生义', 'a new flat'], ['平坦的；公寓；平淡的', '注意一词多义'], ['They live in a new flat.|||他们住在新公寓里。']],
   ['follow', 'v.', '跟随；遵循；理解', '生义', ['熟词生义', 'follow the argument'], ['跟随；遵循；理解', '注意一词多义'], ['Please follow the instructions on the screen step by step.|||请逐步按照屏幕上的说明操作。']],
@@ -2832,7 +2832,7 @@ const seedFamiliarNew = [
   ['heavy', 'adj.', '重的；大量的；严重的', '生义', ['熟词生义', 'heavy rain'], ['重的；大量的；严重的', '注意一词多义'], ['There was heavy rain last night.|||昨晚下了一场大雨。']],
   ['hit', 'v./n.', '打击；碰撞；成功', '生义', ['熟词生义', 'a hit song'], ['打击；碰撞；成功', '注意一词多义'], ['The baseball hit the window and shattered the glass.|||棒球击中了窗户，打碎了玻璃。']],
   ['hold', 'v.', '握住；举行；容纳；持有', '生义', ['熟词生义', 'hold a meeting'], ['握住；举行；容纳；持有', '注意一词多义'], ['Please hold the baby gently while I prepare the milk.|||在我准备牛奶时，请轻轻抱住婴儿。']],
-  ['introduce', 'v.', '介绍；推行；引入', '生义', ['熟词生义', 'introduce a bill'], ['介绍；推行；引入', '注意一词多义'], ['The teacher introduced a new topic in today\'s lesson.']],
+  ['introduce', 'v.', '介绍；推行；引入', '生义', ['熟词生义', 'introduce a bill'], ['介绍；推行；引入', '注意一词多义'], ['The teacher introduced a new topic in today\'s lesson.|||老师在今天的课上介绍了一个新话题。']],
   ['iron', 'n./v.', '铁；熨斗；熨烫', '生义', ['熟词生义', 'iron a shirt'], ['铁；熨斗；熨烫', '注意一词多义'], ['She ironed her shirt.|||她熨了熨衬衫。']],
   ['kill', 'v.', '杀死；消磨(时间)；终止', '生义', ['熟词生义', 'kill time'], ['杀死；消磨(时间)；终止', '注意一词多义'], ['We killed time at the cafe.|||我们在咖啡馆消磨时间。']],
   ['labour', 'n./v.', '劳动；劳工；努力', '生义', ['熟词生义', 'labour market'], ['劳动；劳工；努力', '注意一词多义'], ['The labour market is competitive.|||劳动力市场竞争激烈。']],
@@ -2846,8 +2846,8 @@ const seedFamiliarNew = [
   ['meet', 'v.', '遇见；满足；支付', '生义', ['熟词生义', 'meet the cost'], ['遇见；满足；支付', '注意一词多义'], ['The company met all the costs.|||公司承担了所有费用。']],
   ['mine', 'pron./n.', '我的；矿；地雷', '生义', ['熟词生义', 'a coal mine'], ['我的；矿；地雷', '注意一词多义'], ['He works in a coal mine.|||他在煤矿工作。']],
   ['mount', 'v.', '登上；增加； mounting', '生义', ['熟词生义', 'mount pressure'], ['登上；增加', '注意一词多义'], ['Pressure mounted on the team.|||团队承受的压力。']],
-  ['novel', 'n./adj.', '小说；新颖的', '生义', ['熟词生义', 'a novel idea'], ['小说；新颖的', '注意一词多义'], ['That\'s a novel approach.']],
-  ['note', 'n./v.', '笔记；纸币；注意', '生义', ['熟词生义', 'a bank note'], ['笔记；纸币；注意', '注意一词多义'], ['The teacher noted several errors in the student\'s composition.']],
+  ['novel', 'n./adj.', '小说；新颖的', '生义', ['熟词生义', 'a novel idea'], ['小说；新颖的', '注意一词多义'], ['That\'s a novel approach.|||那是一种新颖的方法。']],
+  ['note', 'n./v.', '笔记；纸币；注意', '生义', ['熟词生义', 'a bank note'], ['笔记；纸币；注意', '注意一词多义'], ['The teacher noted several errors in the student\'s composition.|||老师指出了学生作文中的几个错误。']],
   ['nurse', 'n./v.', '护士；精心照料', '生义', ['熟词生义', 'nurse a grudge'], ['护士；精心照料', '注意一词多义'], ['She nursed her father back to health.|||她呵护着父亲恢复了健康。']],
   ['object', 'n./v.', '物体；反对', '生义', ['熟词生义', 'object to the plan'], ['物体；反对', '注意一词多义'], ['Several residents objected to the new construction plan.|||几位居民反对新的建设计划。']],
   ['open', 'adj./v.', '开放的；坦诚的；未解决的', '生义', ['熟词生义', 'an open question'], ['开放的；坦诚的；未解决的', '注意一词多义'], ['The library opens at eight in the morning on weekdays.|||图书馆在工作日早上8点开放。']],
@@ -2877,7 +2877,7 @@ const seedFamiliarNew = [
   ['row', 'n./v.', '一排；划船；争吵', '生义', ['熟词生义', 'in a row'], ['一排；划船；争吵', '注意一词多义'], ['Three days in a row.|||连续三天。']],
   ['rush', 'v./n.', '冲；匆忙；急需', '生义', ['熟词生义', 'rush hour'], ['冲；匆忙；急需', '注意一词多义'], ['Do not rush; take your time to read each question carefully.|||不要着急；花点时间仔细阅读每个问题。']],
   ['save', 'v.', '拯救；储存；节省', '生义', ['熟词生义', 'save energy'], ['拯救；储存；节省', '注意一词多义'], ['She saves part of her pocket money every week for college.|||她每周都会为上大学存一部分零用钱。']],
-  ['say', 'v./n.', '说；假设；发言权', '生义', ['熟词生义', 'have a say'], ['说；假设；发言权', '注意一词多义'], ['What did the teacher say about the homework assignment?']],
+  ['say', 'v./n.', '说；假设；发言权', '生义', ['熟词生义', 'have a say'], ['说；假设；发言权', '注意一词多义'], ['What did the teacher say about the homework assignment?|||老师对作业说了什么？']],
   ['school', 'n.', '学校；学派；鱼群', '生义', ['熟词生义', 'a school of fish'], ['学校；学派；鱼群', '注意一词多义'], ['A school of fish swam by.|||一群鱼游过。']],
   ['score', 'n./v.', '分数；二十；乐谱', '生义', ['熟词生义', 'a score of years'], ['分数；二十；乐谱', '注意一词多义'], ['He bought three score eggs.|||他买了三个鸡蛋。']],
   ['screen', 'n./v.', '屏幕；筛子；审查', '生义', ['熟词生义', 'screen passengers'], ['屏幕；筛子；审查', '注意一词多义'], ['All passengers were screened.|||所有乘客都接受了筛查。']],
@@ -2909,7 +2909,7 @@ const seedFamiliarNew = [
   ['swallow', 'v./n.', '吞咽；燕子', '生义', ['熟词生义', 'swallow one\'s pride'], ['吞咽；燕子', '注意一词多义'], ['She swallowed the medicine with a glass of water.|||她用一杯水吞下了药。']],
   ['tackle', 'v./n.', '处理；用具；拦截', '生义', ['熟词生义', 'tackle a problem'], ['处理；用具；拦截', '注意一词多义'], ['We must tackle the problem now.|||我们现在必须解决这个问题。']],
   ['tear', 'n./v.', '眼泪；撕裂', '生义', ['熟词生义', 'tear apart'], ['眼泪；撕裂', '注意一词多义'], ['She tore the letter into small pieces and threw it away.|||她把信撕成小块，扔掉了。']],
-  ['tell', 'v.', '告诉；辨别；泄密', '生义', ['熟词生义', 'tell the difference'], ['告诉；辨别；泄密', '注意一词多义'], ['Can you tell me the time, please?']],
+  ['tell', 'v.', '告诉；辨别；泄密', '生义', ['熟词生义', 'tell the difference'], ['告诉；辨别；泄密', '注意一词多义'], ['Can you tell me the time, please?|||请问能告诉我现在几点了吗？']],
   ['tie', 'n./v.', '领带；联系；平局', '生义', ['熟词生义', 'family ties'], ['领带；联系；平局', '注意一词多义'], ['She tied her shoelaces before going for a run.|||她在跑步前系好鞋带。']],
   ['touch', 'n./v.', '触摸；感动；少许', '生义', ['熟词生义', 'a touch of humor'], ['触摸；感动；少许', '注意一词多义'], ['Do not touch the wet paint on the wall.|||请勿触摸墙上的湿漆。']],
   ['track', 'n./v.', '跑道；足迹；跟踪', '生义', ['熟词生义', 'keep track of'], ['跑道；足迹；跟踪', '注意一词多义'], ['Keep track of your expenses.|||跟踪您的费用。']],
@@ -3093,7 +3093,7 @@ const numberDateData = {
     { word: 'January', phonetic: '/ˈdʒænjueri/', cn: '一月', abbr: 'Jan.', examples: ['January is the first month of the year.|||一月是一年中的第一个月。', 'School starts in January.|||学校一月开学。'] },
     { word: 'February', phonetic: '/ˈfebrueri/', cn: '二月', abbr: 'Feb.', examples: ['February has 28 or 29 days.|||二月有28天或29天。', 'Valentine\'s Day is in February.|||情人节在二月。'] },
     { word: 'March', phonetic: '/mɑːrtʃ/', cn: '三月', abbr: 'Mar.', examples: ['March is the beginning of spring.|||三月是春天的开始。', 'Women\'s Day is on March 8th.|||妇女节在三月八日。'] },
-    { word: 'April', phonetic: '/ˈeɪprəl/', cn: '四月', abbr: 'Apr.', examples: ['April showers bring May flowers.|||四月阵雨带来五月花。', 'April Fools\' Day is on April 1st.'] },
+    { word: 'April', phonetic: '/ˈeɪprəl/', cn: '四月', abbr: 'Apr.', examples: ['April showers bring May flowers.|||四月阵雨带来五月花。', 'April Fools\' Day is on April 1st.|||愚人节在四月一日。'] },
     { word: 'May', phonetic: '/meɪ/', cn: '五月', abbr: 'May', examples: ['May Day is on May 1st.|||劳动节在五月一日。', 'We have a holiday in May.|||我们在五月有一个假期。'] },
     { word: 'June', phonetic: '/dʒuːn/', cn: '六月', abbr: 'Jun.', examples: ['Children\'s Day is in June.|||儿童节在六月。', 'Summer begins in June.|||夏天从六月开始。'] },
     { word: 'July', phonetic: '/dʒuˈlaɪ/', cn: '七月', abbr: 'Jul.', examples: ['Summer vacation starts in July.|||暑假从七月开始。', 'It is very hot in July.|||七月非常热。'] },
@@ -3127,10 +3127,10 @@ const numberDateData = {
     { word: 'month', phonetic: '/mʌnθ/', cn: '月', examples: ['There are twelve months in a year.|||一年有十二个月。'] },
     { word: 'year', phonetic: '/jɪr/', cn: '年', examples: ['There are 365 days in a year.|||一年有365天。'] },
     { word: 'date', phonetic: '/deɪt/', cn: '日期', examples: ['What is the date today?|||今天是几号？'] },
-    { word: 'calendar', phonetic: '/ˈkæləndər/', cn: '日历', examples: ['Look at the calendar.|||查在这个日历。'] },
-    { word: 'decade', phonetic: '/ˈdekeɪd/', cn: '十年', examples: ['A decade is ten years.|||一个十年是tenyears。'] },
-    { word: 'century', phonetic: '/ˈsentʃəri/', cn: '世纪，百年', examples: ['We live in the 21st century.|||我们生活在这个st世纪。'] },
-    { word: 'millennium', phonetic: '/mɪˈleniəm/', cn: '千年', examples: ['The new millennium began in 2000.|||这个新millennium开始在。'] },
+    { word: 'calendar', phonetic: '/ˈkæləndər/', cn: '日历', examples: ['Look at the calendar.|||看看这个日历。'] },
+    { word: 'decade', phonetic: '/ˈdekeɪd/', cn: '十年', examples: ['A decade is ten years.|||一个十年是十年。'] },
+    { word: 'century', phonetic: '/ˈsentʃəri/', cn: '世纪，百年', examples: ['We live in the 21st century.|||我们生活在21世纪。'] },
+    { word: 'millennium', phonetic: '/mɪˈleniəm/', cn: '千年', examples: ['The new millennium began in 2000.|||新千年始于2000年。'] },
   ],
   numbers: Array.from({ length: 31 }, (_, i) => {
     const n = i + 1;
@@ -7378,7 +7378,7 @@ const builtInBooks = [
       ['ability','n.','能力；才能','高频',['have the ability to do 有能力做'],['ability 后常接不定式'],['Reading improves our ability to think.|||阅读改善我们的能力到认为。']],
       ['absorb','v.','吸收；理解；使专注','高频',['be absorbed in 专心于'],['过去分词 absorbed 作形容词常考'],['She was absorbed in the novel.|||她是absorbed在这个小说。']],
       ['access','n./v.','通道；机会；访问','高频',['have access to 有机会使用'],['access to 中 to 是介词'],['Students have access to online resources.|||Students有使用权到在线resources。']],
-      ['account','n./v.','账户；解释；认为','高频',['account for 解释；占比'],['account for 高频短语动词'],['Can you account for your absence?']],
+      ['account','n./v.','账户；解释；认为','高频',['account for 解释；占比'],['account for 高频短语动词'],['Can you account for your absence?|||你能解释一下你缺席的原因吗？']],
       ['achieve','v.','实现；取得','高频',['achieve one\'s goal 实现目标'],['名词 achievement'],['Hard work helps us achieve our dreams.|||硬的工作帮助我们achieve我们的dreams。']],
       ['adapt','v.','适应；改编','高频',['adapt to 适应'],['to 为介词'],['We must adapt to changes quickly.|||我们必须适应到变化迅速。']],
       ['admire','v.','钦佩；欣赏','高频',['admire sb for sth'],['for 是固定介词'],['I admire her for her courage.|||我钦佩她为了她勇气。']],
@@ -7402,7 +7402,7 @@ const builtInBooks = [
       ['evidence','n.','证据','高频',['there is evidence that'],['不可数名词常考'],['There is evidence that sleep affects memory.|||那里是证据那个睡眠影响记忆。']],
       ['focus','n./v.','焦点；集中','高频',['focus on 集中于'],['作文高频'],['Focus on what you can control.|||聚焦在what你能control。']],
       ['impress','v.','给……留下印象','高频',['be impressed by/with'],['impression n.'],['The speech impressed everyone deeply.|||这个speechimpressed大家deeply。']],
-      ['influence','n./v.','影响','高频',['have an influence on'],['affect 动词；effect/influence 名词'],['Parents have a great influence on their children\'s development.']],
+      ['influence','n./v.','影响','高频',['have an influence on'],['affect 动词；effect/influence 名词'],['Parents have a great influence on their children\'s development.|||父母对孩子的成长有很大影响。']],
       ['involve','v.','涉及；包含','高频',['be involved in 参与'],['后接 doing'],['The project involves students from three different schools.|||这个项目involvesstudents从three不同的schools。']],
       ['opportunity','n.','机会','高频',['have an opportunity to do'],['chance/opportunity 辨析'],['The contest offers an opportunity to learn.|||这个contest提供一个机会到学习。']],
       ['prevent','v.','阻止；预防','高频',['prevent sb from doing'],['被动 from 不可省'],['Vaccines help prevent many serious diseases.|||疫苗有助于预防许多严重疾病。']],
@@ -7538,7 +7538,7 @@ const builtInDownloads = [
       ['contribute to','短语','有助于；导致','高频',['to 是介词'],['make contributions to'],['Reading contributes to writing.|||阅读contributes到写。']],
       ['deal with','短语','处理；涉及','高频',['how to deal with'],['deal with 与 do with 区别'],['We must deal with stress.|||我们必须deal与压力。']],
       ['due to','短语','由于','高频',['后接名词/doing'],['because of/owing to 同义'],['The match was canceled due to rain.|||这个match是canceleddue到雨。']],
-      ['figure out','短语','弄清楚；计算出','中频',['figure out the meaning/problem'],['同 work out'],['Can you figure out the answer?']],
+      ['figure out','短语','弄清楚；计算出','中频',['figure out the meaning/problem'],['同 work out'],['Can you figure out the answer?|||你能想出答案吗？']],
       ['get along with','短语','与...相处','高频',['get along well with sb'],['作文人际关系常用'],['She gets along well with classmates.|||她得到沿着well与classmates。']],
       ['give rise to','短语','引起；导致','中频',['正式表达 cause'],['rise/arise/raise 易混'],['Pollution gives rise to health problems.|||Pollution给rise到健康problems。']],
       ['in addition','短语','此外','高频',['句首连接补充信息'],['besides/furthermore 同义'],['In addition, exercise regularly.|||在additionexerciseregularly。']],
@@ -7574,8 +7574,8 @@ const builtInDownloads = [
       ['immigrate','v.','移入','易错',['emigrate 移出 常混'],['immigrate/emigrate 辨析'],['He immigrated to the US.|||他immigrated到这个我们。']],
       ['personal','adj.','个人的','易错',['personnel 人员 常混'],['personal/personnel 辨析'],['This is my personal opinion.|||这个是我的个人的观点。']],
       ['sight','n.','景象；视力','易错',['site 现场/cite 引用 常混'],['sight/site/cite 辨析'],['The sight was amazing.|||这个sight是amazing。']],
-      ['who\'s','abbr.','who is/has','易错',['whose 谁的 常混'],['who\'s/whose 辨析'],['Who\'s coming to dinner?']],
-      ['your','pron.','你的','易错',['you\'re you are 常混'],['your/you\'re 辨析'],['What is your name?']],
+      ['who\'s','abbr.','who is/has','易错',['whose 谁的 常混'],['who\'s/whose 辨析'],['Who\'s coming to dinner?|||谁来吃晚饭？']],
+      ['your','pron.','你的','易错',['you\'re you are 常混'],['your/you\'re 辨析'],['What is your name?|||你叫什么名字？']],
     ]
   },
   {
@@ -7601,7 +7601,7 @@ const builtInDownloads = [
       ['read','v.','解读；理解','生义',['常见义：阅读'],['read one\'s mind 看出心思'],['I can read your expression.|||我能读懂你的表情。']],
       ['rest','v.','依靠','生义',['常见义：休息'],['rest on 依赖'],['You should rest for a while after running the marathon.|||跑完马拉松后，您应该休息一段时间。']],
       ['sound','adj.','合理的','生义',['常见义：声音/听起来'],['sound advice 合理的建议'],['The alarm sounded at exactly seven in the morning.|||闹钟正好在早上七点响起。']],
-      ['tell','v.','分辨','生义',['常见义：告诉'],['tell the difference 分辨'],['Can you tell me the time, please?']],
+      ['tell','v.','分辨','生义',['常见义：告诉'],['tell the difference 分辨'],['Can you tell me the time, please?|||请问能告诉我现在几点了吗？']],
       ['weather','v.','经受住','生义',['常见义：天气'],['weather the storm 渡过难关'],['The company weathered the crisis.|||这个公司度过这个危机。']],
     ]
   }
@@ -9156,6 +9156,25 @@ function App() {
   const allWords = useMemo(() => {
     return books.flatMap(b => b.items);
   }, [books]);
+
+  // 统一处理：点击单词 → 词库存在则跳转详情+发音，不存在则只发音
+  function speakOrNavigate(word) {
+    const w = String(word || '').trim();
+    if (!w) return;
+    const found = allWords.find(item => item.term.toLowerCase() === w.toLowerCase());
+    if (found) {
+      openDetailItem(found);
+      speak(w, settings.speakRate);
+    } else {
+      speak(w, settings.speakRate);
+    }
+  }
+
+  // 在词库中查找单词（用于显示中文释义）
+  function findWordInBank(word) {
+    const w = String(word || '').trim().toLowerCase();
+    return allWords.find(item => item.term.toLowerCase() === w);
+  }
 
   // 背诵页词汇列表（不受 section 切换影响，始终基于 studyBookIds）
   const learnItems = useMemo(() => {
@@ -10993,10 +11012,10 @@ function App() {
               {/* 月份 */}
               {numberDateSubTab === 'months' && (
                 <div>
-                  <p className="muted">点击单词可听发音。缩写在日记、书信中常用。</p>
+                  <p className="muted">点击单词可听发音或查看详情。缩写在日记、书信中常用。</p>
                   <div className="list">
                     {numberDateData.months.map((m, i) => (
-                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(m.word)}>
                         <div className="listItemMain">
                           <div className="listItemTitle">
                             <h3>{m.word}</h3>
@@ -11024,10 +11043,10 @@ function App() {
               {/* 星期 */}
               {numberDateSubTab === 'weekdays' && (
                 <div>
-                  <p className="muted">星期一到星期日的英文表达，点击可听发音。</p>
+                  <p className="muted">星期一到星期日的英文表达，点击可听发音或查看详情。</p>
                   <div className="list">
                     {numberDateData.weekdays.map((m, i) => (
-                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(m.word)}>
                         <div className="listItemMain">
                           <div className="listItemTitle">
                             <h3>{m.word}</h3>
@@ -11055,10 +11074,10 @@ function App() {
               {/* 季节 */}
               {numberDateSubTab === 'seasons' && (
                 <div>
-                  <p className="muted">四季的英文表达。注意 autumn（英式）和 fall（美式）两种写法。</p>
+                  <p className="muted">四季的英文表达。注意 autumn（英式）和 fall（美式）两种写法。点击可听发音或查看详情。</p>
                   <div className="list">
                     {numberDateData.seasons.map((m, i) => (
-                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(m.word)}>
                         <div className="listItemMain">
                           <div className="listItemTitle">
                             <h3>{m.word}</h3>
@@ -11085,10 +11104,10 @@ function App() {
               {/* 日期词汇 */}
               {numberDateSubTab === 'dateWords' && (
                 <div>
-                  <p className="muted">与日期时间相关的高频词汇。</p>
+                  <p className="muted">与日期时间相关的高频词汇。点击可听发音或查看详情。</p>
                   <div className="list">
                     {numberDateData.dateWords.map((m, i) => (
-                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speak(m.word, settings.speakRate)}>
+                      <div key={i} className="listItem" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(m.word)}>
                         <div className="listItemMain">
                           <div className="listItemTitle">
                             <h3>{m.word}</h3>
@@ -11115,14 +11134,14 @@ function App() {
               {/* 数字（基数词+序数词） */}
               {numberDateSubTab === 'numbers' && (
                 <div>
-                  <p className="muted">基数词（one, two...）用于计数，序数词（first, second...）用于表示顺序和日期。点击可听发音。</p>
+                  <p className="muted">基数词（one, two...）用于计数，序数词（first, second...）用于表示顺序和日期。点击可听发音或查看详情。</p>
                   <div className="list">
                     {numberDateData.numbers.map(item => (
                       <div key={item.n} className="listItem" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px' }}>
                         <div style={{ minWidth: 60, fontSize: '1.2em', fontWeight: 700, color: '#2563eb' }}>{item.n}</div>
                         <div style={{ flex: 1 }}>
-                          <span style={{ fontWeight: 600, color: '#16a34a', marginRight: 12, cursor: 'pointer' }} onClick={() => speak(item.cardinal, settings.speakRate)}>{item.cardinal}</span>
-                          <span style={{ fontWeight: 600, color: '#ea580c', cursor: 'pointer' }} onClick={() => speak(item.ordinal, settings.speakRate)}>{item.ordinal}</span>
+                          <span style={{ fontWeight: 600, color: '#16a34a', marginRight: 12, cursor: 'pointer' }} onClick={() => speakOrNavigate(item.cardinal)}>{item.cardinal}</span>
+                          <span style={{ fontWeight: 600, color: '#ea580c', cursor: 'pointer' }} onClick={() => speakOrNavigate(item.ordinal)}>{item.ordinal}</span>
                         </div>
                         <div style={{ fontSize: '0.75em', color: 'var(--text-tertiary)' }}>第{item.n}</div>
                       </div>
@@ -11134,8 +11153,8 @@ function App() {
                         <div key={item.n} className="listItem" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 6, marginBottom: 4 }}>
                           <div style={{ minWidth: 80, fontSize: '1.1em', fontWeight: 700, color: '#2563eb' }}>{item.n.toLocaleString()}</div>
                           <div>
-                            <span style={{ fontWeight: 600, color: '#16a34a', marginRight: 12, cursor: 'pointer' }} onClick={() => speak(item.cardinal, settings.speakRate)}>{item.cardinal}</span>
-                            <span style={{ fontWeight: 600, color: '#ea580c', cursor: 'pointer' }} onClick={() => speak(item.ordinal, settings.speakRate)}>{item.ordinal}</span>
+                            <span style={{ fontWeight: 600, color: '#16a34a', marginRight: 12, cursor: 'pointer' }} onClick={() => speakOrNavigate(item.cardinal)}>{item.cardinal}</span>
+                            <span style={{ fontWeight: 600, color: '#ea580c', cursor: 'pointer' }} onClick={() => speakOrNavigate(item.ordinal)}>{item.ordinal}</span>
                           </div>
                         </div>
                       ))}
@@ -11837,12 +11856,12 @@ function App() {
                   <div className="detailSection detailWordForms">
                     <p className="detailSectionTitle">🔄 单词变形</p>
                     <div className="detailFormGrid">
-                      {enrichment.wordForms.noun && <div className="detailFormItem"><span className="detailFormLabel">名词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.noun, settings.speakRate)}>{enrichment.wordForms.noun}</span></div>}
-                      {enrichment.wordForms.adjective && <div className="detailFormItem"><span className="detailFormLabel">形容词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.adjective, settings.speakRate)}>{enrichment.wordForms.adjective}</span></div>}
-                      {enrichment.wordForms.adverb && <div className="detailFormItem"><span className="detailFormLabel">副词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.adverb, settings.speakRate)}>{enrichment.wordForms.adverb}</span></div>}
-                      {enrichment.wordForms.pastTense && <div className="detailFormItem"><span className="detailFormLabel">过去式</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.pastTense, settings.speakRate)}>{enrichment.wordForms.pastTense}</span></div>}
-                      {enrichment.wordForms.pastParticiple && <div className="detailFormItem"><span className="detailFormLabel">过去分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.pastParticiple, settings.speakRate)}>{enrichment.wordForms.pastParticiple}</span></div>}
-                      {enrichment.wordForms.presentParticiple && <div className="detailFormItem"><span className="detailFormLabel">现在分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speak(enrichment.wordForms.presentParticiple, settings.speakRate)}>{enrichment.wordForms.presentParticiple}</span></div>}
+                      {enrichment.wordForms.noun && <div className="detailFormItem"><span className="detailFormLabel">名词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.noun)}>{enrichment.wordForms.noun}{findWordInBank(enrichment.wordForms.noun) && <span className="exampleZhInline">（{getShortMeaning(findWordInBank(enrichment.wordForms.noun).meaning)}）</span>}</span></div>}
+                      {enrichment.wordForms.adjective && <div className="detailFormItem"><span className="detailFormLabel">形容词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.adjective)}>{enrichment.wordForms.adjective}{findWordInBank(enrichment.wordForms.adjective) && <span className="exampleZhInline">（{getShortMeaning(findWordInBank(enrichment.wordForms.adjective).meaning)}）</span>}</span></div>}
+                      {enrichment.wordForms.adverb && <div className="detailFormItem"><span className="detailFormLabel">副词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.adverb)}>{enrichment.wordForms.adverb}{findWordInBank(enrichment.wordForms.adverb) && <span className="exampleZhInline">（{getShortMeaning(findWordInBank(enrichment.wordForms.adverb).meaning)}）</span>}</span></div>}
+                      {enrichment.wordForms.pastTense && <div className="detailFormItem"><span className="detailFormLabel">过去式</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.pastTense)}>{enrichment.wordForms.pastTense}</span></div>}
+                      {enrichment.wordForms.pastParticiple && <div className="detailFormItem"><span className="detailFormLabel">过去分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.pastParticiple)}>{enrichment.wordForms.pastParticiple}</span></div>}
+                      {enrichment.wordForms.presentParticiple && <div className="detailFormItem"><span className="detailFormLabel">现在分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.presentParticiple)}>{enrichment.wordForms.presentParticiple}</span></div>}
                     </div>
                   </div>
                 )}

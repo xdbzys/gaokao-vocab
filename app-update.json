@@ -1,7 +1,7 @@
 {
-  "version": "2.31.0",
-  "versionCode": 180,
-  "changelog": "v2.31.0 四大更新\n\n【1. 锁定竖屏】\n- 应用锁定为竖屏显示，横屏不再旋转\n\n【2. 词根词缀增强】\n- 前缀扩充至20个、后缀24个、词根40个\n- 每条标注属性（否定前缀/名词后缀/感官词根等）\n- 每条标注高考考点（高频/核心/必考）\n- 新增显示/隐藏词库单词按钮，点击单词可跳转详情\n\n【3. 发音优化】\n- 移除200ms自动发音延迟，点击即响\n- 添加语音引擎预热和音频缓存，响应更迅速\n\n【4. 情景记忆增强】\n- 情景单词旁显示中文意思\n- 点击情景单词跳转该单词详细考点",
-  "devNotes": "lock portrait orientation; expand affix data with properties/exam points/toggle; optimize speak with prewarm+cache; add Chinese meanings and detail nav to scene words",
+  "version": "2.32.0",
+  "versionCode": 181,
+  "changelog": "v2.32.0 全面优化\n\n【1. 点击单词统一跳转】\n- 所有页面点击单词：词库存在则自动跳转详情+发音，不存在则只发音\n- 覆盖单词变形、数字日期、基数序数词、情景记忆等全部区域\n\n【2. 中文翻译补全】\n- 全面检查并补充112条缺失中文的例句\n- 修复日期词汇中混合中英文的翻译\n- 单词变形（名词/形容词/副词）自动显示词库中的中文释义",
+  "devNotes": "unified speakOrNavigate for all word clicks; added 112 missing Chinese translations; fixed mixed-language translations in date words; word forms now show Chinese from word bank",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
