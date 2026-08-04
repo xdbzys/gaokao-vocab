@@ -1,7 +1,7 @@
 {
-  "version": "2.30.0",
-  "versionCode": 178,
-  "changelog": "v2.30.0 八项更新\n\n【1. 详情弹窗例句】\n- 单词详情弹窗现在紧跟释义显示例句，不再只在背诵页显示\n- 例句支持点击发音\n\n【2. 关联词跳转历史栈】\n- 点击关联词跳转后再跳转，关闭时返回上一个单词而非直接关闭所有\n- 关闭按钮在有历史时显示◀，可逐级返回\n\n【3. 修复自动发音】\n- 修复自动发音不生效的问题\n- 新增useEffect监听单词变化自动触发发音\n- 优化speak函数，原生App优先使用speechSynthesis\n\n【4. 词性标注】\n- 不同词性的中文释义前面现在标注词性（如 n.塑料）\n- 简略释义也保留词性标记\n\n【5. Tab顺序调整】\n- 词库和错词本顺序调换，词库在前\n\n【6. 进度条显示剩余数】\n- 背诵页进度条旁显示剩余未掌握单词数\n\n【7. 修复pass-by等单词标记掌握bug】\n- 修复loadProgress将含连字符的单词（如pass-by）误判为旧格式数据的问题\n- 修复resetBookProgress使用item.term而非termKey(item.term)导致删除失败\n- 新增markAsMastered函数，自动标记掌握不再使用toggle防止重复切换\n- 进度保存改用useEffect自动保存，避免state updater内的副作用\n\n【8. 温习功能】\n- 新增温习Tab，按日期查看每天学习的单词\n- 支持列表模式（类似词库浏览）和背诵模式（类似背诵页）\n- 我的页面学习日历支持点击日期跳转温习\n- 自动记录每天学习的具体单词（保留90天）",
-  "devNotes": "1. move examples section to top of detail modal; 2. implement detailHistory stack for navigation back; 3. add useEffect for autoSpeak + improve speak() for mobile; 4. modify getShortMeaning to preserve POS labels; 5. swap library/wrong tab order; 6. add remaining count to progress bar; 7. fix loadProgress migration for hyphenated terms, add markAsMastered, auto-save progress via useEffect; 8. add review section with studyWordsLog, date selector, list/practice modes, calendar integration",
+  "version": "2.30.1",
+  "versionCode": 179,
+  "changelog": "v2.30.1 温习页名句\n\n【更新内容】\n- 温习页顶部添加名句「温故而知新，可以为师矣」——《论语·为政》\n- 温习功能移至「我的」页面今日学习下方",
+  "devNotes": "add quote to review modal header; move review to Me page under today progress",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

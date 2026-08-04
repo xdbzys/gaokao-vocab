@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.30.0';
-const APP_VERSION_CODE = 178;
+const APP_VERSION = '2.30.1';
+const APP_VERSION_CODE = 179;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -10579,6 +10579,10 @@ function App() {
             <div className="modalHeader">
               <h2>温习</h2>
               <button className="closeBtn" onClick={() => setShowReview(false)}>✕</button>
+            </div>
+            <div style={{ textAlign: 'center', margin: '12px 0 8px', padding: '10px 16px', background: 'linear-gradient(135deg, #f0f7ff 0%, #fff8f0 100%)', borderRadius: 10, border: '1px solid var(--border)' }}>
+              <p style={{ fontSize: 17, fontWeight: 700, color: 'var(--primary-dark)', margin: 0, letterSpacing: 2 }}>温故而知新，可以为师矣</p>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 0' }}>——《论语·为政》</p>
             </div>
             <p className="muted" style={{ margin: '8px 0' }}>按日期回顾每天学习的单词，支持列表浏览和背诵两种模式。</p>
 
