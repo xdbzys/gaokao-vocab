@@ -10572,15 +10572,19 @@ function App() {
         </section>
       )}
 
-      {/* ====== 温习页面（全屏弹窗，从"我的"页面打开） ====== */}
+      {/* ====== 温习页面（全屏覆盖，从"我的"页面打开） ====== */}
       {showReview && (
-        <div className="modal" style={{ zIndex: 1000 }} onClick={() => setShowReview(false)}>
-          <div className="modalContent" style={{ maxWidth: 600, paddingTop: 0 }} onClick={e => e.stopPropagation()}>
-            <div className="modalHeader">
-              <h2>温习</h2>
-              <button className="closeBtn" onClick={() => setShowReview(false)}>✕</button>
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'var(--bg)', zIndex: 1000,
+          overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+        }}>
+          <div style={{ maxWidth: 600, margin: '0 auto', padding: '16px 16px 80px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <button className="closeBtn" onClick={() => setShowReview(false)} title="返回" style={{ flexShrink: 0 }}>◀</button>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>温习</h2>
             </div>
-            <div style={{ textAlign: 'center', margin: '12px 0 8px', padding: '10px 16px', background: 'linear-gradient(135deg, #f0f7ff 0%, #fff8f0 100%)', borderRadius: 10, border: '1px solid var(--border)' }}>
+            <div style={{ textAlign: 'center', margin: '0 0 8px', padding: '10px 16px', background: 'linear-gradient(135deg, #f0f7ff 0%, #fff8f0 100%)', borderRadius: 10, border: '1px solid var(--border)' }}>
               <p style={{ fontSize: 17, fontWeight: 700, color: 'var(--primary-dark)', margin: 0, letterSpacing: 2 }}>温故而知新，可以为师矣</p>
               <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 0' }}>——《论语·为政》</p>
             </div>
@@ -11679,7 +11683,7 @@ function App() {
           {detailItem && (() => {
             const enrichment = getWordEnrichment(detailItem.term);
             return (
-            <div className="modal" onClick={() => { setDetailHistory([]); setDetailItem(null); }}>
+            <div className="modal" style={{ zIndex: 1100 }} onClick={() => { setDetailHistory([]); setDetailItem(null); }}>
               <div className="modalContent" onClick={e => e.stopPropagation()}>
                 <div className="modalHeader">
                   <h2>{detailItem.term}</h2>
