@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.30.1';
-const APP_VERSION_CODE = 179;
+const APP_VERSION = '2.31.0';
+const APP_VERSION_CODE = 180;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -2993,48 +2993,97 @@ const seedMisspelled = [
 /* ============================
    二、词根词缀数据
    ============================ */
+// [词根/词缀, 中文意义, 属性, 高考考点, 示例单词]
 const affixData = {
   prefixes: [
-    ['dis-', '否定；相反', 'disable, disagree, disappear, disconnect'],
-    ['un-', '否定；解除', 'unlock, unfold, uncover, unconscious'],
-    ['re-', '重复；返回', 'rewrite, rebuild, reconsider, restore'],
-    ['mis-', '错误；坏', 'misjudge, misplace, misbehave, misinform'],
-    ['over-', '过度；超过', 'overload, overreact, oversleep, overcharge'],
-    ['under-', '不足；低于', 'underestimate, underdeveloped, underpaid'],
-    ['pre-', '在...之前', 'predict, preview, precaution, preschool'],
-    ['post-', '在...之后', 'postpone, postgraduate, postwar, postscript'],
+    ['dis-', '否定；相反', '否定前缀', '高考高频：disappear, disappoint, discover', 'disable, disagree, disappear, disconnect, disappoint, discover, disorder'],
+    ['un-', '否定；解除', '否定前缀', '高考核心：unable, unfair, unlock, unfold', 'unlock, unfold, uncover, unconscious, unable, unfair, uncertain, unfortunate'],
+    ['in-/im-/il-/ir-', '不；无；进入', '否定前缀', '高考必考：impossible, invisible, illegal, irregular', 'impossible, invisible, illegal, irregular, incorrect, impatient, impolite, inactive'],
+    ['re-', '再；重新；返回', '重复前缀', '高考高频：return, remember, review, rebuild', 'rewrite, rebuild, reconsider, restore, return, remember, review, recall, replace, recover'],
+    ['mis-', '错误；坏', '否定前缀', '高考考点：misunderstand, mistake, mislead', 'misjudge, misplace, misbehave, misinform, misunderstand, mistake, mislead, misread'],
+    ['over-', '过度；超过', '程度前缀', '高考考点：overcome, overlook, overweight', 'overload, overreact, oversleep, overcharge, overcome, overlook, overweight, overcome'],
+    ['under-', '不足；低于', '程度前缀', '高考考点：undergo, underline, underestimate', 'underestimate, underdeveloped, underpaid, undergo, underline, understand, underline'],
+    ['pre-', '在...之前', '时间前缀', '高考高频：predict, prepare, prefer, prevent', 'predict, preview, precaution, preschool, prepare, prefer, previous, prevent'],
+    ['post-', '在...之后', '时间前缀', '高考考点：postpone, postgraduate, postwar', 'postpone, postgraduate, postwar, postscript'],
+    ['en-/em-', '使...成为；放入', '动词前缀', '高考必考：enable, encourage, enlarge', 'enable, encourage, enlarge, enrich, ensure, employ, embrace, endanger'],
+    ['ex-', '出；前任', '方向前缀', '高考高频：export, exit, exist, expand', 'export, exit, exist, expand, expect, explain, explore, express, external'],
+    ['sub-', '在下面；次', '方向前缀', '高考考点：subject, subscribe, submarine', 'subject, subscribe, submarine, submit, substitute, subsequent'],
+    ['super-', '超级；超过', '程度前缀', '高考考点：supermarket, supernatural, supervise', 'supermarket, supernatural, supervise, superior, superpower'],
+    ['trans-', '转移；跨越', '方向前缀', '高考高频：translate, transport, transfer, transform', 'translate, transport, transfer, transform, transmit, transparent, transplant'],
+    ['inter-', '在...之间', '关系前缀', '高考高频：international, internet, interview', 'international, internet, interview, interfere, interpret, interrupt, interval'],
+    ['co-/com-/con-', '共同；一起', '关系前缀', '高考高频：cooperate, connect, combine, complete', 'cooperate, connect, combine, comfort, common, community, company, compete, complete, concern'],
+    ['auto-', '自己；自动', '方式前缀', '高考考点：automatic, autonomy, automobile', 'automatic, autonomy, autobiography, automobile'],
+    ['anti-', '反对；抗', '否定前缀', '高考考点：antibody, antibiotic, antisocial', 'antibody, antibiotic, antisocial, antifreeze, antitrust'],
+    ['multi-', '多', '数量前缀', '高考考点：multicultural, multimedia, multiple', 'multicultural, multimedia, multiple, multiply, multinational'],
+    ['out-', '超过；外面', '方向前缀', '高考高频：outcome, outline, output, outstanding', 'outcome, outline, output, outdoor, outward, outgrow, outstanding, outdoor'],
   ],
   suffixes: [
-    ['-able/-ible', '可...的', 'reliable, affordable, accessible, reversible'],
-    ['-tion/-sion', '名词后缀', 'determination, admission, conclusion, pollution'],
-    ['-ment', '名词后缀', 'improvement, equipment, agreement, settlement'],
-    ['-ful', '充满...的', 'powerful, cheerful, skillful, respectful'],
-    ['-less', '无...的', 'careless, fearless, useless, breathless'],
-    ['-ify/-ize', '使...化', 'simplify, terrify, modernize, recognize'],
-    ['-ence/-ance', '名词后缀', 'confidence, importance, appearance, tolerance'],
-    ['-al', '形容词/名词', 'natural, cultural, survival, approval'],
+    ['-able/-ible', '可...的；能...的', '形容词后缀', '高考必考：comfortable, available, reasonable', 'reliable, affordable, accessible, reversible, comfortable, available, reasonable, valuable, probable'],
+    ['-tion/-sion', '行为；状态；结果', '名词后缀', '高考高频：attention, education, decision, situation', 'determination, admission, conclusion, pollution, attention, education, decision, action, situation, condition, direction'],
+    ['-ment', '行为；结果；手段', '名词后缀', '高考高频：development, movement, argument, government', 'improvement, equipment, agreement, settlement, development, movement, argument, government, environment, achievement'],
+    ['-ful', '充满...的', '形容词后缀', '高考高频：beautiful, careful, useful, helpful', 'powerful, cheerful, skillful, respectful, beautiful, careful, useful, helpful, successful, wonderful, peaceful'],
+    ['-less', '无...的；不', '形容词后缀', '高考高频：careless, hopeless, useless, endless', 'careless, fearless, useless, breathless, hopeless, homeless, endless, harmless, regardless'],
+    ['-ify/-ize', '使...化；变成', '动词后缀', '高考必考：simplify, organize, realize, recognize', 'simplify, terrify, modernize, recognize, organize, realize, specialize, memorize, emphasize'],
+    ['-ence/-ance', '行为；状态', '名词后缀', '高考高频：difference, importance, appearance, distance', 'confidence, importance, appearance, tolerance, difference, distance, assistance, existence, performance, ignorance'],
+    ['-al', '与...有关的', '形容词后缀', '高考高频：natural, national, final, normal', 'natural, cultural, survival, approval, national, final, normal, personal, traditional, educational, global'],
+    ['-er/-or', '做...的人/物', '名词后缀', '高考高频：teacher, actor, computer, worker', 'teacher, actor, computer, worker, farmer, director, inventor, operator, generator, generator'],
+    ['-ist', '...主义者；做...的人', '名词后缀', '高考考点：artist, scientist, tourist, novelist', 'artist, scientist, tourist, novelist, journalist, specialist, motorist, physicist'],
+    ['-ness', '状态；性质', '名词后缀', '高考高频：happiness, business, illness, darkness', 'happiness, business, illness, darkness, weakness, carelessness, consciousness, awareness, thoroughness'],
+    ['-ity', '状态；性质', '名词后缀', '高考必考：ability, university, reality, responsibility', 'ability, university, reality, difficulty, possibility, responsibility, equality, majority, identity, priority'],
+    ['-ous', '具有...的', '形容词后缀', '高考高频：famous, dangerous, nervous, serious', 'famous, dangerous, nervous, serious, curious, generous, obvious, previous, various, enormous'],
+    ['-ive', '倾向于...的', '形容词后缀', '高考必考：active, creative, effective, attractive', 'active, creative, effective, attractive, expensive, sensitive, competitive, productive, native, massive'],
+    ['-ly', '以...方式', '副词后缀', '高考高频：quickly, carefully, finally, suddenly', 'quickly, carefully, finally, suddenly, gradually, naturally, particularly, regularly, obviously, extremely'],
+    ['-y', '有...特性的', '形容词后缀', '高考高频：healthy, lucky, noisy, sunny', 'healthy, lucky, noisy, sunny, rainy, dirty, easy, busy, heavy, ready, wealthy'],
+    ['-en', '使...变得', '动词后缀', '高考高频：widen, shorten, strengthen, deepen', 'widen, shorten, strengthen, deepen, darken, quicken, soften, lengthen, broaden, frighten'],
+    ['-ish', '像...的；有点...的', '形容词后缀', '高考考点：foolish, selfish, establish, accomplish', 'foolish, selfish, establish, accomplish, vanish, publish, finish, abolish'],
+    ['-dom', '状态；领域', '名词后缀', '高考考点：freedom, kingdom, wisdom, boredom', 'freedom, kingdom, wisdom, boredom, martyrdom, boredom'],
+    ['-ship', '关系；状态；技能', '名词后缀', '高考高频：friendship, relationship, leadership, scholarship', 'friendship, relationship, leadership, scholarship, membership, championship, hardship, citizenship'],
+    ['-hood', '时期；状态', '名词后缀', '高考考点：childhood, neighborhood, brotherhood', 'childhood, neighborhood, brotherhood, livelihood, likelihood'],
+    ['-teen', '十...（13-19）', '数词后缀', '高考考点：thirteen, fourteen, fifteen, sixteen', 'thirteen, fourteen, fifteen, sixteen, seventeen, eighteen, nineteen'],
+    ['-ty', '十的倍数', '数词后缀', '高考考点：twenty, thirty, forty, fifty', 'twenty, thirty, forty, fifty, sixty, seventy, eighty, ninety'],
+    ['-th', '第...（序数词）', '数词后缀', '高考考点：fourth, fifth, sixth, seventh', 'fourth, fifth, sixth, seventh, eighth, ninth, tenth, twelfth, twentieth'],
   ],
   roots: [
-    ['spect', '看', 'spectator, prospect, aspect, suspect, inspect, respect'],
-    ['struct', '建造', 'structure, instruct, reconstruct, construct, obstruct'],
-    ['ject', '投掷', 'eject, object, subject, project, inject, reject'],
-    ['port', '港口', 'portable, transport, export, import, report, support'],
-    ['bio', '生命', 'biology, biography, biodegradable, biochemistry'],
-    ['dict', '说', 'predict, indicate, contradict, dictate, dictionary'],
-    ['graph', '写/画', 'photograph, autobiography, geography, telegraph'],
-    ['phon', '声音', 'microphone, symphony, telephone, phonetic, megaphone'],
-    ['therm', '热', 'thermometer, thermal, thermostat, thermos, geothermal'],
-    ['hydr', '水', 'hydrogen, hydrate, dehydrate, hydraulic, hydroelectric'],
-    ['ced/ceed/cess', '走', 'precede, proceed, succeed, exceed, access, process'],
-    ['fer', '带来/拿', 'transfer, prefer, refer, infer, offer, confer'],
-    ['gress', '行走', 'progress, regress, congress, aggressive, digress'],
-    ['vis/vid', '看', 'visit, visible, vision, visual, revise, provide'],
-    ['clud/clus', '关闭', 'include, exclude, conclude, preclude, exclusive'],
-    ['man', '手', 'manage, manual, manufacture, manipulate, manuscript'],
-    ['ped', '脚', 'pedal, pedestrian, pedestal, expedition, impediment'],
-    ['scrib/script', '写', 'describe, prescribe, subscribe, scribble, script'],
-    ['nov', '新', 'novel, innovation, novice, renovate, novelty'],
-    ['sol', '单独', 'solo, solitary, isolate, desolate, soluble'],
+    ['spect', '看', '感官词根', '高考核心：inspect, respect, suspect, expect', 'spectator, prospect, aspect, suspect, inspect, respect, expect, perspective'],
+    ['struct', '建造；构造', '动词词根', '高考高频：structure, instruct, construct, destroy', 'structure, instruct, reconstruct, construct, obstruct, destroy, destruction, destruction'],
+    ['ject', '投掷；扔', '动词词根', '高考高频：object, subject, project, reject', 'eject, object, subject, project, inject, reject, adjective'],
+    ['port', '运送；携带', '动词词根', '高考核心：transport, import, export, important', 'portable, transport, export, import, report, support, important, opportunity, passport'],
+    ['bio', '生命；生物', '自然词根', '高考考点：biology, biography, biodiversity', 'biology, biography, biodegradable, biochemistry, biodiversity, biography'],
+    ['dict', '说；宣布', '动词词根', '高考高频：predict, indicate, dictionary, contradict', 'predict, indicate, contradict, dictate, dictionary, contradiction, predict, prediction'],
+    ['graph/gram', '写；画；记录', '动词词根', '高考高频：photograph, grammar, program, paragraph', 'photograph, autobiography, geography, telegraph, grammar, program, diagram, paragraph, autograph'],
+    ['phon', '声音', '感官词根', '高考考点：microphone, telephone, symphony', 'microphone, symphony, telephone, phonetic, megaphone, symphony, symphony'],
+    ['therm', '热', '自然词根', '高考考点：thermometer, thermal, thermostat', 'thermometer, thermal, thermostat, thermos, geothermal'],
+    ['hydr', '水', '自然词根', '高考考点：hydrogen, hydrate, dehydrate', 'hydrogen, hydrate, dehydrate, hydraulic, hydroelectric'],
+    ['ced/ceed/cess', '走；让步', '动词词根', '高考核心：succeed, exceed, access, process, necessary', 'precede, proceed, succeed, exceed, access, process, necessary, success, successful, procedure'],
+    ['fer', '带来；拿；承担', '动词词根', '高考高频：transfer, prefer, refer, offer, differ', 'transfer, prefer, refer, infer, offer, confer, differ, suffer, reference, preference'],
+    ['gress', '行走；步', '动词词根', '高考高频：progress, aggressive, congress, ingredient', 'progress, regress, congress, aggressive, digress, ingredient, progression'],
+    ['vis/vid', '看', '感官词根', '高考核心：visit, visible, vision, provide, evidence', 'visit, visible, vision, visual, revise, provide, video, evidence, evident, revise'],
+    ['clud/clus', '关闭；封锁', '动词词根', '高考高频：include, exclude, conclude, conclusion', 'include, exclude, conclude, preclude, exclusive, conclusion, enclosure, exclude'],
+    ['man', '手', '身体词根', '高考高频：manage, manual, manufacture, manner', 'manage, manual, manufacture, manipulate, manuscript, manner, maintain, management'],
+    ['ped', '脚', '身体词根', '高考考点：pedal, pedestrian, expedition, impediment', 'pedal, pedestrian, pedestal, expedition, impediment, biped'],
+    ['scrib/script', '写', '动词词根', '高考高频：describe, prescribe, subscribe, manuscript', 'describe, prescribe, subscribe, scribble, script, manuscript, transcript, description, prescription'],
+    ['nov', '新', '性质词根', '高考高频：novel, innovation, renovate, novelty', 'novel, innovation, novice, renovate, novelty, novelty, innovate'],
+    ['sol', '单独；太阳', '性质词根', '高考考点：solo, isolate, solar, console', 'solo, solitary, isolate, desolate, soluble, solar, console, resolve'],
+    ['tract', '拉；拖；吸引', '动词词根', '高考核心：attract, distract, extract, abstract', 'attract, distract, extract, contract, subtract, abstract, tractor, attraction'],
+    ['mit/miss', '送；发出；委派', '动词词根', '高考高频：admit, commit, permit, submit, permission', 'admit, commit, permit, submit, transmit, mission, permission, admission, commission, submission'],
+    ['tain', '拿住；保持', '动词词根', '高考核心：contain, maintain, obtain, retain, certain', 'contain, maintain, obtain, retain, sustain, entertain, certain, attain, container, maintenance'],
+    ['duc/duct', '引导；带领', '动词词根', '高考高频：conduct, introduce, produce, reduce, educate', 'conduct, introduce, produce, reduce, educate, deduce, product, production, education, reduction'],
+    ['cred', '相信；信任', '心理词根', '高考考点：credit, incredible, credence, credentials', 'credit, credible, incredible, credence, credentials, credulous, credit'],
+    ['vac', '空', '性质词根', '高考考点：vacant, vacation, vacuum, evacuate', 'vacant, vacuum, vacation, evacuate, vacate, vacancy'],
+    ['sequ/sec', '跟随', '动词词根', '高考高频：sequence, consequence, subsequent, execute', 'sequence, consequent, subsequent, pursue, execute, executive, consequence, sequence'],
+    ['fac/fic/fect', '做；制造', '动词词根', '高考核心：factory, facility, effect, affect, perfect', 'factory, facility, fiction, manufacture, benefit, perfect, affect, effect, efficient, sufficient, factory'],
+    ['lect/leg', '选择；收集；读', '动词词根', '高考高频：select, collect, elect, neglect, intelligent', 'select, collect, elect, neglect, lecture, legend, intelligent, elegant, collection, election'],
+    ['mob/mov/mot', '移动', '动词词根', '高考高频：mobile, move, motion, emotion, promote', 'mobile, move, motion, motivate, emotion, promote, remote, remove, automobile, movement'],
+    ['pend/pens', '悬挂；称量；支付', '动词词根', '高考高频：depend, independent, expense, suspend', 'depend, independent, suspend, expense, pension, compensate, indispensable, dependence, independent'],
+    ['spir', '呼吸', '动词词根', '高考考点：inspire, expire, spirit, conspire', 'inspire, expire, perspire, spirit, respiratory, conspire, transpire, inspiration'],
+    ['tempor', '时间', '时间词根', '高考高频：temporary, contemporary, temporal', 'temporary, contemporary, temporal, tempo, temporarily'],
+    ['cap/cept/ceive', '拿；抓；容纳', '动词词根', '高考核心：capture, accept, receive, concept, capacity', 'capture, accept, receive, concept, capacity, capable, except, perceive, deceive, exception, receive'],
+    ['pos/pon', '放置', '动词词根', '高考高频：position, compose, oppose, propose, expose', 'position, compose, oppose, propose, expose, dispose, deposit, component, opponent, purpose, position'],
+    ['sist/sta/st', '站立', '动词词根', '高考核心：exist, insist, assist, resist, stand, establish', 'exist, insist, assist, resist, consist, persist, stand, stable, stage, state, establish, circumstances, distance'],
+    ['log', '言语；学科', '名词词根', '高考考点：dialogue, logic, apologize, technology, biology', 'dialogue, logic, apologize, technology, biology, ecology, psychology, catalog, apologize'],
+    ['luc/lumin', '光', '自然词根', '高考考点：illuminate, luminous, translucent', 'lucid, illuminate, volume, translucent, luminous, elucidate, illuminate'],
+    ['mar', '海', '自然词根', '高考考点：marine, submarine, mariner, maritime', 'marine, submarine, mariner, maritime, submarine'],
+    ['path', '感情；痛苦', '心理词根', '高考考点：sympathy, pathetic, empathy, apathy', 'sympathy, pathetic, empathy, apathy, pathology, telepathy, sympathetic'],
   ]
 };
 
@@ -8672,6 +8721,17 @@ function extractEnglish(text) {
   return m ? m[1].trim() : String(text).trim();
 }
 
+const _audioCache = {};
+let _voicesWarmed = false;
+function _warmupVoices() {
+  if (_voicesWarmed || !('speechSynthesis' in window)) return;
+  try {
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0; u.rate = 1;
+    window.speechSynthesis.speak(u);
+    _voicesWarmed = true;
+  } catch {}
+}
 function speak(text, rate) {
   if (!text) return;
   const normalized = String(text).trim();
@@ -8688,14 +8748,17 @@ function speak(text, rate) {
       return true;
     } catch { return false; }
   };
-  // 原生App环境优先使用 speechSynthesis（更稳定），网页版优先使用有道发音
+  if (!_voicesWarmed) _warmupVoices();
   if (isNativeApp) {
     if (synthSpeak()) return;
   }
   if (isEnglish) {
-    const audio = new Audio(`https://dict.youdao.com/dictvoice?type=2&audio=${encodeURIComponent(normalized)}`);
-    audio.preload = 'auto';
+    const url = `https://dict.youdao.com/dictvoice?type=2&audio=${encodeURIComponent(normalized)}`;
+    let audio = _audioCache[normalized];
+    if (!audio) { audio = new Audio(url); _audioCache[normalized] = audio; }
+    audio.currentTime = 0;
     audio.play().catch(() => { synthSpeak(); });
+    if (!isNativeApp) synthSpeak();
     return;
   }
   if (!synthSpeak()) { /* 静默失败，不打扰用户 */ }
@@ -8897,6 +8960,7 @@ function App() {
   const [reviewShowBack, setReviewShowBack] = useState(false);
   const [reviewSelected, setReviewSelected] = useState('');
   const [affixTab, setAffixTab] = useState('prefix');
+  const [showAffixWords, setShowAffixWords] = useState({});
   const [compareTab, setCompareTab] = useState('synonym');
   const [compareIndex, setCompareIndex] = useState(0);
   const [numberDateSubTab, setNumberDateSubTab] = useState('months');
@@ -9418,8 +9482,7 @@ function App() {
     const termKey = current.term.toLowerCase();
     if (lastSpokenTermRef.current === termKey) return; // 同一个词不重复朗读
     lastSpokenTermRef.current = termKey;
-    const timer = setTimeout(() => speak(current.term, settings.speakRate), 200);
-    return () => clearTimeout(timer);
+    speak(current.term, settings.speakRate);
   }, [current, selected, showBack, settings.autoSpeak, section]);
 
   // 同步 practiceMode 与 settings.mode（设置页修改模式后生效）
@@ -10736,16 +10799,28 @@ function App() {
                 <button className={affixTab === 'root' ? 'active' : ''} onClick={() => setAffixTab('root')}>词根</button>
               </div>
               <div className="affixList">
-                {(affixTab === 'prefix' ? affixData.prefixes : affixTab === 'suffix' ? affixData.suffixes : affixData.roots).map(([name, meaning, examples], i) => (
+                {(affixTab === 'prefix' ? affixData.prefixes : affixTab === 'suffix' ? affixData.suffixes : affixData.roots).map(([name, meaning, property, examPoint, examples], i) => (
                   <div key={i} className="affixCard">
-                    <div className="affixName" style={{ color: affixTab === 'root' ? '#7c3aed' : '#2563eb' }}>{name}</div>
-                    <div className="affixMeaning">{meaning}</div>
-                    {/* 问题3：从allWords中查找相关单词 */}
-                    <div className="affixExamples">
-                      {(affixMatchWords[name] || []).map(w => (
-                        <span key={w.id} className="affixExample" onClick={() => speak(w.term, settings.speakRate)}>{w.term}</span>
-                      ))}
+                    <div className="affixHeader">
+                      <span className="affixName" style={{ color: affixTab === 'root' ? '#7c3aed' : '#2563eb' }}>{name}</span>
+                      <span className="affixProperty">{property}</span>
                     </div>
+                    <div className="affixMeaning">中文意义：{meaning}</div>
+                    {examPoint && <div className="affixExamPoint">📝 {examPoint}</div>}
+                    <button className="affixToggleBtn" onClick={() => setShowAffixWords(prev => ({ ...prev, [name]: !prev[name] }))}>
+                      {showAffixWords[name] ? '隐藏词库单词 ▲' : '显示词库单词 ▼'}
+                    </button>
+                    {showAffixWords[name] && (
+                      <div className="affixExamples">
+                        {(affixMatchWords[name] || []).length > 0 ? (
+                          (affixMatchWords[name] || []).map(w => (
+                            <span key={w.id} className="affixExample" onClick={() => { openDetailItem(w); speak(w.term, settings.speakRate); }}>{w.term}</span>
+                          ))
+                        ) : (
+                          <span className="affixNoMatch">词库中暂无含该词根词缀的单词</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -10819,16 +10894,26 @@ function App() {
             return (
             <div style={{ marginTop: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <p className="muted" style={{ margin: 0 }}>高考真题主题文章 · 点击单词可听发音</p>
+                <p className="muted" style={{ margin: 0 }}>高考真题主题文章 · 点击单词查看详情</p>
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>{startIdx + 1}-{Math.min(startIdx + SCENE_PAGE_SIZE, sceneData.length)} / {sceneData.length}</span>
               </div>
               {currentScenes.map((scene, i) => (
                 <div key={startIdx + i} className="sceneCard">
                   <h3>{scene.title}</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-                    {scene.words.map((w, j) => (
-                      <span key={j} className="sceneWord" onClick={() => speak(w, settings.speakRate)}>{w}</span>
-                    ))}
+                    {scene.words.map((w, j) => {
+                      const wordItem = allWords.find(item => item.term.toLowerCase() === w.toLowerCase());
+                      const meaning = wordItem ? getShortMeaning(wordItem.meaning) : '';
+                      return (
+                        <span key={j} className="sceneWord"
+                          onClick={() => {
+                            if (wordItem) { openDetailItem(wordItem); speak(w, settings.speakRate); }
+                            else { speak(w, settings.speakRate); }
+                          }}>
+                          {w}{meaning && <span className="sceneWordMeaning">（{meaning}）</span>}
+                        </span>
+                      );
+                    })}
                   </div>
                   <div className="sceneText">{scene.text}</div>
                   <div className="sceneTextCn">{scene.textCn}</div>

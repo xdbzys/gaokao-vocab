@@ -1,7 +1,7 @@
 {
-  "version": "2.30.1",
-  "versionCode": 179,
-  "changelog": "v2.30.1 温习页名句\n\n【更新内容】\n- 温习页顶部添加名句「温故而知新，可以为师矣」——《论语·为政》\n- 温习功能移至「我的」页面今日学习下方",
-  "devNotes": "add quote to review modal header; move review to Me page under today progress",
+  "version": "2.31.0",
+  "versionCode": 180,
+  "changelog": "v2.31.0 四大更新\n\n【1. 锁定竖屏】\n- 应用锁定为竖屏显示，横屏不再旋转\n\n【2. 词根词缀增强】\n- 前缀扩充至20个、后缀24个、词根40个\n- 每条标注属性（否定前缀/名词后缀/感官词根等）\n- 每条标注高考考点（高频/核心/必考）\n- 新增显示/隐藏词库单词按钮，点击单词可跳转详情\n\n【3. 发音优化】\n- 移除200ms自动发音延迟，点击即响\n- 添加语音引擎预热和音频缓存，响应更迅速\n\n【4. 情景记忆增强】\n- 情景单词旁显示中文意思\n- 点击情景单词跳转该单词详细考点",
+  "devNotes": "lock portrait orientation; expand affix data with properties/exam points/toggle; optimize speak with prewarm+cache; add Chinese meanings and detail nav to scene words",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

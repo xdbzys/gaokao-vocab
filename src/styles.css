@@ -978,17 +978,66 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   background: var(--bg);
 }
 
+.affixHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
 .affixName {
   font-size: 18px;
   font-weight: 700;
-  margin-bottom: 4px;
   color: var(--primary-dark);
+}
+
+.affixProperty {
+  display: inline-block;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .affixMeaning {
   color: var(--text-secondary);
   font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.affixExamPoint {
+  font-size: 13px;
+  color: #92400e;
+  background: var(--warning-light);
+  border-radius: 8px;
+  padding: 4px 10px;
   margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.affixToggleBtn {
+  width: 100%;
+  background: var(--primary-bg);
+  color: var(--primary-dark);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 10px;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.affixToggleBtn:active {
+  background: var(--primary-light);
+}
+
+.affixNoMatch {
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-style: italic;
 }
 
 .affixExamples {
@@ -1582,6 +1631,13 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   font-weight: 600;
   font-size: 16px;
   margin: 4px;
+  cursor: pointer;
+}
+
+.sceneWordMeaning {
+  font-weight: 400;
+  font-size: 0.78em;
+  opacity: 0.85;
 }
 
 .sceneText {
