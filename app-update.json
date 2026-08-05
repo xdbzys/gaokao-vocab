@@ -1,7 +1,7 @@
 {
-  "version": "2.33.0",
-  "versionCode": 183,
-  "changelog": "v2.33.0 高考考点扩充 + 扩展页中文翻译\n\n【1. 全面扩充高考考点】\n- 新增50+高频动词考点词条（base/blame/break/bring/call/carry/come/cut/distinguish/equip/fall/give/go/hand/hold/pay/pick/run/send/stand/think/wear等）\n- 覆盖动词搭配、介词搭配、to do vs doing、虚拟语气、主动表被动等高考核心语法\n- 新增worth/used/suppose/ensure/cure/inform/accuse/remind/convince/rid等易混词辨析\n\n【2. 扩展页全面添加中文翻译】\n- 词根词缀：词库单词旁添加中文释义，点击单词自动跳转详情+发音\n- 对比记忆：标题单词可点击跳转，显示词库中文释义，例句展示中英对照\n- 拼写纠错：正确单词旁添加中文释义，点击可跳转详情+发音\n- 情景记忆：文章中关键词汇高亮可点击跳转\n- 反义词例句：全部补充中文翻译（64条）",
-  "devNotes": "feat: add 50+ exam point entries; add Chinese translations and speakOrNavigate to extension pages; fix antonym examples missing Chinese",
+  "version": "2.34.0",
+  "versionCode": 184,
+  "changelog": "v2.34.0 词源关系全面修正 + 点单词自动发音开关\n\n【1. 全面检查词库词源关系】\n- 联网搜索Etymonline词源词典，交叉验证4600+词条\n- 修正163组假同源词（拼写相似但词源无关）：minority/mine、advance/adventure、career/care、star/start、strange/strong、family/famous、conduct/contact、precise/presence、product/protect、profit/provide等\n- 新增100组隐藏同源词（词源相同但拼写差异大）：muscle/mouse、salary/salt、hospital/hotel、history/story、count/computer、courage/encourage、chief/chef、sure/secure、catch/chase、guard/ward等\n\n【2. 点单词自动发音开关】\n- 我的页面新增独立开关卡片「点单词自动发音」\n- 点击单词跳转详情时是否自动发音，可随时开关\n- 采用滑动开关UI，操作更直观",
+  "devNotes": "feat: comprehensive etymology check with 163 false pairs and 100 hidden cognates; add prominent pronunciation toggle card in My page",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

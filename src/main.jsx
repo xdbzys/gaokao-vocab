@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.33.0';
-const APP_VERSION_CODE = 183;
+const APP_VERSION = '2.34.0';
+const APP_VERSION_CODE = 184;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -7671,10 +7671,11 @@ function loadSettings() {
       showAnnouncement: true,
       autoSpeak: false,
       autoMaster: false,
+      navAutoSpeak: true,
       ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')
     };
   } catch {
-    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: false, autoMaster: false };
+    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: false, autoMaster: false, navAutoSpeak: true };
   }
 }
 
@@ -7934,6 +7935,296 @@ function isVowelReductionMatch(a, b) {
   return true;
 }
 
+// 假同源词黑名单：拼写相似但词源完全无关的词对
+// 这些词对不应被算法匹配为词族（同源词）
+// 数据来源：Etymonline 在线词源词典交叉验证
+// 涵盖：minority/mine, advance/adventure, career/care, star/start 等常见误匹配
+const FALSE_ETYMOLOGY_PAIRS = {
+  accuse: ['accustomed'],
+  accustomed: ['accuse'],
+  advance: ['adventure', 'advise'],
+  advantage: ['adventure', 'advise'],
+  advantageous: ['adventure', 'advise'],
+  adventure: ['advance', 'advantage', 'advantageous', 'advise'],
+  advise: ['advance', 'adventure', 'advantage', 'advantageous'],
+  alone: ['along'],
+  along: ['alone'],
+  appeal: ['apple', 'apply', 'applicant', 'application', 'appliance'],
+  apple: ['apply', 'applicant', 'application', 'appliance', 'applied'],
+  appliance: ['apple'],
+  applicant: ['apple'],
+  application: ['apple'],
+  apply: ['apple'],
+  are: ['area'],
+  area: ['are'],
+  attention: ['attic'],
+  attentive: ['attic'],
+  attic: ['attention', 'attentive'],
+  attire: ['tire'],
+  authentic: ['author', 'authority'],
+  author: ['authentic'],
+  authority: ['authentic'],
+  award: ['aware'],
+  aware: ['award'],
+  ball: ['ballet'],
+  ballet: ['ball'],
+  bar: ['bare', 'barely'],
+  bare: ['bar'],
+  barely: ['bar'],
+  bear: ['beard'],
+  beard: ['bear'],
+  bell: ['belly'],
+  belly: ['bell'],
+  bill: ['billion', 'billionaire'],
+  billion: ['bill'],
+  billionaire: ['bill'],
+  both: ['bother'],
+  bother: ['both'],
+  bread: ['breath', 'breathless', 'breathe'],
+  break: ['breath', 'breathless', 'breathe', 'breed', 'breeding'],
+  breast: ['breath', 'breathless', 'breathe', 'breed', 'breeding'],
+  breath: ['bread', 'breast', 'breed', 'breeding', 'break'],
+  breathe: ['bread', 'breast', 'break'],
+  breathless: ['bread', 'breast', 'break'],
+  breed: ['breath', 'breathless', 'breathe', 'bread', 'breast'],
+  breeding: ['breath', 'breathless', 'breathe', 'bread', 'breast'],
+  career: ['care', 'careful', 'careless', 'caring'],
+  combine: ['component'],
+  comical: ['comment'],
+  comment: ['comical'],
+  component: ['combine'],
+  condition: ['content', 'contentment'],
+  conduct: ['contact'],
+  conductor: ['contact'],
+  conference: ['conventional'],
+  contact: ['conduct'],
+  content: ['condition'],
+  contentment: ['condition'],
+  conventional: ['conference'],
+  count: ['country', 'county'],
+  country: ['count'],
+  countryside: ['count'],
+  county: ['count'],
+  decade: ['decide', 'decision'],
+  decent: ['decide', 'decision', 'decoration'],
+  decide: ['decade', 'decent', 'decoration'],
+  decision: ['decade', 'decent', 'decoration'],
+  decoration: ['decent', 'decide', 'decision'],
+  empathic: ['emperor'],
+  emperor: ['empathic'],
+  entire: ['entrance'],
+  entrance: ['entire'],
+  expert: ['export'],
+  export: ['expert'],
+  family: ['famous'],
+  famous: ['family'],
+  female: ['male'],
+  former: ['formal', 'format', 'formation'],
+  garage: ['garment'],
+  garment: ['garage'],
+  gradual: ['grateful', 'gratitude'],
+  gradually: ['grateful', 'gratitude'],
+  graduation: ['grateful', 'gratitude'],
+  grateful: ['gradual', 'gradually', 'graduation'],
+  gratitude: ['gradual', 'gradually', 'graduation'],
+  greatly: ['greeting', 'greet'],
+  greet: ['greatly', 'great'],
+  greeting: ['greatly'],
+  illness: ['illusion'],
+  illusion: ['illness'],
+  insist: ['insure', 'insurance'],
+  insurance: ['insist'],
+  insure: ['insist'],
+  island: ['isle'],
+  isle: ['island'],
+  male: ['female'],
+  mine: ['minority', 'minor', 'mineral'],
+  mineral: ['minority', 'minor', 'mine', 'minister'],
+  minister: ['mineral'],
+  minor: ['mine', 'mineral'],
+  minority: ['mine', 'mineral'],
+  muscle: ['mollusk', 'mollusc'],
+  off: ['offence', 'officer', 'offer'],
+  offence: ['officer', 'offer', 'off'],
+  offer: ['offence', 'officer', 'off'],
+  officer: ['offence', 'offer', 'off'],
+  patent: ['patience', 'patient'],
+  patience: ['patent'],
+  patient: ['patent'],
+  positive: ['postage', 'poster'],
+  postage: ['positive'],
+  poster: ['positive'],
+  praise: ['prayer'],
+  prayer: ['praise'],
+  precise: ['presence', 'present', 'presentation'],
+  prefer: ['prevent'],
+  preference: ['prevent'],
+  presence: ['precise'],
+  present: ['precise'],
+  presentation: ['precise'],
+  prevent: ['prefer', 'preference'],
+  probable: ['proper', 'properly'],
+  probably: ['proper', 'properly'],
+  product: ['protect'],
+  production: ['protect', 'protection'],
+  productive: ['protect', 'protection'],
+  profit: ['provide', 'provided', 'providing'],
+  proper: ['probable', 'probably'],
+  properly: ['probable', 'probably'],
+  protect: ['product', 'production', 'productive'],
+  protection: ['product', 'production', 'productive'],
+  provide: ['profit'],
+  provided: ['profit'],
+  providing: ['profit'],
+  relation: ['reliable'],
+  relationship: ['reliable'],
+  reliable: ['relation', 'relationship'],
+  restore: ['store'],
+  reveal: ['revise', 'revision'],
+  revise: ['reveal'],
+  revision: ['reveal'],
+  section: ['secure'],
+  secure: ['section'],
+  senior: ['sense', 'sensation'],
+  silence: ['silhouette'],
+  silhouette: ['silence'],
+  similar: ['simplify', 'simple'],
+  simplify: ['similar'],
+  star: ['start', 'stare', 'starve', 'starvation'],
+  stare: ['star', 'start', 'starve', 'starvation'],
+  start: ['star', 'stare', 'starve', 'starvation'],
+  starvation: ['star', 'start', 'stare'],
+  starve: ['star', 'start', 'stare'],
+  store: ['restore'],
+  strange: ['strong', 'strength', 'strengthen', 'strongly'],
+  stranger: ['strong', 'strength', 'strengthen', 'strongly'],
+  strength: ['strange', 'stranger'],
+  strengthen: ['strange', 'stranger'],
+  strong: ['strange', 'stranger'],
+  strongly: ['strange', 'stranger'],
+  tire: ['attire'],
+};
+
+// 检查两个词是否在假同源词黑名单中
+function isFalseEtymology(word1, word2) {
+  const w1 = word1.toLowerCase().trim();
+  const w2 = word2.toLowerCase().trim();
+  const blocked = FALSE_ETYMOLOGY_PAIRS[w1];
+  return blocked ? blocked.includes(w2) : false;
+}
+
+// 隐藏同源词映射：词源相同但拼写差异大，算法难以自动检测的词对
+// 数据来源：Etymonline 在线词源词典交叉验证
+// 涵盖：muscle/mouse, salary/salt, hospital/hotel 等隐藏同源词
+const HIDDEN_COGNATES = {
+  account: ['count', 'computer', 'counter'],
+  accurate: ['curious', 'cure'],
+  anniversary: ['annual', 'perennial'],
+  annual: ['perennial', 'anniversary'],
+  asterisk: ['disaster', 'asteroid'],
+  asteroid: ['disaster', 'asterisk', 'astronomy'],
+  astronomy: ['disaster', 'asteroid', 'star'],
+  aware: ['ware', 'warn', 'wary'],
+  betray: ['tradition', 'treason'],
+  candid: ['candle', 'candidate'],
+  candidate: ['candid', 'candle'],
+  candle: ['candid', 'candidate'],
+  catch: ['chase'],
+  chase: ['catch'],
+  chef: ['chief'],
+  chief: ['chef'],
+  company: ['pantry'],
+  computer: ['count', 'account', 'counter'],
+  costume: ['custom'],
+  count: ['account', 'computer', 'counter'],
+  counter: ['count', 'account', 'computer'],
+  courage: ['encourage', 'courageous', 'discourage'],
+  courageous: ['courage', 'encourage', 'discourage'],
+  cure: ['curious', 'accurate'],
+  curious: ['cure', 'accurate'],
+  custom: ['costume'],
+  dainty: ['dignity'],
+  dignity: ['dainty'],
+  disaster: ['asteroid', 'asterisk', 'astronomy', 'star'],
+  discourage: ['courage', 'encourage', 'courageous'],
+  encourage: ['courage', 'courageous', 'discourage'],
+  ensure: ['sure', 'secure', 'insure', 'insurance'],
+  fancy: ['fantasy'],
+  fantasy: ['fancy'],
+  flour: ['flower'],
+  flower: ['flour'],
+  glamour: ['grammar'],
+  grammar: ['glamour'],
+  guarantee: ['guard', 'ward', 'warranty', 'reward'],
+  guard: ['ward', 'warranty', 'guarantee', 'reward'],
+  history: ['story'],
+  hospital: ['hotel', 'host', 'hostess', 'hostile'],
+  host: ['hospital', 'hotel', 'hostess', 'hostile'],
+  hostess: ['hospital', 'hotel', 'host', 'hostile'],
+  hostile: ['hospital', 'hotel', 'host', 'hostess'],
+  hotel: ['hospital', 'host', 'hostess', 'hostile'],
+  human: ['humble', 'humbleness'],
+  humble: ['human'],
+  humbleness: ['human'],
+  inch: ['ounce'],
+  insurance: ['sure', 'secure', 'insure', 'ensure'],
+  insure: ['sure', 'secure', 'ensure', 'insurance'],
+  major: ['mayor'],
+  maneuver: ['manure'],
+  manure: ['maneuver'],
+  mayor: ['major'],
+  merchant: ['mercy'],
+  mercy: ['merchant'],
+  mouse: ['muscle'],
+  muscle: ['mouse'],
+  naive: ['native'],
+  native: ['naive', 'nature'],
+  nature: ['native'],
+  naval: ['navigate', 'nausea'],
+  navigate: ['nausea', 'naval'],
+  ounce: ['inch'],
+  pantry: ['company'],
+  passion: ['passive', 'patience', 'patient'],
+  passive: ['passion', 'patience', 'patient'],
+  patience: ['passion', 'passive', 'patient'],
+  patient: ['passion', 'passive', 'patience'],
+  perennial: ['annual', 'anniversary'],
+  phenomenon: ['fantasy', 'fancy'],
+  reward: ['guard', 'ward', 'warranty', 'guarantee'],
+  salad: ['salary', 'salt', 'sauce', 'sausage'],
+  salary: ['salt', 'salty', 'salad', 'sauce', 'sausage'],
+  salt: ['salary', 'salad', 'sauce', 'sausage'],
+  salty: ['salary'],
+  sarcasm: ['sarcophagus'],
+  sauce: ['salary', 'salt', 'salad', 'sausage'],
+  sausage: ['salary', 'salt', 'salad', 'sauce'],
+  secure: ['sure', 'insure', 'ensure', 'insurance'],
+  security: ['sure', 'secure'],
+  seminar: ['semen', 'seed'],
+  shirt: ['skirt'],
+  skirt: ['shirt'],
+  species: ['spice'],
+  spice: ['species'],
+  star: ['astronomy', 'disaster', 'asteroid'],
+  story: ['history'],
+  sure: ['secure', 'insure', 'ensure', 'insurance', 'security'],
+  tradition: ['treason', 'betray'],
+  treason: ['tradition', 'betray'],
+  valid: ['valedictorian', 'valor'],
+  valor: ['valid'],
+  ward: ['guard', 'warranty', 'guarantee', 'reward'],
+  ware: ['aware', 'warn', 'wary'],
+  warn: ['aware', 'ware'],
+  warranty: ['guard', 'ward', 'reward', 'guarantee'],
+  wary: ['aware', 'ware'],
+};
+
+// 获取隐藏同源词列表
+function getHiddenCognates(word) {
+  const w = word.toLowerCase().trim();
+  return HIDDEN_COGNATES[w] || [];
+}
+
 // 查找词族：与给定单词同一词根的不同形式
 // 核心原则：只有真正的词根变形才算关联，单纯长得像不算
 function findWordFamily(term, items) {
@@ -8020,9 +8311,21 @@ function findWordFamily(term, items) {
       (otherNoE && isVowelReductionMatch(termStem, otherNoE)) ||
       (termNoE && otherNoE && isVowelReductionMatch(termNoE, otherNoE));
 
-    const isRelated = prefixMatch || stemExactMatch || stemPrefixMatch || eDropMatch || shortStemEqual || consonantAltMatch || derivationMatch || vowelReductionMatch;
+    const isRelated = (prefixMatch || stemExactMatch || stemPrefixMatch || eDropMatch || shortStemEqual || consonantAltMatch || derivationMatch || vowelReductionMatch)
+      && !isFalseEtymology(term, item.term);
 
     if (isRelated) {
+      related.push(item);
+      seen.add(item.term);
+    }
+  }
+
+  // 补充：从隐藏同源词映射中查找（算法难以自动检测的同源词）
+  const hiddenCognates = getHiddenCognates(term);
+  for (const cognate of hiddenCognates) {
+    if (seen.has(cognate)) continue;
+    const item = items.find(i => i.term.toLowerCase() === cognate.toLowerCase());
+    if (item) {
       related.push(item);
       seen.add(item.term);
     }
@@ -9164,7 +9467,7 @@ function App() {
     const found = allWords.find(item => item.term.toLowerCase() === w.toLowerCase());
     if (found) {
       openDetailItem(found);
-      speak(w, settings.speakRate);
+      if (settings.navAutoSpeak !== false) speak(w, settings.speakRate);
     } else {
       speak(w, settings.speakRate);
     }
@@ -10467,7 +10770,7 @@ function App() {
                             {enrichment.derivatives.map((d, i) => {
                               const derivWord = d.split(' ')[0];
                               const derivItem = allWords.find(w => w.term.toLowerCase() === derivWord.toLowerCase());
-                              return <span key={i} style={{ display: 'inline-block', background: derivItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (derivItem) { openDetailItem(derivItem); speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
+                              return <span key={i} style={{ display: 'inline-block', background: derivItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (derivItem) { openDetailItem(derivItem); if (settings.navAutoSpeak !== false) speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
                             })}
                           </div>
                         </div>
@@ -10479,7 +10782,7 @@ function App() {
                             {enrichment.synonyms.map((s, i) => {
                               const synWord = extractEnglish(s).split(/\s+/)[0];
                               const synItem = allWords.find(w => w.term.toLowerCase() === synWord.toLowerCase());
-                              return <span key={i} style={{ display: 'inline-block', background: synItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (synItem) { openDetailItem(synItem); speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
+                              return <span key={i} style={{ display: 'inline-block', background: synItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (synItem) { openDetailItem(synItem); if (settings.navAutoSpeak !== false) speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
                             })}
                           </div>
                         </div>
@@ -10491,7 +10794,7 @@ function App() {
                             {enrichment.antonyms.map((a, i) => {
                               const antWord = extractEnglish(a).split(/\s+/)[0];
                               const antItem = allWords.find(w => w.term.toLowerCase() === antWord.toLowerCase());
-                              return <span key={i} style={{ display: 'inline-block', background: antItem ? 'var(--danger-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (antItem) { openDetailItem(antItem); speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}</span>;
+                              return <span key={i} style={{ display: 'inline-block', background: antItem ? 'var(--danger-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (antItem) { openDetailItem(antItem); if (settings.navAutoSpeak !== false) speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}</span>;
                             })}
                           </div>
                         </div>
@@ -11447,6 +11750,20 @@ function App() {
             })()}
           </div>
 
+          {/* 点单词自动发音开关（独立卡片） */}
+          <div className="toggleCard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', marginTop: 12, borderRadius: 12, background: 'var(--primary-light)', border: '1px solid var(--border-light)' }}>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600 }}>🔊 点单词自动发音</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>点击单词跳转详情时自动发音</div>
+            </div>
+            <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0 }}>
+              <input type="checkbox" checked={settings.navAutoSpeak !== false} onChange={e => { const v = e.target.checked; setSettings(s => ({ ...s, navAutoSpeak: v })); saveSettings({ ...settings, navAutoSpeak: v }); }} style={{ opacity: 0, width: 0, height: 0 }} />
+              <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.navAutoSpeak !== false ? 'var(--primary)' : '#ccc', borderRadius: 26, transition: '0.3s' }}>
+                <span style={{ position: 'absolute', height: 20, width: 20, left: 3, bottom: 3, backgroundColor: 'white', borderRadius: '50%', transition: '0.3s', transform: settings.navAutoSpeak !== false ? 'translateX(22px)' : 'translateX(0)' }} />
+              </span>
+            </label>
+          </div>
+
           {/* 设置区域 */}
           <div className="settingsGroup">
             <h3>设置</h3>
@@ -11497,6 +11814,7 @@ function App() {
                 <option value="off">关闭</option>
               </select>
             </label>
+            {/* 跳转单词自动发音开关已移至上方独立卡片 */}
             {isNativeApp && (
               <label>开屏更新公告
                 <select value={settings.showAnnouncement ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, showAnnouncement: v })); saveSettings({ ...settings, showAnnouncement: v }); }}>
@@ -11953,7 +12271,7 @@ function App() {
                       {enrichment.derivatives.map((d, i) => {
                         const derivWord = d.split(' ')[0];
                         const derivItem = allWords.find(w => w.term.toLowerCase() === derivWord.toLowerCase());
-                        return <span key={i} className="detailDerivTag" style={{ cursor: 'pointer' }} onClick={() => { if (derivItem) { openDetailItem(derivItem); speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
+                        return <span key={i} className="detailDerivTag" style={{ cursor: 'pointer' }} onClick={() => { if (derivItem) { openDetailItem(derivItem); if (settings.navAutoSpeak !== false) speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
                       })}
                     </div>
                   </div>
@@ -11967,7 +12285,7 @@ function App() {
                       {enrichment.synonyms.map((s, i) => {
                         const synWord = extractEnglish(s).split(/\s+/)[0];
                         const synItem = allWords.find(w => w.term.toLowerCase() === synWord.toLowerCase());
-                        return <span key={i} className="detailSynonymTag" style={{ cursor: 'pointer' }} onClick={() => { if (synItem) { openDetailItem(synItem); speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
+                        return <span key={i} className="detailSynonymTag" style={{ cursor: 'pointer' }} onClick={() => { if (synItem) { openDetailItem(synItem); if (settings.navAutoSpeak !== false) speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
                       })}
                     </div>
                   </div>
@@ -11981,7 +12299,7 @@ function App() {
                       {enrichment.antonyms.map((a, i) => {
                         const antWord = extractEnglish(a).split(/\s+/)[0];
                         const antItem = allWords.find(w => w.term.toLowerCase() === antWord.toLowerCase());
-                        return <span key={i} className="detailAntonymTag" style={{ cursor: 'pointer' }} onClick={() => { if (antItem) { openDetailItem(antItem); speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}</span>;
+                        return <span key={i} className="detailAntonymTag" style={{ cursor: 'pointer' }} onClick={() => { if (antItem) { openDetailItem(antItem); if (settings.navAutoSpeak !== false) speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}</span>;
                       })}
                     </div>
                   </div>
