@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.32.1';
-const APP_VERSION_CODE = 182;
+const APP_VERSION = '2.33.0';
+const APP_VERSION_CODE = 183;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -2634,70 +2634,70 @@ const seedSynonyms = [
 
 // 反义词对比
 const seedAntonyms = [
-  ['advantage / disadvantage', '词组', '优点 / 缺点', '反义', ['反义词对比记忆'], ['advantage和disadvantage互为反义词'], ['advantage is the opposite of disadvantage.']],
-  ['agree / disagree', '词组', '同意 / 不同意', '反义', ['反义词对比记忆'], ['agree和disagree互为反义词'], ['agree is the opposite of disagree.']],
-  ['appear / disappear', '词组', '出现 / 消失', '反义', ['反义词对比记忆'], ['appear和disappear互为反义词'], ['appear is the opposite of disappear.']],
-  ['approach / withdraw', '词组', '接近 / 撤退', '反义', ['反义词对比记忆'], ['approach和withdraw互为反义词'], ['approach is the opposite of withdraw.']],
-  ['arrive / depart', '词组', '到达 / 离开', '反义', ['反义词对比记忆'], ['arrive和depart互为反义词'], ['arrive is the opposite of depart.']],
-  ['borrow / lend', '词组', '借入 / 借出', '反义', ['反义词对比记忆'], ['borrow和lend互为反义词'], ['borrow is the opposite of lend.']],
-  ['build / destroy', '词组', '建设 / 破坏', '反义', ['反义词对比记忆'], ['build和destroy互为反义词'], ['build is the opposite of destroy.']],
-  ['buy / sell', '词组', '买 / 卖', '反义', ['反义词对比记忆'], ['buy和sell互为反义词'], ['buy is the opposite of sell.']],
-  ['create / destroy', '词组', '创造 / 毁灭', '反义', ['反义词对比记忆'], ['create和destroy互为反义词'], ['create is the opposite of destroy.']],
-  ['decrease / increase', '词组', '减少 / 增加', '反义', ['反义词对比记忆'], ['decrease和increase互为反义词'], ['decrease is the opposite of increase.']],
-  ['defend / attack', '词组', '防御 / 攻击', '反义', ['反义词对比记忆'], ['defend和attack互为反义词'], ['defend is the opposite of attack.']],
-  ['encourage / discourage', '词组', '鼓励 / 气馁', '反义', ['反义词对比记忆'], ['encourage和discourage互为反义词'], ['encourage is the opposite of discourage.']],
-  ['enter / exit', '词组', '进入 / 退出', '反义', ['反义词对比记忆'], ['enter和exit互为反义词'], ['enter is the opposite of exit.']],
-  ['fail / succeed', '词组', '失败 / 成功', '反义', ['反义词对比记忆'], ['fail和succeed互为反义词'], ['fail is the opposite of succeed.']],
-  ['forget / remember', '词组', '忘记 / 记住', '反义', ['反义词对比记忆'], ['forget和remember互为反义词'], ['forget is the opposite of remember.']],
-  ['gain / lose', '词组', '获得 / 失去', '反义', ['反义词对比记忆'], ['gain和lose互为反义词'], ['gain is the opposite of lose.']],
-  ['gather / scatter', '词组', '聚集 / 散开', '反义', ['反义词对比记忆'], ['gather和scatter互为反义词'], ['gather is the opposite of scatter.']],
-  ['hate / love', '词组', '讨厌 / 爱', '反义', ['反义词对比记忆'], ['hate和love互为反义词'], ['hate is the opposite of love.']],
-  ['hope / despair', '词组', '希望 / 绝望', '反义', ['反义词对比记忆'], ['hope和despair互为反义词'], ['hope is the opposite of despair.']],
-  ['include / exclude', '词组', '包括 / 排除', '反义', ['反义词对比记忆'], ['include和exclude互为反义词'], ['include is the opposite of exclude.']],
-  ['joy / sorrow', '词组', '快乐 / 悲伤', '反义', ['反义词对比记忆'], ['joy和sorrow互为反义词'], ['joy is the opposite of sorrow.']],
-  ['keep / abandon', '词组', '保持 / 放弃', '反义', ['反义词对比记忆'], ['keep和abandon互为反义词'], ['keep is the opposite of abandon.']],
-  ['laugh / cry', '词组', '笑 / 哭', '反义', ['反义词对比记忆'], ['laugh和cry互为反义词'], ['laugh is the opposite of cry.']],
-  ['lift / drop', '词组', '举起 / 放下', '反义', ['反义词对比记忆'], ['lift和drop互为反义词'], ['lift is the opposite of drop.']],
-  ['open / close', '词组', '打开 / 关闭', '反义', ['反义词对比记忆'], ['open和close互为反义词'], ['open is the opposite of close.']],
-  ['pass / fail', '词组', '通过 / 失败', '反义', ['反义词对比记忆'], ['pass和fail互为反义词'], ['pass is the opposite of fail.']],
-  ['praise / criticize', '词组', '表扬 / 批评', '反义', ['反义词对比记忆'], ['praise和criticize互为反义词'], ['praise is the opposite of criticize.']],
-  ['pull / push', '词组', '拉 / 推', '反义', ['反义词对比记忆'], ['pull和push互为反义词'], ['pull is the opposite of push.']],
-  ['raise / lower', '词组', '举起 / 放低', '反义', ['反义词对比记忆'], ['raise和lower互为反义词'], ['raise is the opposite of lower.']],
-  ['rich / poor', '词组', '富裕的 / 贫穷的', '反义', ['反义词对比记忆'], ['rich和poor互为反义词'], ['rich is the opposite of poor.']],
-  ['safe / dangerous', '词组', '安全的 / 危险的', '反义', ['反义词对比记忆'], ['safe和dangerous互为反义词'], ['safe is the opposite of dangerous.']],
-  ['silent / noisy', '词组', '安静的 / 嘈杂的', '反义', ['反义词对比记忆'], ['silent和noisy互为反义词'], ['silent is the opposite of noisy.']],
-  ['simple / complex', '词组', '简单的 / 复杂的', '反义', ['反义词对比记忆'], ['simple和complex互为反义词'], ['simple is the opposite of complex.']],
-  ['strong / weak', '词组', '强壮的 / 虚弱的', '反义', ['反义词对比记忆'], ['strong和weak互为反义词'], ['strong is the opposite of weak.']],
-  ['victory / defeat', '词组', '胜利 / 失败', '反义', ['反义词对比记忆'], ['victory和defeat互为反义词'], ['victory is the opposite of defeat.']],
-  ['accept / reject', '词组', '接受 / 拒绝', '反义', ['反义词对比记忆'], ['accept和reject互为反义词'], ['accept is the opposite of reject.']],
-  ['ancient / modern', '词组', '古代的 / 现代的', '反义', ['反义词对比记忆'], ['ancient和modern互为反义词'], ['ancient is the opposite of modern.']],
-  ['beautiful / ugly', '词组', '美丽的 / 丑陋的', '反义', ['反义词对比记忆'], ['beautiful和ugly互为反义词'], ['beautiful is the opposite of ugly.']],
-  ['begin / end', '词组', '开始 / 结束', '反义', ['反义词对比记忆'], ['begin和end互为反义词'], ['begin is the opposite of end.']],
-  ['brave / cowardly', '词组', '勇敢的 / 懦弱的', '反义', ['反义词对比记忆'], ['brave和cowardly互为反义词'], ['brave is the opposite of cowardly.']],
-  ['calm / anxious', '词组', '平静的 / 焦虑的', '反义', ['反义词对比记忆'], ['calm和anxious互为反义词'], ['calm is the opposite of anxious.']],
-  ['cheap / expensive', '词组', '便宜的 / 昂贵的', '反义', ['反义词对比记忆'], ['cheap和expensive互为反义词'], ['cheap is the opposite of expensive.']],
-  ['clean / dirty', '词组', '干净的 / 肮脏的', '反义', ['反义词对比记忆'], ['clean和dirty互为反义词'], ['clean is the opposite of dirty.']],
-  ['clever / foolish', '词组', '聪明的 / 愚蠢的', '反义', ['反义词对比记忆'], ['clever和foolish互为反义词'], ['clever is the opposite of foolish.']],
-  ['cold / hot', '词组', '冷的 / 热的', '反义', ['反义词对比记忆'], ['cold和hot互为反义词'], ['cold is the opposite of hot.']],
-  ['comfortable / uncomfortable', '词组', '舒适的 / 不舒适的', '反义', ['反义词对比记忆'], ['comfortable和uncomfortable互为反义词'], ['comfortable is the opposite of uncomfortable.']],
-  ['confident / nervous', '词组', '自信的 / 紧张的', '反义', ['反义词对比记忆'], ['confident和nervous互为反义词'], ['confident is the opposite of nervous.']],
-  ['connect / disconnect', '词组', '连接 / 断开', '反义', ['反义词对比记忆'], ['connect和disconnect互为反义词'], ['connect is the opposite of disconnect.']],
-  ['correct / wrong', '词组', '正确的 / 错误的', '反义', ['反义词对比记忆'], ['correct和wrong互为反义词'], ['correct is the opposite of wrong.']],
-  ['curious / indifferent', '词组', '好奇的 / 冷漠的', '反义', ['反义词对比记忆'], ['curious和indifferent互为反义词'], ['curious is the opposite of indifferent.']],
-  ['generous / mean', '词组', '慷慨的 / 吝啬的', '反义', ['反义词对比记忆'], ['generous和mean互为反义词'], ['generous is the opposite of mean.']],
-  ['guilty / innocent', '词组', '有罪的 / 无辜的', '反义', ['反义词对比记忆'], ['guilty和innocent互为反义词'], ['guilty is the opposite of innocent.']],
-  ['honest / dishonest', '词组', '诚实的 / 不诚实的', '反义', ['反义词对比记忆'], ['honest和dishonest互为反义词'], ['honest is the opposite of dishonest.']],
-  ['optimistic / pessimistic', '词组', '乐观的 / 悲观的', '反义', ['反义词对比记忆'], ['optimistic和pessimistic互为反义词'], ['optimistic is the opposite of pessimistic.']],
-  ['permanent / temporary', '词组', '永久的 / 暂时的', '反义', ['反义词对比记忆'], ['permanent和temporary互为反义词'], ['permanent is the opposite of temporary.']],
-  ['polite / rude', '词组', '礼貌的 / 粗鲁的', '反义', ['反义词对比记忆'], ['polite和rude互为反义词'], ['polite is the opposite of rude.']],
-  ['positive / negative', '词组', '积极的 / 消极的', '反义', ['反义词对比记忆'], ['positive和negative互为反义词'], ['positive is the opposite of negative.']],
-  ['real / fake', '词组', '真实的 / 假的', '反义', ['反义词对比记忆'], ['real和fake互为反义词'], ['real is the opposite of fake.']],
-  ['rough / smooth', '词组', '粗糙的 / 光滑的', '反义', ['反义词对比记忆'], ['rough和smooth互为反义词'], ['rough is the opposite of smooth.']],
-  ['sharp / blunt', '词组', '锋利的 / 钝的', '反义', ['反义词对比记忆'], ['sharp和blunt互为反义词'], ['sharp is the opposite of blunt.']],
-  ['slow / fast', '词组', '慢的 / 快的', '反义', ['反义词对比记忆'], ['slow和fast互为反义词'], ['slow is the opposite of fast.']],
-  ['soft / hard', '词组', '柔软的 / 坚硬的', '反义', ['反义词对比记忆'], ['soft和hard互为反义词'], ['soft is the opposite of hard.']],
-  ['thick / thin', '词组', '厚的 / 薄的', '反义', ['反义词对比记忆'], ['thick和thin互为反义词'], ['thick is the opposite of thin.']],
-  ['wide / narrow', '词组', '宽的 / 窄的', '反义', ['反义词对比记忆'], ['wide和narrow互为反义词'], ['wide is the opposite of narrow.']]
+  ['advantage / disadvantage', '词组', '优点 / 缺点', '反义', ['反义词对比记忆'], ['advantage和disadvantage互为反义词'], ['advantage is the opposite of disadvantage.|||优点是缺点的反义词。']],
+  ['agree / disagree', '词组', '同意 / 不同意', '反义', ['反义词对比记忆'], ['agree和disagree互为反义词'], ['agree is the opposite of disagree.|||同意是不同意的反义词。']],
+  ['appear / disappear', '词组', '出现 / 消失', '反义', ['反义词对比记忆'], ['appear和disappear互为反义词'], ['appear is the opposite of disappear.|||出现是消失的反义词。']],
+  ['approach / withdraw', '词组', '接近 / 撤退', '反义', ['反义词对比记忆'], ['approach和withdraw互为反义词'], ['approach is the opposite of withdraw.|||接近是撤退的反义词。']],
+  ['arrive / depart', '词组', '到达 / 离开', '反义', ['反义词对比记忆'], ['arrive和depart互为反义词'], ['arrive is the opposite of depart.|||到达是离开的反义词。']],
+  ['borrow / lend', '词组', '借入 / 借出', '反义', ['反义词对比记忆'], ['borrow和lend互为反义词'], ['borrow is the opposite of lend.|||借入是借出的反义词。']],
+  ['build / destroy', '词组', '建设 / 破坏', '反义', ['反义词对比记忆'], ['build和destroy互为反义词'], ['build is the opposite of destroy.|||建设是破坏的反义词。']],
+  ['buy / sell', '词组', '买 / 卖', '反义', ['反义词对比记忆'], ['buy和sell互为反义词'], ['buy is the opposite of sell.|||买是卖的反义词。']],
+  ['create / destroy', '词组', '创造 / 毁灭', '反义', ['反义词对比记忆'], ['create和destroy互为反义词'], ['create is the opposite of destroy.|||创造是毁灭的反义词。']],
+  ['decrease / increase', '词组', '减少 / 增加', '反义', ['反义词对比记忆'], ['decrease和increase互为反义词'], ['decrease is the opposite of increase.|||减少是增加的反义词。']],
+  ['defend / attack', '词组', '防御 / 攻击', '反义', ['反义词对比记忆'], ['defend和attack互为反义词'], ['defend is the opposite of attack.|||防御是攻击的反义词。']],
+  ['encourage / discourage', '词组', '鼓励 / 气馁', '反义', ['反义词对比记忆'], ['encourage和discourage互为反义词'], ['encourage is the opposite of discourage.|||鼓励是气馁的反义词。']],
+  ['enter / exit', '词组', '进入 / 退出', '反义', ['反义词对比记忆'], ['enter和exit互为反义词'], ['enter is the opposite of exit.|||进入是退出的反义词。']],
+  ['fail / succeed', '词组', '失败 / 成功', '反义', ['反义词对比记忆'], ['fail和succeed互为反义词'], ['fail is the opposite of succeed.|||失败是成功的反义词。']],
+  ['forget / remember', '词组', '忘记 / 记住', '反义', ['反义词对比记忆'], ['forget和remember互为反义词'], ['forget is the opposite of remember.|||忘记是记住的反义词。']],
+  ['gain / lose', '词组', '获得 / 失去', '反义', ['反义词对比记忆'], ['gain和lose互为反义词'], ['gain is the opposite of lose.|||获得是失去的反义词。']],
+  ['gather / scatter', '词组', '聚集 / 散开', '反义', ['反义词对比记忆'], ['gather和scatter互为反义词'], ['gather is the opposite of scatter.|||聚集是散开的反义词。']],
+  ['hate / love', '词组', '讨厌 / 爱', '反义', ['反义词对比记忆'], ['hate和love互为反义词'], ['hate is the opposite of love.|||讨厌是爱的反义词。']],
+  ['hope / despair', '词组', '希望 / 绝望', '反义', ['反义词对比记忆'], ['hope和despair互为反义词'], ['hope is the opposite of despair.|||希望是绝望的反义词。']],
+  ['include / exclude', '词组', '包括 / 排除', '反义', ['反义词对比记忆'], ['include和exclude互为反义词'], ['include is the opposite of exclude.|||包括是排除的反义词。']],
+  ['joy / sorrow', '词组', '快乐 / 悲伤', '反义', ['反义词对比记忆'], ['joy和sorrow互为反义词'], ['joy is the opposite of sorrow.|||快乐是悲伤的反义词。']],
+  ['keep / abandon', '词组', '保持 / 放弃', '反义', ['反义词对比记忆'], ['keep和abandon互为反义词'], ['keep is the opposite of abandon.|||保持是放弃的反义词。']],
+  ['laugh / cry', '词组', '笑 / 哭', '反义', ['反义词对比记忆'], ['laugh和cry互为反义词'], ['laugh is the opposite of cry.|||笑是哭的反义词。']],
+  ['lift / drop', '词组', '举起 / 放下', '反义', ['反义词对比记忆'], ['lift和drop互为反义词'], ['lift is the opposite of drop.|||举起是放下的反义词。']],
+  ['open / close', '词组', '打开 / 关闭', '反义', ['反义词对比记忆'], ['open和close互为反义词'], ['open is the opposite of close.|||打开是关闭的反义词。']],
+  ['pass / fail', '词组', '通过 / 失败', '反义', ['反义词对比记忆'], ['pass和fail互为反义词'], ['pass is the opposite of fail.|||通过是失败的反义词。']],
+  ['praise / criticize', '词组', '表扬 / 批评', '反义', ['反义词对比记忆'], ['praise和criticize互为反义词'], ['praise is the opposite of criticize.|||表扬是批评的反义词。']],
+  ['pull / push', '词组', '拉 / 推', '反义', ['反义词对比记忆'], ['pull和push互为反义词'], ['pull is the opposite of push.|||拉是推的反义词。']],
+  ['raise / lower', '词组', '举起 / 放低', '反义', ['反义词对比记忆'], ['raise和lower互为反义词'], ['raise is the opposite of lower.|||举起是放低的反义词。']],
+  ['rich / poor', '词组', '富裕的 / 贫穷的', '反义', ['反义词对比记忆'], ['rich和poor互为反义词'], ['rich is the opposite of poor.|||富裕的是贫穷的的反义词。']],
+  ['safe / dangerous', '词组', '安全的 / 危险的', '反义', ['反义词对比记忆'], ['safe和dangerous互为反义词'], ['safe is the opposite of dangerous.|||安全的是危险的的反义词。']],
+  ['silent / noisy', '词组', '安静的 / 嘈杂的', '反义', ['反义词对比记忆'], ['silent和noisy互为反义词'], ['silent is the opposite of noisy.|||安静的是嘈杂的的反义词。']],
+  ['simple / complex', '词组', '简单的 / 复杂的', '反义', ['反义词对比记忆'], ['simple和complex互为反义词'], ['simple is the opposite of complex.|||简单的是复杂的的反义词。']],
+  ['strong / weak', '词组', '强壮的 / 虚弱的', '反义', ['反义词对比记忆'], ['strong和weak互为反义词'], ['strong is the opposite of weak.|||强壮的是虚弱的的反义词。']],
+  ['victory / defeat', '词组', '胜利 / 失败', '反义', ['反义词对比记忆'], ['victory和defeat互为反义词'], ['victory is the opposite of defeat.|||胜利是失败的反义词。']],
+  ['accept / reject', '词组', '接受 / 拒绝', '反义', ['反义词对比记忆'], ['accept和reject互为反义词'], ['accept is the opposite of reject.|||接受是拒绝的反义词。']],
+  ['ancient / modern', '词组', '古代的 / 现代的', '反义', ['反义词对比记忆'], ['ancient和modern互为反义词'], ['ancient is the opposite of modern.|||古代的是现代的的反义词。']],
+  ['beautiful / ugly', '词组', '美丽的 / 丑陋的', '反义', ['反义词对比记忆'], ['beautiful和ugly互为反义词'], ['beautiful is the opposite of ugly.|||美丽的是丑陋的的反义词。']],
+  ['begin / end', '词组', '开始 / 结束', '反义', ['反义词对比记忆'], ['begin和end互为反义词'], ['begin is the opposite of end.|||开始是结束的反义词。']],
+  ['brave / cowardly', '词组', '勇敢的 / 懦弱的', '反义', ['反义词对比记忆'], ['brave和cowardly互为反义词'], ['brave is the opposite of cowardly.|||勇敢的是懦弱的的反义词。']],
+  ['calm / anxious', '词组', '平静的 / 焦虑的', '反义', ['反义词对比记忆'], ['calm和anxious互为反义词'], ['calm is the opposite of anxious.|||平静的是焦虑的的反义词。']],
+  ['cheap / expensive', '词组', '便宜的 / 昂贵的', '反义', ['反义词对比记忆'], ['cheap和expensive互为反义词'], ['cheap is the opposite of expensive.|||便宜的是昂贵的的反义词。']],
+  ['clean / dirty', '词组', '干净的 / 肮脏的', '反义', ['反义词对比记忆'], ['clean和dirty互为反义词'], ['clean is the opposite of dirty.|||干净的是肮脏的的反义词。']],
+  ['clever / foolish', '词组', '聪明的 / 愚蠢的', '反义', ['反义词对比记忆'], ['clever和foolish互为反义词'], ['clever is the opposite of foolish.|||聪明的是愚蠢的的反义词。']],
+  ['cold / hot', '词组', '冷的 / 热的', '反义', ['反义词对比记忆'], ['cold和hot互为反义词'], ['cold is the opposite of hot.|||冷的是热的的反义词。']],
+  ['comfortable / uncomfortable', '词组', '舒适的 / 不舒适的', '反义', ['反义词对比记忆'], ['comfortable和uncomfortable互为反义词'], ['comfortable is the opposite of uncomfortable.|||舒适的是不舒适的的反义词。']],
+  ['confident / nervous', '词组', '自信的 / 紧张的', '反义', ['反义词对比记忆'], ['confident和nervous互为反义词'], ['confident is the opposite of nervous.|||自信的是紧张的的反义词。']],
+  ['connect / disconnect', '词组', '连接 / 断开', '反义', ['反义词对比记忆'], ['connect和disconnect互为反义词'], ['connect is the opposite of disconnect.|||连接是断开的反义词。']],
+  ['correct / wrong', '词组', '正确的 / 错误的', '反义', ['反义词对比记忆'], ['correct和wrong互为反义词'], ['correct is the opposite of wrong.|||正确的是错误的的反义词。']],
+  ['curious / indifferent', '词组', '好奇的 / 冷漠的', '反义', ['反义词对比记忆'], ['curious和indifferent互为反义词'], ['curious is the opposite of indifferent.|||好奇的是冷漠的的反义词。']],
+  ['generous / mean', '词组', '慷慨的 / 吝啬的', '反义', ['反义词对比记忆'], ['generous和mean互为反义词'], ['generous is the opposite of mean.|||慷慨的是吝啬的的反义词。']],
+  ['guilty / innocent', '词组', '有罪的 / 无辜的', '反义', ['反义词对比记忆'], ['guilty和innocent互为反义词'], ['guilty is the opposite of innocent.|||有罪的是无辜的的反义词。']],
+  ['honest / dishonest', '词组', '诚实的 / 不诚实的', '反义', ['反义词对比记忆'], ['honest和dishonest互为反义词'], ['honest is the opposite of dishonest.|||诚实的是不诚实的的反义词。']],
+  ['optimistic / pessimistic', '词组', '乐观的 / 悲观的', '反义', ['反义词对比记忆'], ['optimistic和pessimistic互为反义词'], ['optimistic is the opposite of pessimistic.|||乐观的是悲观的的反义词。']],
+  ['permanent / temporary', '词组', '永久的 / 暂时的', '反义', ['反义词对比记忆'], ['permanent和temporary互为反义词'], ['permanent is the opposite of temporary.|||永久的是暂时的的反义词。']],
+  ['polite / rude', '词组', '礼貌的 / 粗鲁的', '反义', ['反义词对比记忆'], ['polite和rude互为反义词'], ['polite is the opposite of rude.|||礼貌的是粗鲁的的反义词。']],
+  ['positive / negative', '词组', '积极的 / 消极的', '反义', ['反义词对比记忆'], ['positive和negative互为反义词'], ['positive is the opposite of negative.|||积极的是消极的的反义词。']],
+  ['real / fake', '词组', '真实的 / 假的', '反义', ['反义词对比记忆'], ['real和fake互为反义词'], ['real is the opposite of fake.|||真实的是假的的反义词。']],
+  ['rough / smooth', '词组', '粗糙的 / 光滑的', '反义', ['反义词对比记忆'], ['rough和smooth互为反义词'], ['rough is the opposite of smooth.|||粗糙的是光滑的的反义词。']],
+  ['sharp / blunt', '词组', '锋利的 / 钝的', '反义', ['反义词对比记忆'], ['sharp和blunt互为反义词'], ['sharp is the opposite of blunt.|||锋利的是钝的的反义词。']],
+  ['slow / fast', '词组', '慢的 / 快的', '反义', ['反义词对比记忆'], ['slow和fast互为反义词'], ['slow is the opposite of fast.|||慢的是快的的反义词。']],
+  ['soft / hard', '词组', '柔软的 / 坚硬的', '反义', ['反义词对比记忆'], ['soft和hard互为反义词'], ['soft is the opposite of hard.|||柔软的是坚硬的的反义词。']],
+  ['thick / thin', '词组', '厚的 / 薄的', '反义', ['反义词对比记忆'], ['thick和thin互为反义词'], ['thick is the opposite of thin.|||厚的是薄的的反义词。']],
+  ['wide / narrow', '词组', '宽的 / 窄的', '反义', ['反义词对比记忆'], ['wide和narrow互为反义词'], ['wide is the opposite of narrow.|||宽的是窄的的反义词。']]
 ];
 
 // 逻辑连接词（结论词）
@@ -10874,7 +10874,7 @@ function App() {
                       <div className="affixExamples">
                         {(affixMatchWords[name] || []).length > 0 ? (
                           (affixMatchWords[name] || []).map(w => (
-                            <span key={w.id} className="affixExample" onClick={() => { openDetailItem(w); speak(w.term, settings.speakRate); }}>{w.term}</span>
+                            <span key={w.id} className="affixExample" onClick={() => speakOrNavigate(w.term)}>{w.term}{getShortMeaning(w.meaning) && <span className="sceneWordMeaning">（{getShortMeaning(w.meaning)}）</span>}</span>
                           ))
                         ) : (
                           <span className="affixNoMatch">词库中暂无含该词根词缀的单词</span>
@@ -10899,11 +10899,36 @@ function App() {
                   <div className="cardMeta">
                     <span>{compareIndex + 1}/{compareItems.length}</span>
                   </div>
-                  <h2 className="compareTitle">{compareCurrent.term}</h2>
+                  <h2 className="compareTitle">
+                    {compareCurrent.term.split(' / ').map((word, i, arr) => {
+                      const wItem = findWordInBank(word);
+                      const wMeaning = wItem ? getShortMeaning(wItem.meaning) : '';
+                      return (
+                        <span key={i}>
+                          <span style={{ cursor: 'pointer', color: wItem ? '#2563eb' : 'inherit' }} onClick={() => speakOrNavigate(word)}>{word}</span>
+                          {wMeaning && <span className="sceneWordMeaning">（{wMeaning}）</span>}
+                          {i < arr.length - 1 && ' / '}
+                        </span>
+                      );
+                    })}
+                  </h2>
                   <p className="compareMeaning">{compareCurrent.meaning}</p>
                   <div className="points">
                     {compareCurrent.allPoints.map(p => <p key={p}>• {p}</p>)}
                   </div>
+                  {compareCurrent.examples && compareCurrent.examples.length > 0 && (
+                    <div className="points" style={{ marginTop: 8 }}>
+                      {compareCurrent.examples.map((ex, i) => {
+                        const [en, zh] = ex.split('|||');
+                        return (
+                          <div key={i} className="examplePair" style={{ padding: '4px 8px', marginBottom: 4 }}>
+                            <p style={{ margin: 0, fontSize: '0.85em' }}>• {en}</p>
+                            {zh && <p style={{ margin: '0 0 0 10px', fontSize: '0.78em', color: 'var(--text-tertiary)' }}>{zh}</p>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                   <div className="compareNav">
                     <button className="primary" onClick={() => setCompareIndex(i => (i - 1 + compareItems.length) % compareItems.length)}>◀ 上一个</button>
                     <button className="primary" onClick={() => setCompareIndex(i => (i + 1) % compareItems.length)}>下一个 ▶</button>
@@ -10962,20 +10987,28 @@ function App() {
                   <h3>{scene.title}</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
                     {scene.words.map((w, j) => {
-                      const wordItem = allWords.find(item => item.term.toLowerCase() === w.toLowerCase());
+                      const wordItem = findWordInBank(w);
                       const meaning = wordItem ? getShortMeaning(wordItem.meaning) : '';
                       return (
                         <span key={j} className="sceneWord"
-                          onClick={() => {
-                            if (wordItem) { openDetailItem(wordItem); speak(w, settings.speakRate); }
-                            else { speak(w, settings.speakRate); }
-                          }}>
+                          onClick={() => speakOrNavigate(w)}>
                           {w}{meaning && <span className="sceneWordMeaning">（{meaning}）</span>}
                         </span>
                       );
                     })}
                   </div>
-                  <div className="sceneText">{scene.text}</div>
+                  <div className="sceneText">
+                    {(() => {
+                      const words = scene.words.map(w => w.toLowerCase());
+                      const tokens = scene.text.split(/(\b[a-zA-Z][a-zA-Z'-]*\b)/g);
+                      return tokens.map((tok, i) => {
+                        if (words.includes(tok.toLowerCase())) {
+                          return <span key={i} style={{ color: '#2563eb', cursor: 'pointer', fontWeight: 600 }} onClick={() => speakOrNavigate(tok)}>{tok}</span>;
+                        }
+                        return <span key={i}>{tok}</span>;
+                      });
+                    })()}
+                  </div>
                   <div className="sceneTextCn">{scene.textCn}</div>
                 </div>
               ))}
@@ -11023,16 +11056,21 @@ function App() {
                   item.correct.toLowerCase().includes(spellingSearch.toLowerCase()) ||
                   item.wrong.toLowerCase().includes(spellingSearch.toLowerCase())
                 )
-                .map((item, i) => (
+                .map((item, i) => {
+                  const wItem = findWordInBank(item.correct);
+                  const wMeaning = wItem ? getShortMeaning(wItem.meaning) : '';
+                  return (
                   <div key={i} className="spellingCard">
                     <div className="spellingRow">
-                      <span className="spellingCorrect">{item.correct}</span>
+                      <span className="spellingCorrect" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(item.correct)}>{item.correct}</span>
+                      {wMeaning && <span className="sceneWordMeaning">（{wMeaning}）</span>}
                       <span style={{ color: 'var(--text-tertiary)' }}>/</span>
                       <span className="spellingWrong">{item.wrong}</span>
                     </div>
                     <div className="spellingTip">{item.tip}</div>
                   </div>
-                ))}
+                  );
+                })}
             </div>
           )}
 

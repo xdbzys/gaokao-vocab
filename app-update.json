@@ -1,7 +1,7 @@
 {
-  "version": "2.32.1",
-  "versionCode": 182,
-  "changelog": "v2.32.1 Bug修复\n\n【1. 切换页面保持当前单词】\n- 闪卡模式未点展示意思、答题模式未选答案时，切换其他页面再回来不会改变当前单词\n\n【2. 闪卡掌握后下一个单词不再直接展示意思】\n- 修复闪卡模式点击「标记掌握」后，因词库重算导致下一个单词直接展示释义的bug",
-  "devNotes": "fix: preserve current word when switching pages; reset showBack/selected when current term changes unexpectedly due to learnItems recompute",
+  "version": "2.33.0",
+  "versionCode": 183,
+  "changelog": "v2.33.0 高考考点扩充 + 扩展页中文翻译\n\n【1. 全面扩充高考考点】\n- 新增50+高频动词考点词条（base/blame/break/bring/call/carry/come/cut/distinguish/equip/fall/give/go/hand/hold/pay/pick/run/send/stand/think/wear等）\n- 覆盖动词搭配、介词搭配、to do vs doing、虚拟语气、主动表被动等高考核心语法\n- 新增worth/used/suppose/ensure/cure/inform/accuse/remind/convince/rid等易混词辨析\n\n【2. 扩展页全面添加中文翻译】\n- 词根词缀：词库单词旁添加中文释义，点击单词自动跳转详情+发音\n- 对比记忆：标题单词可点击跳转，显示词库中文释义，例句展示中英对照\n- 拼写纠错：正确单词旁添加中文释义，点击可跳转详情+发音\n- 情景记忆：文章中关键词汇高亮可点击跳转\n- 反义词例句：全部补充中文翻译（64条）",
+  "devNotes": "feat: add 50+ exam point entries; add Chinese translations and speakOrNavigate to extension pages; fix antonym examples missing Chinese",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

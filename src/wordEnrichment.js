@@ -1557,6 +1557,632 @@ const wordEnrichmentData = {
     antonyms: ['hinder 阻碍', 'obstruct 妨碍'],
     examPoints: ['help sb (to) do to可省略', 'can\'t help doing 忍不住做(动名词)', 'can\'t help but do 不得不做(不定式省to)', 'can\'t help but do = cannot but do 不得不做']
   },
+  // ===== 高考高频考点补充 =====
+  consist: {
+    collocations: ['consist of 由...组成', 'consist in 在于', 'consist with 与...一致'],
+    derivatives: ['consistent adj. 一致的', 'consistency n. 一致性', 'inconsistent adj. 不一致的'],
+    wordForms: { noun: 'consistency', adjective: 'consistent' },
+    synonyms: ['comprise 包含', 'compose 组成', 'make up 组成'],
+    antonyms: ['differ 不同', 'disagree 不一致'],
+    examPoints: ['consist of 由...组成（主动语态，不用被动）', 'consist in 在于（抽象概念）', 'consist with 与...一致', 'be consistent with 与...一致']
+  },
+  belong: {
+    collocations: ['belong to 属于', 'belong to sb 属于某人'],
+    derivatives: ['belongings n. 所有物，行李'],
+    wordForms: { noun: 'belongings' },
+    synonyms: ['pertain 属于', 'appertain 有关'],
+    antonyms: [],
+    examPoints: ['belong to 无被动语态', 'belong to 不用于进行时', 'belongings 财物/行李（复数）']
+  },
+  lead: {
+    collocations: ['lead to 导致；通向', 'lead sb to do 致使某人做', 'lead a...life 过...的生活', 'in the lead 领先', 'take the lead 带头'],
+    derivatives: ['leader n. 领导者', 'leadership n. 领导力', 'leading adj. 主要的'],
+    wordForms: { noun: 'leader', adjective: 'leading', pastTense: 'led', pastParticiple: 'led', presentParticiple: 'leading' },
+    synonyms: ['guide 引导', 'direct 指引', 'head 带领'],
+    antonyms: ['follow 跟随', 'trail 落后'],
+    examPoints: ['lead to 后接名词/动名词（to是介词）', 'lead sb to do sth 致使某人做某事', 'lead a happy life 过幸福生活']
+  },
+  lie: {
+    collocations: ['lie in 在于', 'lie on 依赖于', 'lie down 躺下', 'tell a lie 撒谎', 'white lie 善意的谎言'],
+    derivatives: ['liar n. 说谎者'],
+    wordForms: { noun: 'liar', pastTense: 'lay', pastParticiple: 'lain', presentParticiple: 'lying' },
+    synonyms: ['recline 斜倚', 'rest 休息'],
+    antonyms: ['tell the truth 说实话'],
+    examPoints: ['lie in 在于（高考高频）', 'lie（躺）过去式lay，过去分词lain', 'lie（说谎）过去式lied，过去分词lied', '区分 lie/lay/lie（躺/放置/说谎）']
+  },
+  deal: {
+    collocations: ['deal with 处理；应付', 'a great deal of 大量', 'deal in 经营'],
+    derivatives: ['dealer n. 商人', 'dealing n. 交易'],
+    wordForms: { noun: 'dealer', pastTense: 'dealt', pastParticiple: 'dealt', presentParticiple: 'dealing' },
+    synonyms: ['handle 处理', 'manage 应付', 'tackle 解决'],
+    antonyms: [],
+    examPoints: ['deal with = handle 处理', 'a great deal of + 不可数名词', 'deal with 常与 how 连用']
+  },
+  object: {
+    collocations: ['object to 反对', 'object to doing 反对做某事', 'take objection to 对...反对'],
+    derivatives: ['objection n. 反对', 'objective n. 目标 adj. 客观的', 'objectively adv. 客观地'],
+    wordForms: { noun: 'objection', adjective: 'objective', adverb: 'objectively' },
+    synonyms: ['oppose 反对', 'disapprove 不赞成'],
+    antonyms: ['agree 同意', 'approve 赞成', 'support 支持'],
+    examPoints: ['object to 中 to 是介词，后接动名词', 'object to doing = be opposed to doing']
+  },
+  refer: {
+    collocations: ['refer to 指的是；查阅', 'refer to...as 把...称为', 'refer sb to 让某人去咨询'],
+    derivatives: ['reference n. 参考；参考书', 'referral n. 转介'],
+    wordForms: { noun: 'reference', pastTense: 'referred', pastParticiple: 'referred', presentParticiple: 'referring' },
+    synonyms: ['mention 提到', 'cite 引用', 'allude 暗指'],
+    antonyms: [],
+    examPoints: ['refer to 查阅/参考', 'refer to...as 把...称为', 'with reference to 关于']
+  },
+  recover: {
+    collocations: ['recover from 从...恢复', 'recover oneself 恢复镇定'],
+    derivatives: ['recovery n. 恢复', 'recoverable adj. 可恢复的'],
+    wordForms: { noun: 'recovery', adjective: 'recoverable', pastTense: 'recovered', pastParticiple: 'recovered', presentParticiple: 'recovering' },
+    synonyms: ['regain 恢复', 'recuperate 康复'],
+    antonyms: ['lose 失去', 'worsen 恶化'],
+    examPoints: ['recover from 从...中恢复', 'recovery from 从...中恢复（名词）']
+  },
+  concentrate: {
+    collocations: ['concentrate on 集中精力于', 'concentrate one\'s mind 集中注意力'],
+    derivatives: ['concentration n. 专注；浓度', 'concentrated adj. 集中的；浓缩的'],
+    wordForms: { noun: 'concentration', adjective: 'concentrated', pastTense: 'concentrated', pastParticiple: 'concentrated', presentParticiple: 'concentrating' },
+    synonyms: ['focus 专注', 'center 集中'],
+    antonyms: ['distract 分心', 'wander 走神'],
+    examPoints: ['concentrate on = focus on 集中精力于', 'concentration on 专注']
+  },
+  approve: {
+    collocations: ['approve of 赞成', 'approve of doing 赞成做某事'],
+    derivatives: ['approval n. 赞成', 'disapprove v. 不赞成', 'disapproval n. 不赞成'],
+    wordForms: { noun: 'approval', pastTense: 'approved', pastParticiple: 'approved', presentParticiple: 'approving' },
+    synonyms: ['agree 同意', 'favor 赞成', 'endorse 支持'],
+    antonyms: ['disapprove 不赞成', 'oppose 反对', 'reject 拒绝'],
+    examPoints: ['approve of 赞成（of不可省）', 'approve of doing 赞成做某事', '反义词 disapprove of']
+  },
+  accuse: {
+    collocations: ['accuse sb of 指控某人', 'be accused of 被指控'],
+    derivatives: ['accusation n. 指控', 'the accused 被告'],
+    wordForms: { noun: 'accusation', pastTense: 'accused', pastParticiple: 'accused', presentParticiple: 'accusing' },
+    synonyms: ['charge 指控', 'blame 责备'],
+    antonyms: ['defend 辩护', 'acquit 宣判无罪'],
+    examPoints: ['accuse sb of sth 指控某人某事', 'be accused of 被指控', 'charge sb with sth（注意介词区别）']
+  },
+  remind: {
+    collocations: ['remind sb of 使某人想起', 'remind sb to do 提醒某人做', 'remind sb that 提醒某人'],
+    derivatives: ['reminder n. 提示，提醒物'],
+    wordForms: { noun: 'reminder', pastTense: 'reminded', pastParticiple: 'reminded', presentParticiple: 'reminding' },
+    synonyms: ['prompt 促使', 'cue 提示'],
+    antonyms: ['forget 忘记'],
+    examPoints: ['remind sb of sth 使某人想起某事', 'remind sb to do sth 提醒某人做某事', '区分 remind/remember']
+  },
+  die: {
+    collocations: ['die of 死于（内因）', 'die from 死于（外因）', 'die out 灭绝', 'die away 逐渐消失', 'die down 平息'],
+    derivatives: ['death n. 死亡', 'dead adj. 死的', 'dying adj. 垂死的', 'deadly adj. 致命的'],
+    wordForms: { noun: 'death', adjective: 'dead', presentParticiple: 'dying' },
+    synonyms: ['perish 消亡', 'expire 断气'],
+    antonyms: ['live 活着', 'survive 存活'],
+    examPoints: ['die of 死于（疾病/饥饿等内因）', 'die from 死于（事故/外伤等外因）', 'die out 灭绝（物种）', 'be dying for 渴望']
+  },
+  succeed: {
+    collocations: ['succeed in 成功做成', 'succeed sb as 继任某人', 'succeed to 继承'],
+    derivatives: ['success n. 成功', 'successful adj. 成功的', 'successfully adv. 成功地', 'successor n. 继承人'],
+    wordForms: { noun: 'success', adjective: 'successful', adverb: 'successfully', pastTense: 'succeeded', pastParticiple: 'succeeded', presentParticiple: 'succeeding' },
+    synonyms: ['achieve 成就', 'accomplish 完成'],
+    antonyms: ['fail 失败'],
+    examPoints: ['succeed in (doing) sth 成功做某事', 'succeed to the throne 继承王位', 'be successful in 在...方面成功']
+  },
+  care: {
+    collocations: ['care for 照顾；喜欢', 'care about 在乎', 'take care of 照顾', 'take care 当心'],
+    derivatives: ['careful adj. 仔细的', 'careless adj. 粗心的', 'carefully adv. 仔细地', 'caring adj. 关心的'],
+    wordForms: { noun: 'care', adjective: 'careful', adjective2: 'careless', adverb: 'carefully' },
+    synonyms: ['mind 介意', 'concern 关心'],
+    antonyms: ['ignore 忽视', 'neglect 忽略'],
+    examPoints: ['care for 照顾/喜欢', 'care about 在乎/关心', 'take care of = look after 照顾', 'be careful with 小心对待']
+  },
+  stick: {
+    collocations: ['stick to 坚持', 'stick out 突出', 'stick together 团结一致'],
+    derivatives: ['sticky adj. 黏的'],
+    wordForms: { noun: 'stick', adjective: 'sticky', pastTense: 'stuck', pastParticiple: 'stuck', presentParticiple: 'sticking' },
+    synonyms: ['adhere 坚持', 'cling 坚持', 'persist 坚持'],
+    antonyms: ['abandon 放弃', 'quit 放弃'],
+    examPoints: ['stick to 坚持（to是介词，后接动名词）', 'stick to one\'s plan 坚持计划', 'be stuck in 陷入/卡在']
+  },
+  engage: {
+    collocations: ['engage in 参与', 'be engaged in 忙于', 'engage sb to do 雇佣某人做', 'be engaged to 与...订婚'],
+    derivatives: ['engagement n. 订婚；参与', 'engaging adj. 迷人的'],
+    wordForms: { noun: 'engagement', adjective: 'engaging', pastTense: 'engaged', pastParticiple: 'engaged', presentParticiple: 'engaging' },
+    synonyms: ['participate 参与', 'involve 参与'],
+    antonyms: ['disengage 脱离'],
+    examPoints: ['be engaged in 忙于（后接动名词）', 'be engaged to sb 与某人订婚', 'engage in = participate in']
+  },
+  specialize: {
+    collocations: ['specialize in 专攻', 'specialize in doing 专门从事'],
+    derivatives: ['specialist n. 专家', 'specialty n. 专业', 'specialized adj. 专门的'],
+    wordForms: { noun: 'specialist', adjective: 'specialized', pastTense: 'specialized', pastParticiple: 'specialized', presentParticiple: 'specializing' },
+    synonyms: ['focus 专注', 'major 主修'],
+    antonyms: ['generalize 概括'],
+    examPoints: ['specialize in 专攻/专门研究', 'a specialist in 某方面的专家']
+  },
+  attach: {
+    collocations: ['attach to 附属于', 'attach importance to 重视', 'be attached to 依恋'],
+    derivatives: ['attachment n. 附件；依恋'],
+    wordForms: { noun: 'attachment', pastTense: 'attached', pastParticiple: 'attached', presentParticiple: 'attaching' },
+    synonyms: ['connect 连接', 'fasten 系紧'],
+    antonyms: ['detach 分离', 'disconnect 断开'],
+    examPoints: ['attach importance to 重视（to是介词）', 'be attached to 附属于/依恋', 'attachment 附件']
+  },
+  suffer: {
+    collocations: ['suffer from 遭受', 'suffer pain 忍受痛苦'],
+    derivatives: ['suffering n. 痛苦', 'sufferer n. 受苦者'],
+    wordForms: { noun: 'suffering', noun2: 'sufferer', pastTense: 'suffered', pastParticiple: 'suffered', presentParticiple: 'suffering' },
+    synonyms: ['endure 忍受', 'tolerate 容忍', 'undergo 经历'],
+    antonyms: ['enjoy 享受', 'benefit 受益'],
+    examPoints: ['suffer from 遭受（疾病/痛苦）', 'suffer 忍受（及物动词）', 'suffering 痛苦/苦难']
+  },
+  // ===== 高考考点补充（第二批） =====
+  base: {
+    collocations: ['base...on... 把...建立在...基础上', 'be based on 以...为基础', 'basic adj. 基础的'],
+    derivatives: ['basis n. 基础', 'basic adj. 基础的', 'basically adv. 基本上'],
+    wordForms: { noun: 'basis', adjective: 'basic', adverb: 'basically', pastTense: 'based', pastParticiple: 'based', presentParticiple: 'basing' },
+    synonyms: ['foundation 基础', 'ground 根据'],
+    antonyms: [],
+    examPoints: ['be based on 以...为基础（被动形式常用）', 'base A on B 把A建立在B基础上', 'base...on...常用被动 be based on', 'on the basis of 根据']
+  },
+  blame: {
+    collocations: ['blame sb for sth 因某事责备某人', 'blame sth on sb 把某事归咎于某人', 'be to blame for 该受责备'],
+    derivatives: ['blameless adj. 无过错的'],
+    wordForms: { adjective: 'blameless', pastTense: 'blamed', pastParticiple: 'blamed', presentParticiple: 'blaming' },
+    synonyms: ['accuse 指责', 'condemn 谴责'],
+    antonyms: ['praise 表扬', 'commend 称赞'],
+    examPoints: ['be to blame for 该受责备（主动表被动，不用to be blamed）', 'blame sb for sth = blame sth on sb', 'bear/take the blame 承担责任']
+  },
+  break: {
+    collocations: ['break down 出故障；崩溃；分解', 'break out 爆发（战争/火灾）', 'break up 分手；解散', 'break in 闯入；打断', 'break into 闯入', 'break away from 脱离', 'break through 突破'],
+    derivatives: ['breakdown n. 故障；崩溃', 'outbreak n. 爆发'],
+    wordForms: { noun: 'breakdown', pastTense: 'broke', pastParticiple: 'broken', presentParticiple: 'breaking' },
+    synonyms: ['smash 粉碎', 'crack 破裂'],
+    antonyms: ['repair 修理', 'fix 修复'],
+    examPoints: ['break out 爆发（无被动语态）', 'break down 出故障/分解/崩溃（多种含义高考常考）', 'break into 闯入（后接地点） vs break in 闯入（不接宾语）', 'break up 分手/解散']
+  },
+  bring: {
+    collocations: ['bring about 导致；引起', 'bring up 抚养；呕吐', 'bring out 出版；使显现', 'bring forward 提出', 'bring down 降低；击落', 'bring in 引进；赚得'],
+    derivatives: ['upbringing n. 教养'],
+    wordForms: { noun: 'upbringing', pastTense: 'brought', pastParticiple: 'brought', presentParticiple: 'bringing' },
+    synonyms: ['cause 引起', 'carry 携带'],
+    antonyms: ['take 带走', 'remove 移除'],
+    examPoints: ['bring about = cause 导致', 'bring up = raise 抚养', 'bring up 抚养 vs grow up 长大（及物vs不及物）', 'bring out 出版/使显现']
+  },
+  call: {
+    collocations: ['call for 需要；要求', 'call on 拜访（人）；号召', 'call at 拜访（地点）', 'call up 回忆；打电话', 'call off 取消', 'call in 召集；来访'],
+    derivatives: ['recall v. 回忆'],
+    wordForms: { pastTense: 'called', pastParticiple: 'called', presentParticiple: 'calling' },
+    synonyms: ['shout 呼喊', 'phone 打电话'],
+    antonyms: [],
+    examPoints: ['call on sb 拜访某人 vs call at sp 拜访某地', 'call for = require 需要/要求', 'call off = cancel 取消', 'call up 打电话/回忆起']
+  },
+  carry: {
+    collocations: ['carry on 继续；进行', 'carry out 执行；实施', 'carry through 完成；贯彻', 'carry away 搬走；使入迷'],
+    derivatives: [],
+    wordForms: { pastTense: 'carried', pastParticiple: 'carried', presentParticiple: 'carrying' },
+    synonyms: ['transport 运输', 'convey 传达'],
+    antonyms: [],
+    examPoints: ['carry on doing/with 继续（做）', 'carry out a plan 执行计划', 'carry out experiments 做实验', 'be carried away 被迷住/失去理智']
+  },
+  come: {
+    collocations: ['come about 发生', 'come across 偶遇', 'come out 出版；出现', 'come to 苏醒；共计', 'come up with 提出（主意）', 'come true 实现', 'come into being 形成'],
+    derivatives: ['outcome n. 结果', 'income n. 收入'],
+    wordForms: { noun: 'outcome', noun2: 'income', pastTense: 'came', pastParticiple: 'come', presentParticiple: 'coming' },
+    synonyms: ['arrive 到达', 'approach 接近'],
+    antonyms: ['go 去', 'leave 离开'],
+    examPoints: ['come about = happen 发生（无被动）', 'come across = run across 偶遇', 'come true 实现（dream comes true，无被动）', 'come up with 提出（主意/方案）', 'come to oneself 苏醒']
+  },
+  cut: {
+    collocations: ['cut down 砍倒；削减', 'cut in 插嘴', 'cut off 切断；中断', 'cut up 切碎', 'cut across 抄近路', 'cut short 打断；缩短'],
+    derivatives: ['shortcut n. 捷径'],
+    wordForms: { noun: 'shortcut', pastTense: 'cut', pastParticiple: 'cut', presentParticiple: 'cutting' },
+    synonyms: ['slice 切片', 'chop 砍'],
+    antonyms: ['join 连接', 'connect 连接'],
+    examPoints: ['cut down on 减少（消费/用量）', 'cut in 插嘴（不及物） vs cut in on 插嘴（接宾语）', 'cut off 切断（水电供应等）', 'cut short 缩短/打断']
+  },
+  distinguish: {
+    collocations: ['distinguish A from B 区分A和B', 'distinguish between A and B 区分A和B', 'be distinguished for 因...出名'],
+    derivatives: ['distinction n. 区别', 'distinctive adj. 独特的', 'distinctly adv. 清楚地'],
+    wordForms: { noun: 'distinction', adjective: 'distinctive', adverb: 'distinctly', pastTense: 'distinguished', pastParticiple: 'distinguished', presentParticiple: 'distinguishing' },
+    synonyms: ['differentiate 区分', 'discern 辨别'],
+    antonyms: ['confuse 混淆', 'mix 混合'],
+    examPoints: ['distinguish A from B = tell A from B 区分', 'distinguish between A and B 区分两者', 'distinguished 著名的/杰出的']
+  },
+  equip: {
+    collocations: ['equip sb with sth 用...装备某人', 'be equipped with 配备有'],
+    derivatives: ['equipment n. 装备（不可数名词）', 'equipped adj. 装备好的'],
+    wordForms: { noun: 'equipment', adjective: 'equipped', pastTense: 'equipped', pastParticiple: 'equipped', presentParticiple: 'equipping' },
+    synonyms: ['furnish 配备', 'provide 提供'],
+    antonyms: [],
+    examPoints: ['equipment 装备（不可数名词，不用equipments）', 'equip sb with sth 用...装备某人', 'be equipped with 配备有...']
+  },
+  fall: {
+    collocations: ['fall behind 落后', 'fall in love with 爱上', 'fall asleep 入睡', 'fall ill 生病', 'fall apart 崩溃；散架', 'fall for 迷恋；上当'],
+    derivatives: ['waterfall n. 瀑布', 'nightfall n. 黄昏'],
+    wordForms: { noun: 'waterfall', pastTense: 'fell', pastParticiple: 'fallen', presentParticiple: 'falling' },
+    synonyms: ['drop 落下', 'descend 下降'],
+    antonyms: ['rise 升起', 'climb 攀升'],
+    examPoints: ['fall behind 落后（不用被动）', 'fall in love with 爱上（不用被动）', 'fall asleep 入睡', 'fall ill 生病', '区分 fall（落下）过去式fell vs fell（砍倒）']
+  },
+  give: {
+    collocations: ['give away 赠送；泄露', 'give in 屈服；让步', 'give off 发出（气味/光/热）', 'give out 分发；耗尽', 'give up 放弃', 'give rise to 引起'],
+    derivatives: ['forgive v. 原谅'],
+    wordForms: { pastTense: 'gave', pastParticiple: 'given', presentParticiple: 'giving' },
+    synonyms: ['provide 提供', 'offer 给予'],
+    antonyms: ['take 拿走', 'receive 接收'],
+    examPoints: ['give in 屈服（不及物） vs give in to 屈服于（接宾语）', 'give up doing 放弃做（后接动名词）', 'give off 发出（气味/光等） vs give out 分发/耗尽', 'give away 泄露/赠送']
+  },
+  go: {
+    collocations: ['go ahead 前进；开始', 'go through 经历；通过', 'go over 复习；检查', 'go about 着手做', 'go by 流逝', 'go wrong 出错', 'go out 熄灭'],
+    derivatives: ['ongoing adj. 进行中的', 'undergo v. 经历'],
+    wordForms: { noun: 'ongoing', pastTense: 'went', pastParticiple: 'gone', presentParticiple: 'going' },
+    synonyms: ['proceed 前进', 'travel 旅行'],
+    antonyms: ['come 来', 'stop 停止'],
+    examPoints: ['go through 经历/穿过', 'go over = review 复习', 'go ahead 开始/前进', 'go out 熄灭（不用被动）', 'go wrong 出毛病']
+  },
+  hand: {
+    collocations: ['hand down 传下来', 'hand in 上交', 'hand out 分发', 'hand over 移交', 'on the one hand...on the other hand 一方面...另一方面'],
+    derivatives: ['handful n. 一把；少数', 'handy adj. 方便的'],
+    wordForms: { noun: 'handful', adjective: 'handy', pastTense: 'handed', pastParticiple: 'handed', presentParticiple: 'handing' },
+    synonyms: ['pass 传递', 'give 给'],
+    antonyms: ['receive 接收'],
+    examPoints: ['hand in 上交（作业等）', 'hand out = distribute 分发', 'hand down 流传下来', 'on the one hand... on the other hand 一方面...另一方面']
+  },
+  hold: {
+    collocations: ['hold back 阻止；抑制', 'hold on 等一等；坚持', 'hold out 坚持；伸出', 'hold up 举起；耽搁', 'hold one\'s breath 屏住呼吸'],
+    derivatives: ['holder n. 持有者', 'uphold v. 维护'],
+    wordForms: { noun: 'holder', pastTense: 'held', pastParticiple: 'held', presentParticiple: 'holding' },
+    synonyms: ['grasp 抓住', 'keep 保持'],
+    antonyms: ['release 释放', 'let go 放手'],
+    examPoints: ['hold on 等一等/坚持（电话用语）', 'hold back 阻止/抑制', 'hold up 耽搁/举起', 'hold one\'s breath 屏住呼吸']
+  },
+  pay: {
+    collocations: ['pay for 为...付款', 'pay back 偿还', 'pay off 还清；取得成功', 'pay attention to 注意', 'pay a visit to 拜访'],
+    derivatives: ['payment n. 付款', 'repay v. 偿还'],
+    wordForms: { noun: 'payment', pastTense: 'paid', pastParticiple: 'paid', presentParticiple: 'paying' },
+    synonyms: ['settle 结算', 'compensate 补偿'],
+    antonyms: [],
+    examPoints: ['pay attention to doing 注意做（to是介词）', 'pay off 还清债务/取得成功', 'pay for sth 为...付出代价/付款', 'pay a visit to = visit 拜访']
+  },
+  pick: {
+    collocations: ['pick up 捡起；学会；接（人）', 'pick out 挑选出', 'pick at 少量吃'],
+    derivatives: [],
+    wordForms: { pastTense: 'picked', pastParticiple: 'picked', presentParticiple: 'picking' },
+    synonyms: ['choose 选择', 'select 挑选'],
+    antonyms: [],
+    examPoints: ['pick up 捡起/接人/学会（一词多义高考高频）', 'pick out = select 挑选', 'pick up a language 学会语言（无被动）']
+  },
+  run: {
+    collocations: ['run after 追赶', 'run away 逃跑', 'run out of 用完', 'run over 辗过；溢出', 'run into 偶遇；撞上', 'in the long run 从长远来看'],
+    derivatives: ['runner n. 跑步者', 'running n. 跑步'],
+    wordForms: { noun: 'runner', pastTense: 'ran', pastParticiple: 'run', presentParticiple: 'running' },
+    synonyms: ['sprint 冲刺', 'dash 猛冲'],
+    antonyms: ['walk 走', 'stand 站'],
+    examPoints: ['run out of 用完（及物，后接宾语） vs run out 用完（不及物，不接宾语）', 'run into = come across 偶遇/撞上', 'in the long run 从长远来看']
+  },
+  send: {
+    collocations: ['send for 派人去请', 'send out 发出；发送', 'send up 发射', 'send off 寄出；送行'],
+    derivatives: ['sender n. 寄件人'],
+    wordForms: { noun: 'sender', pastTense: 'sent', pastParticiple: 'sent', presentParticiple: 'sending' },
+    synonyms: ['dispatch 派遣', 'deliver 递送'],
+    antonyms: ['receive 接收', 'keep 保留'],
+    examPoints: ['send for sb 派人去请某人（不用send to call）', 'send out 发出/散发', 'send up 发射（火箭等）']
+  },
+  stand: {
+    collocations: ['stand for 代表；容忍', 'stand out 突出；显眼', 'stand by 支持；袖手旁观', 'stand up for 维护；为...辩护', 'as it stands 照目前情况'],
+    derivatives: ['understanding n. 理解', 'outstanding adj. 杰出的'],
+    wordForms: { noun: 'understanding', adjective: 'outstanding', pastTense: 'stood', pastParticiple: 'stood', presentParticiple: 'standing' },
+    synonyms: ['endure 忍受', 'represent 代表'],
+    antonyms: ['sit 坐', 'yield 屈服'],
+    examPoints: ['stand for 代表（缩写含义）', 'stand out = be noticeable 突出', 'stand by 袖手旁观/支持', 'can\'t stand doing 无法忍受做']
+  },
+  think: {
+    collocations: ['think about 考虑', 'think of 想起；认为', 'think over 仔细考虑', 'think highly of 高度评价', 'think twice 三思'],
+    derivatives: ['thought n. 思想', 'thoughtful adj. 深思的', 'thinking n. 思考'],
+    wordForms: { noun: 'thought', adjective: 'thoughtful', pastTense: 'thought', pastParticiple: 'thought', presentParticiple: 'thinking' },
+    synonyms: ['consider 考虑', 'believe 认为'],
+    antonyms: ['forget 忘记', 'ignore 忽视'],
+    examPoints: ['think about doing 考虑做', 'think of 想起/认为（What do you think of...?）', 'think over 仔细考虑（代词放中间 think it over）', 'think highly/well of 高度评价']
+  },
+  wear: {
+    collocations: ['wear out 穿破；使疲惫', 'wear away 磨损', 'wear off 逐渐消失', 'be worn out 筋疲力尽'],
+    derivatives: ['worn adj. 磨损的', 'wearable adj. 可穿戴的'],
+    wordForms: { adjective: 'worn', pastTense: 'wore', pastParticiple: 'worn', presentParticiple: 'wearing' },
+    synonyms: ['put on 穿上', 'dress 穿衣'],
+    antonyms: ['take off 脱下'],
+    examPoints: ['wear 穿着（状态） vs put on 穿上（动作） vs dress 给...穿衣', 'wear out 穿破/使疲惫（被动 be worn out 筋疲力尽）', 'wear off 逐渐消退（药效/感觉等）']
+  },
+  addict: {
+    collocations: ['be addicted to doing 沉迷于做', 'addict oneself to 沉迷于'],
+    derivatives: ['addiction n. 上瘾', 'addictive adj. 使人上瘾的'],
+    wordForms: { noun: 'addiction', adjective: 'addictive', adjective2: 'addicted', pastTense: 'addicted', pastParticiple: 'addicted', presentParticiple: 'addicting' },
+    synonyms: ['indulge 沉溺', 'hook 迷上'],
+    antonyms: ['quit 戒除'],
+    examPoints: ['be addicted to doing 沉迷于做（to是介词，后接动名词）', 'addiction to sth 对...上瘾', 'addictive 使人上瘾的（主动含义） vs addicted 上瘾的（被动含义）']
+  },
+  face: {
+    collocations: ['be faced with 面对', 'face up to 勇敢面对', 'face to face 面对面', 'in the face of 面对', 'save face 保全面子', 'lose face 丢脸'],
+    derivatives: ['facial adj. 面部的', 'surface n. 表面'],
+    wordForms: { noun: 'surface', adjective: 'facial', pastTense: 'faced', pastParticiple: 'faced', presentParticiple: 'facing' },
+    synonyms: ['confront 面对', 'encounter 遭遇'],
+    antonyms: ['avoid 回避', 'evade 逃避'],
+    examPoints: ['be faced with 面对（被动形式） vs face 面对（主动形式）', 'face up to 勇敢面对（to是介词）', 'in the face of 面对（困难/危险）', 'face to face 面对面']
+  },
+  fill: {
+    collocations: ['fill with 充满', 'be filled with 装满了', 'fill in 填写（表格）', 'fill out 填写（表格）', 'fill up 填满'],
+    derivatives: ['filling n. 馅料', 'fulfill v. 履行'],
+    wordForms: { noun: 'filling', pastTense: 'filled', pastParticiple: 'filled', presentParticiple: 'filling' },
+    synonyms: ['pack 填充', 'stuff 塞满'],
+    antonyms: ['empty 清空', 'drain 排空'],
+    examPoints: ['be filled with = be full of 装满了', 'fill in/out a form 填写表格', 'fill in 填写（英式） vs fill out 填写（美式）', 'fill up 填满']
+  },
+  impress: {
+    collocations: ['impress sb with sth 用...给某人留下印象', 'be impressed by/with 对...印象深刻', 'leave a deep impression on 给...留下深刻印象'],
+    derivatives: ['impression n. 印象', 'impressive adj. 令人印象深刻的'],
+    wordForms: { noun: 'impression', adjective: 'impressive', adjective2: 'impressed', pastTense: 'impressed', pastParticiple: 'impressed', presentParticiple: 'impressing' },
+    synonyms: ['amaze 使惊奇', 'move 打动'],
+    antonyms: ['disappoint 使失望'],
+    examPoints: ['impress sb with sth 给某人留下印象', 'be impressed by/with 对...印象深刻', 'leave/make an impression on sb 给某人留下印象', 'impressive 令人印象深刻的（主动） vs impressed 感到印象深刻的（被动）']
+  },
+  prepare: {
+    collocations: ['prepare for 为...做准备', 'be prepared for 为...做好了准备', 'prepare sb for sth 使某人为...做准备', 'in preparation for 为...做准备'],
+    derivatives: ['preparation n. 准备', 'prepared adj. 准备好的'],
+    wordForms: { noun: 'preparation', adjective: 'prepared', pastTense: 'prepared', pastParticiple: 'prepared', presentParticiple: 'preparing' },
+    synonyms: ['arrange 安排', 'plan 计划'],
+    antonyms: [],
+    examPoints: ['prepare for sth 为...做准备（动作） vs be prepared for sth 做好了准备（状态）', 'prepare to do 准备做', 'in preparation for 为...做准备', 'make preparations for 为...做准备']
+  },
+  recommend: {
+    collocations: ['recommend doing 建议做', 'recommend sb to do 建议某人做', 'recommend that (should) do 建议做（虚拟语气）'],
+    derivatives: ['recommendation n. 推荐'],
+    wordForms: { noun: 'recommendation', pastTense: 'recommended', pastParticiple: 'recommended', presentParticiple: 'recommending' },
+    synonyms: ['suggest 建议', 'advise 劝告'],
+    antonyms: ['discourage 劝阻'],
+    examPoints: ['recommend doing 建议做（后接动名词）', 'recommend that + (should) do 虚拟语气（should可省）', 'recommend sb to do 建议某人做', 'recommendation 推荐（名词）']
+  },
+  range: {
+    collocations: ['range from...to... 范围从...到...', 'a wide range of 各种各样的', 'in/within range 在范围内', 'out of range 在范围外'],
+    derivatives: ['arrange v. 安排', 'arrangement n. 安排'],
+    wordForms: { pastTense: 'ranged', pastParticiple: 'ranged', presentParticiple: 'ranging' },
+    synonyms: ['vary 变化', 'extend 延伸'],
+    antonyms: [],
+    examPoints: ['range from A to B 范围从A到B', 'a wide range of + 复数名词 各种各样的', 'range 做动词：range from...to.../range between...and...']
+  },
+  rob: {
+    collocations: ['rob sb of sth 抢劫某人某物', 'rob a bank 抢银行'],
+    derivatives: ['robber n. 强盗', 'robbery n. 抢劫'],
+    wordForms: { noun: 'robber', noun2: 'robbery', pastTense: 'robbed', pastParticiple: 'robbed', presentParticiple: 'robbing' },
+    synonyms: ['steal 偷', 'loot 掠夺'],
+    antonyms: ['return 归还'],
+    examPoints: ['rob sb of sth 抢某人某物（搭配of）', '区分 rob sb of sth vs steal sth from sb', 'robber 强盗 vs thief 小偷']
+  },
+  search: {
+    collocations: ['search for 搜寻', 'search sb 搜身', 'in search of 寻找', 'in one\'s search for 在寻找...的过程中'],
+    derivatives: ['research n./v. 研究', 'researcher n. 研究者'],
+    wordForms: { noun: 'research', noun2: 'researcher', pastTense: 'searched', pastParticiple: 'searched', presentParticiple: 'searching' },
+    synonyms: ['seek 寻找', 'hunt 搜寻'],
+    antonyms: ['find 找到', 'discover 发现'],
+    examPoints: ['search for sb/sth 搜寻（强调寻找的过程）', 'search sb 搜某人的身（强调搜查动作）', 'in search of 寻找（介词短语）', 'search through 搜遍']
+  },
+  suspect: {
+    collocations: ['suspect sb of sth 怀疑某人做某事', 'suspect sb to be 怀疑某人是', 'suspect that 怀疑'],
+    derivatives: ['suspicion n. 怀疑', 'suspicious adj. 可疑的'],
+    wordForms: { noun: 'suspicion', adjective: 'suspicious', pastTense: 'suspected', pastParticiple: 'suspected', presentParticiple: 'suspecting' },
+    synonyms: ['doubt 怀疑', 'mistrust 不信任'],
+    antonyms: ['trust 信任', 'believe 相信'],
+    examPoints: ['suspect sb of (doing) sth 怀疑某人做某事', 'suspect that... 怀疑...', 'be suspicious of 对...起疑心', '区分 suspect（怀疑是真的） vs doubt（怀疑不是真的）']
+  },
+  date: {
+    collocations: ['date back to 追溯到', 'date from 始于', 'out of date 过时', 'up to date 最新的', 'to date 至今'],
+    derivatives: ['update v. 更新', 'outdated adj. 过时的'],
+    wordForms: { noun: 'update', adjective: 'outdated', pastTense: 'dated', pastParticiple: 'dated', presentParticiple: 'dating' },
+    synonyms: ['origin 起源', 'era 时代'],
+    antonyms: [],
+    examPoints: ['date back to = date from 追溯到/始于（无被动，常用一般现在时）', 'out of date 过时的 vs up to date 最新的', 'to date 至今（常与完成时连用）']
+  },
+  deserve: {
+    collocations: ['deserve to do 值得做', 'deserve doing 值得做（主动表被动）', 'deserving adj. 值得的'],
+    derivatives: ['deserved adj. 应得的'],
+    wordForms: { adjective: 'deserved', pastTense: 'deserved', pastParticiple: 'deserved', presentParticiple: 'deserving' },
+    synonyms: ['merit 值得', 'warrant 值得'],
+    antonyms: [],
+    examPoints: ['deserve to do 值得做（不定式）', 'deserve doing 值得被做（主动表被动，如 deserve praising = deserve to be praised）', 'deserve attention/consideration 值得关注/考虑']
+  },
+  mind: {
+    collocations: ['mind doing 介意做', 'would you mind doing 你介意做...吗', 'make up one\'s mind 下定决心', 'change one\'s mind 改变主意', 'keep in mind 记住', 'bear in mind 牢记'],
+    derivatives: ['remind v. 提醒'],
+    wordForms: { noun: 'reminder', pastTense: 'minded', pastParticiple: 'minded', presentParticiple: 'minding' },
+    synonyms: ['care 在意', 'object 反对'],
+    antonyms: [],
+    examPoints: ['mind doing 介意做（后接动名词）', 'Would you mind my doing...? 你介意我做...吗？', 'make up one\'s mind to do 下定决心做', 'keep/bear in mind 记住']
+  },
+  risk: {
+    collocations: ['risk doing 冒险做', 'at the risk of 冒...的风险', 'take a risk 冒险', 'run the risk of 冒...的风险'],
+    derivatives: ['risky adj. 危险的'],
+    wordForms: { adjective: 'risky', pastTense: 'risked', pastParticiple: 'risked', presentParticiple: 'risking' },
+    synonyms: ['endanger 危及', 'hazard 冒险'],
+    antonyms: ['protect 保护', 'safeguard 保障'],
+    examPoints: ['risk doing 冒险做（后接动名词）', 'at the risk of 冒...风险', 'take/run a risk 冒险', 'risky 危险的/冒险的']
+  },
+  admit: {
+    collocations: ['admit doing 承认做了', 'admit to doing 承认做了', 'be admitted to/into 被...录取', 'admit sb into 允许某人进入'],
+    derivatives: ['admission n. 承认；入场费', 'admittedly adv. 诚然'],
+    wordForms: { noun: 'admission', adverb: 'admittedly', pastTense: 'admitted', pastParticiple: 'admitted', presentParticiple: 'admitting' },
+    synonyms: ['confess 坦白', 'acknowledge 承认'],
+    antonyms: ['deny 否认', 'reject 拒绝'],
+    examPoints: ['admit doing 承认做了（后接动名词）', 'be admitted to/into 被...录取', 'admit sb into 允许进入', 'admission 承认/入场费/录取']
+  },
+  appreciate: {
+    collocations: ['appreciate doing 感激做', 'appreciate sb doing 感激某人做', 'I would appreciate it if... 如果...我将不胜感激'],
+    derivatives: ['appreciation n. 感激', 'appreciative adj. 感激的'],
+    wordForms: { noun: 'appreciation', adjective: 'appreciative', pastTense: 'appreciated', pastParticiple: 'appreciated', presentParticiple: 'appreciating' },
+    synonyms: ['value 珍视', 'treasure 珍惜'],
+    antonyms: ['depreciate 贬值', 'despise 鄙视'],
+    examPoints: ['appreciate doing 感激做（后接动名词）', 'I would appreciate it if... 如果...我将不胜感激（it是形式宾语）', 'appreciate sb\'s doing 感激某人做', 'appreciation 感激/欣赏']
+  },
+  consider: {
+    collocations: ['consider doing 考虑做', 'consider...as... 把...看作', 'considering prep. 考虑到', 'take...into consideration 把...考虑在内'],
+    derivatives: ['consideration n. 考虑', 'considerate adj. 体贴的', 'considerable adj. 相当大的'],
+    wordForms: { noun: 'consideration', adjective: 'considerate', adjective2: 'considerable', pastTense: 'considered', pastParticiple: 'considered', presentParticiple: 'considering' },
+    synonyms: ['think 考虑', 'contemplate 沉思'],
+    antonyms: ['ignore 忽视', 'disregard 不顾'],
+    examPoints: ['consider doing 考虑做（后接动名词，不接不定式）', 'considerate 体贴的 vs considerable 相当大的（易混）', 'take...into consideration 把...考虑在内', 'considering that 考虑到（连词）']
+  },
+  delay: {
+    collocations: ['delay doing 推迟做', 'without delay 毫不迟疑', 'be delayed by 因...耽搁'],
+    derivatives: [],
+    wordForms: { noun: 'delay', pastTense: 'delayed', pastParticiple: 'delayed', presentParticiple: 'delaying' },
+    synonyms: ['postpone 推迟', 'put off 推迟'],
+    antonyms: ['hurry 赶紧', 'expedite 加速'],
+    examPoints: ['delay doing 推迟做（后接动名词）', 'without delay = immediately 立刻', 'delay = put off = postpone（都接doing）']
+  },
+  escape: {
+    collocations: ['escape from 从...逃跑', 'escape doing 逃避做', 'escape one\'s notice 逃过某人注意', 'narrow escape 险些遇难'],
+    derivatives: ['escapee n. 逃亡者'],
+    wordForms: { noun: 'escapee', pastTense: 'escaped', pastParticiple: 'escaped', presentParticiple: 'escaping' },
+    synonyms: ['flee 逃跑', 'evade 逃避'],
+    antonyms: ['capture 捕获', 'catch 抓住'],
+    examPoints: ['escape doing 逃避做（后接动名词）', 'escape from prison 越狱', 'a narrow escape 九死一生', 'escape one\'s memory/notice 被某人忘记/没注意到']
+  },
+  finish: {
+    collocations: ['finish doing 完成做', 'finish off 吃光；完成', 'finish up with 以...结束'],
+    derivatives: ['finished adj. 完成的'],
+    wordForms: { adjective: 'finished', pastTense: 'finished', pastParticiple: 'finished', presentParticiple: 'finishing' },
+    synonyms: ['complete 完成', 'accomplish 完成'],
+    antonyms: ['start 开始', 'begin 开始'],
+    examPoints: ['finish doing 完成做（后接动名词，不接不定式）', 'finish off 吃完/做完', 'finish reading/writing 完成读/写']
+  },
+  imagine: {
+    collocations: ['imagine doing 想象做', 'imagine sb doing 想象某人做', 'imagine sb to be 想象某人是', 'beyond imagination 超乎想象'],
+    derivatives: ['imagination n. 想象力', 'imaginative adj. 富有想象力的', 'imaginary adj. 虚构的'],
+    wordForms: { noun: 'imagination', adjective: 'imaginative', adjective2: 'imaginary', pastTense: 'imagined', pastParticiple: 'imagined', presentParticiple: 'imagining' },
+    synonyms: ['visualize 想象', 'conceive 设想'],
+    antonyms: ['realize 意识到'],
+    examPoints: ['imagine doing 想象做（后接动名词）', 'imagine sb doing 想象某人做', 'imaginative 富有想象力的 vs imaginary 虚构的 vs imaginable 可想象的（易混）', 'beyond imagination 超乎想象']
+  },
+  practice: {
+    collocations: ['practice doing 练习做', 'put into practice 付诸实践', 'in practice 实际上', 'common practice 惯例'],
+    derivatives: ['practical adj. 实践的', 'practically adv. 实际上'],
+    wordForms: { noun: 'practice', adjective: 'practical', adverb: 'practically', pastTense: 'practiced', pastParticiple: 'practiced', presentParticiple: 'practicing' },
+    synonyms: ['train 训练', 'drill 操练'],
+    antonyms: [],
+    examPoints: ['practice doing 练习做（后接动名词，美式拼写practise）', 'put...into practice 把...付诸实践', 'practical 实用的/实际的 vs practicable 可行的', 'in practice 实际上/在实践中']
+  },
+  enjoy: {
+    collocations: ['enjoy doing 喜欢做', 'enjoy oneself 玩得开心', 'enjoy good health 身体健康'],
+    derivatives: ['enjoyment n. 享受', 'enjoyable adj. 令人愉快的'],
+    wordForms: { noun: 'enjoyment', adjective: 'enjoyable', pastTense: 'enjoyed', pastParticiple: 'enjoyed', presentParticiple: 'enjoying' },
+    synonyms: ['like 喜欢', 'relish 享受'],
+    antonyms: ['dislike 不喜欢', 'hate 讨厌'],
+    examPoints: ['enjoy doing 喜欢做（后接动名词，不接不定式）', 'enjoy oneself = have a good time 玩得开心', 'enjoyable 令人愉快的', 'enjoy good health 享受健康']
+  },
+  forbid: {
+    collocations: ['forbid sb to do 禁止某人做', 'forbid doing 禁止做', 'forbidden city 紫禁城'],
+    derivatives: ['forbidden adj. 被禁止的'],
+    wordForms: { adjective: 'forbidden', pastTense: 'forbade', pastParticiple: 'forbidden', presentParticiple: 'forbidding' },
+    synonyms: ['prohibit 禁止', 'ban 禁止'],
+    antonyms: ['allow 允许', 'permit 许可'],
+    examPoints: ['forbid sb to do 禁止某人做（用不定式，不用forbid sb doing）', 'forbid doing 禁止做（后接动名词）', 'forbid - forbade - forbidden（过去式/过去分词变形）', 'Forbidden City 紫禁城']
+  },
+  permit: {
+    collocations: ['permit doing 允许做', 'permit sb to do 允许某人做', 'weather permitting 天气允许的话'],
+    derivatives: ['permission n. 允许', 'permissible adj. 许可的'],
+    wordForms: { noun: 'permission', adjective: 'permissible', pastTense: 'permitted', pastParticiple: 'permitted', presentParticiple: 'permitting' },
+    synonyms: ['allow 允许', 'authorize 批准'],
+    antonyms: ['forbid 禁止', 'prohibit 禁止'],
+    examPoints: ['permit doing 允许做（后接动名词）', 'permit sb to do 允许某人做（后接不定式）', 'permission n. 允许（不可数名词）', 'weather permitting 天气允许的话（独立主格）']
+  },
+  suggest: {
+    collocations: ['suggest doing 建议做', 'suggest that (should) do 建议做（虚拟语气）', 'suggest that (陈述语气) 暗示', 'suggestion n. 建议'],
+    derivatives: ['suggestion n. 建议', 'suggestive adj. 暗示的'],
+    wordForms: { noun: 'suggestion', adjective: 'suggestive', pastTense: 'suggested', pastParticiple: 'suggested', presentParticiple: 'suggesting' },
+    synonyms: ['propose 建议', 'recommend 推荐'],
+    antonyms: [],
+    examPoints: ['suggest doing 建议做（后接动名词）', 'suggest that + (should) do 虚拟语气（表建议）', 'suggest that + 陈述语气（表暗示/表明）', 'a suggestion that + (should) do 同位语从句用虚拟语气']
+  },
+  worth: {
+    collocations: ['be worth doing 值得做', 'be worthy of 值得', 'be worthy to be done 值得被做', 'worthwhile adj. 值得的'],
+    derivatives: ['worthy adj. 值得的', 'worthwhile adj. 值得的'],
+    wordForms: { adjective: 'worthy', adjective2: 'worthwhile' },
+    synonyms: ['deserving 值得的', 'meriting 值得的'],
+    antonyms: ['worthless 无价值的'],
+    examPoints: ['be worth doing 值得做（主动表被动，不用being done）', 'be worth + 价格 值...钱', 'be worthy of being done / be worthy to be done 值得被做', 'It is worthwhile to do/doing 值得做', '区分 worth/worthy/worthwhile（高考高频易混）']
+  },
+  used: {
+    collocations: ['used to do 过去常常做', 'be used to doing 习惯于做', 'be used to do 被用来做', 'get used to doing 逐渐习惯做'],
+    derivatives: ['useful adj. 有用的', 'useless adj. 无用的'],
+    wordForms: { adjective: 'useful', adjective2: 'useless', pastTense: 'used', pastParticiple: 'used', presentParticiple: 'using' },
+    synonyms: ['accustomed 习惯的', 'familiar 熟悉的'],
+    antonyms: ['unused 未使用的'],
+    examPoints: ['used to do 过去常常做（过去时，现在不做了）', 'be used to doing 习惯于做（to是介词，接动名词）', 'be used to do 被用来做（被动语态，接不定式）', '区分 used to do / be used to doing / be used to do（高考高频）']
+  },
+  suppose: {
+    collocations: ['be supposed to do 应该做', 'suppose that 假设', 'supposing that 假设'],
+    derivatives: ['supposition n. 假设'],
+    wordForms: { noun: 'supposition', pastTense: 'supposed', pastParticiple: 'supposed', presentParticiple: 'supposing' },
+    synonyms: ['assume 假设', 'presume 假定'],
+    antonyms: ['know 确知', 'prove 证明'],
+    examPoints: ['be supposed to do 应该做（= should）', 'suppose/supposing (that) 假设（引导条件状语从句）', 'be not supposed to do 不应当做']
+  },
+  ensure: {
+    collocations: ['ensure that 确保', 'ensure sb sth 向某人保证', 'ensure against 防止'],
+    derivatives: ['insurance n. 保险', 'assurance n. 保证'],
+    wordForms: { noun: 'insurance', pastTense: 'ensured', pastParticiple: 'ensured', presentParticiple: 'ensuring' },
+    synonyms: ['guarantee 保证', 'assure 确保'],
+    antonyms: ['endanger 危及'],
+    examPoints: ['ensure that... 确保...（后接从句）', 'ensure sb sth 向某人保证某事', '区分 ensure/assure/insure（ensure确保, assure向...保证, insure投保）']
+  },
+  cure: {
+    collocations: ['cure sb of sth 治愈某人的...', 'a cure for ...的治疗方法'],
+    derivatives: ['curable adj. 可治愈的'],
+    wordForms: { adjective: 'curable', pastTense: 'cured', pastParticiple: 'cured', presentParticiple: 'curing' },
+    synonyms: ['heal 治愈', 'treat 治疗'],
+    antonyms: ['infect 感染', 'disease 疾病'],
+    examPoints: ['cure sb of sth 治愈某人的病（搭配of）', '区分 cure（治愈）vs treat（治疗，不接of）vs heal（痊愈）', 'a cure for cancer 癌症的治疗方法']
+  },
+  inform: {
+    collocations: ['inform sb of sth 通知某人某事', 'inform sb that 通知某人', 'keep sb informed 随时通知某人'],
+    derivatives: ['information n. 信息（不可数）', 'informative adj. 信息量大的'],
+    wordForms: { noun: 'information', adjective: 'informative', adjective2: 'informed', pastTense: 'informed', pastParticiple: 'informed', presentParticiple: 'informing' },
+    synonyms: ['notify 通知', 'advise 告知'],
+    antonyms: ['hide 隐藏', 'conceal 隐瞒'],
+    examPoints: ['inform sb of sth 通知某人某事（搭配of，不用inform sb sth）', 'keep sb informed of 随时告知某人', 'information 信息（不可数名词，不用informations）', 'well-informed 消息灵通的']
+  },
+  accuse: {
+    collocations: ['accuse sb of (doing) sth 指控某人做某事', 'be accused of 被指控'],
+    derivatives: ['accusation n. 指控', 'the accused 被告'],
+    wordForms: { noun: 'accusation', pastTense: 'accused', pastParticiple: 'accused', presentParticiple: 'accusing' },
+    synonyms: ['charge 指控', 'blame 责备'],
+    antonyms: ['defend 辩护', 'praise 表扬'],
+    examPoints: ['accuse sb of sth 指控某人（搭配of）', '区分 accuse sb of sth vs charge sb with sth（搭配不同）', 'the accused 被告（复数含义）']
+  },
+  remind: {
+    collocations: ['remind sb of sth 使某人想起某事', 'remind sb to do 提醒某人做', 'remind sb that 提醒某人'],
+    derivatives: ['reminder n. 提示物'],
+    wordForms: { noun: 'reminder', pastTense: 'reminded', pastParticiple: 'reminded', presentParticiple: 'reminding' },
+    synonyms: ['prompt 提示', 'recall 回忆'],
+    antonyms: ['forget 忘记'],
+    examPoints: ['remind sb of sth 使某人想起（搭配of）', 'remind sb to do 提醒某人做（接不定式）', '区分 remind sb of sth vs warn sb of sth（提醒 vs 警告）']
+  },
+  convince: {
+    collocations: ['convince sb of sth 使某人确信', 'convince sb to do 说服某人做', 'be convinced that 确信'],
+    derivatives: ['convincing adj. 有说服力的', 'conviction n. 信念'],
+    wordForms: { noun: 'conviction', adjective: 'convincing', adjective2: 'convinced', pastTense: 'convinced', pastParticiple: 'convinced', presentParticiple: 'convincing' },
+    synonyms: ['persuade 说服', 'assure 保证'],
+    antonyms: ['doubt 怀疑'],
+    examPoints: ['convince sb of sth 使某人确信（搭配of）', 'be convinced that/of 确信', 'convincing 有说服力的（主动） vs convinced 确信的（被动）', '区分 convince（使确信）vs persuade（说服做某事）']
+  },
+  rid: {
+    collocations: ['rid sb of sth 使某人摆脱', 'get rid of 摆脱；去除', 'be rid of 摆脱'],
+    derivatives: ['riddance n. 摆脱'],
+    wordForms: { pastTense: 'rid', pastParticiple: 'rid', presentParticiple: 'ridding' },
+    synonyms: ['free 解放', 'clear 清除'],
+    antonyms: ['keep 保留', 'retain 保持'],
+    examPoints: ['get rid of 摆脱/去除（高考高频短语）', 'rid sb of sth 使某人摆脱（搭配of）', 'be rid of 摆脱了...的']
+  },
 };
 
 // 常见词根中文释义表（用于算法生成派生词时补充中文）
