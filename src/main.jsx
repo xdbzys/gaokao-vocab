@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.32.0';
-const APP_VERSION_CODE = 181;
+const APP_VERSION = '2.32.1';
+const APP_VERSION_CODE = 182;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -9485,11 +9485,52 @@ function App() {
   // 最近看到过的单词（term），点击"下一个"/"跳过"后不重复出现
   const recentSeenRef = useRef([]);
 
+  // Bug修复1：切换页面后回来时保持当前单词不变
+  const savedLearnTermRef = useRef('');
+  // Bug修复2：检测当前单词因 learnItems 重算而意外变化时，重置 showBack/selected
+  const prevTermRef = useRef('');
+
   // 切换词库时清空已看记录
   useEffect(() => {
     recentSeenRef.current = [];
     recentWrongRef.current = [];
   }, [learnActiveBook.id]);
+
+  // Bug修复2：当 current.term 因 learnItems 重算（如标记掌握后）而变化，
+  // 但 showBack/selected 仍为 true 时，重置为新单词的初始状态
+  useEffect(() => {
+    const currentTerm = current?.term || '';
+    if (prevTermRef.current && prevTermRef.current !== currentTerm) {
+      if (showBack || selected) {
+        setShowBack(false);
+        setSelected('');
+        lockedCurrent.current = null;
+        setForceShowItem(null);
+      }
+    }
+    prevTermRef.current = currentTerm;
+  }, [current?.term]);
+
+  // Bug修复1：离开背诵页时保存当前单词，回来时恢复
+  useEffect(() => {
+    if (section === 'learn' && current?.term) {
+      savedLearnTermRef.current = current.term;
+    }
+  }, [current?.term, section]);
+
+  // 回到背诵页时，如果当前单词不是之前保存的，尝试恢复
+  useEffect(() => {
+    if (section === 'learn' && savedLearnTermRef.current && learnItems.length > 0) {
+      const currentTerm = learnItems[index % Math.max(learnItems.length, 1)]?.term;
+      if (currentTerm !== savedLearnTermRef.current) {
+        const idx = learnItems.findIndex(it => it.term === savedLearnTermRef.current);
+        if (idx !== -1) {
+          setIndex(idx);
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [section]);
 
   // 自动发音：当当前单词变化时自动朗读（仅在背诵页、未答题时）
   const lastSpokenTermRef = useRef('');

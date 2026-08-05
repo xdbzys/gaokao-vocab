@@ -1,7 +1,7 @@
 {
-  "version": "2.32.0",
-  "versionCode": 181,
-  "changelog": "v2.32.0 全面优化\n\n【1. 点击单词统一跳转】\n- 所有页面点击单词：词库存在则自动跳转详情+发音，不存在则只发音\n- 覆盖单词变形、数字日期、基数序数词、情景记忆等全部区域\n\n【2. 中文翻译补全】\n- 全面检查并补充112条缺失中文的例句\n- 修复日期词汇中混合中英文的翻译\n- 单词变形（名词/形容词/副词）自动显示词库中的中文释义",
-  "devNotes": "unified speakOrNavigate for all word clicks; added 112 missing Chinese translations; fixed mixed-language translations in date words; word forms now show Chinese from word bank",
+  "version": "2.32.1",
+  "versionCode": 182,
+  "changelog": "v2.32.1 Bug修复\n\n【1. 切换页面保持当前单词】\n- 闪卡模式未点展示意思、答题模式未选答案时，切换其他页面再回来不会改变当前单词\n\n【2. 闪卡掌握后下一个单词不再直接展示意思】\n- 修复闪卡模式点击「标记掌握」后，因词库重算导致下一个单词直接展示释义的bug",
+  "devNotes": "fix: preserve current word when switching pages; reset showBack/selected when current term changes unexpectedly due to learnItems recompute",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
