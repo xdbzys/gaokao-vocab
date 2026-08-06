@@ -1,7 +1,7 @@
 {
-  "version": "2.35.0",
-  "versionCode": 185,
-  "changelog": "v2.35.0 近义词/反义词大幅扩充 + 闪卡模式修复\n\n【1. 近义词反义词全面扩充】\n- 新增1900+词条的近义词和反义词数据\n- 覆盖高频动词、形容词、名词等核心词汇\n- 近义词覆盖率从6.7%提升至59.2%\n- 每个词条包含3-5个近义词和2-3个反义词，附中文释义\n\n【2. 闪卡模式Bug修复】\n- 修复闪卡模式下显示释义后，点击扩展单词取消掌握会导致当前单词意外更换的问题\n- 修复类似的lockedCurrent状态管理问题",
-  "devNotes": "feat: add 1900+ synonym/antonym entries covering 59.2% of vocabulary; fix flashcard mode word change on mastery toggle",
+  "version": "2.36.0",
+  "versionCode": 186,
+  "changelog": "v2.36.0 修复标记掌握后单词重复出现及掌握标记丢失问题\n\n【核心Bug修复】\n- 修复标记掌握的单词后续仍出现在背诵页、掌握标记消失的问题\n- 修复termKey未trim空格导致掌握标记key不匹配的问题（类似pass-by问题）\n- 修复标记掌握后shuffleSeed被意外更新导致词汇列表重新洗牌的问题\n- 修复mastered-words词库更新触发不必要的books重渲染\n- 添加同步保存机制：标记掌握时立即写入localStorage，不再依赖useEffect异步保存\n- 添加APP进入后台/关闭时自动保存进度，防止数据丢失\n- 优化loadProgress迁移逻辑，支持含空格key的自动修复",
+  "devNotes": "fix: mastery mark lost and mastered words reappear in study page; sync save progress; fix shuffleSeed side effect in useMemo; trim termKey",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }

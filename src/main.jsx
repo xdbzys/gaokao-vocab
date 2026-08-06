@@ -7626,9 +7626,11 @@ function loadProgress() {
     // 旧格式特征：以 "word-" 或 "phrase-" 开头，后跟数字，再跟连字符和 term
     const oldKeyPattern = /^(word|phrase)-\d+-/;
     const hasOldKeys = Object.keys(raw).some(k => oldKeyPattern.test(k));
-    // 检查是否有非小写 key（旧数据大小写敏感迁移）
-    const hasMixedCase = Object.keys(raw).some(k => k !== k.toLowerCase());
-    if (hasOldKeys || hasMixedCase) {
+    // 检查是否有非小写 key 或含空格的 key（旧数据大小写敏感/空格迁移）
+    const needsMigration = Object.keys(raw).some(k =>
+      k !== k.toLowerCase().trim() || oldKeyPattern.test(k)
+    );
+    if (needsMigration) {
       const converted = {};
       Object.entries(raw).forEach(([k, v]) => {
         let key = k;
@@ -7637,8 +7639,8 @@ function loadProgress() {
           // 旧格式 key 如 "word-0-abandon"，提取 term（去掉前缀 "word-0-" 部分）
           key = k.slice(oldMatch[0].length);
         }
-        // 统一转为小写，确保大小写不敏感匹配
-        key = key.toLowerCase();
+        // 统一转为小写并去空格，确保大小写/空格不敏感匹配
+        key = key.toLowerCase().trim();
         // 如果转换后 key 已存在（如旧数据中 "word-0-pass-by" 和 "pass-by" 同时存在），保留 mastered 状态
         if (converted[key] !== 'mastered' && v === 'mastered') {
           converted[key] = v;
@@ -9081,8 +9083,8 @@ function seededShuffle(arr, seed) {
   return a;
 }
 
-// 标准化 term key（小写），确保不同词库中大小写变体被视为同一单词
-function termKey(term) { return (term || '').toLowerCase(); }
+// 标准化 term key（小写+去空格），确保不同词库中大小写/空格变体被视为同一单词
+function termKey(term) { return (term || '').toLowerCase().trim(); }
 
 /* ============================
    十、彩色标注工具
@@ -9248,6 +9250,9 @@ function App() {
   const [importTargetBookId, setImportTargetBookId] = useState(null); // 导入目标词库
   const [aiConfig, setAiConfig] = useState(loadAiConfig);
   const [progress, setProgress] = useState(loadProgress);
+  // progress 的 ref，用于在事件处理函数中同步访问最新值
+  const progressRef = useRef(progress);
+  useEffect(() => { progressRef.current = progress; }, [progress]);
   const [settings, setSettings] = useState(loadSettings);
   const [studyLog, setStudyLog] = useState(loadStudyLog);
   const [studyWordsLog, setStudyWordsLog] = useState(loadStudyWordsLog);
@@ -9363,12 +9368,14 @@ function App() {
   }, []);
 
   // 已掌握词库：根据 progress 动态更新，按 term 去重
+  // 注意：仅在 masteredItems 实际变化时才 setBooks，避免标记掌握后触发 books 变化导致 learnItems 重算
   useEffect(() => {
     const seen = new Set();
     const masteredItems = [];
     const addIfNew = (item) => {
-      if (!seen.has(item.term)) {
-        seen.add(item.term);
+      const key = termKey(item.term);
+      if (!seen.has(key)) {
+        seen.add(key);
         masteredItems.push(item);
       }
     };
@@ -9385,7 +9392,14 @@ function App() {
         if (progress[termKey(item.term)] === 'mastered') addIfNew(item);
       });
     });
-    setBooks(prev => prev.map(b => b.id === 'mastered-words' ? { ...b, items: masteredItems } : b));
+    setBooks(prev => {
+      const masteredBook = prev.find(b => b.id === 'mastered-words');
+      // 比较新旧 items 的 term 集合，仅在变化时更新
+      const oldTerms = (masteredBook?.items || []).map(i => termKey(i.term)).sort().join(',');
+      const newTerms = masteredItems.map(i => termKey(i.term)).sort().join(',');
+      if (oldTerms === newTerms) return prev; // 无变化，不触发重渲染
+      return prev.map(b => b.id === 'mastered-words' ? { ...b, items: masteredItems } : b);
+    });
   }, [progress]);
 
   // 背诵页词库（始终用 studyBookIds，不受 section 切换影响）
@@ -9411,7 +9425,6 @@ function App() {
         }
       });
     });
-    shuffleSeedRef.current = Date.now();
     return {
       id: studyBookIds.join(','),
       name: selected.length === 1 ? selected[0].name : `${selected.length}个词库`,
@@ -9419,6 +9432,11 @@ function App() {
       editable: false
     };
   }, [books, studyBookIds, wrongWords, hiddenBookIds]);
+
+  // 仅在切换词库时更新洗牌种子，避免标记掌握后 books 变化导致重新洗牌
+  useEffect(() => {
+    shuffleSeedRef.current = Date.now();
+  }, [studyBookIds]);
 
   // 词库页词库（始终用 libraryBookIds，不受 section 切换影响）
   const libraryActiveBook = useMemo(() => {
@@ -9688,21 +9706,22 @@ function App() {
 
   function toggleProgress(item) {
     const key = termKey(item.term);
-    setProgress(prev => {
-      const next = { ...prev };
-      if (next[key] === 'mastered') delete next[key];
-      else next[key] = 'mastered';
-      return next;
-    });
+    const next = { ...progressRef.current };
+    if (next[key] === 'mastered') delete next[key];
+    else next[key] = 'mastered';
+    progressRef.current = next;
+    saveProgress(next); // 同步保存，防止 app 快速关闭时丢失
+    setProgress(next);
   }
 
   // 仅标记为已掌握（不切换），用于自动标记掌握功能
   function markAsMastered(item) {
     const key = termKey(item.term);
-    setProgress(prev => {
-      if (prev[key] === 'mastered') return prev; // 已掌握则不重复设置
-      return { ...prev, [key]: 'mastered' };
-    });
+    if (progressRef.current[key] === 'mastered') return; // 已掌握则不重复设置
+    const next = { ...progressRef.current, [key]: 'mastered' };
+    progressRef.current = next;
+    saveProgress(next); // 同步保存
+    setProgress(next);
   }
 
   // 自动保存进度到 localStorage
@@ -9710,16 +9729,30 @@ function App() {
     saveProgress(progress);
   }, [progress]);
 
+  // APP进入后台或关闭时立即保存进度，防止数据丢失
+  useEffect(() => {
+    const handler = () => { saveProgress(progressRef.current); };
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') handler();
+    });
+    window.addEventListener('pagehide', handler);
+    window.addEventListener('beforeunload', handler);
+    return () => {
+      window.removeEventListener('pagehide', handler);
+      window.removeEventListener('beforeunload', handler);
+    };
+  }, []);
+
   // 问题5：重置某词库进度
   function resetBookProgress(bookId) {
     const book = books.find(b => b.id === bookId);
     if (!book) return;
     if (!confirm(`确定重置「${book.name}」的背诵进度吗？`)) return;
-    setProgress(prev => {
-      const next = { ...prev };
-      book.items.forEach(item => { delete next[termKey(item.term)]; });
-      return next;
-    });
+    const next = { ...progressRef.current };
+    book.items.forEach(item => { delete next[termKey(item.term)]; });
+    progressRef.current = next;
+    saveProgress(next); // 同步保存
+    setProgress(next);
   }
 
   // 清理不存在的词库引用：从 studyBookIds/libraryBookIds 中移除已删除的词库 id
@@ -9740,16 +9773,16 @@ function App() {
     // 清理 progress 中不属于任何词库的残留数据
     const allTerms = new Set();
     books.forEach(b => b.items.forEach(item => allTerms.add(termKey(item.term))));
-    setProgress(prev => {
-      const next = {};
-      Object.entries(prev).forEach(([term, val]) => {
-        if (allTerms.has(term.toLowerCase())) next[term] = val;
-      });
-      return next;
+    const cleanedProgress = {};
+    Object.entries(progressRef.current).forEach(([term, val]) => {
+      if (allTerms.has(termKey(term))) cleanedProgress[term] = val;
     });
+    progressRef.current = cleanedProgress;
+    saveProgress(cleanedProgress);
+    setProgress(cleanedProgress);
     // 清理错词本中不属于任何词库的残留数据
     setWrongWords(prev => {
-      const next = prev.filter(w => allTerms.has(w.term));
+      const next = prev.filter(w => allTerms.has(termKey(w.term)));
       if (next.length !== prev.length) saveWrongWords(next);
       return next;
     });
