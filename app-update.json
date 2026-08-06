@@ -1,7 +1,7 @@
 {
-  "version": "2.34.0",
-  "versionCode": 184,
-  "changelog": "v2.34.0 词源关系全面修正 + 点单词自动发音开关\n\n【1. 全面检查词库词源关系】\n- 联网搜索Etymonline词源词典，交叉验证4600+词条\n- 修正163组假同源词（拼写相似但词源无关）：minority/mine、advance/adventure、career/care、star/start、strange/strong、family/famous、conduct/contact、precise/presence、product/protect、profit/provide等\n- 新增100组隐藏同源词（词源相同但拼写差异大）：muscle/mouse、salary/salt、hospital/hotel、history/story、count/computer、courage/encourage、chief/chef、sure/secure、catch/chase、guard/ward等\n\n【2. 点单词自动发音开关】\n- 我的页面新增独立开关卡片「点单词自动发音」\n- 点击单词跳转详情时是否自动发音，可随时开关\n- 采用滑动开关UI，操作更直观",
-  "devNotes": "feat: comprehensive etymology check with 163 false pairs and 100 hidden cognates; add prominent pronunciation toggle card in My page",
+  "version": "2.35.0",
+  "versionCode": 185,
+  "changelog": "v2.35.0 近义词/反义词大幅扩充 + 闪卡模式修复\n\n【1. 近义词反义词全面扩充】\n- 新增1900+词条的近义词和反义词数据\n- 覆盖高频动词、形容词、名词等核心词汇\n- 近义词覆盖率从6.7%提升至59.2%\n- 每个词条包含3-5个近义词和2-3个反义词，附中文释义\n\n【2. 闪卡模式Bug修复】\n- 修复闪卡模式下显示释义后，点击扩展单词取消掌握会导致当前单词意外更换的问题\n- 修复类似的lockedCurrent状态管理问题",
+  "devNotes": "feat: add 1900+ synonym/antonym entries covering 59.2% of vocabulary; fix flashcard mode word change on mastery toggle",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
 }
