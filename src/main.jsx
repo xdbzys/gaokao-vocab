@@ -9563,8 +9563,8 @@ function App() {
   const lockedCurrent = useRef(null);
   // 临时回退显示的单词（即使被过滤也能回退看到）
   const [forceShowItem, setForceShowItem] = useState(null);
-  // 显示用的当前单词：答题后使用锁定的单词，防止 toggleProgress 改变 current 导致显示不匹配
-  const displayCurrent = forceShowItem || (selected && lockedCurrent.current) || current;
+  // 显示用的当前单词：答题后或闪卡展示释义后使用锁定的单词，防止 toggleProgress 改变 current 导致显示不匹配
+  const displayCurrent = forceShowItem || ((selected || showBack) && lockedCurrent.current) || current;
 
   // 问题1：4个选项（1正确+3干扰项）—— 排除易混/同义/反义词干扰
   const options = useMemo(() => {
@@ -9801,13 +9801,14 @@ function App() {
 
   // Bug修复2：当 current.term 因 learnItems 重算（如标记掌握后）而变化，
   // 但 showBack/selected 仍为 true 时，重置为新单词的初始状态
+  // 注意：如果 lockedCurrent 仍有值，说明是 progress 变化导致 learnItems 重算，
+  // 而非用户主动切换单词（nextCard/prevCard 会清空 lockedCurrent），此时不应重置
   useEffect(() => {
     const currentTerm = current?.term || '';
     if (prevTermRef.current && prevTermRef.current !== currentTerm) {
-      if (showBack || selected) {
+      if (!lockedCurrent.current && (showBack || selected)) {
         setShowBack(false);
         setSelected('');
-        lockedCurrent.current = null;
         setForceShowItem(null);
       }
     }
@@ -10727,7 +10728,7 @@ function App() {
 
               {/* 闪卡模式 */}
               {practiceMode === 'flashcard' && !showBack && (
-                <button className="primary" onClick={() => { setShowBack(true); recordStudy(displayCurrent); }}>显示释义</button>
+                <button className="primary" onClick={() => { if (!lockedCurrent.current) lockedCurrent.current = current; setShowBack(true); recordStudy(displayCurrent); }}>显示释义</button>
               )}
 
               {/* 答题后选项消失，解释内容顶替选项位置 */}
