@@ -10,8 +10,8 @@ import { getWordEnrichment } from './wordEnrichment';
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.34.0';
-const APP_VERSION_CODE = 184;
+const APP_VERSION = '2.36.0';
+const APP_VERSION_CODE = 186;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
