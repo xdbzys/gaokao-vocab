@@ -1,8 +1,10 @@
 package com.gaokao.vocab;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.webkit.WebView;
 import android.webkit.WebSettings;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebViewClient;
@@ -12,6 +14,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class MainActivity extends BridgeActivity {
+    private static boolean volumeKeyNavEnabled = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,6 +35,36 @@ public class MainActivity extends BridgeActivity {
                 .replaceAll("\\s+", " ")
                 .trim();
             settings.setUserAgentString(cleanUA);
+
+            // 添加音量键控制接口
+            webView.addJavascriptInterface(new Object() {
+                @JavascriptInterface
+                public void setVolumeKeyNavEnabled(boolean enabled) {
+                    volumeKeyNavEnabled = enabled;
+                }
+            }, "VolumeKeyNative");
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (volumeKeyNavEnabled && (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)) {
+            String direction = keyCode == KeyEvent.KEYCODE_VOLUME_UP ? "up" : "down";
+            String js = "window.__volumeKeyNav && window.__volumeKeyNav('" + direction + "')";
+            WebView webView = this.bridge != null ? this.bridge.getWebView() : null;
+            if (webView != null) {
+                webView.post(() -> webView.evaluateJavascript(js, null));
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (volumeKeyNavEnabled && (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)) {
+            return true; // 消费事件，防止系统音量变化
+        }
+        return super.onKeyUp(keyCode, event);
     }
 }
