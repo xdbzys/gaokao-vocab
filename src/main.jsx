@@ -9803,6 +9803,20 @@ function App() {
     }
   }, [settings.volumeKeyNav]);
 
+  // 网页版：方向键翻页（与音量键功能一致，仅非原生APP且开启设置时生效）
+  useEffect(() => {
+    if (isNativeApp || !settings.volumeKeyNav) return;
+    const handler = (e) => {
+      if (section !== 'learn') return;
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        volKeyNavRef.current && volKeyNavRef.current(e.key === 'ArrowUp' ? 'up' : 'down');
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isNativeApp, settings.volumeKeyNav, section]);
+
   // 问题5：重置某词库进度
   function resetBookProgress(bookId) {
     const book = books.find(b => b.id === bookId);
@@ -11858,12 +11872,11 @@ function App() {
             </label>
           </div>
 
-          {/* 音量键翻页开关（仅APP端） */}
-          {isNativeApp && (
+          {/* 翻页快捷键开关（APP端音量键 / 网页版方向键） */}
           <div className="toggleCard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', marginTop: 12, borderRadius: 12, background: 'var(--primary-light)', border: '1px solid var(--border-light)' }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600 }}>📱 音量键翻页</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>背诵页：音量上/下键翻页；闪卡模式：先按音量键显示释义，再按翻页</div>
+              <div style={{ fontSize: 15, fontWeight: 600 }}>{isNativeApp ? '📱 音量键翻页' : '⌨️ 方向键翻页'}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{isNativeApp ? '背诵页：音量上/下键翻页；闪卡模式：先按音量键显示释义，再按翻页' : '背诵页：方向上/下键翻页；闪卡模式：先按方向键显示释义，再按翻页'}</div>
             </div>
             <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0 }}>
               <input type="checkbox" checked={settings.volumeKeyNav === true} onChange={e => { const v = e.target.checked; setSettings(s => ({ ...s, volumeKeyNav: v })); saveSettings({ ...settings, volumeKeyNav: v }); if (window.VolumeKeyNative) window.VolumeKeyNative.setVolumeKeyNavEnabled(v); }} style={{ opacity: 0, width: 0, height: 0 }} />
@@ -11872,7 +11885,6 @@ function App() {
               </span>
             </label>
           </div>
-          )}
 
           {/* 设置区域 */}
           <div className="settingsGroup">
