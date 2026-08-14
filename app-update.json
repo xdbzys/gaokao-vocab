@@ -3,5 +3,6 @@
   "versionCode": 187,
   "changelog": "v2.37.0 全面修复例句 + 新增音量键翻页功能\n\n【例句修复】\n- 全面检索985词汇例句，修复300+条无意义/牵强/用法错误/语法错误/翻译错误的例句\n- 替换所有AI模板填充生成的机械例句为自然、有意义的例句\n- 修复如\"汽油在教育中有重要意义\"等荒谬例句\n- 修复动词用法错误（如exist接宾语）、语法错误（如A urban）、翻译错误（如prefer翻译反义）\n\n【新功能：音量键翻页】\n- 在「我的」页面新增音量键翻页开关（仅APP端）\n- 背诵页：音量上键上一页，音量下键下一页\n- 闪卡模式：音量键先打开中文释义，打开后音量键才切换上下页\n- 开启后音量键被APP拦截，不会改变系统音量",
   "devNotes": "fix: 300+ bad example sentences in seedWords985; feat: volume key navigation with native Android interception",
-  "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
+  "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk",
+  "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/高考词汇背诵.html"
 }
