@@ -9368,6 +9368,36 @@ function App() {
     }
   }, []);
 
+  // 网页版启动时自动检查更新（静默更新HTML内容，保留localStorage）
+  useEffect(() => {
+    if (!isNativeApp && !updateCheckDone.current) {
+      updateCheckDone.current = true;
+      const timer = setTimeout(async () => {
+        try {
+          const resp = await fetch('app-update.json?v=' + Date.now());
+          if (!resp.ok) return;
+          const data = await resp.json();
+          if (data.version && data.version !== APP_VERSION && data.webHtmlUrl) {
+            console.log('[Web Update] 发现新版本:', data.version, '当前:', APP_VERSION);
+            const htmlResp = await fetch(data.webHtmlUrl);
+            if (htmlResp.ok) {
+              const newHtml = await htmlResp.text();
+              if (newHtml && (newHtml.includes('<!doctype') || newHtml.includes('<html'))) {
+                console.log('[Web Update] 更新成功，替换页面内容');
+                document.open();
+                document.write(newHtml);
+                document.close();
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('[Web Update] 检查失败:', e);
+        }
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   // 已掌握词库：根据 progress 动态更新，按 term 去重
   // 注意：仅在 masteredItems 实际变化时才 setBooks，避免标记掌握后触发 books 变化导致 learnItems 重算
   useEffect(() => {
