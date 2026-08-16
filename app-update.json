@@ -1,8 +1,8 @@
 {
-  "version": "2.39.0",
-  "versionCode": 190,
-  "changelog": "v2.39.0 图标优化 + 版本号修复\n\n【修复】\n- 修复APK版本号显示为2.37的问题\n- 修复一直提示更新的问题\n\n【优化】\n- 应用图标按参考图精确裁剪\n- 禁用adaptive icon避免系统裁切\n- 圆形顶部接近边缘，文字底部接近边缘",
-  "devNotes": "fix: APK versionCode mismatch; icon precise crop matching reference; disable adaptive icon",
+  "version": "2.40.0",
+  "versionCode": 191,
+  "changelog": "v2.40.0 变形扩展 + 版本号修复\n\n【新增】\n- 扩展模块新增「变形扩展」标签页\n- 形容词变副词规则（含特殊变化）\n- 比较级/最高级规则\n- 过去式/过去分词规则\n- 现在分词规则\n- 名词复数规则\n- 不规则动词表（按类型分类）\n\n【修复】\n- 修复index.html入口被旧构建产物覆盖导致变形扩展未显示的问题\n- 修复下载新版本后版本号不变、一直提示更新的问题\n- 确保APP内部版本号与APK版本号一致",
+  "devNotes": "fix: restore index.html entry point; bump version to 2.40.0/191; sync APP_VERSION_CODE with build.gradle versionCode",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
