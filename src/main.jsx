@@ -13,7 +13,7 @@ import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, pre
    APP 版本常量
    ============================ */
 const APP_VERSION = '2.38.0';
-const APP_VERSION_CODE = 188;
+const APP_VERSION_CODE = 189;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
