@@ -2186,7 +2186,7 @@ const wordEnrichmentData = {
   beautiful: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'more beautiful', superlative: 'most beautiful' },
     synonyms: ['pretty 漂亮的', 'lovely 可爱的', 'gorgeous 华丽的', 'attractive 迷人的', 'handsome 英俊的'],
     antonyms: ['ugly 丑陋的', 'plain 朴素的'],
     examPoints: []
@@ -2194,7 +2194,7 @@ const wordEnrichmentData = {
   big: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'bigger', superlative: 'biggest' },
     synonyms: ['large 大的', 'huge 巨大的', 'enormous 庞大的', 'massive 大量的', 'vast 广阔的'],
     antonyms: ['small 小的', 'tiny 微小的', 'little 小的'],
     examPoints: []
@@ -2202,7 +2202,7 @@ const wordEnrichmentData = {
   small: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'smaller', superlative: 'smallest' },
     synonyms: ['little 小的', 'tiny 微小的', 'minor 较小的', 'slight 轻微的', 'petite 娇小的'],
     antonyms: ['big 大的', 'large 大的', 'huge 巨大的'],
     examPoints: []
@@ -2210,7 +2210,7 @@ const wordEnrichmentData = {
   good: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'better', superlative: 'best' },
     synonyms: ['fine 好的', 'excellent 优秀的', 'great 伟大的', 'wonderful 极好的', 'superb 极好的'],
     antonyms: ['bad 坏的', 'poor 差的', 'terrible 糟糕的'],
     examPoints: []
@@ -2218,7 +2218,7 @@ const wordEnrichmentData = {
   bad: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'worse', superlative: 'worst' },
     synonyms: ['poor 差的', 'terrible 糟糕的', 'awful 极坏的', 'horrible 可怕的', 'dreadful 糟透的'],
     antonyms: ['good 好的', 'fine 好的', 'excellent 优秀的'],
     examPoints: []
@@ -2226,7 +2226,7 @@ const wordEnrichmentData = {
   happy: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'happier', superlative: 'happiest' },
     synonyms: ['glad 高兴的', 'joyful 快乐的', 'cheerful 愉快的', 'delighted 高兴的', 'pleased 满意的'],
     antonyms: ['sad 悲伤的', 'unhappy 不快乐的', 'miserable 悲惨的'],
     examPoints: []
@@ -2234,7 +2234,7 @@ const wordEnrichmentData = {
   sad: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'sadder', superlative: 'saddest' },
     synonyms: ['unhappy 不快乐的', 'sorrowful 悲伤的', 'depressed 沮丧的', 'gloomy 忧郁的', 'miserable 悲惨的'],
     antonyms: ['happy 快乐的', 'joyful 快乐的', 'cheerful 愉快的'],
     examPoints: []
@@ -2242,7 +2242,7 @@ const wordEnrichmentData = {
   important: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'more important', superlative: 'most important' },
     synonyms: ['significant 重要的', 'crucial 关键的', 'vital 至关重要的', 'essential 必要的', 'key 关键的'],
     antonyms: ['unimportant 不重要的', 'trivial 琐碎的', 'insignificant 无关紧要的'],
     examPoints: []
@@ -2258,7 +2258,7 @@ const wordEnrichmentData = {
   easy: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'easier', superlative: 'easiest' },
     synonyms: ['simple 简单的', 'effortless 不费力的', 'straightforward 直截了当的', 'manageable 易处理的'],
     antonyms: ['difficult 困难的', 'hard 困难的', 'complex 复杂的'],
     examPoints: []
@@ -2266,7 +2266,7 @@ const wordEnrichmentData = {
   fast: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'faster', superlative: 'fastest' },
     synonyms: ['quick 快的', 'rapid 迅速的', 'swift 敏捷的', 'speedy 快速的', 'brisk 轻快的'],
     antonyms: ['slow 慢的', 'sluggish 缓慢的'],
     examPoints: []
@@ -2274,7 +2274,7 @@ const wordEnrichmentData = {
   slow: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'slower', superlative: 'slowest' },
     synonyms: ['sluggish 缓慢的', 'leisurely 从容的', 'unhurried 不慌不忙的', 'gradual 渐进的'],
     antonyms: ['fast 快的', 'quick 快的', 'rapid 迅速的'],
     examPoints: []
@@ -2282,7 +2282,7 @@ const wordEnrichmentData = {
   strong: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'stronger', superlative: 'strongest' },
     synonyms: ['powerful 强大的', 'sturdy 坚固的', 'robust 强健的', 'tough 坚韧的', 'mighty 强有力的'],
     antonyms: ['weak 弱的', 'feeble 虚弱的', 'fragile 脆弱的'],
     examPoints: []
@@ -2290,7 +2290,7 @@ const wordEnrichmentData = {
   weak: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'weaker', superlative: 'weakest' },
     synonyms: ['feeble 虚弱的', 'frail 脆弱的', 'fragile 脆弱的', 'faint 微弱的'],
     antonyms: ['strong 强壮的', 'powerful 强大的', 'robust 强健的'],
     examPoints: []
@@ -2298,7 +2298,7 @@ const wordEnrichmentData = {
   rich: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'richer', superlative: 'richest' },
     synonyms: ['wealthy 富有的', 'affluent 富裕的', 'prosperous 繁荣的', 'well-off 富裕的'],
     antonyms: ['poor 贫穷的', 'needy 贫困的', 'destitute 赤贫的'],
     examPoints: []
@@ -2306,7 +2306,7 @@ const wordEnrichmentData = {
   poor: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'poorer', superlative: 'poorest' },
     synonyms: ['needy 贫困的', 'destitute 赤贫的', 'impoverished 贫困的', 'penniless 身无分文的'],
     antonyms: ['rich 富有的', 'wealthy 富有的', 'affluent 富裕的'],
     examPoints: []
@@ -2314,7 +2314,7 @@ const wordEnrichmentData = {
   old: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'older/elder', superlative: 'oldest/eldest' },
     synonyms: ['aged 年老的', 'elderly 年长的', 'ancient 古老的', 'outdated 过时的', 'vintage 老式的'],
     antonyms: ['new 新的', 'young 年轻的', 'modern 现代的'],
     examPoints: []
@@ -2330,7 +2330,7 @@ const wordEnrichmentData = {
   young: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'younger', superlative: 'youngest' },
     synonyms: ['youthful 年轻的', 'immature 未成熟的', 'juvenile 少年的', 'adolescent 青春期的'],
     antonyms: ['old 年老的', 'elderly 年长的', 'mature 成熟的'],
     examPoints: []
@@ -2338,7 +2338,7 @@ const wordEnrichmentData = {
   hot: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'hotter', superlative: 'hottest' },
     synonyms: ['warm 温暖的', 'burning 炽热的', 'scorching 灼热的', 'boiling 沸腾的', 'fiery 火热的'],
     antonyms: ['cold 冷的', 'cool 凉爽的', 'freezing 冰冻的'],
     examPoints: []
@@ -2346,7 +2346,7 @@ const wordEnrichmentData = {
   cold: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'colder', superlative: 'coldest' },
     synonyms: ['chilly 寒冷的', 'freezing 冰冻的', 'frigid 寒冷的', 'icy 冰冷的', 'frosty 严寒的'],
     antonyms: ['hot 热的', 'warm 温暖的', 'boiling 炽热的'],
     examPoints: []
@@ -2354,7 +2354,7 @@ const wordEnrichmentData = {
   warm: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'warmer', superlative: 'warmest' },
     synonyms: ['mild 温和的', 'tepid 微温的', 'balmy 温和的', 'cozy 舒适的'],
     antonyms: ['cold 冷的', 'cool 凉的', 'freezing 冰冻的'],
     examPoints: []
@@ -2362,7 +2362,7 @@ const wordEnrichmentData = {
   cool: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'cooler', superlative: 'coolest' },
     synonyms: ['refreshing 清爽的', 'mild 温和的', 'breezy 微风的', 'calm 冷静的'],
     antonyms: ['hot 热的', 'warm 温暖的'],
     examPoints: []
@@ -2370,7 +2370,7 @@ const wordEnrichmentData = {
   clean: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'cleaner', superlative: 'cleanest' },
     synonyms: ['tidy 整洁的', 'neat 整洁的', 'spotless 一尘不染的', 'pure 纯净的', 'immaculate 洁净的'],
     antonyms: ['dirty 脏的', 'messy 凌乱的', 'untidy 不整洁的'],
     examPoints: []
@@ -2386,7 +2386,7 @@ const wordEnrichmentData = {
   safe: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'safer', superlative: 'safest' },
     synonyms: ['secure 安全的', 'protected 受保护的', 'guarded 有守卫的', 'sheltered 受庇护的'],
     antonyms: ['dangerous 危险的', 'risky 有风险的', 'unsafe 不安全的'],
     examPoints: []
@@ -2394,7 +2394,7 @@ const wordEnrichmentData = {
   dangerous: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'more dangerous', superlative: 'most dangerous' },
     synonyms: ['risky 危险的', 'hazardous 危险的', 'perilous 危险的', 'unsafe 不安全的', 'threatening 威胁的'],
     antonyms: ['safe 安全的', 'secure 安全的', 'harmless 无害的'],
     examPoints: []
@@ -2402,7 +2402,7 @@ const wordEnrichmentData = {
   simple: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'simpler', superlative: 'simplest' },
     synonyms: ['easy 简单的', 'plain 朴素的', 'straightforward 直截了当的', 'uncomplicated 不复杂的'],
     antonyms: ['complex 复杂的', 'complicated 复杂的', 'intricate 错综复杂的'],
     examPoints: []
@@ -2418,7 +2418,7 @@ const wordEnrichmentData = {
   clear: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'clearer', superlative: 'clearest' },
     synonyms: ['obvious 明显的', 'evident 明显的', 'apparent 显然的', 'transparent 透明的', 'lucid 清晰的'],
     antonyms: ['unclear 不清楚的', 'obscure 模糊的', 'ambiguous 模棱两可的'],
     examPoints: []
@@ -2426,7 +2426,7 @@ const wordEnrichmentData = {
   dark: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'darker', superlative: 'darkest' },
     synonyms: ['dim 昏暗的', 'gloomy 阴暗的', 'shadowy 有阴影的', 'obscure 昏暗的'],
     antonyms: ['bright 明亮的', 'light 明亮的', 'vivid 鲜艳的'],
     examPoints: []
@@ -2434,7 +2434,7 @@ const wordEnrichmentData = {
   bright: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'brighter', superlative: 'brightest' },
     synonyms: ['brilliant 明亮的', 'radiant 辐射的', 'luminous 发光的', 'vivid 鲜艳的', 'dazzling 耀眼的'],
     antonyms: ['dark 黑暗的', 'dim 昏暗的', 'gloomy 阴暗的'],
     examPoints: []
@@ -2442,7 +2442,7 @@ const wordEnrichmentData = {
   deep: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'deeper', superlative: 'deepest' },
     synonyms: ['profound 深刻的', 'bottomless 极深的', 'unfathomable 深不可测的'],
     antonyms: ['shallow 浅的', 'superficial 肤浅的'],
     examPoints: []
@@ -2466,7 +2466,7 @@ const wordEnrichmentData = {
   hard: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'harder', superlative: 'hardest' },
     synonyms: ['solid 坚固的', 'firm 坚硬的', 'rigid 坚硬的', 'tough 坚韧的', 'stiff 僵硬的'],
     antonyms: ['soft 柔软的', 'tender 嫩的', 'flexible 柔韧的'],
     examPoints: []
@@ -2482,7 +2482,7 @@ const wordEnrichmentData = {
   heavy: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'heavier', superlative: 'heaviest' },
     synonyms: ['weighty 沉重的', 'bulky 笨重的', 'massive 大量的', 'burdensome 繁重的'],
     antonyms: ['light 轻的', 'weightless 无重量的'],
     examPoints: []
@@ -2498,7 +2498,7 @@ const wordEnrichmentData = {
   high: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'higher', superlative: 'highest' },
     synonyms: ['tall 高的', 'elevated 升高的', 'lofty 高耸的', 'towering 高耸的'],
     antonyms: ['low 低的', 'beneath 在下方'],
     examPoints: []
@@ -2506,7 +2506,7 @@ const wordEnrichmentData = {
   low: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'lower', superlative: 'lowest' },
     synonyms: ['short 矮的', 'beneath 低于', 'inferior 低等的'],
     antonyms: ['high 高的', 'tall 高的', 'elevated 升高的'],
     examPoints: []
@@ -2522,7 +2522,7 @@ const wordEnrichmentData = {
   quiet: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'quieter', superlative: 'quietest' },
     synonyms: ['silent 寂静的', 'peaceful 宁静的', 'calm 平静的', 'tranquil 安静的', 'still 静止的'],
     antonyms: ['loud 大声的', 'noisy 吵闹的', 'boisterous 喧闹的'],
     examPoints: []
@@ -2530,7 +2530,7 @@ const wordEnrichmentData = {
   narrow: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'narrower', superlative: 'narrowest' },
     synonyms: ['tight 紧的', 'constricted 狭窄的', 'slender 纤细的', 'limited 有限的'],
     antonyms: ['wide 宽的', 'broad 宽阔的', 'spacious 宽敞的'],
     examPoints: []
@@ -2538,7 +2538,7 @@ const wordEnrichmentData = {
   wide: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'wider', superlative: 'widest' },
     synonyms: ['broad 宽阔的', 'spacious 宽敞的', 'expansive 广阔的', 'extensive 广泛的'],
     antonyms: ['narrow 窄的', 'tight 紧的', 'restricted 受限的'],
     examPoints: []
@@ -2586,7 +2586,7 @@ const wordEnrichmentData = {
   thin: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'thinner', superlative: 'thinnest' },
     synonyms: ['slim 苗条的', 'slender 纤细的', 'slight 纤弱的', 'lean 瘦的'],
     antonyms: ['thick 厚的', 'fat 胖的', 'plump 丰满的'],
     examPoints: []
@@ -2602,7 +2602,7 @@ const wordEnrichmentData = {
   healthy: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'healthier', superlative: 'healthiest' },
     synonyms: ['fit 健康的', 'well 健康的', 'robust 强健的', 'sound 健全的', 'vigorous 精力充沛的'],
     antonyms: ['sick 生病的', 'ill 生病的', 'unhealthy 不健康的', 'weak 虚弱的'],
     examPoints: []
@@ -2634,7 +2634,7 @@ const wordEnrichmentData = {
   famous: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'more famous', superlative: 'most famous' },
     synonyms: ['renowned 著名的', 'well-known 众所周知的', 'celebrated 著名的', 'noted 著名的', 'distinguished 杰出的'],
     antonyms: ['unknown 不知名的', 'obscure 默默无闻的', 'anonymous 匿名的'],
     examPoints: []
@@ -2642,7 +2642,7 @@ const wordEnrichmentData = {
   common: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'more common', superlative: 'most common' },
     synonyms: ['ordinary 普通的', 'usual 通常的', 'regular 规则的', 'normal 正常的', 'widespread 普遍的'],
     antonyms: ['rare 稀有的', 'unusual 不寻常的', 'exceptional 例外的'],
     examPoints: []
@@ -2786,7 +2786,7 @@ const wordEnrichmentData = {
   busy: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'busier', superlative: 'busiest' },
     synonyms: ['occupied 忙的', 'engaged 忙的', 'active 活跃的', 'involved 参与的'],
     antonyms: ['free 空闲的', 'idle 闲置的', 'available 有空的'],
     examPoints: []
@@ -2986,7 +2986,7 @@ const wordEnrichmentData = {
   careful: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'more careful', superlative: 'most careful' },
     synonyms: ['cautious 谨慎的', 'attentive 注意的', 'watchful 警惕的', 'meticulous 一丝不苟的', 'thorough 细致的'],
     antonyms: ['careless 粗心的', 'reckless 鲁莽的', 'negligent 疏忽的'],
     examPoints: []
@@ -3010,7 +3010,7 @@ const wordEnrichmentData = {
   funny: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'funnier', superlative: 'funniest' },
     synonyms: ['amusing 有趣的', 'humorous 幽默的', 'comical 滑稽的', 'hilarious 极好笑的', 'entertaining 有趣的'],
     antonyms: ['serious 严肃的', 'somber 严肃的', 'dull 乏味的'],
     examPoints: []
@@ -5819,7 +5819,7 @@ const wordEnrichmentData = {
   angry: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'angrier', superlative: 'angriest' },
     synonyms: ['furious 愤怒的', 'irritated 恼怒的', 'enraged 暴怒的', 'mad 生气的'],
     antonyms: ['calm 平静的', 'peaceful 和平的', 'content 满足的'],
     examPoints: []
@@ -6691,7 +6691,7 @@ const wordEnrichmentData = {
   close: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'closer', superlative: 'closest' },
     synonyms: ['shut 关闭', 'seal 封闭', 'lock 锁上', 'secure 关紧'],
     antonyms: ['open 打开', 'unlock 开锁', 'unseal 启封'],
     examPoints: []
@@ -8795,7 +8795,7 @@ const wordEnrichmentData = {
   gentle: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'gentler', superlative: 'gentlest' },
     synonyms: ['mild 温和的', 'soft 柔和的', 'tender 温柔的', 'calm 平和的'],
     antonyms: ['harsh 严厉的', 'rough 粗暴的', 'violent 暴力的'],
     examPoints: []
@@ -9771,7 +9771,7 @@ const wordEnrichmentData = {
   large: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'larger', superlative: 'largest' },
     synonyms: ['big 大的', 'huge 巨大的', 'massive 庞大的', 'enormous 巨大的'],
     antonyms: ['small 小的', 'tiny 微小的', 'minute 极小的'],
     examPoints: []
@@ -9779,7 +9779,7 @@ const wordEnrichmentData = {
   late: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'later', superlative: 'latest' },
     synonyms: ['tardy 迟的', 'delayed 延迟的', 'behind 滞后的', 'overdue 迟到的'],
     antonyms: ['early 早的', 'prompt 及时的', 'punctual 准时的'],
     examPoints: []
@@ -10339,7 +10339,7 @@ const wordEnrichmentData = {
   modern: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'more modern', superlative: 'most modern' },
     synonyms: ['contemporary 现代的', 'current 当前的', 'up-to-date 最新的', 'new 新的'],
     antonyms: ['ancient 古老的', 'old 旧的', 'obsolete 过时的'],
     examPoints: []
@@ -11147,7 +11147,7 @@ const wordEnrichmentData = {
   popular: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'more popular', superlative: 'most popular' },
     synonyms: ['widely-liked 受欢迎的', 'common 普遍的', 'favored 受青睐的', 'trendy 流行的'],
     antonyms: ['unpopular 不受欢迎的', 'obscure 不知名的', 'rare 稀少的'],
     examPoints: []
@@ -12283,7 +12283,7 @@ const wordEnrichmentData = {
   short: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'shorter', superlative: 'shortest' },
     synonyms: ['brief 简短的', 'concise 简明的', 'terse 简短的', 'curt 简短的'],
     antonyms: ['long 长的', 'tall 高的', 'extended 延长的'],
     examPoints: []
@@ -15540,7 +15540,7 @@ const wordEnrichmentData = {
   expensive: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'more expensive', superlative: 'most expensive' },
     synonyms: ['costly 昂贵的', 'pricey 昂贵的', 'dear 贵的', 'high-priced 高价的'],
     antonyms: ['cheap 便宜的', 'inexpensive 廉价的', 'affordable 负担得起的'],
     examPoints: []
@@ -16204,7 +16204,7 @@ const wordEnrichmentData = {
   long: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'longer', superlative: 'longest' },
     synonyms: ['extended 长的', 'lengthy 漫长的', 'prolonged 长久的', 'drawn-out 拖长的'],
     antonyms: ['short 短的', 'brief 简短的', 'brief 短暂的'],
     examPoints: []
@@ -16300,7 +16300,7 @@ const wordEnrichmentData = {
   noisy: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'noisier', superlative: 'noisiest' },
     synonyms: ['loud 吵闹的', 'boisterous 喧闹的', 'clamorous 喧哗的', 'tumultuous 喧嚣的'],
     antonyms: ['quiet 安静的', 'silent 寂静的', 'peaceful 宁静的'],
     examPoints: []
@@ -17140,7 +17140,7 @@ const wordEnrichmentData = {
   useful: {
     collocations: [],
     derivatives: [],
-    wordForms: {},
+    wordForms: { comparative: 'more useful', superlative: 'most useful' },
     synonyms: ['helpful 有用的', 'beneficial 有益的', 'practical 实用的', 'valuable 有价值的'],
     antonyms: ['useless 无用的', 'worthless 无价值的', 'unhelpful 无帮助的'],
     examPoints: []

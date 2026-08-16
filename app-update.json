@@ -1,8 +1,8 @@
 {
-  "version": "2.37.0",
-  "versionCode": 187,
-  "changelog": "v2.37.0 全面修复例句 + 新增音量键翻页功能\n\n【例句修复】\n- 全面检索985词汇例句，修复300+条无意义/牵强/用法错误/语法错误/翻译错误的例句\n- 替换所有AI模板填充生成的机械例句为自然、有意义的例句\n- 修复如\"汽油在教育中有重要意义\"等荒谬例句\n- 修复动词用法错误（如exist接宾语）、语法错误（如A urban）、翻译错误（如prefer翻译反义）\n\n【新功能：音量键翻页】\n- 在「我的」页面新增音量键翻页开关（仅APP端）\n- 背诵页：音量上键上一页，音量下键下一页\n- 闪卡模式：音量键先打开中文释义，打开后音量键才切换上下页\n- 开启后音量键被APP拦截，不会改变系统音量",
-  "devNotes": "fix: 300+ bad example sentences in seedWords985; feat: volume key navigation with native Android interception",
+  "version": "2.38.0",
+  "versionCode": 188,
+  "changelog": "v2.38.0 变形扩展 + 不规则动词表 + 应用更名\n\n【新增：变形扩展】\n- 扩展页新增「变形扩展」标签页\n- 包含：形容词变副词规则、比较级最高级规则、过去式过去分词规则、现在分词规则、名词复数规则\n- 55个形容词新增比较级和最高级形式\n\n【新增：不规则动词表】\n- 按AAA/ABA/ABB/ABC型分类\n- 涵盖100+高频不规则动词\n- 点击可发音或跳转详情\n\n【修复】\n- 修复情景记忆中部分单词缺失中文翻译的问题\n\n【优化】\n- 应用更名为「背群英」\n- 官网和网页版同步更新",
+  "devNotes": "feat: word transformation extension (adj->adv, comparative, past tense, present participle, noun plural, irregular verbs); fix: missing scene word translations; rename app to 背群英",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/高考词汇背诵.html"
+  "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }

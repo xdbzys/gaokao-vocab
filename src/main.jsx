@@ -7,12 +7,13 @@ import { createWorker } from 'tesseract.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import './styles.css';
 import { getWordEnrichment } from './wordEnrichment';
+import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, presentParticipleRules, nounPluralRules } from './wordTransformations';
 
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.37.0';
-const APP_VERSION_CODE = 187;
+const APP_VERSION = '2.38.0';
+const APP_VERSION_CODE = 188;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -3257,6 +3258,58 @@ const sceneData = [
     textCn: '科学的进步依赖于持续不断的探索精神。当约翰·托德着手建造一台"生态机器"来净化污水时，许多人质疑他的假说。然而经过多年的实验，他证明了自然生态系统可以被工程化来无化学物质地净化水。他的方法涉及在一系列模拟自然湿地过程的水箱中组合植物、细菌和水生生物。突破出现在无数次失败尝试之后——每一次失败都提供了宝贵的证据来改进下一次实验。这个故事说明科学发现很少是一条直线。它需要挑战传统智慧的勇气、分析意外结果的耐心，以及尽管遭遇挫折仍坚持继续的毅力。每一项伟大的创新都始于一个简单的问题："如果……会怎样？"'
   }
 ];
+
+// 情景记忆单词中文翻译补充（词库中可能缺失的词）
+const sceneWordCn = {
+  // 环境保护
+  environment: '环境', pollution: '污染', sustainable: '可持续的', climate: '气候', carbon: '碳',
+  renewable: '可再生的', ecosystem: '生态系统', conservation: '保护', emission: '排放', biodiversity: '生物多样性',
+  // 人工智能与科技
+  artificial: '人工的', intelligence: '智能', algorithm: '算法', automation: '自动化', innovation: '创新',
+  digital: '数字的', robot: '机器人', data: '数据', virtual: '虚拟的', network: '网络',
+  // 教育成长
+  education: '教育', knowledge: '知识', curriculum: '课程', academic: '学术的', graduate: '毕业',
+  scholarship: '奖学金', discipline: '纪律', potential: '潜力', inspire: '激励', achieve: '实现',
+  // 传统文化
+  traditional: '传统的', culture: '文化', heritage: '遗产', civilization: '文明', ancestor: '祖先',
+  festival: '节日', custom: '习俗', ceremony: '仪式', ancient: '古老的', preserve: '保护',
+  // 健康生活
+  health: '健康', nutrition: '营养', exercise: '锻炼', mental: '心理的', balanced: '均衡的',
+  diet: '饮食', psychological: '心理的', physical: '身体的', wellness: '健康', habit: '习惯',
+  // 社会热点
+  globalization: '全球化', diversity: '多样性', equality: '平等', poverty: '贫困', volunteer: '志愿者',
+  community: '社区', justice: '正义', opportunity: '机会', challenge: '挑战', responsibility: '责任',
+  // 海洋微塑料
+  microplastic: '微塑料', ocean: '海洋', contaminate: '污染', filter: '过滤', solution: '解决方案',
+  research: '研究', particle: '颗粒', tap: '自来水', reduce: '减少', chemical: '化学的',
+  // 绿色出行
+  bicycle: '自行车', commute: '通勤', emission: '排放', sustainable: '可持续的', infrastructure: '基础设施',
+  convenient: '方便的', rental: '租赁', guide: '导游', explore: '探索', carbon: '碳',
+  // 食物浪费
+  waste: '浪费', consume: '消费', portion: '份量', leftover: '剩菜', ingredient: '原料',
+  scrape: '刮掉', discard: '丢弃', nutrition: '营养', resource: '资源', awareness: '意识',
+  // 中医文化
+  traditional: '传统的', acupuncture: '针灸', veterinary: '兽医的', combine: '结合', treatment: '治疗',
+  needle: '针', therapy: '疗法', effective: '有效的', recovery: '康复', cultural: '文化的',
+  // 纸质阅读
+  print: '印刷', digital: '数字的', screen: '屏幕', comprehension: '理解力', retain: '保留',
+  focus: '专注', device: '设备', audiobook: '有声书', absorb: '吸收', preference: '偏好',
+  // 城市花园
+  urban: '城市的', garden: '花园', sprout: '发芽', seed: '种子', cultivate: '种植',
+  harvest: '收获', organic: '有机的', community: '社区', volunteer: '志愿者', transform: '改变',
+  // 志愿服务
+  volunteer: '志愿者', hospital: '医院', tutor: '辅导', patient: '病人', dedicate: '奉献',
+  compassion: '同情心', disadvantaged: '弱势的', inspire: '激励', resilience: '韧性', commitment: '承诺',
+  // 热带雨林
+  rainforest: '雨林', tropical: '热带的', species: '物种', medicine: '药物', deforest: '砍伐森林',
+  biodiversity: '生物多样性', habitat: '栖息地', indigenous: '原住民的', conserve: '保护', irreplaceable: '不可替代的',
+  // 老年人健康
+  elderly: '老年人', aging: '衰老', physical: '身体的', mental: '心理的', companionship: '陪伴',
+  isolated: '孤独的', program: '项目', engage: '参与', wellbeing: '福祉', dignity: '尊严',
+  // 科学探索
+  experiment: '实验', hypothesis: '假说', evidence: '证据', innovative: '创新的', breakthrough: '突破',
+  discover: '发现', methodology: '方法论', analyze: '分析', conclusion: '结论', persist: '坚持'
+};
 
 // 拼写纠错数据：常见高考英语拼写错误
 const spellingData = [
@@ -9275,6 +9328,7 @@ function App() {
   const [compareTab, setCompareTab] = useState('synonym');
   const [compareIndex, setCompareIndex] = useState(0);
   const [numberDateSubTab, setNumberDateSubTab] = useState('months');
+  const [transformTab, setTransformTab] = useState('adjToAdverb');
   const [spellingSearch, setSpellingSearch] = useState('');
   const [scenePage, setScenePage] = useState(0);
   // 词库详情
@@ -11247,6 +11301,7 @@ function App() {
             <button className={extendTab === 'scene' ? 'active' : ''} onClick={() => setExtendTab('scene')}>情景记忆</button>
             <button className={extendTab === 'spelling' ? 'active' : ''} onClick={() => setExtendTab('spelling')}>拼写纠错</button>
             <button className={extendTab === 'numberdate' ? 'active' : ''} onClick={() => setExtendTab('numberdate')}>数字日期</button>
+            <button className={extendTab === 'transform' ? 'active' : ''} onClick={() => setExtendTab('transform')}>变形扩展</button>
           </div>
 
           {/* 词根词缀 */}
@@ -11387,7 +11442,8 @@ function App() {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
                     {scene.words.map((w, j) => {
                       const wordItem = findWordInBank(w);
-                      const meaning = wordItem ? getShortMeaning(wordItem.meaning) : '';
+                      let meaning = wordItem ? getShortMeaning(wordItem.meaning) : '';
+                      if (!meaning) meaning = sceneWordCn[w.toLowerCase()] || '';
                       return (
                         <span key={j} className="sceneWord"
                           onClick={() => speakOrNavigate(w)}>
@@ -11641,6 +11697,142 @@ function App() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* 变形扩展 */}
+          {extendTab === 'transform' && (
+            <>
+              <div className="segmented">
+                <button className={transformTab === 'adjToAdverb' ? 'active' : ''} onClick={() => setTransformTab('adjToAdverb')}>形容词变副词</button>
+                <button className={transformTab === 'comparative' ? 'active' : ''} onClick={() => setTransformTab('comparative')}>比较级最高级</button>
+                <button className={transformTab === 'pastTense' ? 'active' : ''} onClick={() => setTransformTab('pastTense')}>过去式过去分词</button>
+                <button className={transformTab === 'presentParticiple' ? 'active' : ''} onClick={() => setTransformTab('presentParticiple')}>现在分词</button>
+                <button className={transformTab === 'nounPlural' ? 'active' : ''} onClick={() => setTransformTab('nounPlural')}>名词复数</button>
+                <button className={transformTab === 'irregular' ? 'active' : ''} onClick={() => setTransformTab('irregular')}>不规则动词表</button>
+              </div>
+
+              {/* 形容词变副词 */}
+              {transformTab === 'adjToAdverb' && (
+                <div className="affixList">
+                  {adjToAdverbRules.map((ruleData, i) => (
+                    <div key={i} className="affixCard">
+                      <div className="affixHeader">
+                        <span className="affixName" style={{ color: '#2563eb', fontSize: 15 }}>{ruleData.rule}</span>
+                      </div>
+                      <div className="affixExamples">
+                        {ruleData.examples.map((ex, j) => (
+                          <span key={j} className="affixExample" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(ex.adj)}>
+                            <b>{ex.adj}</b> → {ex.adverb}{ex.meaning && <span className="sceneWordMeaning">（{ex.meaning}）</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 比较级最高级 */}
+              {transformTab === 'comparative' && (
+                <div className="affixList">
+                  {comparativeRules.map((ruleData, i) => (
+                    <div key={i} className="affixCard">
+                      <div className="affixHeader">
+                        <span className="affixName" style={{ color: '#7c3aed', fontSize: 15 }}>{ruleData.rule}</span>
+                      </div>
+                      <div className="affixExamples">
+                        {ruleData.examples.map((ex, j) => (
+                          <span key={j} className="affixExample" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(ex.word)}>
+                            <b>{ex.word}</b> → 比较级: {ex.comparative} / 最高级: {ex.superlative}{ex.meaning && <span className="sceneWordMeaning">（{ex.meaning}）</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 过去式过去分词 */}
+              {transformTab === 'pastTense' && (
+                <div className="affixList">
+                  {pastTenseRules.map((ruleData, i) => (
+                    <div key={i} className="affixCard">
+                      <div className="affixHeader">
+                        <span className="affixName" style={{ color: '#dc2626', fontSize: 15 }}>{ruleData.rule}</span>
+                      </div>
+                      <div className="affixExamples">
+                        {ruleData.examples.map((ex, j) => (
+                          <span key={j} className="affixExample" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(ex.verb)}>
+                            <b>{ex.verb}</b> → 过去式: {ex.pastTense} / 过去分词: {ex.pastParticiple}{ex.meaning && <span className="sceneWordMeaning">（{ex.meaning}）</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 现在分词 */}
+              {transformTab === 'presentParticiple' && (
+                <div className="affixList">
+                  {presentParticipleRules.map((ruleData, i) => (
+                    <div key={i} className="affixCard">
+                      <div className="affixHeader">
+                        <span className="affixName" style={{ color: '#059669', fontSize: 15 }}>{ruleData.rule}</span>
+                      </div>
+                      <div className="affixExamples">
+                        {ruleData.examples.map((ex, j) => (
+                          <span key={j} className="affixExample" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(ex.verb)}>
+                            <b>{ex.verb}</b> → {ex.presentParticiple}{ex.meaning && <span className="sceneWordMeaning">（{ex.meaning}）</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 名词复数 */}
+              {transformTab === 'nounPlural' && (
+                <div className="affixList">
+                  {nounPluralRules.map((ruleData, i) => (
+                    <div key={i} className="affixCard">
+                      <div className="affixHeader">
+                        <span className="affixName" style={{ color: '#d97706', fontSize: 15 }}>{ruleData.rule}</span>
+                      </div>
+                      <div className="affixExamples">
+                        {ruleData.examples.map((ex, j) => (
+                          <span key={j} className="affixExample" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(ex.singular)}>
+                            <b>{ex.singular}</b> → {ex.plural}{ex.meaning && <span className="sceneWordMeaning">（{ex.meaning}）</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 不规则动词表 */}
+              {transformTab === 'irregular' && (
+                <div className="affixList">
+                  {Object.entries(irregularVerbs).map(([type, verbs]) => (
+                    <div key={type} className="affixCard">
+                      <div className="affixHeader">
+                        <span className="affixName" style={{ color: '#dc2626', fontSize: 15 }}>{type}</span>
+                        <span className="affixProperty">共 {verbs.length} 个</span>
+                      </div>
+                      <div style={{ marginTop: 8 }}>
+                        {verbs.map((v, i) => (
+                          <div key={i} className="affixExample" style={{ display: 'block', marginBottom: 6, cursor: 'pointer' }} onClick={() => speakOrNavigate(v.verb)}>
+                            <b>{v.verb}</b> — 过去式: <span style={{ color: '#2563eb' }}>{v.pastTense}</span> — 过去分词: <span style={{ color: '#7c3aed' }}>{v.pastParticiple}</span>
+                            {v.meaning && <span className="sceneWordMeaning">（{v.meaning}）</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </section>
       )}
@@ -12371,6 +12563,10 @@ function App() {
                       {enrichment.wordForms.pastTense && <div className="detailFormItem"><span className="detailFormLabel">过去式</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.pastTense)}>{enrichment.wordForms.pastTense}</span></div>}
                       {enrichment.wordForms.pastParticiple && <div className="detailFormItem"><span className="detailFormLabel">过去分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.pastParticiple)}>{enrichment.wordForms.pastParticiple}</span></div>}
                       {enrichment.wordForms.presentParticiple && <div className="detailFormItem"><span className="detailFormLabel">现在分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.presentParticiple)}>{enrichment.wordForms.presentParticiple}</span></div>}
+                      {enrichment.wordForms.comparative && <div className="detailFormItem"><span className="detailFormLabel">比较级</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.comparative)}>{enrichment.wordForms.comparative}</span></div>}
+                      {enrichment.wordForms.superlative && <div className="detailFormItem"><span className="detailFormLabel">最高级</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.superlative)}>{enrichment.wordForms.superlative}</span></div>}
+                      {enrichment.wordForms.thirdPerson && <div className="detailFormItem"><span className="detailFormLabel">第三人称单数</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.thirdPerson)}>{enrichment.wordForms.thirdPerson}</span></div>}
+                      {enrichment.wordForms.plural && <div className="detailFormItem"><span className="detailFormLabel">复数</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.plural)}>{enrichment.wordForms.plural}</span></div>}
                     </div>
                   </div>
                 )}
