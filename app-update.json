@@ -1,8 +1,8 @@
 {
-  "version": "2.38.0",
+  "version": "2.37",
   "versionCode": 188,
-  "changelog": "v2.38.0 变形扩展 + 不规则动词表 + 应用更名\n\n【新增：变形扩展】\n- 扩展页新增「变形扩展」标签页\n- 包含：形容词变副词规则、比较级最高级规则、过去式过去分词规则、现在分词规则、名词复数规则\n- 55个形容词新增比较级和最高级形式\n\n【新增：不规则动词表】\n- 按AAA/ABA/ABB/ABC型分类\n- 涵盖100+高频不规则动词\n- 点击可发音或跳转详情\n\n【修复】\n- 修复情景记忆中部分单词缺失中文翻译的问题\n\n【优化】\n- 应用更名为「背群英」\n- 官网和网页版同步更新",
-  "devNotes": "feat: word transformation extension (adj->adv, comparative, past tense, present participle, noun plural, irregular verbs); fix: missing scene word translations; rename app to 背群英",
+  "changelog": "应用更名为「背群英」",
+  "devNotes": "rename app to 背群英",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
