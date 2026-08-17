@@ -5,15 +5,7 @@ import android.view.KeyEvent;
 import android.webkit.WebView;
 import android.webkit.WebSettings;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebViewClient;
 import com.getcapacitor.BridgeActivity;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends BridgeActivity {
     private static boolean volumeKeyNavEnabled = false;

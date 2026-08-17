@@ -11,8 +11,9 @@ import androidx.core.content.FileProvider;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.getcapacitor.annotation.PluginMethod;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,7 +37,7 @@ public class ApkUpdaterPlugin extends Plugin {
      * Returns the file path on success.
      */
     @PluginMethod
-    public void downloadAndInstall(com.getcapacitor.JSObject options, com.getcapacitor.PluginCall call) {
+    public void downloadAndInstall(JSObject options, PluginCall call) {
         String apkUrl = options.getString("url");
         if (apkUrl == null || apkUrl.isEmpty()) {
             call.reject("url is required");
