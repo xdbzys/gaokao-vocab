@@ -1,8 +1,8 @@
 {
-  "version": "2.40.0",
-  "versionCode": 191,
-  "changelog": "v2.40.0 变形扩展 + 版本号修复\n\n【新增】\n- 扩展模块新增「变形扩展」标签页\n- 形容词变副词规则（含特殊变化）\n- 比较级/最高级规则\n- 过去式/过去分词规则\n- 现在分词规则\n- 名词复数规则\n- 不规则动词表（按类型分类）\n\n【修复】\n- 修复index.html入口被旧构建产物覆盖导致变形扩展未显示的问题\n- 修复下载新版本后版本号不变、一直提示更新的问题\n- 确保APP内部版本号与APK版本号一致",
-  "devNotes": "fix: restore index.html entry point; bump version to 2.40.0/191; sync APP_VERSION_CODE with build.gradle versionCode",
+  "version": "2.41.0",
+  "versionCode": 192,
+  "changelog": "v2.41.0 难度选择 + 应用内更新\n\n【新增】\n- 背诵页添加难度选择：简单/困难两种模式\n- 简单模式：干扰项与正确答案差异大，优先不同词性\n- 困难模式：干扰项优先近义词和易混词，提高辨识难度\n- 两种模式均排除同义词（相同释义）作为干扰项\n- 困难模式无近义词时回退到同词性干扰\n- 应用内直接下载安装包更新，无需跳转浏览器\n- 下载进度实时显示，支持后台静默下载\n- 开屏公告弹窗显示下载进度\n\n【优化】\n- 更新流程优化：原生插件下载APK后直接调起系统安装\n- 多下载源自动切换，提高下载成功率",
+  "devNotes": "feat: add difficulty selection (easy/hard) for recitation; add native ApkUpdater plugin for in-app APK download and install; bump version to 2.41.0/192",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }

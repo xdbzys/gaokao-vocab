@@ -12,12 +12,17 @@ import com.getcapacitor.BridgeActivity;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends BridgeActivity {
     private static boolean volumeKeyNavEnabled = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Register custom plugins before super.onCreate
+        registerPlugin(ApkUpdaterPlugin.class);
+        
         super.onCreate(savedInstanceState);
 
         WebView webView = this.bridge.getWebView();

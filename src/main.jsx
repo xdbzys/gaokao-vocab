@@ -12,8 +12,8 @@ import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, pre
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.40.0';
-const APP_VERSION_CODE = 191;
+const APP_VERSION = '2.41.0';
+const APP_VERSION_CODE = 192;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -9305,6 +9305,8 @@ function App() {
   const [downloadedApkUrl, setDownloadedApkUrl] = useState(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [apkDownloadProgress, setApkDownloadProgress] = useState(0);
+  const [inAppDownloading, setInAppDownloading] = useState(false);
+  const [inAppDownloadError, setInAppDownloadError] = useState('');
   const [updateChangelog, setUpdateChangelog] = useState('');
   const [updateVersion, setUpdateVersion] = useState('');
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
@@ -9471,6 +9473,32 @@ function App() {
       }, 1500);
       return () => clearTimeout(timer);
     }
+  }, []);
+
+  // 监听原生ApkUpdater插件的下载进度事件
+  useEffect(() => {
+    if (!isNativeApp) return;
+    let pluginRef = null;
+    try {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkUpdater) {
+        pluginRef = window.Capacitor.Plugins.ApkUpdater;
+        pluginRef.addListener('apkDownloadProgress', (data) => {
+          if (data.progress !== undefined) {
+            setApkDownloadProgress(data.progress);
+            if (data.progress >= 100) {
+              setInAppDownloading(false);
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('[ApkUpdater] Event listener setup failed:', e);
+    }
+    return () => {
+      if (pluginRef && pluginRef.removeAllListeners) {
+        try { pluginRef.removeAllListeners('apkDownloadProgress'); } catch {}
+      }
+    };
   }, []);
 
   // 已掌握词库：根据 progress 动态更新，按 term 去重
@@ -10805,9 +10833,29 @@ function App() {
 
         setUpdateVersion(version);
         setUpdateChangelog(changelog);
-        // 不再静默下载（Gitee raw 容易被 WAF 拦截），改为提示用户手动下载
-        if (!silent) {
-          setCloudStatus('发现新版本，点击下方按钮前往下载');
+
+        // 原生APP：使用ApkUpdater插件静默后台下载APK
+        const apkUpdaterPlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkUpdater;
+        if (isNativeApp && apkUpdaterPlugin) {
+          setInAppDownloading(true);
+          setApkDownloadProgress(0);
+          if (!silent) setCloudStatus('发现新版本，正在后台下载...');
+          const apkDownloadUrl = data.apkUrl || 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
+          apkUpdaterPlugin.downloadAndInstall({ url: apkDownloadUrl })
+            .then((result) => {
+              console.log('[Update] Silent download complete:', result);
+              setInAppDownloading(false);
+              setCloudStatus('下载完成，请在弹出的安装界面中点击"安装"');
+            })
+            .catch((err) => {
+              console.warn('[Update] Silent download failed:', err);
+              setInAppDownloading(false);
+              setCloudStatus('发现新版本，点击下方"立即更新"手动下载');
+            });
+        } else {
+          if (!silent) {
+            setCloudStatus('发现新版本，点击下方按钮前往下载');
+          }
         }
       }
     } catch (e) {
@@ -10823,42 +10871,72 @@ function App() {
     }
   }
 
-  // 执行APP更新：下载APK并安装
+  // 执行APP更新：应用内下载APK并安装（不跳转浏览器）
   async function applyUpdate() {
     if (!updateInfo || !updateInfo.hasUpdate) return;
+
+    // 优先使用原生ApkUpdater插件进行应用内下载安装
+    const apkUpdaterPlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkUpdater;
+    if (apkUpdaterPlugin && isNativeApp) {
+      setInAppDownloading(true);
+      setInAppDownloadError('');
+      setApkDownloadProgress(0);
+      setUpdateInfo(prev => ({ ...prev, updating: true }));
+      setCloudStatus('正在下载更新包...');
+
+      // 多个下载源，逐一尝试
+      const downloadSources = [
+        'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk',
+        'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/android/app/build/outputs/apk/debug/app-debug.apk',
+        'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk',
+      ];
+
+      for (let i = 0; i < downloadSources.length; i++) {
+        const apkUrl = downloadSources[i];
+        try {
+          setCloudStatus(`正在从下载源 ${i + 1}/${downloadSources.length} 下载...`);
+          const result = await apkUpdaterPlugin.downloadAndInstall({ url: apkUrl });
+          // 如果成功，安装界面已弹出
+          setCloudStatus('下载完成，请在弹出的安装界面中点击"安装"');
+          setUpdateInfo(prev => ({ ...prev, updating: false }));
+          setInAppDownloading(false);
+          return;
+        } catch (e) {
+          console.warn(`[ApkUpdater] Source ${i + 1} failed:`, e);
+          setCloudStatus(`下载源 ${i + 1} 失败，尝试下一个...`);
+        }
+      }
+
+      // 所有原生下载源都失败，回退到浏览器
+      setInAppDownloading(false);
+      setInAppDownloadError('应用内下载失败，正在打开浏览器下载...');
+      setCloudStatus('应用内下载失败，正在尝试浏览器下载...');
+      setUpdateInfo(prev => ({ ...prev, updating: false }));
+
+      // 浏览器回退
+      const fallbackUrl = downloadSources[0];
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+        try { await Capacitor.Plugins.Browser.open({ url: fallbackUrl }); return; } catch {}
+      }
+      window.open(fallbackUrl, '_blank');
+      return;
+    }
+
+    // 非原生环境或插件不可用：使用浏览器下载
     setUpdateInfo(prev => ({ ...prev, updating: true }));
     setCloudStatus('正在打开下载页面...');
-
-    // 多个下载源，逐一尝试
-    const downloadSources = [
-      { name: 'Gitee（推荐）', url: 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk' },
-      { name: 'jsdelivr CDN', url: 'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/android/app/build/outputs/apk/debug/app-debug.apk' },
-      { name: 'GitHub', url: 'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk' },
-    ];
-
+    const apkUrl = 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
     try {
-      // 优先尝试 Gitee
-      const apkUrl = downloadSources[0].url;
-      let opened = false;
       if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-        try {
-          await Capacitor.Plugins.Browser.open({ url: apkUrl });
-          opened = true;
-        } catch {}
-      }
-      if (!opened) {
+        try { await Capacitor.Plugins.Browser.open({ url: apkUrl }); } catch {}
+      } else {
         window.open(apkUrl, '_blank');
       }
-      // 提示用户：如果打不开，提供其他下载源
-      const altLinks = downloadSources.slice(1).map(s => `${s.name}: ${s.url}`).join('\n');
-      setCloudStatus(`已打开下载页面，下载完成后请安装。\n\n如果页面打不开，请手动复制以下链接到浏览器：\n${altLinks}`);
-      setUpdateInfo(prev => ({ ...prev, updating: false }));
+      setCloudStatus('已打开下载页面，下载完成后请安装。');
     } catch (e) {
-      // 全部失败，显示所有下载链接让用户手动选择
-      const allLinks = downloadSources.map(s => `${s.name}:\n${s.url}`).join('\n\n');
-      setCloudStatus(`自动打开失败，请手动复制以下链接到浏览器下载：\n\n${allLinks}`);
-      setUpdateInfo(prev => ({ ...prev, updating: false }));
+      setCloudStatus(`打开失败：${e.message}`);
     }
+    setUpdateInfo(prev => ({ ...prev, updating: false }));
   }
 
   // 对比记忆模块（基于 seed 数据，不依赖词库列表）
@@ -12312,8 +12390,25 @@ function App() {
                   <>
                     <p className="updateNewVersion">发现新版本 v{updateInfo.version}</p>
                     <pre className="updateLog">{updateInfo.changelog || updateInfo.updateLog}</pre>
-                    <button className="primary" onClick={applyUpdate} disabled={updateInfo.updating} style={{ marginTop: 8 }}>
-                      {updateInfo.updating ? '更新中...' : '立即更新'}
+                    {inAppDownloading && (
+                      <div style={{ marginTop: 10, marginBottom: 8 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>下载进度</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>{apkDownloadProgress}%</span>
+                        </div>
+                        <div style={{ background: 'var(--bg-tertiary)', borderRadius: 10, height: 8, overflow: 'hidden' }}>
+                          <div style={{
+                            background: 'linear-gradient(90deg, var(--primary), var(--primary-dark))',
+                            height: '100%',
+                            width: `${apkDownloadProgress}%`,
+                            borderRadius: 10,
+                            transition: 'width 0.3s ease',
+                          }} />
+                        </div>
+                      </div>
+                    )}
+                    <button className="primary" onClick={applyUpdate} disabled={updateInfo.updating || inAppDownloading} style={{ marginTop: 8 }}>
+                      {inAppDownloading ? `下载中 ${apkDownloadProgress}%` : (updateInfo.updating ? '更新中...' : '立即更新')}
                     </button>
                   </>
                 ) : (
@@ -12525,6 +12620,23 @@ function App() {
                       <li key={i}><span className="updateModalDot" /><span>{line.trim().replace(/^[-\d.]+\s*/, '')}</span></li>
                     ))}
                   </ul>
+                  {inAppDownloading && (
+                    <div style={{ marginTop: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                        <span style={{ fontSize: 13, color: '#6b7280' }}>正在后台下载...</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#3b82f6' }}>{apkDownloadProgress}%</span>
+                      </div>
+                      <div style={{ background: '#e5e7eb', borderRadius: 10, height: 6, overflow: 'hidden' }}>
+                        <div style={{
+                          background: 'linear-gradient(90deg, #3b82f6, #2563eb)',
+                          height: '100%',
+                          width: `${apkDownloadProgress}%`,
+                          borderRadius: 10,
+                          transition: 'width 0.3s ease',
+                        }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="updateModalFooter">
                   <button className="updateBtnGhost" onClick={() => {
@@ -12534,12 +12646,38 @@ function App() {
                   }}>下次再说</button>
                   <button className="updateBtnPrimary" onClick={() => {
                     setShowAnnouncementModal(false);
-                    // 使用 GitHub Pages 托管的 APK 链接（国内访问更稳定）
-                    const url = 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
-                    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-                      Capacitor.Plugins.Browser.open({ url });
+                    setSection('settings');
+                    // 如果静默下载已在进行中，直接跳转到设置页显示进度
+                    if (inAppDownloading) return;
+                    // 优先使用应用内下载安装（不跳转浏览器）
+                    const apkUpdaterPlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkUpdater;
+                    if (apkUpdaterPlugin && isNativeApp) {
+                      setInAppDownloading(true);
+                      setApkDownloadProgress(0);
+                      setCloudStatus('正在下载更新包...');
+                      apkUpdaterPlugin.downloadAndInstall({ url: 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk' })
+                        .then(() => {
+                          setCloudStatus('下载完成，请在弹出的安装界面中点击"安装"');
+                          setInAppDownloading(false);
+                        })
+                        .catch((e) => {
+                          console.warn('[ApkUpdater] Download failed:', e);
+                          setInAppDownloading(false);
+                          setCloudStatus('应用内下载失败，正在打开浏览器...');
+                          const url = 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
+                          if (window.Capacitor?.Plugins?.Browser) {
+                            Capacitor.Plugins.Browser.open({ url });
+                          } else {
+                            window.open(url, '_blank');
+                          }
+                        });
                     } else {
-                      window.open(url, '_blank');
+                      const url = 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
+                      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+                        Capacitor.Plugins.Browser.open({ url });
+                      } else {
+                        window.open(url, '_blank');
+                      }
                     }
                   }}>立即更新</button>
                 </div>
