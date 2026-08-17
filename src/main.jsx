@@ -7721,6 +7721,7 @@ function loadSettings() {
       dailyGoal: 50,
       speakRate: 0.78,
       mode: 'en-to-cn',
+      difficulty: 'easy',
       detailMode: 'brief',
       shuffleMode: false,
       autoJump: false,
@@ -7733,7 +7734,7 @@ function loadSettings() {
       ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')
     };
   } catch {
-    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: false, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false };
+    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: false, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false };
   }
 }
 
@@ -8870,6 +8871,24 @@ function getShortMeaning(text) {
   return stripPosPrefix(text);
 }
 
+// 判断两个释义是否共享中文实义字符（用于检测近义词）
+function meaningsShareChars(meaning1, meaning2) {
+  const m1 = stripPosPrefix(meaning1);
+  const m2 = stripPosPrefix(meaning2);
+  if (!m1 || !m2 || m1.length < 2 || m2.length < 2) return false;
+  // 常见虚词/功能字，不算近义
+  const ignoreChars = new Set('的了吗呢吧在是有了和与及或人事物地得');
+  const chars1 = new Set();
+  for (const c of m1) {
+    if (/[\u4e00-\u9fa5]/.test(c) && !ignoreChars.has(c)) chars1.add(c);
+  }
+  if (chars1.size === 0) return false;
+  for (const c of m2) {
+    if (/[\u4e00-\u9fa5]/.test(c) && !ignoreChars.has(c) && chars1.has(c)) return true;
+  }
+  return false;
+}
+
 function extractExamples(text) {
   const m = text.match(/(?:例句|example)\s*[:：]\s*(.+)$/i);
   if (!m) return [];
@@ -9671,7 +9690,7 @@ function App() {
   // 显示用的当前单词：答题后或闪卡展示释义后使用锁定的单词，防止 toggleProgress 改变 current 导致显示不匹配
   const displayCurrent = forceShowItem || ((selected || showBack) && lockedCurrent.current) || current;
 
-  // 问题1：4个选项（1正确+3干扰项）—— 排除易混/同义/反义词干扰
+  // 问题1：4个选项（1正确+3干扰项）—— 根据难度模式选择干扰项策略
   const options = useMemo(() => {
     const item = displayCurrent || current;
     if (!item) return [];
@@ -9683,43 +9702,160 @@ function App() {
       !b.id.includes('positive') && !b.id.includes('negative')
     );
     const normalWords = normalBooks.flatMap(b => b.items);
+    const difficulty = settings.difficulty || 'easy';
+    const itemPosCat = getPosCategory(item.pos);
+
     if (practiceMode === 'cn-to-en') {
-      // 中文选英文：用 term 做选项，排除空 term 和重复
+      // 中文选英文：用 term 做选项
       const correctTerm = item.term;
-      const pool = normalWords.filter(w => 
-        w.id !== item.id && 
-        w.term && w.term !== correctTerm
-      );
-      const wrongItems = shuffle(pool).slice(0, 3);
-      const values = [correctTerm, ...wrongItems.map(i => i.term)];
-      return shuffle(values);
+      const seenTerms = new Set([correctTerm.toLowerCase()]);
+
+      if (difficulty === 'hard') {
+        // 困难模式：优先用易混词(长得像的单词)和词族，其次用同词性
+        const confusing = findConfusingWords(correctTerm, normalWords);
+        const family = findWordFamily(correctTerm, normalWords);
+        const candidates = [...confusing, ...family].filter(w =>
+          w.id !== item.id && w.term && w.term !== correctTerm &&
+          !seenTerms.has(w.term.toLowerCase())
+        );
+        let wrongItems = [];
+        for (const w of candidates) {
+          if (wrongItems.length >= 3) break;
+          if (!seenTerms.has(w.term.toLowerCase())) {
+            seenTerms.add(w.term.toLowerCase());
+            wrongItems.push(w);
+          }
+        }
+        // 不够3个，用同词性补充
+        if (wrongItems.length < 3) {
+          const samePosPool = normalWords.filter(w =>
+            w.id !== item.id && w.term && w.term !== correctTerm &&
+            !seenTerms.has(w.term.toLowerCase()) &&
+            getPosCategory(w.pos) === itemPosCat
+          );
+          for (const w of shuffle(samePosPool)) {
+            if (wrongItems.length >= 3) break;
+            seenTerms.add(w.term.toLowerCase());
+            wrongItems.push(w);
+          }
+        }
+        // 仍不够，用任意词补充
+        if (wrongItems.length < 3) {
+          const anyPool = normalWords.filter(w =>
+            w.id !== item.id && w.term && w.term !== correctTerm &&
+            !seenTerms.has(w.term.toLowerCase())
+          );
+          for (const w of shuffle(anyPool)) {
+            if (wrongItems.length >= 3) break;
+            seenTerms.add(w.term.toLowerCase());
+            wrongItems.push(w);
+          }
+        }
+        const values = [correctTerm, ...wrongItems.map(i => i.term)];
+        return shuffle(values);
+      } else {
+        // 简单模式：排除易混词和词族，优先用不同词性
+        const confusingSet = new Set(findConfusingWords(correctTerm, normalWords).map(w => w.term.toLowerCase()));
+        const familySet = new Set(findWordFamily(correctTerm, normalWords).map(w => w.term.toLowerCase()));
+        const pool = normalWords.filter(w =>
+          w.id !== item.id && w.term && w.term !== correctTerm &&
+          !confusingSet.has(w.term.toLowerCase()) &&
+          !familySet.has(w.term.toLowerCase()) &&
+          !seenTerms.has(w.term.toLowerCase())
+        );
+        // 优先不同词性
+        const diffPos = pool.filter(w => getPosCategory(w.pos) !== itemPosCat);
+        const samePos = pool.filter(w => getPosCategory(w.pos) === itemPosCat);
+        let wrongItems = shuffle(diffPos).slice(0, 3);
+        if (wrongItems.length < 3) {
+          for (const w of shuffle(samePos)) {
+            if (wrongItems.length >= 3) break;
+            wrongItems.push(w);
+          }
+        }
+        const values = [correctTerm, ...wrongItems.map(i => i.term)];
+        return shuffle(values);
+      }
     } else {
-      // 英文选中文：用 meaning 做选项，过滤无效释义并去重
+      // 英文选中文：用 meaning 做选项
       const correctShort = getShortMeaning(item.meaning);
-      const pool = normalWords.filter(w => {
+      const seenMeanings = new Set([correctShort]);
+
+      // 基础过滤：有效释义、含中文、非同义
+      const basePool = normalWords.filter(w => {
         if (!w.meaning) return false;
-        const shortMeaning = getShortMeaning(w.meaning);
-        // 排除：过短、纯英文、纯数字、与正确答案相同
-        if (shortMeaning.length < 2) return false;
-        if (!/[\u4e00-\u9fa5]/.test(shortMeaning)) return false; // 必须含中文
-        if (shortMeaning === correctShort) return false;
+        const sm = getShortMeaning(w.meaning);
+        if (sm.length < 2) return false;
+        if (!/[\u4e00-\u9fa5]/.test(sm)) return false;
+        if (sm === correctShort) return false; // 排除同义
         if (w.id === item.id) return false;
         if (w.term === item.term) return false;
         return true;
       });
-      const wrongItems = shuffle(pool).slice(0, 3);
-      // 用 shortMeaning 去重，确保4个选项各不相同
-      const seen = new Set([correctShort]);
-      const uniqueWrong = [];
-      for (const w of wrongItems) {
-        const sm = getShortMeaning(w.meaning);
-        if (!seen.has(sm)) { seen.add(sm); uniqueWrong.push(w.meaning); }
-        if (uniqueWrong.length >= 3) break;
+
+      if (difficulty === 'hard') {
+        // 困难模式：优先用近义词（共享中文实义字符），其次同词性
+        const nearSynonyms = basePool.filter(w => meaningsShareChars(item.meaning, w.meaning));
+        let wrongItems = shuffle(nearSynonyms).slice(0, 3);
+        // 不够3个，用同词性补充
+        if (wrongItems.length < 3) {
+          const samePosPool = basePool.filter(w =>
+            getPosCategory(w.pos) === itemPosCat &&
+            !wrongItems.includes(w)
+          );
+          for (const w of shuffle(samePosPool)) {
+            if (wrongItems.length >= 3) break;
+            wrongItems.push(w);
+          }
+        }
+        // 仍不够，用任意词补充
+        if (wrongItems.length < 3) {
+          const remaining = basePool.filter(w => !wrongItems.includes(w));
+          for (const w of shuffle(remaining)) {
+            if (wrongItems.length >= 3) break;
+            wrongItems.push(w);
+          }
+        }
+        // 去重
+        const uniqueWrong = [];
+        for (const w of wrongItems) {
+          const sm = getShortMeaning(w.meaning);
+          if (!seenMeanings.has(sm)) { seenMeanings.add(sm); uniqueWrong.push(w.meaning); }
+          if (uniqueWrong.length >= 3) break;
+        }
+        const values = [item.meaning, ...uniqueWrong];
+        return shuffle(values);
+      } else {
+        // 简单模式：排除近义词，优先不同词性
+        const farPool = basePool.filter(w => !meaningsShareChars(item.meaning, w.meaning));
+        const diffPos = farPool.filter(w => getPosCategory(w.pos) !== itemPosCat);
+        const samePos = farPool.filter(w => getPosCategory(w.pos) === itemPosCat);
+        let wrongItems = shuffle(diffPos).slice(0, 3);
+        if (wrongItems.length < 3) {
+          for (const w of shuffle(samePos)) {
+            if (wrongItems.length >= 3) break;
+            wrongItems.push(w);
+          }
+        }
+        // 仍不够，从近义词以外的词中补充
+        if (wrongItems.length < 3) {
+          const remaining = basePool.filter(w => !wrongItems.includes(w));
+          for (const w of shuffle(remaining)) {
+            if (wrongItems.length >= 3) break;
+            wrongItems.push(w);
+          }
+        }
+        const uniqueWrong = [];
+        for (const w of wrongItems) {
+          const sm = getShortMeaning(w.meaning);
+          if (!seenMeanings.has(sm)) { seenMeanings.add(sm); uniqueWrong.push(w.meaning); }
+          if (uniqueWrong.length >= 3) break;
+        }
+        const values = [item.meaning, ...uniqueWrong];
+        return shuffle(values);
       }
-      const values = [item.meaning, ...uniqueWrong];
-      return shuffle(values);
     }
-  }, [books, displayCurrent, current, practiceMode]);
+  }, [books, displayCurrent, current, practiceMode, settings.difficulty]);
 
   // 进度统计（按当前词库）
   const progressStats = useMemo(() => {
@@ -10805,6 +10941,12 @@ function App() {
               className="quickToggleBtn modeBtn"
               onClick={() => { const modes = choiceModes.map(m => m.id); const cur = modes.indexOf(practiceMode); const next = modes[(cur + 1) % modes.length]; setPracticeMode(next); setSettings(s => ({ ...s, mode: next })); saveSettings({ ...settings, mode: next }); setSelected(''); setShowBack(false); }}
             >📖 {choiceModes.find(m => m.id === practiceMode)?.name || '英文选中文'}</button>
+            {practiceMode !== 'flashcard' && (
+              <button
+                className={`quickToggleBtn ${settings.difficulty === 'hard' ? 'hardOn' : 'easyOn'}`}
+                onClick={() => { const v = settings.difficulty === 'hard' ? 'easy' : 'hard'; setSettings(s => ({ ...s, difficulty: v })); saveSettings({ ...settings, difficulty: v }); setSelected(''); }}
+              >{settings.difficulty === 'hard' ? '🔥 困难' : '💡 简单'}</button>
+            )}
             <button
               className={`quickToggleBtn ${settings.shuffleMode ? 'shuffleOn' : 'shuffleOff'}`}
               onClick={() => { setSettings(s => ({ ...s, shuffleMode: !s.shuffleMode })); saveSettings({ ...settings, shuffleMode: !settings.shuffleMode }); }}
@@ -12078,6 +12220,12 @@ function App() {
             <label>默认背诵模式
               <select value={settings.mode} onChange={e => { setSettings(s => ({ ...s, mode: e.target.value })); saveSettings({ ...settings, mode: e.target.value }); }}>
                 {choiceModes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+              </select>
+            </label>
+            <label>默认难度
+              <select value={settings.difficulty || 'easy'} onChange={e => { const v = e.target.value; setSettings(s => ({ ...s, difficulty: v })); saveSettings({ ...settings, difficulty: v }); }}>
+                <option value="easy">简单（无近义词，差距大）</option>
+                <option value="hard">困难（近义词/易混词/同词性）</option>
               </select>
             </label>
             <label>发音语速

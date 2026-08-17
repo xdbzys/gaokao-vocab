@@ -956,6 +956,16 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   background: var(--bg-secondary);
   color: var(--text-tertiary);
 }
+.quickToggleBtn.hardOn {
+  background: #dc262615;
+  color: #dc2626;
+  font-weight: 600;
+}
+.quickToggleBtn.easyOn {
+  background: #0891b215;
+  color: #0891b2;
+  font-weight: 600;
+}
 
 /* ===== 词根词缀 ===== */
 .sectionTitle {
