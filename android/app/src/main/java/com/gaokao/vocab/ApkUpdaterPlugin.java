@@ -181,12 +181,15 @@ public class ApkUpdaterPlugin extends Plugin {
                 }
 
                 // Install APK (on main thread, guarded)
+                // apkFile 在下载过程中被重新赋值，非 effectively final，
+                // 嵌套 lambda 引用需先复制为 final（否则 javac 报错，CI 构建失败）
+                final File apkToInstall = apkFile;
                 mainHandler.post(() -> {
                     try {
-                        installApk(ctx, apkFile);
+                        installApk(ctx, apkToInstall);
                         JSObject result = new JSObject();
                         result.put("success", true);
-                        result.put("path", apkFile.getAbsolutePath());
+                        result.put("path", apkToInstall.getAbsolutePath());
                         result.put("installed", true);
                         finalCall.resolve(result);
                     } catch (Exception e) {
