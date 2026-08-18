@@ -111,6 +111,29 @@ jobs:
           name: gaokao-vocab-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
+      # v2.43.0: 把 APK 镜像提交进仓库，供 jsDelivr CDN 直链下载。
+      # 旧版(2.41.0)应用内更新的第2下载源硬编码为 jsDelivr @master 路径，
+      # 此步骤保证该源始终有最新 APK（[skip ci] 防止构建死循环）
+      - name: Mirror APK into repo (jsDelivr download source)
+        continue-on-error: true
+        run: |
+          git config user.name "ci-bot"
+          git config user.email "ci@bot.com"
+          git add -f android/app/build/outputs/apk/debug/app-debug.apk
+          if git diff --cached --quiet; then
+            echo "APK unchanged, skip mirror commit"
+          else
+            git commit -m "chore: mirror APK build #${{ github.run_number }} for jsDelivr [skip ci]"
+            git push
+          fi
+
+      # 刷新 jsDelivr 对 @master 分支文件的 CDN 缓存，保证直链立即拿到新 APK
+      - name: Purge jsDelivr CDN cache
+        continue-on-error: true
+        run: |
+          sleep 20
+          curl -s -m 120 "https://purge.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/android/app/build/outputs/apk/debug/app-debug.apk" || echo "purge failed (non-fatal)"
+
       - name: Copy APK to dist
         run: cp android/app/build/outputs/apk/debug/app-debug.apk dist/app-debug.apk
 
