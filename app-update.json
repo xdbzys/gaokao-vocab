@@ -1,8 +1,8 @@
 {
   "version": "2.43.0",
-  "versionCode": 192,
-  "changelog": "当前为稳定版本。\n\n【关于近期闪退问题的说明】\n部分用户从 2.41.0 升级时遇到闪退，原因已定位：旧版更新组件在后台线程直接调起安装器导致崩溃。为保护 2.41.0 用户的正常使用，更新通道已暂时冻结，2.41.0 现已恢复稳定。\n\n【如需升级到新版本 2.43.0】\n新版本包含：关联词全面审计修正、高考总汇词库(6612词)、闪退与更新机制修复。建议通过以下国内直链下载安装包后升级：\nhttps://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/android/app/build/outputs/apk/debug/app-debug.apk",
-  "devNotes": "v2.41.0 freeze: versionCode pinned to 192 to stop the crashing silent-update path on 2.41.0 installs (old plugin fires installer from background thread). Web self-update path keyed on version field; bumped independently when native channel reopens.",
-  "apkUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/android/app/build/outputs/apk/debug/app-debug.apk",
+  "versionCode": 194,
+  "changelog": "新版本 2.43.0 已发布，包含以下更新：\n\n- 关联词全面修正：picture 关联 depict/picturesque/depiction 等真实词族，拉黑 150+ 组错误关联\n- 新增高考总汇词库 6612 词（含词性+中文释义，可全库搜索）\n- 修复闪退问题，重写更新组件，升级后可正常应用内更新\n\n下载安装方法（推荐）：\n复制下方链接，用手机浏览器打开，下载后点击安装即可（学习记录不会丢失）：\nhttps://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/android/app/build/outputs/apk/debug/app-debug.apk\n\n提示：安装 2.43.0 后，以后更新会自动完成，无需再手动下载。",
+  "devNotes": "v2.43.0 push-link mode: versionCode=194 makes 2.41.0 clients see the update and auto-show the announcement popup with the download link; apkUrl intentionally EMPTY so the crashing silent-download branch (silent && hasUpdate && apkUrl) never fires. Manual '立即更新' still available; sources all serve valid 2.43.0 APK.",
+  "apkUrl": "",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
