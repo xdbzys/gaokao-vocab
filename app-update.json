@@ -1,8 +1,8 @@
 {
-  "version": "2.42.0",
-  "versionCode": 193,
-  "changelog": "v2.42.0 困难模式选项词汇解析\n\n【新增】\n- 困难模式答题后新增\"选项词汇\"面板\n- 展示全部4个选项的英文单词+中文释义+词性\n- 正确答案绿色标注，误选项红色标注\n- 点击任意选项词可跳转该单词完整考点（核心考点/常考要点/例句/搭配/变形）\n- 不仅掌握题目单词，干扰词（近义词/易混词）一并掌握\n- 点击选项词自动朗读该单词\n\n【优化】\n- 选项→单词映射覆盖全部词库，跳转更精准",
-  "devNotes": "feat: hard mode post-answer option words panel; click any option to jump to its word detail/exam points; bump to 2.42.0/193",
-  "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk",
+  "version": "2.43.0",
+  "versionCode": 194,
+  "changelog": "v2.43.0 关联词全面审计 + 高考总汇词库 + 闪退/更新修复\n\n【修复】\n- 修复部分情况闪退：总汇词条详情页字段缺失导致崩溃，已统一兜底\n- 修复无法更新到 2.42.0：更新源改为 GitHub Releases 直链优先（Gitee 被防火墙拦截导致下载失败），多源自动切换\n- 更新包下载增加完整性校验（防下载到错误页面），安装前校验 APK 合法性\n- Android 8+ 自动引导开启「安装未知应用」权限，静默预下载+手动确认安装\n\n【关联词全面检测】\n- 对全词库 1341 组关联对逐一人工复核，拉黑 150+ 组假关联（如 conference×confuse/confident、bride×bridge、bus×business）\n- 黑名单双向对称化，杜绝方向遗漏\n- picture 关联词修正为真实词族：depict(v. 描绘)、picturesque(adj. 如画的)、depiction(n. 描写)\n- 新增 62 组人工校对词族（see→sight/eyesight/insight、take→mistake/overtake 等）\n\n【高考总汇词库】\n- 新增「高考总汇词库(6612词)」：高考3500 + 人教版高中全模块 + 四六级拓展 + 词族拓展，去重合并\n- 全部词条含词性+中文释义，可背诵、可全库搜索\n- 3500 词库验证：3601 词条全部收录进总汇词库\n- 不在词库内的关联词/派生词自动显示「词性 中文」",
+  "devNotes": "v2.43.0: full related-word audit with false-cognate blacklist + supplement families; new 6600+ master vocab; crash fixes (makeItem defaults); GitHub-Downloads-first updater with APK validation",
+  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }

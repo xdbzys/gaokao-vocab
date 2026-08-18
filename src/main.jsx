@@ -8,12 +8,20 @@ import * as pdfjsLib from 'pdfjs-dist';
 import './styles.css';
 import { getWordEnrichment } from './wordEnrichment';
 import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, presentParticipleRules, nounPluralRules } from './wordTransformations';
+import { masterVocabSeed, masterVocabLookup } from './gaokaoMasterVocab';
 
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.42.0';
-const APP_VERSION_CODE = 193;
+const APP_VERSION = '2.43.0';
+const APP_VERSION_CODE = 194;
+// v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
+// 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
+const APK_DOWNLOAD_SOURCES = [
+  { name: 'GitHub Releases', url: 'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk' },
+  { name: 'GitHub Pages', url: 'https://xdbzys.github.io/gaokao-vocab/app-debug.apk' },
+  { name: 'Gitee', url: 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk' },
+];
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -3801,7 +3809,13 @@ function makeItem(row, type, index) {
   const [term, pos, meaning, frequency, corePoints, allPoints, examples] = row;
   return {
     id: `${type}-${index}-${term}`,
-    type, term, pos, meaning, frequency, corePoints, allPoints, examples,
+    type, term, pos, meaning,
+    // v2.43.0 修复闪退：4元素精简词条（总汇词库）解构后 corePoints 等为 undefined，
+    // 详情页 .map() 直接崩溃；此处统一兜底为空数组
+    frequency: frequency || '拓展',
+    corePoints: Array.isArray(corePoints) ? corePoints : [],
+    allPoints: Array.isArray(allPoints) ? allPoints : [],
+    examples: Array.isArray(examples) ? examples : [],
     phonetic: generatePhonetic(term),
     notes: '',
     source: '内置高考词库'
@@ -7417,12 +7431,124 @@ const seedWords3500 = [
 ];
 
 
+// v2.43.0 人工校对词族补充表：算法无法覆盖的真实词族（含词性+中文）
+// 不在词库内的关联词会以「单词 词性 中文」形式展示
+// （如 picture → depict v. 描绘，彻底解决“图片关联词全是假关联”的问题）
+const WORD_FAMILY_SUPPLEMENT_RAW = {
+  picture: [['picturesque', 'adj.', '如画的；别致的'], ['depict', 'v.', '描绘；描述'], ['depiction', 'n.', '描写；描绘']],
+  see: [['sight', 'n.', '视力；景象'], ['eyesight', 'n.', '视力'], ['insight', 'n.', '洞察力；见识']],
+  speak: [['speech', 'n.', '演讲；言语'], ['speechless', 'adj.', '说不出话的']],
+  think: [['thought', 'n.', '想法；思想'], ['thoughtful', 'adj.', '深思的；体贴的'], ['thank', 'v.', '感谢']],
+  two: [['twice', 'adv.', '两次；两倍'], ['twelve', 'num.', '十二'], ['twenty', 'num.', '二十'], ['between', 'prep.', '在……之间']],
+  five: [['fifteen', 'num.', '十五'], ['fifty', 'num.', '五十']],
+  die: [['dead', 'adj.', '死的'], ['death', 'n.', '死亡'], ['deadly', 'adj.', '致命的'], ['deadline', 'n.', '截止期限']],
+  food: [['feed', 'v.', '喂养；饲养'], ['feedback', 'n.', '反馈']],
+  blood: [['bleed', 'v.', '流血'], ['bloody', 'adj.', '血腥的']],
+  sell: [['sale', 'n.', '出售；廉价销售'], ['salesman', 'n.', '售货员']],
+  lose: [['loss', 'n.', '损失'], ['lost', 'adj.', '迷失的；丢失的']],
+  long: [['length', 'n.', '长度'], ['lengthen', 'v.', '加长；延长']],
+  broad: [['breadth', 'n.', '宽度'], ['broaden', 'v.', '拓宽']],
+  heal: [['health', 'n.', '健康'], ['healthy', 'adj.', '健康的']],
+  poor: [['poverty', 'n.', '贫穷；缺乏']],
+  rich: [['enrich', 'v.', '使丰富；充实']],
+  pride: [['proud', 'adj.', '自豪的'], ['proudly', 'adv.', '自豪地']],
+  shame: [['ashamed', 'adj.', '羞愧的'], ['shameful', 'adj.', '可耻的']],
+  honor: [['honest', 'adj.', '诚实的'], ['honesty', 'n.', '诚实']],
+  joy: [['enjoy', 'v.', '享受；欣赏'], ['enjoyable', 'adj.', '令人愉快的'], ['joyful', 'adj.', '欢喜的']],
+  like: [['dislike', 'v.', '不喜欢'], ['unlike', 'prep.', '不像'], ['alike', 'adj.', '相似的']],
+  love: [['beloved', 'adj.', '心爱的']],
+  sleep: [['asleep', 'adj.', '睡着的'], ['sleepy', 'adj.', '困倦的'], ['sleepless', 'adj.', '失眠的']],
+  wake: [['awake', 'adj.', '醒着的'], ['waken', 'v.', '唤醒']],
+  stand: [['understand', 'v.', '理解'], ['outstanding', 'adj.', '杰出的'], ['standpoint', 'n.', '立场；观点'], ['withstand', 'v.', '经受；承受']],
+  sit: [['seat', 'n./v.', '座位；使坐下']],
+  fly: [['flight', 'n.', '航班；飞行']],
+  ride: [['road', 'n.', '道路']],
+  take: [['mistake', 'n./v.', '错误；误解'], ['overtake', 'v.', '超过；超车'], ['undertake', 'v.', '承担；从事']],
+  get: [['forget', 'v.', '忘记'], ['forgetful', 'adj.', '健忘的']],
+  put: [['input', 'n./v.', '输入'], ['output', 'n.', '输出']],
+  set: [['sunset', 'n.', '日落'], ['outset', 'n.', '开始'], ['upset', 'adj./v.', '心烦的；打翻']],
+  do: [['undo', 'v.', '撤销；解开']],
+  look: [['outlook', 'n.', '前景；观点'], ['overlook', 'v.', '忽视；俯视'], ['onlooker', 'n.', '旁观者']],
+  door: [['indoor', 'adj.', '室内的'], ['outdoor', 'adj.', '户外的'], ['outdoors', 'adv.', '在户外']],
+  sheep: [['shepherd', 'n.', '牧羊人']],
+  city: [['citizen', 'n.', '市民'], ['citizenship', 'n.', '公民身份']],
+  school: [['scholar', 'n.', '学者'], ['scholarship', 'n.', '奖学金；学问']],
+  moon: [['month', 'n.', '月份'], ['Monday', 'n.', '星期一']],
+  sun: [['Sunday', 'n.', '星期日']],
+  head: [['ahead', 'adv.', '在前面'], ['forehead', 'n.', '前额'], ['overhead', 'adv.', '在头顶上'], ['headline', 'n.', '标题']],
+  hand: [['handsome', 'adj.', '英俊的'], ['handful', 'n.', '一把；少数']],
+  eye: [['eyebrow', 'n.', '眉毛'], ['eyewitness', 'n.', '目击者']],
+  arm: [['armchair', 'n.', '扶手椅']],
+  way: [['subway', 'n.', '地铁'], ['railway', 'n.', '铁路'], ['highway', 'n.', '公路']],
+  work: [['network', 'n.', '网络']],
+  house: [['household', 'n.', '家庭；一家人']],
+  man: [['chairman', 'n.', '主席'], ['manly', 'adj.', '有男子气概的']],
+  self: [['myself', 'pron.', '我自己'], ['yourself', 'pron.', '你自己'], ['himself', 'pron.', '他自己'], ['herself', 'pron.', '她自己'], ['itself', 'pron.', '它自己'], ['ourselves', 'pron.', '我们自己'], ['themselves', 'pron.', '他们自己']],
+  old: [['elder', 'n.', '长者'], ['elderly', 'adj.', '年长的']],
+  new: [['renew', 'v.', '更新；续借']],
+  high: [['height', 'n.', '高度']],
+  young: [['youth', 'n.', '青年；青春'], ['youthful', 'adj.', '年轻的']],
+  far: [['farther', 'adj./adv.', '更远的'], ['farthest', 'adj./adv.', '最远的']],
+  hungry: [['hunger', 'n.', '饥饿']],
+  sorry: [['sorrow', 'n.', '悲伤']],
+  safe: [['save', 'v.', '拯救；节省']],
+  day: [['daily', 'adj./adv.', '每日的'], ['midday', 'n.', '正午']],
+  night: [['midnight', 'n.', '午夜'], ['tonight', 'adv.', '今晚'], ['nightmare', 'n.', '噩梦']],
+  light: [['enlighten', 'v.', '启发；开导']],
+  right: [['copyright', 'n.', '版权']],
+  name: [['nickname', 'n.', '昵称；绰号']],
+};
+// 双向索引：depict → picture 也能找到
+const WORD_FAMILY_SUPPLEMENT = {};
+for (const [head, list] of Object.entries(WORD_FAMILY_SUPPLEMENT_RAW)) {
+  const h = head.toLowerCase();
+  for (const [t, p, m] of list) {
+    const k = t.toLowerCase();
+    if (!WORD_FAMILY_SUPPLEMENT[h]) WORD_FAMILY_SUPPLEMENT[h] = [];
+    WORD_FAMILY_SUPPLEMENT[h].push({ term: t, pos: p, meaning: m });
+    if (!WORD_FAMILY_SUPPLEMENT[k]) WORD_FAMILY_SUPPLEMENT[k] = [];
+    WORD_FAMILY_SUPPLEMENT[k].push({ term: head, pos: '', meaning: '', headOf: h });
+  }
+}
+
+// 获取词族补充（供 findWordFamily 使用）
+function getSupplementFamily(word) {
+  return WORD_FAMILY_SUPPLEMENT[word.toLowerCase().trim()] || [];
+}
+
+
+// v2.43.0 词族补充词并入高考总汇词库：depict/picturesque 等拓展词可搜索、可背诵
+const MASTER_SUPPLEMENT_TERMS = (() => {
+  const seen = new Set(masterVocabSeed.map(e => String(e[0]).toLowerCase()));
+  const out = [];
+  for (const [head, list] of Object.entries(WORD_FAMILY_SUPPLEMENT_RAW)) {
+    for (const [t, pp, mm] of list) {
+      const k = String(t).toLowerCase();
+      if (!seen.has(k)) { seen.add(k); out.push([t, pp, mm, '词族拓展']); }
+    }
+  }
+  for (const [t, pp, mm] of out) {
+    const k = String(t).toLowerCase();
+    if (!masterVocabLookup[k]) masterVocabLookup[k] = { pos: pp, meaning: mm };
+  }
+  return out;
+})();
+const MASTER_VOCAB_ALL = [...masterVocabSeed, ...MASTER_SUPPLEMENT_TERMS];
+
 const builtInBooks = [
   {
     id: 'gaokao-3500',
     name: '高考3500词',
     editable: false,
     items: makeAllItems(seedWords3500, 'word')
+  },
+  {
+    // v2.43.0 高考总汇词库：高考3500 + 人教版高中全模块 + CET4/6 拓展（去重）+ 词族拓展词
+    // 收录高考考察点全部单词，可用于背诵与全库搜索
+    id: 'gaokao-master',
+    name: `高考总汇词库(${MASTER_VOCAB_ALL.length}词)`,
+    editable: false,
+    items: makeAllItems(MASTER_VOCAB_ALL, 'word')
   },
   {
     id: 'gaokao-core',
@@ -8172,6 +8298,79 @@ function isFalseEtymology(word1, word2) {
   return blocked ? blocked.includes(w2) : false;
 }
 
+// v2.43.0 全面审计补充：对全词库1341组关联对逐一人工复核，
+// 以下词对拼写相近但词源/词义无关，一律屏蔽（自动双向对称，杜绝方向遗漏）
+const EXTRA_FALSE_PAIRS = [
+  ['accessible', 'accuse'],
+  ['act', 'actual'], ['active', 'actual'], ['actor', 'actual'],
+  ['bride', 'bridge'], ['bus', 'business'], ['bus', 'busy'],
+  ['candidate', 'candle'], ['cancel', 'cancer'],
+  ['candy', 'canteen'], ['car', 'care'], ['car', 'career'], ['car', 'careful'], ['car', 'careless'],
+  ['case', 'casual'], ['chaos', 'chase'],
+  ['classic', 'clause'], ['classical', 'clause'],
+  ['combination', 'component'], ['come', 'comment'],
+  ['compete', 'computer'], ['competence', 'computer'], ['competition', 'computer'],
+  ['conductor', 'contact'],
+  ['conference', 'confuse'], ['conference', 'confident'], ['confident', 'confuse'],
+  ['consist', 'consume'], ['consistent', 'consume'],
+  ['contain', 'continent'], ['container', 'continent'],
+  ['cope', 'copy'], ['cut', 'cute'],
+  ['data', 'date'], ['debate', 'debt'],
+  ['distance', 'distinction'], ['dive', 'division'], ['diverse', 'divorce'],
+  ['explode', 'explorer'],
+  ['far', 'fare'], ['fifteen', 'fifty'], ['float', 'flood'], ['food', 'foot'],
+  ['grade', 'grateful'], ['grape', 'graph'], ['great', 'greet'], ['great', 'greeting'], ['green', 'grey'],
+  ['hat', 'hate'], ['head', 'heat'], ['head', 'heating'],
+  ['her', 'here'], ['her', 'hero'], ['here', 'hero'], ['hole', 'holy'], ['hug', 'huge'],
+  ['intention', 'into'],
+  ['june', 'junior'], ['ladder', 'lady'], ['lamb', 'lamp'], ['leaf', 'leave'],
+  ['man', 'many'], ['manage', 'many'], ['manner', 'many'],
+  ['mend', 'mental'], ['mention', 'menu'], ['mine', 'minister'],
+  ['month', 'monument'], ['moral', 'more'],
+  ['not', 'note'], ['plane', 'plant'], ['planet', 'plant'],
+  ['polite', 'politics'], ['positive', 'post'], ['praise', 'pray'],
+  ['precise', 'pressure'], ['produce', 'protection'], ['promise', 'promote'],
+  ['prove', 'provided'], ['prove', 'providing'],
+  ['queen', 'queue'], ['quiet', 'quit'], ['quiet', 'quite'],
+  ['rat', 'rate'], ['relation', 'rely'], ['relationship', 'rely'],
+  ['restore', 'restriction'], ['reveal', 'revenue'], ['rid', 'ride'],
+  ['scare', 'scarf'], ['send', 'sentence'],
+  ['share', 'shark'], ['share', 'sharp'], ['share', 'sharpen'],
+  ['shoot', 'shout'], ['shore', 'short'], ['shore', 'shortly'], ['shore', 'shorts'], ['shot', 'shout'],
+  ['sit', 'situation'], ['soccer', 'social'], ['soccer', 'socialist'],
+  ['stair', 'star'], ['stair', 'stare'], ['station', 'stay'], ['steep', 'step'],
+  ['store', 'storm'], ['store', 'story'], ['strict', 'structure'],
+  ['sweat', 'sweet'], ['sweater', 'sweet'],
+  ['tap', 'tape'], ['tax', 'taxi'],
+  ['peace', 'peasant'],
+  ['the', 'they'], ['their', 'there'],
+  ['thread', 'threat'], ['thread', 'threaten'], ['thread', 'throat'],
+  ['threat', 'throat'], ['threaten', 'throat'],
+  ['tin', 'tiny'], ['ton', 'tone'], ['under', 'undo'], ['version', 'very'],
+  ['wag', 'wage'], ['wander', 'want'], ['win', 'wine'], ['wind', 'winter'], ['wine', 'winner'],
+  // 前缀规则误报（长得像前缀但词源无关）
+  ['free', 'freeze'], ['sand', 'sandwich'], ['word', 'world'],
+  ['war', 'warm'], ['war', 'ward'], ['war', 'warn'],
+  ['pain', 'paint'], ['bull', 'bullet'], ['rest', 'restaurant'], ['iron', 'irony'], ['sand', 'sandal'],
+];
+for (const [a, b] of EXTRA_FALSE_PAIRS) {
+  if (!FALSE_ETYMOLOGY_PAIRS[a]) FALSE_ETYMOLOGY_PAIRS[a] = [];
+  if (!FALSE_ETYMOLOGY_PAIRS[a].includes(b)) FALSE_ETYMOLOGY_PAIRS[a].push(b);
+  if (!FALSE_ETYMOLOGY_PAIRS[b]) FALSE_ETYMOLOGY_PAIRS[b] = [];
+  if (!FALSE_ETYMOLOGY_PAIRS[b].includes(a)) FALSE_ETYMOLOGY_PAIRS[b].push(a);
+}
+// v2.43.0 基础黑名单对称化：历史表有30组只写了单方向，
+// isFalseEtymology 只查 w1→w2 方向，漏配方向会导致假关联漏网
+{
+  const allKeys = Object.keys(FALSE_ETYMOLOGY_PAIRS);
+  for (const a of allKeys) {
+    for (const b of [...FALSE_ETYMOLOGY_PAIRS[a]]) {
+      if (!FALSE_ETYMOLOGY_PAIRS[b]) FALSE_ETYMOLOGY_PAIRS[b] = [];
+      if (!FALSE_ETYMOLOGY_PAIRS[b].includes(a)) FALSE_ETYMOLOGY_PAIRS[b].push(a);
+    }
+  }
+}
+
 // 隐藏同源词映射：词源相同但拼写差异大，算法难以自动检测的词对
 // 数据来源：Etymonline 在线词源词典交叉验证
 // 涵盖：muscle/mouse, salary/salt, hospital/hotel 等隐藏同源词
@@ -8388,6 +8587,36 @@ function findWordFamily(term, items) {
       related.push(item);
       seen.add(item.term);
     }
+  }
+
+  // 补充：人工校对词族表（v2.43.0）。词库里有则用真实条目；
+  // 没有则生成带词性+中文的拓展条目，保证「不在词库内的关联词」也能显示词性和中文释义
+  const supplements = getSupplementFamily(term);
+  for (const sup of supplements) {
+    const key = sup.term.toLowerCase();
+    if (key === term.toLowerCase() || seen.has(key)) continue;
+    const real = items.find(i => i.term.toLowerCase() === key);
+    if (real) {
+      related.push(real);
+      seen.add(real.term);
+      continue;
+    }
+    if (!sup.meaning) continue; // 反向映射条目无释义且词库无此词时跳过
+    related.push({
+      id: `supp-${key}`,
+      type: 'word',
+      term: sup.term,
+      pos: sup.pos || (masterVocabLookup[key] ? masterVocabLookup[key].pos : ''),
+      meaning: sup.meaning,
+      frequency: '拓展',
+      corePoints: [],
+      allPoints: [],
+      examples: [],
+      phonetic: '',
+      notes: '',
+      source: '高考总汇词库',
+    });
+    seen.add(key);
   }
 
   // 按词性分组排序
@@ -9631,6 +9860,21 @@ function App() {
     return allWords.find(item => item.term.toLowerCase() === w);
   }
 
+  // v2.43.0 词库外单词的词性+中文：优先当前词库，其次高考总汇词库
+  // 用于关联词/派生词/同反义词不在词库内时显示「词性 中文」
+  function extraWordInfo(word) {
+    const w = String(word || '').trim();
+    if (!w) return null;
+    const bank = findWordInBank(w);
+    if (bank) return getShortMeaning(bank.meaning);
+    const m = masterVocabLookup[w.toLowerCase()];
+    if (m && m.meaning) {
+      const mm = getShortMeaning(m.meaning) || m.meaning;
+      return (m.pos ? `${m.pos.replace(/\.$/, '')} ` : '') + mm;
+    }
+    return null;
+  }
+
   // 背诵页词汇列表（不受 section 切换影响，始终基于 studyBookIds）
   const learnItems = useMemo(() => {
     let items = learnActiveBook.items.filter(item => {
@@ -10861,17 +11105,18 @@ function App() {
         setUpdateChangelog(changelog);
 
         // 原生APP：使用ApkUpdater插件静默后台下载APK
+        // v2.43.0：静默模式只预下载不自动拉起安装器（后台拉起安装器在 Android 10+ 会被系统
+        // 拦截且部分机型会闪退），等用户进入"我的"页点"立即更新"时再安装已下载的包
         const apkUpdaterPlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkUpdater;
         if (isNativeApp && apkUpdaterPlugin) {
           setInAppDownloading(true);
           setApkDownloadProgress(0);
-          if (!silent) setCloudStatus('发现新版本，正在后台下载...');
-          const apkDownloadUrl = data.apkUrl || 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
-          apkUpdaterPlugin.downloadAndInstall({ url: apkDownloadUrl })
+          const apkDownloadUrl = APK_DOWNLOAD_SOURCES[0].url;
+          apkUpdaterPlugin.downloadAndInstall({ url: apkDownloadUrl, autoInstall: false })
             .then((result) => {
               console.log('[Update] Silent download complete:', result);
               setInAppDownloading(false);
-              setCloudStatus('下载完成，请在弹出的安装界面中点击"安装"');
+              setCloudStatus('新版本已就绪，请到「我的」页面点击"立即更新"完成安装');
             })
             .catch((err) => {
               console.warn('[Update] Silent download failed:', err);
@@ -10910,18 +11155,14 @@ function App() {
       setUpdateInfo(prev => ({ ...prev, updating: true }));
       setCloudStatus('正在下载更新包...');
 
-      // 多个下载源，逐一尝试
-      const downloadSources = [
-        'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk',
-        'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/android/app/build/outputs/apk/debug/app-debug.apk',
-        'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk',
-      ];
+      // 多个下载源，逐一尝试（v2.43.0：GitHub Releases 优先）
+      const downloadSources = APK_DOWNLOAD_SOURCES.map(s => s.url);
 
       for (let i = 0; i < downloadSources.length; i++) {
         const apkUrl = downloadSources[i];
         try {
-          setCloudStatus(`正在从下载源 ${i + 1}/${downloadSources.length} 下载...`);
-          const result = await apkUpdaterPlugin.downloadAndInstall({ url: apkUrl });
+          setCloudStatus(`正在从${APK_DOWNLOAD_SOURCES[i].name}下载（${i + 1}/${downloadSources.length}）...`);
+          const result = await apkUpdaterPlugin.downloadAndInstall({ url: apkUrl, autoInstall: true });
           // 如果成功，安装界面已弹出
           setCloudStatus('下载完成，请在弹出的安装界面中点击"安装"');
           setUpdateInfo(prev => ({ ...prev, updating: false }));
@@ -10929,7 +11170,7 @@ function App() {
           return;
         } catch (e) {
           console.warn(`[ApkUpdater] Source ${i + 1} failed:`, e);
-          setCloudStatus(`下载源 ${i + 1} 失败，尝试下一个...`);
+          setCloudStatus(`下载源${APK_DOWNLOAD_SOURCES[i].name}失败，尝试下一个...`);
         }
       }
 
@@ -10951,7 +11192,7 @@ function App() {
     // 非原生环境或插件不可用：使用浏览器下载
     setUpdateInfo(prev => ({ ...prev, updating: true }));
     setCloudStatus('正在打开下载页面...');
-    const apkUrl = 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
+    const apkUrl = APK_DOWNLOAD_SOURCES[0].url;
     try {
       if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
         try { await Capacitor.Plugins.Browser.open({ url: apkUrl }); } catch {}
@@ -11213,7 +11454,8 @@ function App() {
                             {enrichment.derivatives.map((d, i) => {
                               const derivWord = d.split(' ')[0];
                               const derivItem = allWords.find(w => w.term.toLowerCase() === derivWord.toLowerCase());
-                              return <span key={i} style={{ display: 'inline-block', background: derivItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (derivItem) { openDetailItem(derivItem); if (settings.navAutoSpeak !== false) speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
+                              const derivExtra = derivItem ? getShortMeaning(derivItem.meaning) : extraWordInfo(derivWord);
+                              return <span key={i} style={{ display: 'inline-block', background: derivItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (derivItem) { openDetailItem(derivItem); if (settings.navAutoSpeak !== false) speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}{derivExtra && <span style={{ opacity: 0.75, fontSize: 12 }}>（{derivExtra}）</span>}</span>;
                             })}
                           </div>
                         </div>
@@ -11225,7 +11467,8 @@ function App() {
                             {enrichment.synonyms.map((s, i) => {
                               const synWord = extractEnglish(s).split(/\s+/)[0];
                               const synItem = allWords.find(w => w.term.toLowerCase() === synWord.toLowerCase());
-                              return <span key={i} style={{ display: 'inline-block', background: synItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (synItem) { openDetailItem(synItem); if (settings.navAutoSpeak !== false) speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
+                              const synExtra = synItem ? '' : extraWordInfo(synWord);
+                              return <span key={i} style={{ display: 'inline-block', background: synItem ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (synItem) { openDetailItem(synItem); if (settings.navAutoSpeak !== false) speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}{synExtra && <span style={{ opacity: 0.75, fontSize: 12 }}>（{synExtra}）</span>}</span>;
                             })}
                           </div>
                         </div>
@@ -11237,7 +11480,8 @@ function App() {
                             {enrichment.antonyms.map((a, i) => {
                               const antWord = extractEnglish(a).split(/\s+/)[0];
                               const antItem = allWords.find(w => w.term.toLowerCase() === antWord.toLowerCase());
-                              return <span key={i} style={{ display: 'inline-block', background: antItem ? 'var(--danger-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (antItem) { openDetailItem(antItem); if (settings.navAutoSpeak !== false) speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}</span>;
+                              const antExtra = antItem ? '' : extraWordInfo(antWord);
+                              return <span key={i} style={{ display: 'inline-block', background: antItem ? 'var(--danger-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }} onClick={() => { if (antItem) { openDetailItem(antItem); if (settings.navAutoSpeak !== false) speak(antWord, settings.speakRate); } else { speak(antWord, settings.speakRate); } }}>{a}{antExtra && <span style={{ opacity: 0.75, fontSize: 12 }}>（{antExtra}）</span>}</span>;
                             })}
                           </div>
                         </div>
@@ -11262,12 +11506,16 @@ function App() {
                           <div className="points" style={{ marginTop: 8 }}>
                             <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>🔗 关联词族</p>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                              {allFamily.map(item => (
+                              {allFamily.map(item => {
+                                const inBank = !!findWordInBank(item.term);
+                                return (
                                 <span key={item.id} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }}
-                                  onClick={() => { openDetailItem(item); }}>
+                                  onClick={() => { if (inBank) openDetailItem(item); }}>
                                   {item.term} <small style={{ opacity: 0.7 }}>{item.pos}</small>
+                                  {!inBank && item.meaning && <small style={{ opacity: 0.75 }}>（{getShortMeaning(item.meaning) || item.meaning}）</small>}
                                 </span>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -12728,7 +12976,7 @@ function App() {
                       setInAppDownloading(true);
                       setApkDownloadProgress(0);
                       setCloudStatus('正在下载更新包...');
-                      apkUpdaterPlugin.downloadAndInstall({ url: 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk' })
+                      apkUpdaterPlugin.downloadAndInstall({ url: APK_DOWNLOAD_SOURCES[0].url, autoInstall: true })
                         .then(() => {
                           setCloudStatus('下载完成，请在弹出的安装界面中点击"安装"');
                           setInAppDownloading(false);
@@ -12737,7 +12985,7 @@ function App() {
                           console.warn('[ApkUpdater] Download failed:', e);
                           setInAppDownloading(false);
                           setCloudStatus('应用内下载失败，正在打开浏览器...');
-                          const url = 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
+                          const url = APK_DOWNLOAD_SOURCES[0].url;
                           if (window.Capacitor?.Plugins?.Browser) {
                             Capacitor.Plugins.Browser.open({ url });
                           } else {
@@ -12745,7 +12993,7 @@ function App() {
                           }
                         });
                     } else {
-                      const url = 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk';
+                      const url = APK_DOWNLOAD_SOURCES[0].url;
                       if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
                         Capacitor.Plugins.Browser.open({ url });
                       } else {
@@ -12916,9 +13164,9 @@ function App() {
                   <div className="detailSection detailWordForms">
                     <p className="detailSectionTitle">🔄 单词变形</p>
                     <div className="detailFormGrid">
-                      {enrichment.wordForms.noun && <div className="detailFormItem"><span className="detailFormLabel">名词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.noun)}>{enrichment.wordForms.noun}{findWordInBank(enrichment.wordForms.noun) && <span className="exampleZhInline">（{getShortMeaning(findWordInBank(enrichment.wordForms.noun).meaning)}）</span>}</span></div>}
-                      {enrichment.wordForms.adjective && <div className="detailFormItem"><span className="detailFormLabel">形容词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.adjective)}>{enrichment.wordForms.adjective}{findWordInBank(enrichment.wordForms.adjective) && <span className="exampleZhInline">（{getShortMeaning(findWordInBank(enrichment.wordForms.adjective).meaning)}）</span>}</span></div>}
-                      {enrichment.wordForms.adverb && <div className="detailFormItem"><span className="detailFormLabel">副词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.adverb)}>{enrichment.wordForms.adverb}{findWordInBank(enrichment.wordForms.adverb) && <span className="exampleZhInline">（{getShortMeaning(findWordInBank(enrichment.wordForms.adverb).meaning)}）</span>}</span></div>}
+                      {enrichment.wordForms.noun && <div className="detailFormItem"><span className="detailFormLabel">名词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.noun)}>{enrichment.wordForms.noun}{extraWordInfo(enrichment.wordForms.noun) && <span className="exampleZhInline">（{extraWordInfo(enrichment.wordForms.noun)}）</span>}</span></div>}
+                      {enrichment.wordForms.adjective && <div className="detailFormItem"><span className="detailFormLabel">形容词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.adjective)}>{enrichment.wordForms.adjective}{extraWordInfo(enrichment.wordForms.adjective) && <span className="exampleZhInline">（{extraWordInfo(enrichment.wordForms.adjective)}）</span>}</span></div>}
+                      {enrichment.wordForms.adverb && <div className="detailFormItem"><span className="detailFormLabel">副词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.adverb)}>{enrichment.wordForms.adverb}{extraWordInfo(enrichment.wordForms.adverb) && <span className="exampleZhInline">（{extraWordInfo(enrichment.wordForms.adverb)}）</span>}</span></div>}
                       {enrichment.wordForms.pastTense && <div className="detailFormItem"><span className="detailFormLabel">过去式</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.pastTense)}>{enrichment.wordForms.pastTense}</span></div>}
                       {enrichment.wordForms.pastParticiple && <div className="detailFormItem"><span className="detailFormLabel">过去分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.pastParticiple)}>{enrichment.wordForms.pastParticiple}</span></div>}
                       {enrichment.wordForms.presentParticiple && <div className="detailFormItem"><span className="detailFormLabel">现在分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.presentParticiple)}>{enrichment.wordForms.presentParticiple}</span></div>}
@@ -12996,10 +13244,12 @@ function App() {
                       <div className="detailTagWrap">
                         {allFamily.map(item => {
                           const isAiTagged = aiFamilyTerms.includes(item.term.toLowerCase());
+                          const inBank = !!findWordInBank(item.term);
                           return (
                             <button key={item.id} className={`detailFamilyBtn${isAiTagged ? ' aiTagged' : ''}`}
-                              onClick={() => openDetailItem(item)}>
+                              onClick={() => { if (inBank) openDetailItem(item); }}>
                               {item.term} <small>{item.pos}</small>
+                              {!inBank && item.meaning && <small style={{ opacity: 0.8 }}>（{getShortMeaning(item.meaning) || item.meaning}）</small>}
                               {isAiTagged && !localTerms.has(item.term.toLowerCase()) && <span className="aiDot">AI</span>}
                             </button>
                           );
