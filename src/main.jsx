@@ -12,8 +12,8 @@ import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, pre
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.41.0';
-const APP_VERSION_CODE = 192;
+const APP_VERSION = '2.42.0';
+const APP_VERSION_CODE = 193;
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
 const GITEE_REPO = 'app';
@@ -9885,6 +9885,32 @@ function App() {
     }
   }, [books, displayCurrent, current, practiceMode, settings.difficulty]);
 
+  // 选项 → 单词条目映射（困难模式答题后展示选项词汇，点击跳转该词考点）
+  const optionItemMap = useMemo(() => {
+    const item = displayCurrent || current;
+    if (!item || practiceMode === 'flashcard') return new Map();
+    // 从全部词库建索引（普通词库 + 特殊词库都可能有对应词）
+    const termIdx = new Map();
+    const meaningIdx = new Map();
+    books.forEach(b => b.items.forEach(w => {
+      if (w.term && !termIdx.has(w.term.toLowerCase())) termIdx.set(w.term.toLowerCase(), w);
+      if (w.meaning && !meaningIdx.has(w.meaning)) meaningIdx.set(w.meaning, w);
+    }));
+    const map = new Map();
+    options.forEach(opt => {
+      if (practiceMode === 'cn-to-en') {
+        if (opt === item.term) { map.set(opt, item); return; }
+        const w = termIdx.get(opt.toLowerCase());
+        if (w) map.set(opt, w);
+      } else {
+        if (opt === item.meaning) { map.set(opt, item); return; }
+        const w = meaningIdx.get(opt);
+        if (w) map.set(opt, w);
+      }
+    });
+    return map;
+  }, [options, books, displayCurrent, current, practiceMode]);
+
   // 进度统计（按当前词库）
   const progressStats = useMemo(() => {
     const bookItems = activeBook.items;
@@ -11113,6 +11139,53 @@ function App() {
                       {selected === (practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning) ? '✅ 回答正确' : `❌ 回答错误（你选了：${selected}）`}
                     </p>
                   )}
+                  {/* 困难模式：答题后展示全部选项词汇（英文+中文），点击跳转该词考点一并掌握 */}
+                  {selected && practiceMode !== 'flashcard' && (settings.difficulty === 'hard') && (() => {
+                    const right = practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning;
+                    return (
+                      <div className="points" style={{ marginTop: 8, marginBottom: 10 }}>
+                        <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 6 }}>🎯 选项词汇 · 点击查看考点</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {options.map(opt => {
+                            const w = optionItemMap.get(opt);
+                            const isRight = opt === right;
+                            const isPicked = opt === selected;
+                            const mainText = practiceMode === 'cn-to-en' ? opt : getShortMeaning(opt);
+                            return (
+                              <div key={opt}
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+                                  background: isRight ? 'rgba(22,163,74,0.10)' : (isPicked ? 'rgba(220,38,38,0.08)' : 'var(--bg-tertiary)'),
+                                  border: `1.5px solid ${isRight ? '#16a34a' : (isPicked ? '#dc2626' : 'var(--border-light)')}`,
+                                  borderRadius: 10, padding: '7px 10px',
+                                  cursor: w ? 'pointer' : 'default',
+                                }}
+                                onClick={() => { if (w) { openDetailItem(w); if (settings.navAutoSpeak !== false) speak(w.term, settings.speakRate); } }}
+                              >
+                                <span style={{ fontSize: 14, fontWeight: 700, color: isRight ? '#16a34a' : (isPicked ? '#dc2626' : 'inherit'), minWidth: 16 }}>
+                                  {isRight ? '✓' : (isPicked ? '✗' : '•')}
+                                </span>
+                                <span style={{ fontSize: 15, fontWeight: 600 }}>
+                                  {practiceMode === 'cn-to-en'
+                                    ? mainText
+                                    : <span style={{ fontWeight: 600 }}>{mainText}</span>}
+                                </span>
+                                {w && (
+                                  <span style={{ fontSize: 13, opacity: 0.8 }}>
+                                    {practiceMode === 'cn-to-en'
+                                      ? `— ${getShortMeaning(w.meaning)}`
+                                      : `— ${w.term}`}
+                                    {w.pos ? <small style={{ opacity: 0.7 }}>（{w.pos}）</small> : null}
+                                  </span>
+                                )}
+                                {w && <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--primary)', fontWeight: 600, whiteSpace: 'nowrap' }}>考点 ›</span>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
                   <h3>{displayCurrent.term} &middot; {displayCurrent.meaning}</h3>
                   <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>
                   <div className="points">

@@ -1,8 +1,8 @@
 {
-  "version": "2.41.0",
-  "versionCode": 192,
-  "changelog": "v2.41.0 难度选择 + 应用内更新\n\n【新增】\n- 背诵页添加难度选择：简单/困难两种模式\n- 简单模式：干扰项与正确答案差异大，优先不同词性\n- 困难模式：干扰项优先近义词和易混词，提高辨识难度\n- 两种模式均排除同义词（相同释义）作为干扰项\n- 困难模式无近义词时回退到同词性干扰\n- 应用内直接下载安装包更新，无需跳转浏览器\n- 下载进度实时显示，支持后台静默下载\n- 开屏公告弹窗显示下载进度\n\n【优化】\n- 更新流程优化：原生插件下载APK后直接调起系统安装\n- 多下载源自动切换，提高下载成功率",
-  "devNotes": "feat: add difficulty selection (easy/hard) for recitation; add native ApkUpdater plugin for in-app APK download and install; bump version to 2.41.0/192",
+  "version": "2.42.0",
+  "versionCode": 193,
+  "changelog": "v2.42.0 困难模式选项词汇解析\n\n【新增】\n- 困难模式答题后新增\"选项词汇\"面板\n- 展示全部4个选项的英文单词+中文释义+词性\n- 正确答案绿色标注，误选项红色标注\n- 点击任意选项词可跳转该单词完整考点（核心考点/常考要点/例句/搭配/变形）\n- 不仅掌握题目单词，干扰词（近义词/易混词）一并掌握\n- 点击选项词自动朗读该单词\n\n【优化】\n- 选项→单词映射覆盖全部词库，跳转更精准",
+  "devNotes": "feat: hard mode post-answer option words panel; click any option to jump to its word detail/exam points; bump to 2.42.0/193",
   "apkUrl": "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
