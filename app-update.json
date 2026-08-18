@@ -1,8 +1,8 @@
 {
   "version": "2.43.0",
-  "versionCode": 194,
-  "changelog": "v2.43.0 关联词全面审计 + 高考总汇词库 + 闪退/更新修复\n\n【修复】\n- 修复部分情况闪退：总汇词条详情页字段缺失导致崩溃，已统一兜底\n- 修复无法更新问题：下载源改为 jsDelivr CDN 直链（Gitee 大文件会被拦截导致下载失败），应用内多源自动切换\n- 更新包下载增加完整性校验（防下载到错误页面），安装前校验 APK 合法性\n- Android 8+ 自动引导开启「安装未知应用」权限\n\n【关联词全面检测】\n- 对全词库 1341 组关联对逐一人工复核，拉黑 150+ 组假关联（如 conference×confuse/confident、bride×bridge、bus×business）\n- 黑名单双向对称化，杜绝方向遗漏\n- picture 关联词修正为真实词族：depict(v. 描绘)、picturesque(adj. 如画的)、depiction(n. 描写)\n- 新增 62 组人工校对词族（see→sight/eyesight/insight、take→mistake/overtake 等）\n\n【高考总汇词库】\n- 新增「高考总汇词库(6612词)」：高考3500 + 人教版高中全模块 + 四六级拓展 + 词族拓展，去重合并\n- 全部词条含词性+中文释义，可背诵、可全库搜索\n- 3500 词库验证：3601 词条全部收录进总汇词库\n- 不在词库内的关联词/派生词自动显示「词性 中文」",
-  "devNotes": "v2.43.0: apkUrl switched to jsDelivr CDN mirror for mainland-China reachability; APK mirrored into repo for the hardcoded 2.41.0 updater source",
+  "versionCode": 192,
+  "changelog": "当前为稳定版本。\n\n【关于近期闪退问题的说明】\n部分用户从 2.41.0 升级时遇到闪退，原因已定位：旧版更新组件在后台线程直接调起安装器导致崩溃。为保护 2.41.0 用户的正常使用，更新通道已暂时冻结，2.41.0 现已恢复稳定。\n\n【如需升级到新版本 2.43.0】\n新版本包含：关联词全面审计修正、高考总汇词库(6612词)、闪退与更新机制修复。建议通过以下国内直链下载安装包后升级：\nhttps://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/android/app/build/outputs/apk/debug/app-debug.apk",
+  "devNotes": "v2.41.0 freeze: versionCode pinned to 192 to stop the crashing silent-update path on 2.41.0 installs (old plugin fires installer from background thread). Web self-update path keyed on version field; bumped independently when native channel reopens.",
   "apkUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/android/app/build/outputs/apk/debug/app-debug.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
