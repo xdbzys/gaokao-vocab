@@ -6,7 +6,8 @@ export default defineConfig({
   base: './',
   plugins: [react(), viteSingleFile()],
   build: {
-    target: 'es2020',
+    // es2015：兼容安卓10 等旧版 WebView/浏览器（Chromium 61-79 不支持 ?. ?? 等新语法）
+    target: 'es2015',
     cssCodeSplit: false,
   },
 });
