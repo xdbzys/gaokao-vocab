@@ -9963,6 +9963,9 @@ function App() {
   const activeBook = section === 'learn' ? learnActiveBook : libraryActiveBook;
 
   // 全部词汇合并（词根词缀、对比、易错词基于全量词汇）
+  // 词库映射 ref：供详情页和背诵页显示单词所属词库
+  // 注意：ref 必须在 allWords 之前声明，否则 useMemo 中访问 wordBookMapRef 会触发 TDZ 错误
+  const wordBookMapRef = useRef({});
   const allWords = useMemo(() => {
     // v2.44.0 构建 wordBookMap：记录每个单词出现在哪些词库
     const map = {};
@@ -9981,9 +9984,6 @@ function App() {
     wordBookMapRef.current = map;
     return items;
   }, [books]);
-
-  // 词库映射 ref：供详情页和背诵页显示单词所属词库
-  const wordBookMapRef = useRef({});
 
   // 统一处理：点击单词 → 词库存在则跳转详情+发音，不存在则只发音
   function speakOrNavigate(word) {
