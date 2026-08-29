@@ -1,8 +1,8 @@
 {
-  "version": "2.44.0",
-  "versionCode": 195,
-  "changelog": "⚠️ 重要：请勿点击下方\"立即更新\"按钮，会闪退！请复制下方下载链接，用手机浏览器打开下载安装（学习记录不会丢失）：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk\n\n——————————————\n\n新版本 2.44.0 已发布，包含以下更新：\n\n- 修复点击更新闪退问题：新版已移除应用内下载，统一跳转浏览器下载，彻底解决闪退\n- 关联词算法全面优化：收紧匹配规则，删除长得像但无词源关系的误关联\n- 易混词功能增强：新增 tone/stone 等大量易混词对，显示上限提升至15个\n- 词库来源标注：每个单词显示所属词库标签（高考5000/四级/六级等）\n- 高考5000词显示优化：仅当同时存在于多个词库时显示蓝底，否则白底\n- 自动发音功能合并：背诵页新单词自动发音与跳转自动发音合并为一个开关\n- 兼容性增强：添加计算结果缓存，优化低端设备性能；兼容 Android 10\n- AndroidManifest 添加 largeHeap 和 hardwareAccelerated，提升运行稳定性\n\n安装 2.44.0 后，以后更新将通过浏览器下载，不会再闪退。",
-  "devNotes": "v2.44.0 push-link mode: apkUrl intentionally EMPTY so the crashing silent-download branch never fires. Changelog top warns users NOT to tap the update button (which triggers the crashing native plugin on old versions). New v2.44.0 removes the in-app download plugin call entirely.",
-  "apkUrl": "",
+  "version": "2.46.0",
+  "versionCode": 198,
+  "changelog": "🎉 新版本 2.46.0 已发布！\n\n本次更新彻底修复了蓝屏/白屏问题：\n- 根因：pdfjs-dist 和 tesseract.js 最新版使用 import.meta 语法，在安卓 WebView 中不支持，导致整个应用无法加载（蓝屏）\n- 修复：改为 CDN 按需加载，不再打包这两个库，同时锁定了所有依赖版本防止类似问题\n- 附带优化：应用体积从 3MB 降至 1.9MB，启动更快\n\n点击下方\"立即更新\"即可在应用内下载安装。",
+  "devNotes": "v2.46.0: Fixed blue screen caused by import.meta syntax in bundled pdfjs-dist@6.x and tesseract.js@7.x. Switched to CDN dynamic loading for both libraries. Pinned all dependency versions. Added Vite plugin to strip remaining import.meta.url from @capacitor/filesystem web implementation.",
+  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }

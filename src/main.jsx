@@ -3,18 +3,52 @@ import { createRoot } from 'react-dom/client';
 import JSZip from 'jszip';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-import { createWorker } from 'tesseract.js';
-import * as pdfjsLib from 'pdfjs-dist';
 import './styles.css';
 import { getWordEnrichment } from './wordEnrichment';
 import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, presentParticipleRules, nounPluralRules } from './wordTransformations';
 import { masterVocabSeed, masterVocabLookup } from './gaokaoMasterVocab';
 
 /* ============================
+   CDN 动态加载（避免 pdfjs/tesseract 的 import.meta 语法导致 SyntaxError）
+   pdfjs-dist@6.x 和 tesseract.js@7.x 使用 import.meta，在 viteSingleFile
+   打包到非 ES module 的 <script> 标签时会报 SyntaxError，导致整个 JS 不执行（蓝屏）。
+   改为运行时从 CDN 动态加载，仅在用户使用 PDF/图片导入功能时加载。
+   ============================ */
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector('script[src="' + src + '"]')) { resolve(); return; }
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = function() { reject(new Error('加载失败: ' + src)); };
+    document.head.appendChild(s);
+  });
+}
+
+var _pdfjsLib = null;
+async function getPdfjs() {
+  if (_pdfjsLib) return _pdfjsLib;
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+  _pdfjsLib = window.pdfjsLib || window['pdfjs-dist'];
+  if (_pdfjsLib && _pdfjsLib.GlobalWorkerOptions) {
+    _pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  return _pdfjsLib;
+}
+
+var _tesseractCreateWorker = null;
+async function getTesseractCreateWorker() {
+  if (_tesseractCreateWorker) return _tesseractCreateWorker;
+  await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js');
+  _tesseractCreateWorker = window.Tesseract ? window.Tesseract.createWorker : null;
+  return _tesseractCreateWorker;
+}
+
+/* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.44.0';
-const APP_VERSION_CODE = 195;
+const APP_VERSION = '2.46.0';
+const APP_VERSION_CODE = 198;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -34,8 +68,6 @@ const UPDATE_SERVER_API = `https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE
 const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
 // 正确检测原生APP：Capacitor Web 运行时在浏览器中也会注入 window.Capacitor，需用 isNativePlatform 区分
 const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform ? Capacitor.isNativePlatform() : !!(window.cordova);
-
-try { pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`; } catch {}
 
 /* ============================
    一、内置词库数据
@@ -9372,7 +9404,9 @@ async function extractPptxText(file) {
 
 async function extractPdfText(file) {
   try {
-    const doc = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+    const pdfjs = await getPdfjs();
+    if (!pdfjs) throw new Error('PDF 解析库加载失败，请检查网络');
+    const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
     const pages = [];
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
@@ -9397,6 +9431,8 @@ async function extractDocxText(file) {
 async function extractImageText(file) {
   try {
     setImportStatus('正在识别图片文字，可能需要十几秒...');
+    const createWorker = await getTesseractCreateWorker();
+    if (!createWorker) throw new Error('OCR 库加载失败，请检查网络');
     const worker = await createWorker('eng+chi_sim', 1, {
       workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
       corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5',
