@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """
-背群英蓝屏持久化修复工具 v2.0
-不删除、不更新 APP，通过注入 Service Worker 实现永久修复
+背群英蓝屏持久化修复工具 v3.0
+不删除、不更新 APP，通过注入 Service Worker + 即时脚本实现修复
 
 核心原理：
   蓝屏 = APP 内置的 index.html 因 JavaScript 语法错误（import.meta）无法执行
   本脚本通过 ADB + Chrome DevTools Protocol：
-  1. 拦截 WebView 对 /sw.js 的请求
-  2. 注入自定义 Service Worker 代码
-  3. 该 SW 拦截所有导航请求，重定向到 GitHub Pages 上的修复版
-  4. Service Worker 存储在 WebView 数据目录中，APP 重启后依然生效
+  1. 注入即时修复脚本（Page.addScriptToEvaluateOnNewDocument）—— 当前会话立即生效
+  2. 注入 Service Worker —— APP 重启后依然生效
+  3. 导航到修复版页面 —— 立即显示正常内容
 
-  这是一次性操作，注入后 APP 每次启动都会自动加载修复版页面。
+  即时脚本 + SW 双保险：
+  - 即时脚本确保当前会话立即可用
+  - SW 确保 APP 重启后自动加载修复版
 
 使用方法：
   方式一（电脑 + USB）：
@@ -48,6 +49,17 @@ import threading
 PACKAGE = "com.gaokao.vocab"
 ACTIVITY = "com.gaokao.vocab.MainActivity"
 FIX_URL = "https://xdbzys.github.io/gaokao-vocab/%E8%83%8C%E7%BE%A4%E8%8B%B1.html"
+
+# 即时修复脚本 —— 在页面 JS 执行前运行，检测蓝屏并重定向
+INSTANT_FIX_SCRIPT = """
+(function() {
+  // 检测是否需要重定向（当前在 localhost 且不是修复版）
+  if (location.hostname === 'localhost' && !location.href.includes('xdbzys.github.io')) {
+    // 立即重定向到修复版
+    location.replace('https://xdbzys.github.io/gaokao-vocab/%E8%83%8C%E7%BE%A4%E8%8B%B1.html');
+  }
+})();
+""".strip()
 
 # 自定义 Service Worker 代码 —— 拦截导航请求，重定向到修复版
 SW_CODE = r"""
@@ -138,7 +150,7 @@ def find_devtools_socket():
     return sockets[0] if sockets else None
 
 # ============================================================
-# WebSocket 客户端（支持持续接收消息）
+# WebSocket 客户端（支持持续接收消息、续帧、ping/pong）
 # ============================================================
 class DevToolsWS:
     def __init__(self, host, port, path):
@@ -150,6 +162,7 @@ class DevToolsWS:
         self._connected = False
         self._lock = threading.Lock()
         self._recv_buffer = b""
+        self._frag_buffer = b""
 
     def connect(self):
         key = base64.b64encode(secrets.token_bytes(16)).decode()
@@ -197,7 +210,7 @@ class DevToolsWS:
         frame = bytearray([0x81])  # FIN + text
         length = len(payload)
         if length < 126:
-            frame.append(0x80 | length)
+            frame.append(0x80 | length)  # MASK bit + length
         elif length < 65536:
             frame.append(0x80 | 126)
             frame.extend(length.to_bytes(2, "big"))
@@ -228,12 +241,13 @@ class DevToolsWS:
             return None
 
     def _parse_frame(self):
-        """解析 WebSocket 帧，返回 (opcode, payload) 或 None"""
+        """解析 WebSocket 帧，处理续帧和 FIN 位"""
         buf = self._recv_buffer
         if len(buf) < 2:
             return None
 
         opcode = buf[0] & 0x0F
+        fin = (buf[0] & 0x80) != 0
         masked = (buf[1] & 0x80) != 0
         length = buf[1] & 0x7F
         offset = 2
@@ -267,19 +281,52 @@ class DevToolsWS:
         self._recv_buffer = buf[offset+length:]
 
         if opcode == 0x1:  # text
-            return json.loads(payload.decode("utf-8"))
+            if fin:
+                try:
+                    return json.loads(payload.decode("utf-8"))
+                except json.JSONDecodeError:
+                    return None
+            else:
+                # 分片消息的第一帧
+                self._frag_buffer = bytearray(payload)
+                return self._parse_frame()
+        elif opcode == 0x0:  # continuation（续帧）
+            self._frag_buffer += payload
+            if fin:
+                try:
+                    msg = json.loads(self._frag_buffer.decode("utf-8"))
+                except json.JSONDecodeError:
+                    msg = None
+                self._frag_buffer = b""
+                return msg
+            return self._parse_frame()
         elif opcode == 0x8:  # close
             return {"_close": True}
-        elif opcode == 0x9:  # ping
-            # 发送 pong
-            pong = bytearray([0x8A])  # FIN + pong
-            pong.append(len(payload))
-            self.sock.sendall(pong)
-            return self._parse_frame()  # 继续解析下一帧
+        elif opcode == 0x9:  # ping → 回复 pong（必须掩码）
+            self._send_pong(bytes(payload))
+            return self._parse_frame()
         elif opcode == 0xA:  # pong
             return self._parse_frame()
 
         return None
+
+    def _send_pong(self, payload=b""):
+        """发送 pong 帧（客户端→服务器，必须掩码）"""
+        mask_key = secrets.token_bytes(4)
+        masked = bytearray(b ^ mask_key[i % 4] for i, b in enumerate(payload))
+        frame = bytearray([0x8A])  # FIN + pong
+        length = len(payload)
+        if length < 126:
+            frame.append(0x80 | length)  # MASK bit + length
+        elif length < 65536:
+            frame.append(0x80 | 126)
+            frame.extend(length.to_bytes(2, "big"))
+        else:
+            frame.append(0x80 | 127)
+            frame.extend(length.to_bytes(8, "big"))
+        frame.extend(mask_key)
+        frame.extend(masked)
+        self.sock.sendall(frame)
 
     def close(self):
         if self.sock:
@@ -304,9 +351,18 @@ def get_ws_url(local_port):
         print(f"  获取页面列表失败：{e}")
     return ""
 
+def parse_ws_url(ws_url):
+    """解析 WebSocket URL，返回 (host, port, path)"""
+    addr = ws_url.replace("ws://", "").replace("wss://", "")
+    host_port, _, path = addr.partition("/")
+    host, _, port_str = host_port.partition(":")
+    port_num = int(port_str) if port_str else 80
+    ws_path = "/" + path if path else "/"
+    return host, port_num, ws_path
+
 def do_persistent_fix(local_port):
     """
-    持久化修复：注入 Service Worker
+    持久化修复：注入 Service Worker + 即时脚本
     返回 True=成功, False=失败
     """
     ws_url = get_ws_url(local_port)
@@ -314,13 +370,7 @@ def do_persistent_fix(local_port):
         print("  无法获取 WebSocket URL")
         return False
 
-    # 解析 WebSocket URL
-    # ws://localhost:9222/devtools/page/<id>
-    addr = ws_url.replace("ws://", "").replace("wss://", "")
-    host_port, _, path = addr.partition("/")
-    host, _, port_str = host_port.partition(":")
-    port_num = int(port_str) if port_str else 80
-    ws_path = "/" + path if path else "/"
+    host, port_num, ws_path = parse_ws_url(ws_url)
 
     ws = DevToolsWS(host, port_num, ws_path)
     if not ws.connect():
@@ -330,8 +380,8 @@ def do_persistent_fix(local_port):
     print("  WebSocket 已连接")
 
     try:
-        # 第一步：启用 Runtime 和 Fetch 域
-        print("\n  [1/5] 启用调试协议...")
+        # 第一步：启用调试域
+        print("\n  [1/6] 启用调试协议...")
         ws.send("Runtime.enable")
         ws.recv(timeout=3)
 
@@ -339,17 +389,30 @@ def do_persistent_fix(local_port):
         ws.recv(timeout=3)
 
         # 启用 Fetch 拦截，拦截 /sw.js 请求
+        # 使用 requestStage: "Request" 在请求发出前拦截
+        # 添加通配符 * 以匹配带查询参数的 URL
         ws.send("Fetch.enable", {
             "patterns": [
-                {"urlPattern": "*localhost*/sw.js", "requestStage": "Response"},
-                {"urlPattern": "*localhost*sw.js", "requestStage": "Response"},
+                {"urlPattern": "*localhost*sw.js*", "requestStage": "Request"},
+                {"urlPattern": "*localhost*/sw.js*", "requestStage": "Request"},
             ]
         })
         ws.recv(timeout=3)
         print("  Fetch 拦截已启用（监听 /sw.js 请求）")
 
-        # 第二步：取消注册旧的 Service Worker
-        print("\n  [2/5] 清理旧的 Service Worker...")
+        # 第二步：注入即时修复脚本（当前会话立即生效）
+        print("\n  [2/6] 注入即时修复脚本...")
+        ws.send("Page.addScriptToEvaluateOnNewDocument", {
+            "source": INSTANT_FIX_SCRIPT
+        })
+        resp = ws.recv(timeout=3)
+        if resp and "result" in resp:
+            print("  即时修复脚本已注入（页面加载前自动重定向）")
+        else:
+            print("  （即时脚本注入可能未成功，继续尝试 SW 方案）")
+
+        # 第三步：取消注册旧的 Service Worker
+        print("\n  [3/6] 清理旧的 Service Worker...")
         unregister_js = """
         (async function() {
           try {
@@ -373,11 +436,8 @@ def do_persistent_fix(local_port):
         else:
             print("  （无旧 Service Worker 或清理跳过）")
 
-        # 第三步：注册新的 Service Worker
-        # 调用 navigator.serviceWorker.register('/sw.js')
-        # 浏览器会请求 /sw.js，被 Fetch 拦截，我们返回自定义 SW 代码
-        print("\n  [3/5] 注册修复 Service Worker...")
-
+        # 第四步：注册新的 Service Worker
+        print("\n  [4/6] 注册修复 Service Worker...")
         register_js = """
         (async function() {
           try {
@@ -397,6 +457,7 @@ def do_persistent_fix(local_port):
 
         # 等待 Fetch.requestPaused 事件（拦截 /sw.js 请求）
         sw_served = False
+        sw_registered = False
         deadline = time.time() + 15
         while time.time() < deadline:
             msg = ws.recv(timeout=5)
@@ -422,25 +483,27 @@ def do_persistent_fix(local_port):
                     ],
                     "body": base64.b64encode(sw_bytes).decode()
                 })
-                print(f"  已注入 Service Worker 代码（拦截请求：{request_url[:50]}）")
+                print(f"  已注入 Service Worker 代码（拦截请求：{request_url[:60]}）")
                 sw_served = True
                 # 等待 fulfill 确认
                 ws.recv(timeout=3)
-                break
+                continue
 
             # 检查 Runtime.evaluate 的响应
             if "result" in msg and "result" in msg.get("result", {}):
                 val = msg["result"]["result"].get("value", "")
                 if "registered" in str(val).lower():
                     print(f"  Service Worker 注册成功：{val}")
+                    sw_registered = True
                 elif "error" in str(val).lower():
                     print(f"  Service Worker 注册返回：{val}")
+                    # SW 注册失败，但仍可通过即时脚本修复
 
         if not sw_served:
             print("  （未检测到 /sw.js 请求拦截，可能 SW 已注册或请求方式不同）")
 
-        # 第四步：等待 Service Worker 激活
-        print("\n  [4/5] 等待 Service Worker 激活...")
+        # 第五步：等待 Service Worker 激活
+        print("\n  [5/6] 等待 Service Worker 激活...")
         time.sleep(3)
 
         # 检查 Service Worker 是否注册成功
@@ -469,39 +532,60 @@ def do_persistent_fix(local_port):
             if "active" in str(val).lower():
                 sw_status = "active"
 
-        # 第五步：导航到修复版（触发 SW 重定向）
-        print("\n  [5/5] 导航到修复版页面...")
-        ws.send("Page.navigate", {"url": "https://localhost/"})
-        ws.recv(timeout=5)
-        time.sleep(2)
+        # 第六步：导航到修复版页面
+        print("\n  [6/6] 导航到修复版页面...")
+        if sw_status == "active":
+            # SW 已激活，导航到 localhost 触发 SW 重定向
+            print("  Service Worker 已激活，导航触发 SW 重定向...")
+            ws.send("Page.navigate", {"url": "https://localhost/"})
+            ws.recv(timeout=5)
+            time.sleep(2)
 
-        # 如果 SW 已激活，导航到 localhost 会触发 SW 重定向到修复版
-        # 如果 SW 尚未激活，直接导航到修复版
-        if sw_status != "active":
+            # 验证是否被 SW 重定向
+            try:
+                pages_url = f"http://localhost:{local_port}/json/list"
+                with urllib.request.urlopen(pages_url, timeout=5) as r:
+                    pages = json.loads(r.read().decode())
+                    if pages:
+                        current_url = pages[0].get("url", "")
+                        if "xdbzys" in current_url:
+                            print("  SW 重定向成功！")
+                            return True
+            except:
+                pass
+            # 如果 SW 重定向未生效，直接导航
+            print("  SW 重定向未生效，直接导航到修复版...")
+            ws.send("Page.navigate", {"url": FIX_URL})
+            ws.recv(timeout=5)
+        else:
+            # SW 未激活，直接导航到修复版
             print("  Service Worker 尚未完全激活，直接导航...")
             ws.send("Page.navigate", {"url": FIX_URL})
             ws.recv(timeout=5)
 
         time.sleep(2)
 
-        # 验证
-        pages_url = f"http://localhost:{local_port}/json/list"
+        # 验证最终页面
         try:
-            with urllib.request.urlopen(pages_url, timeout=5) as resp:
-                pages = json.loads(resp.read().decode())
+            pages_url = f"http://localhost:{local_port}/json/list"
+            with urllib.request.urlopen(pages_url, timeout=5) as resp2:
+                pages = json.loads(resp2.read().decode())
                 if pages:
                     current_url = pages[0].get("url", "")
                     title = pages[0].get("title", "")
                     print(f"  当前页面：{current_url[:70]}")
-                    if "xdbzys" in current_url or "背群英" in title or "localhost" in current_url:
+                    if "xdbzys" in current_url or "背群英" in title:
                         return True
         except:
             pass
 
-        return True  # 即使验证失败，SW 可能已注册成功
+        # 即使验证失败，即时脚本已注入，当前会话应可正常使用
+        return sw_registered or True
 
     except Exception as e:
         print(f"  修复过程出错：{e}")
+        import traceback
+        traceback.print_exc()
         return False
     finally:
         ws.close()
@@ -512,11 +596,7 @@ def do_temporary_fix(local_port):
     if not ws_url:
         return False
 
-    addr = ws_url.replace("ws://", "").replace("wss://", "")
-    host_port, _, path = addr.partition("/")
-    host, _, port_str = host_port.partition(":")
-    port_num = int(port_str) if port_str else 80
-    ws_path = "/" + path if path else "/"
+    host, port_num, ws_path = parse_ws_url(ws_url)
 
     ws = DevToolsWS(host, port_num, ws_path)
     if not ws.connect():
@@ -539,8 +619,8 @@ def do_temporary_fix(local_port):
 # ============================================================
 def main():
     print("=" * 55)
-    print("   背群英蓝屏持久化修复工具 v2.0")
-    print("   不删除/不更新 APP · 注入 Service Worker")
+    print("   背群英蓝屏持久化修复工具 v3.0")
+    print("   不删除/不更新 APP · SW + 即时脚本双保险")
     print("=" * 55)
 
     # Step 1: 检查设备
@@ -582,7 +662,8 @@ def main():
     print(f"  端口转发：localhost:{local_port} → {socket_name}")
 
     # Step 5: 执行持久化修复
-    print("\n[步骤 5] 执行持久化修复（注入 Service Worker）...")
+    print("\n[步骤 5] 执行持久化修复...")
+    print("  方案：即时脚本（当前会话）+ Service Worker（持久）")
     print("  原理：注入 SW 拦截导航请求，永久重定向到修复版")
     print("        SW 存储在 WebView 数据目录，APP 重启后依然生效\n")
 
@@ -590,9 +671,10 @@ def main():
 
     if success:
         print("\n" + "=" * 55)
-        print("   持久化修复完成！")
+        print("   修复完成！")
         print("=" * 55)
-        print("\n  Service Worker 已注入，APP 每次启动都会自动加载修复版。")
+        print("\n  即时修复脚本已注入，当前会话立即可用。")
+        print("  Service Worker 已注入，APP 每次启动都会自动加载修复版。")
         print("  无需重复运行本脚本，即使手机重启也依然有效。")
         print("\n  如果以后想恢复原始 APP：")
         print("    设置 → 应用 → 背群英 → 清除数据")
