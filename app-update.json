@@ -1,8 +1,8 @@
 {
   "version": "2.44.0",
   "versionCode": 195,
-  "changelog": "新版本 2.44.0 已发布，包含以下更新：\n\n- 关联词算法全面优化：收紧匹配规则，删除长得像但无词源关系的误关联，添加150+组误关联黑名单\n- 易混词功能增强：新增 tone/stone 等大量易混词对，显示上限提升至15个\n- 词库来源标注：每个单词显示所属词库标签（高考5000/四级/六级等）\n- 高考5000词显示优化：仅当同时存在于多个词库时显示蓝底，否则白底\n- 自动发音功能合并：背诵页新单词自动发音与跳转自动发音合并为一个开关\n- 兼容性增强：添加计算结果缓存，优化低端设备性能；Vite es2015 target 兼容 Android 10\n- AndroidManifest 添加 largeHeap 和 hardwareAccelerated，提升运行稳定性\n\n下载安装方法（推荐）：\n复制下方链接，用手机浏览器打开，下载后点击安装即可（学习记录不会丢失）：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
-  "devNotes": "v2.44.0: 关联词/易混词/词库标注/自动发音/兼容性全面优化",
-  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
+  "changelog": "新版本 2.44.0 已发布，包含以下更新：\n\n- 关联词算法全面优化：收紧匹配规则，删除长得像但无词源关系的误关联，添加150+组误关联黑名单\n- 易混词功能增强：新增 tone/stone 等大量易混词对，显示上限提升至15个\n- 词库来源标注：每个单词显示所属词库标签（高考5000/四级/六级等）\n- 高考5000词显示优化：仅当同时存在于多个词库时显示蓝底，否则白底\n- 自动发音功能合并：背诵页新单词自动发音与跳转自动发音合并为一个开关\n- 兼容性增强：添加计算结果缓存，优化低端设备性能；Vite es2015 target 兼容 Android 10\n- AndroidManifest 添加 largeHeap 和 hardwareAccelerated，提升运行稳定性\n\n下载安装方法（推荐）：\n复制下方链接，用手机浏览器打开，下载后点击安装即可（学习记录不会丢失）：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk\n\n提示：安装 2.44.0 后，以后更新会自动完成，无需再手动下载。",
+  "devNotes": "v2.44.0 push-link mode: apkUrl intentionally EMPTY so the crashing silent-download branch (silent && hasUpdate && apkUrl) never fires. Manual '立即更新' still available; sources all serve valid 2.44.0 APK.",
+  "apkUrl": "",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
