@@ -6,63 +6,124 @@
 <title>背群英蓝屏修复</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:#f0f7ff; color:#333; line-height:1.6; padding:20px; }
-.card { background:#fff; border-radius:16px; padding:24px; margin-bottom:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); }
-h1 { font-size:22px; margin-bottom:8px; color:#1565c0; }
-h2 { font-size:18px; margin:16px 0 8px; color:#1565c0; }
-p { margin-bottom:8px; font-size:15px; }
-.step { display:flex; gap:12px; margin:12px 0; align-items:flex-start; }
-.step-num { flex-shrink:0; width:28px; height:28px; background:#1565c0; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; }
-.step-content { flex:1; font-size:15px; }
-.btn { display:block; text-align:center; background:#1565c0; color:#fff; text-decoration:none; padding:14px 24px; border-radius:12px; font-size:17px; font-weight:bold; margin:16px 0; }
-.btn:active { background:#0d47a1; }
+body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:#f0f7ff; color:#333; line-height:1.6; padding:16px; max-width:600px; margin:0 auto; }
+.card { background:#fff; border-radius:16px; padding:20px; margin-bottom:14px; box-shadow:0 2px 12px rgba(0,0,0,0.08); }
+h1 { font-size:20px; margin-bottom:6px; color:#1565c0; }
+.subtitle { font-size:14px; color:#666; margin-bottom:12px; }
+h2 { font-size:17px; margin:14px 0 6px; color:#1565c0; }
+h3 { font-size:15px; margin:12px 0 6px; color:#333; }
+p { margin-bottom:6px; font-size:14px; }
+.step { display:flex; gap:10px; margin:8px 0; align-items:flex-start; }
+.step-num { flex-shrink:0; width:26px; height:26px; background:#1565c0; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; }
+.step-content { flex:1; font-size:14px; padding-top:2px; }
+.btn { display:block; text-align:center; background:#1565c0; color:#fff; text-decoration:none; padding:13px 20px; border-radius:12px; font-size:16px; font-weight:bold; margin:12px 0; }
+.btn:active { background:#0d47a1; transform:scale(0.98); }
 .btn-outline { background:#fff; color:#1565c0; border:2px solid #1565c0; }
-.warn { background:#fff3e0; border-left:4px solid #ff9800; padding:12px 16px; border-radius:8px; margin:12px 0; font-size:14px; }
-.ok { background:#e8f5e9; border-left:4px solid #4caf50; padding:12px 16px; border-radius:8px; margin:12px 0; font-size:14px; }
-code { background:#f5f5f5; padding:2px 6px; border-radius:4px; font-size:13px; word-break:break-all; }
-.hide { display:none; }
+.btn-green { background:#2e7d32; }
+.warn { background:#fff3e0; border-left:4px solid #ff9800; padding:10px 14px; border-radius:8px; margin:8px 0; font-size:13px; }
+.ok { background:#e8f5e9; border-left:4px solid #4caf50; padding:10px 14px; border-radius:8px; margin:8px 0; font-size:13px; }
+.info { background:#e3f2fd; border-left:4px solid #2196f3; padding:10px 14px; border-radius:8px; margin:8px 0; font-size:13px; }
+code { background:#f5f5f5; padding:2px 6px; border-radius:4px; font-size:12px; word-break:break-all; display:inline-block; max-width:100%; }
+.copy-box { background:#1e1e1e; color:#e0e0e0; padding:12px; border-radius:8px; margin:8px 0; font-size:13px; font-family:monospace; word-break:break-all; position:relative; }
+.copy-btn { position:absolute; top:6px; right:6px; background:#333; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:12px; cursor:pointer; }
+.tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:12px; font-weight:bold; margin-left:6px; }
+.tag-best { background:#4caf50; color:#fff; }
+.tag-easy { background:#2196f3; color:#fff; }
+.tag-nopc { background:#ff9800; color:#fff; }
+details { margin:8px 0; }
+summary { cursor:pointer; font-size:14px; color:#1565c0; padding:6px 0; }
+summary:hover { text-decoration:underline; }
+.divider { border:0; border-top:1px solid #e0e0e0; margin:12px 0; }
 </style>
 </head>
 <body>
 
-<h1>背群英蓝屏修复</h1>
-<p>选择适合你的修复方式：</p>
+<h1>背群英蓝屏修复指南</h1>
+<p class="subtitle">不删除、不更新 APP，三种方式任选</p>
 
+<!-- 方式一：网页版 -->
 <div class="card">
-<h2>方式一：直接用网页版（最简单）</h2>
-<p>不用 ADB、不用电脑，直接在手机浏览器打开修复版：</p>
-<a class="btn" href="https://xdbzys.github.io/gaokao-vocab/%E8%83%8C%E7%BE%A4%E8%8B%B1.html">打开背群英网页版</a>
-<p>打开后点击浏览器菜单 →「添加到主屏幕」，以后从桌面图标打开即可。</p>
-<div class="ok">学习记录通过 localStorage 保存，与 APP 版数据独立，需要重新导入词库。</div>
+<h2>方式一：直接用网页版 <span class="tag tag-easy">最简单</span></h2>
+<p>不用任何工具，手机浏览器直接打开修复版：</p>
+<a class="btn btn-green" href="https://xdbzys.github.io/gaokao-vocab/%E8%83%8C%E7%BE%A4%E8%8B%B1.html">打开背群英网页版</a>
+<div class="step"><div class="step-num">1</div><div class="step-content">点击上方按钮打开网页版</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-content">浏览器菜单（三个点）→「添加到主屏幕」或「创建快捷方式」</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-content">以后从桌面图标打开，体验与 APP 一致</div></div>
+<div class="info">网页版功能与 APP 完全一致，通过 localStorage 保存学习记录。但与 APP 的学习记录不互通，需重新导入词库。</div>
 </div>
 
+<!-- 方式二：持久化 ADB 修复 -->
 <div class="card">
-<h2>方式二：ADB 修复 APP（保留学习记录）</h2>
-<p>通过 ADB 让蓝屏的 APP 加载修复版网页，学习记录不会丢失。</p>
+<h2>方式二：持久化修复 APP <span class="tag tag-best">推荐</span></h2>
+<p>通过注入 Service Worker，让蓝屏的 APP <b>每次启动都自动加载修复版</b>，一次修复永久生效。</p>
+<div class="ok">修复后 APP 重启、手机关机重启都依然有效，学习记录保留。</div>
 
-<h2 style="margin-top:20px">电脑 + USB 方式</h2>
-<div class="step"><div class="step-num">1</div><div class="step-content">手机开启 USB 调试：设置 → 关于手机 → 连点7次版本号 → 返回 → 开发者选项 → USB调试</div></div>
+<h3>方案 A：电脑 + USB 数据线</h3>
+<div class="step"><div class="step-num">1</div><div class="step-content">手机开启 USB 调试：设置 → 关于手机 → 连点 7 次版本号 → 返回 → 开发者选项 → USB 调试</div></div>
 <div class="step"><div class="step-num">2</div><div class="step-content">电脑下载 <a href="https://developer.android.com/studio/releases/platform-tools" style="color:#1565c0">Android Platform Tools</a> 并解压</div></div>
 <div class="step"><div class="step-num">3</div><div class="step-content">数据线连接手机，手机弹窗点「允许 USB 调试」</div></div>
-<div class="step"><div class="step-num">4</div><div class="step-content">下载修复脚本 <a href="https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/fix_bluescreen.py" style="color:#1565c0">fix_bluescreen.py</a></div></div>
-<div class="step"><div class="step-num">5</div><div class="step-content">在 Platform Tools 目录运行：<code>python fix_bluescreen.py</code></div></div>
+<div class="step"><div class="step-num">4</div><div class="step-content">下载修复脚本：</div></div>
+<div class="copy-box"><button class="copy-btn" onclick="copyText(this)">复制</button>curl -sL https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/fix_bluescreen_persistent.py -o fix.py</div>
+<div class="step"><div class="step-num">5</div><div class="step-content">在 Platform Tools 目录运行：</div></div>
+<div class="copy-box"><button class="copy-btn" onclick="copyText(this)">复制</button>python fix.py</div>
 
-<h2 style="margin-top:20px">手机 Termux 方式（无需电脑）</h2>
-<div class="step"><div class="step-num">1</div><div class="step-content">手机安装 <a href="https://f-droid.org/packages/com.termux/" style="color:#1565c0">Termux</a>（F-Droid 版）</div></div>
-<div class="step"><div class="step-num">2</div><div class="step-content">在 Termux 运行：<code>pkg install python android-tools curl git</code></div></div>
-<div class="step"><div class="step-num">3</div><div class="step-content">开启无线调试：设置 → 开发者选项 → 无线调试 → 开启</div></div>
-<div class="step"><div class="step-num">4</div><div class="step-content">在 Termux 运行：<code>adb connect localhost:5555</code>，手机弹窗点允许</div></div>
-<div class="step"><div class="step-num">5</div><div class="step-content">下载并运行：<code>curl -sL https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/fix_bluescreen.py -o fix.py && python fix.py</code></div></div>
+<hr class="divider">
+<h3>方案 B：手机 Termux（无需电脑）<span class="tag tag-nopc">免电脑</span></h3>
+<div class="step"><div class="step-num">1</div><div class="step-content">安装 <a href="https://f-droid.org/packages/com.termux/" style="color:#1565c0">Termux</a>（F-Droid 版，Play 商店版已过期）</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-content">手机开启无线调试：设置 → 开发者选项 → 无线调试 → 开启</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-content">在 Termux 中粘贴运行以下命令（一次性全部复制）：</div></div>
+<div class="copy-box"><button class="copy-btn" onclick="copyText(this)">复制</button>pkg update -y && pkg install -y python android-tools curl && curl -sL https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/fix_termux.sh -o fix.sh && bash fix.sh</div>
+<div class="step"><div class="step-num">4</div><div class="step-content">按提示输入无线调试地址（在无线调试页面查看）</div></div>
 
-<div class="warn">注意：ADB 修复是临时的，APP 被杀进程后需要重新运行脚本。永久修复建议安装新版 APK。</div>
+<details>
+<summary>修复原理说明</summary>
+<p style="margin:8px 0;font-size:13px;color:#666">
+蓝屏原因：APP 内置的网页使用了 <code>import.meta</code> 语法，旧版安卓 WebView 不支持，导致 JavaScript 崩溃，页面只显示背景色。<br><br>
+修复原理：通过 ADB 连接 APP 的 WebView 调试接口，注入一个 Service Worker（SW）。这个 SW 拦截 APP 的所有页面加载请求，自动重定向到 GitHub Pages 上的修复版网页。SW 存储在 WebView 数据目录中，APP 重启后依然生效。<br><br>
+恢复方法：设置 → 应用 → 背群英 → 存储 → 清除数据（会清除学习记录）
+</p>
+</details>
+
+<div class="warn">需要 APP 是 Debug 版本（支持 WebView 调试）。如果是 Release 版本，脚本会提示使用方式一。</div>
 </div>
 
+<!-- 方式三：清除缓存 -->
 <div class="card">
-<h2>方式三：安装新版 APK（永久修复）</h2>
-<p>直接安装新版 APK 覆盖旧版，不影响学习记录：</p>
-<a class="btn btn-outline" href="https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk">下载新版 APK</a>
-<p>下载后直接安装，无需卸载旧版。</p>
+<h2>方式三：清除缓存（先试试）</h2>
+<p>有些情况下蓝屏是缓存问题，清除缓存可能直接解决：</p>
+<div class="step"><div class="step-num">1</div><div class="step-content">手机设置 → 应用管理 → 背群英</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-content">点「存储」→「清除缓存」（不要点清除数据！）</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-content">重新打开 APP 看是否恢复</div></div>
+<div class="info">如果清除缓存后仍然蓝屏，请使用方式一或方式二。</div>
 </div>
 
+<!-- 底部说明 -->
+<div class="card" style="text-align:center">
+<p style="color:#999;font-size:13px">
+修复版网页地址：<br>
+<a href="https://xdbzys.github.io/gaokao-vocab/%E8%83%8C%E7%BE%A4%E8%8B%B1.html" style="color:#1565c0;font-size:12px;word-break:break-all">https://xdbzys.github.io/gaokao-vocab/背群英.html</a>
+</p>
+</div>
+
+<script>
+function copyText(btn) {
+    var text = btn.parentElement.textContent.replace('复制','').trim();
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function(){
+            btn.textContent = '已复制';
+            setTimeout(function(){ btn.textContent = '复制'; }, 2000);
+        });
+    } else {
+        var range = document.createRange();
+        range.selectNodeContents(btn.parentElement);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.execCommand('copy');
+        btn.textContent = '已复制';
+        setTimeout(function(){ btn.textContent = '复制'; }, 2000);
+    }
+}
+</script>
 </body>
 </html>
