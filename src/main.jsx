@@ -3805,7 +3805,7 @@ function generatePhonetic(term) {
    三、内置词库结构
    ============================ */
 
-function makeItem(row, type, index) {
+function makeItem(row, type, index, source) {
   const [term, pos, meaning, frequency, corePoints, allPoints, examples] = row;
   return {
     id: `${type}-${index}-${term}`,
@@ -3818,12 +3818,12 @@ function makeItem(row, type, index) {
     examples: Array.isArray(examples) ? examples : [],
     phonetic: generatePhonetic(term),
     notes: '',
-    source: '内置高考词库'
+    source: source || '内置高考词库'
   };
 }
 
-function makeAllItems(seedArr, type) {
-  return seedArr.map((row, i) => makeItem(row, type.includes('phrase') || type.includes('词组') || type.includes('易混') || type.includes('同义') || type.includes('反义') || type.includes('逻辑') || type.includes('结论') || type.includes('熟词') || type.includes('生义') || type.includes('褒贬') || type.includes('易错') || type.includes('超纲') || type.includes('必考') || type.includes('真题') || type.includes('主题') ? 'phrase' : type, i));
+function makeAllItems(seedArr, type, source) {
+  return seedArr.map((row, i) => makeItem(row, type.includes('phrase') || type.includes('词组') || type.includes('易混') || type.includes('同义') || type.includes('反义') || type.includes('逻辑') || type.includes('结论') || type.includes('熟词') || type.includes('生义') || type.includes('褒贬') || type.includes('易错') || type.includes('超纲') || type.includes('必考') || type.includes('真题') || type.includes('主题') ? 'phrase' : type, i, source));
 }
 
 const seedWords3500 = [
@@ -7540,7 +7540,7 @@ const builtInBooks = [
     id: 'gaokao-3500',
     name: '高考3500词',
     editable: false,
-    items: makeAllItems(seedWords3500, 'word')
+    items: makeAllItems(seedWords3500, 'word', '高考3500词')
   },
   {
     // v2.43.0 高考总汇词库：高考3500 + 人教版高中全模块 + CET4/6 拓展（去重）+ 词族拓展词
@@ -7548,7 +7548,7 @@ const builtInBooks = [
     id: 'gaokao-master',
     name: `高考总汇词库(${MASTER_VOCAB_ALL.length}词)`,
     editable: false,
-    items: makeAllItems(MASTER_VOCAB_ALL, 'word')
+    items: makeAllItems(MASTER_VOCAB_ALL, 'word', '高考总汇词库')
   },
   {
     id: 'gaokao-core',
@@ -8060,9 +8060,9 @@ const CONSONANT_ALT_PAIRS = new Set(['cs', 'fv', 'sz', 'bp', 'dt']);
 
 // 检查两个词干是否仅因辅音交替而不同（如 advise/advice, believe/belief, describe/description）
 function isConsonantAltMatch(a, b) {
-  if (!a || !b || a.length < 5 || b.length < 5 || a.length !== b.length || a === b) return false;
+  if (!a || !b || a.length < 6 || b.length < 6 || a.length !== b.length || a === b) return false;
   const prefix = commonPrefixLen(a, b);
-  if (prefix < 4) return false;
+  if (prefix < 5) return false;
   let diffs = 0;
   for (let i = prefix; i < a.length; i++) {
     if (a[i] === b[i]) continue;
@@ -8081,9 +8081,9 @@ function isVowelLike(ch) {
 // 检查两个词干是否仅因元音变化或元音+辅音交替而不同
 // 如 choose/choice (oo→oi + s↔c), strong/strength (o→e)
 function isDerivationMatch(a, b) {
-  if (!a || !b || a.length < 4 || b.length < 4 || a.length !== b.length || a === b) return false;
+  if (!a || !b || a.length < 5 || b.length < 5 || a.length !== b.length || a === b) return false;
   const prefix = commonPrefixLen(a, b);
-  if (prefix < 3) return false;
+  if (prefix < 5) return false;
   let vowelDiffs = 0;
   let consonantAltDiffs = 0;
   for (let i = prefix; i < a.length; i++) {
@@ -8352,6 +8352,44 @@ const EXTRA_FALSE_PAIRS = [
   ['free', 'freeze'], ['sand', 'sandwich'], ['word', 'world'],
   ['war', 'warm'], ['war', 'ward'], ['war', 'warn'],
   ['pain', 'paint'], ['bull', 'bullet'], ['rest', 'restaurant'], ['iron', 'irony'], ['sand', 'sandal'],
+  // v2.44.0 新增：算法收紧后仍可能误匹配的词对
+  ['district', 'distract'], ['district', 'distracted'], ['district', 'distraction'],
+  ['distract', 'district'], ['distracted', 'district'], ['distraction', 'district'],
+  ['indeed', 'index'], ['indeed', 'indication'], ['indeed', 'indoor'], ['indeed', 'indoors'],
+  ['index', 'indeed'], ['indication', 'indeed'], ['indoor', 'indeed'], ['indoors', 'indeed'],
+  ['shore', 'shortage'], ['shore', 'shorten'], ['shore', 'shortly'],
+  ['shortage', 'shore'], ['shorten', 'shore'],
+  ['star', 'stare'], ['stare', 'star'],
+  ['tone', 'atone'], ['atone', 'tone'],
+  ['race', 'races'], ['races', 'race'],
+  ['rest', 'restaurant'], ['restaurant', 'rest'],
+  ['mine', 'miner'], ['miner', 'mine'],
+  ['fine', 'finer'], ['finer', 'fine'],
+  ['line', 'linear'], ['linear', 'line'],
+  ['care', 'career'], ['career', 'care'],
+  ['share', 'sharp'], ['share', 'sharpen'], ['share', 'shark'],
+  ['sharp', 'share'], ['sharpen', 'share'], ['shark', 'share'],
+  ['more', 'morning'], ['morning', 'more'],
+  ['form', 'former'], ['former', 'form'],
+  ['part', 'party'], ['party', 'part'],
+  ['art', 'article'], ['article', 'art'],
+  ['band', 'bandage'], ['bandage', 'band'],
+  ['port', 'porter'], ['porter', 'port'],
+  ['sort', 'sortie'], ['sortie', 'sort'],
+  ['force', 'forceful'], ['forceful', 'force'],
+  ['charge', 'charger'], ['charger', 'charge'],
+  ['stage', 'stagger'], ['stagger', 'stage'],
+  ['rage', 'ragged'], ['ragged', 'rage'],
+  ['cage', 'caged'], ['caged', 'cage'],
+  ['page', 'pager'], ['pager', 'page'],
+  ['age', 'agency'], ['agency', 'age'],
+  ['ice', 'icon'], ['icon', 'ice'],
+  ['rice', 'price'], ['price', 'rice'],
+  ['mice', 'mild'], ['mild', 'mice'],
+  ['nice', 'niche'], ['niche', 'nice'],
+  ['vice', 'device'], ['device', 'vice'],
+  ['face', 'surface'], ['surface', 'face'],
+  ['lace', 'palace'], ['palace', 'lace'],
 ];
 for (const [a, b] of EXTRA_FALSE_PAIRS) {
   if (!FALSE_ETYMOLOGY_PAIRS[a]) FALSE_ETYMOLOGY_PAIRS[a] = [];
@@ -8485,7 +8523,11 @@ function getHiddenCognates(word) {
 
 // 查找词族：与给定单词同一词根的不同形式
 // 核心原则：只有真正的词根变形才算关联，单纯长得像不算
+// v2.44.0 添加结果缓存，避免低端设备重复计算
+const _wordFamilyCache = new Map();
 function findWordFamily(term, items) {
+  const cacheKey = term.toLowerCase().trim() + '|' + items.length;
+  if (_wordFamilyCache.has(cacheKey)) return _wordFamilyCache.get(cacheKey);
   const seen = new Set([term]);
   const related = [];
   const termStem = getStem(term);
@@ -8514,29 +8556,27 @@ function findWordFamily(term, items) {
       otherStem === termLower || otherStem === termStem ||
       termStem === itemLower || termStem === otherStem;
 
-    // 规则3：词干前缀匹配（至少4字符重叠，且短词干≥长词干60%）
-    // 如 type(词干type,4) → typist(词干typist→typ,3)：不满足4字符，走规则4
-    // 如 create(词干create,6) → creative(词干creat,5)：满足，6/5=83%>60%
+    // 规则3：词干前缀匹配（至少5字符重叠，且短词干≥长词干60%）
+    // v2.44.0 收紧：4字符→5字符，避免 indeed→index, shore→short 等误匹配
+    // 如 create(词干create,6) → creative(词干creat,5)：满足，5/6=83%>60%
     const shorter = termStem.length <= otherStem.length ? termStem : otherStem;
     const longer = termStem.length <= otherStem.length ? otherStem : termStem;
     const stemPrefixMatch =
-      shorter.length >= 4 && longer.startsWith(shorter) &&
+      shorter.length >= 5 && longer.startsWith(shorter) &&
       shorter.length / longer.length >= 0.6;
 
-    // 规则4：去尾E匹配（去E后至少4字符）
-    // 如 type → typist：去E得 "typ"(3字符) → 不满足4字符，不匹配
-    //   但 type→typist 通过规则1匹配（typist.startsWith(type)? No; type.startsWith(typist)? No）
-    //   实际上 type→typist 通过规则3的 E-drop 变体匹配
-    // 如 nature → natural：去E得 "natur"，匹配词干 "natur"
-    // 如 create → creative：去E得 "creat"，匹配词干 "creat"
+    // 规则4：去尾E匹配（去E后至少5字符）
+    // v2.44.0 收紧：4字符→5字符，避免 shore→shor(4) 误匹配 short/shortage/shorten
+    // 如 nature → natural：去E得 "natur"(5)，匹配词干 "natur"
+    // 如 create → creative：去E得 "creat"(5)，匹配词干 "creat"
     const eDropMatch =
-      (termNoE && termNoE.length >= 4 &&
+      (termNoE && termNoE.length >= 5 &&
        (otherStem === termNoE ||
-        (otherStem.length >= 4 && (otherStem.startsWith(termNoE) || termNoE.startsWith(otherStem)) &&
+        (otherStem.length >= 5 && (otherStem.startsWith(termNoE) || termNoE.startsWith(otherStem)) &&
          Math.min(termNoE.length, otherStem.length) / Math.max(termNoE.length, otherStem.length) >= 0.6))) ||
-      (otherNoE && otherNoE.length >= 4 &&
+      (otherNoE && otherNoE.length >= 5 &&
        (termStem === otherNoE ||
-        (termStem.length >= 4 && (termStem.startsWith(otherNoE) || otherNoE.startsWith(termStem)) &&
+        (termStem.length >= 5 && (termStem.startsWith(otherNoE) || otherNoE.startsWith(termStem)) &&
          Math.min(termStem.length, otherNoE.length) / Math.max(termStem.length, otherNoE.length) >= 0.6)));
 
     // type → typist 特殊处理：type去E得"typ"(3字符)，typist去后缀得"typ"(3字符)
@@ -8628,7 +8668,9 @@ function findWordFamily(term, items) {
     return a.term.localeCompare(b.term);
   });
 
-  return related.slice(0, 15); // 最多显示15个关联词
+  const _result = related.slice(0, 15); // 最多显示15个关联词
+  _wordFamilyCache.set(cacheKey, _result);
+  return _result;
 }
 
 /* ============================
@@ -8921,6 +8963,50 @@ const confusingWordsData = [
   { word: 'respectable', confuses: ['respective', 'respectful'], note: 'respectable 体面的 vs respective 各自的 vs respectful 恭敬的' },
   { word: 'respective', confuses: ['respectable'], note: 'respective 各自的 vs respectable 体面的' },
   { word: 'respectful', confuses: ['respectable'], note: 'respectful 恭敬的 vs respectable 体面的' },
+  // v2.44.0 新增：拼写高度相似但含义完全不同的词对
+  { word: 'tone', confuses: ['stone', 'tune', 'ton'], note: 'tone 音调 vs stone 石头 vs tune 曲调 vs ton 吨' },
+  { word: 'stone', confuses: ['tone', 'stare', 'store'], note: 'stone 石头 vs tone 音调 vs stare 凝视 vs store 商店' },
+  { word: 'tune', confuses: ['tone', 'tune'], note: 'tune 曲调 vs tone 音调' },
+  { word: 'ton', confuses: ['tone', 'son'], note: 'ton 吨 vs tone 音调' },
+  { word: 'bone', confuses: ['tone', 'done', 'zone'], note: 'bone 骨头 vs tone 音调 vs done 完成 vs zone 区域' },
+  { word: 'done', confuses: ['bone', 'gone', 'zone', 'none'], note: 'done 完成 vs bone 骨头 vs gone 去 vs zone 区域 vs none 没有' },
+  { word: 'gone', confuses: ['done', 'bone', 'zone'], note: 'gone 去了 vs done 完成 vs bone 骨头 vs zone 区域' },
+  { word: 'zone', confuses: ['done', 'gone', 'bone', 'tone'], note: 'zone 区域 vs done 完成 vs gone 去了 vs bone 骨头 vs tone 音调' },
+  { word: 'none', confuses: ['tone', 'done', 'bone', 'one'], note: 'none 没有 vs tone 音调 vs done 完成 vs bone 骨头 vs one 一' },
+  { word: 'one', confuses: ['tone', 'none', 'bone', 'done'], note: 'one 一 vs tone 音调 vs none 没有 vs bone 骨头 vs done 完成' },
+  { word: 'vote', confuses: ['note', 'boat', 'coat'], note: 'vote 投票 vs note 笔记 vs boat 船 vs coat 外套' },
+  { word: 'note', confuses: ['vote', 'not', 'nut'], note: 'note 笔记 vs vote 投票 vs not 不 vs nut 坚果' },
+  { word: 'boat', confuses: ['vote', 'coat', 'goat', 'boot'], note: 'boat 船 vs vote 投票 vs coat 外套 vs goat 山羊 vs boot 靴子' },
+  { word: 'coat', confuses: ['boat', 'vote', 'goat'], note: 'coat 外套 vs boat 船 vs vote 投票 vs goat 山羊' },
+  { word: 'goat', confuses: ['boat', 'coat', 'goal'], note: 'goat 山羊 vs boat 船 vs coat 外套 vs goal 目标' },
+  { word: 'boot', confuses: ['boat', 'foot', 'book'], note: 'boot 靴子 vs boat 船 vs foot 脚 vs book 书' },
+  { word: 'foot', confuses: ['boot', 'food', 'fool'], note: 'foot 脚 vs boot 靴子 vs food 食物 vs fool 傻瓜' },
+  { word: 'food', confuses: ['foot', 'fool', 'good'], note: 'food 食物 vs foot 脚 vs fool 傻瓜 vs good 好的' },
+  { word: 'fool', confuses: ['food', 'foot', 'tool'], note: 'fool 傻瓜 vs food 食物 vs foot 脚 vs tool 工具' },
+  { word: 'tool', confuses: ['fool', 'pool'], note: 'tool 工具 vs fool 傻瓜 vs pool 池塘' },
+  { word: 'pool', confuses: ['tool', 'poor'], note: 'pool 池塘 vs tool 工具 vs poor 贫穷的' },
+  { word: 'poor', confuses: ['pool', 'pour'], note: 'poor 贫穷的 vs pool 池塘 vs pour 倒' },
+  { word: 'pour', confuses: ['poor', 'your'], note: 'pour 倒 vs poor 贫穷的 vs your 你的' },
+  { word: 'your', confuses: ['pour', 'you'], note: 'your 你的 vs pour 倒 vs you 你' },
+  { word: 'shore', confuses: ['short', 'store', 'score'], note: 'shore 岸 vs short 短的 vs store 商店 vs score 得分' },
+  { word: 'short', confuses: ['shore', 'shot', 'shout'], note: 'short 短的 vs shore 岸 vs shot 射击 vs shout 喊' },
+  { word: 'store', confuses: ['shore', 'story', 'storm'], note: 'store 商店 vs shore 岸 vs story 故事 vs storm 风暴' },
+  { word: 'story', confuses: ['store', 'storm', 'stony'], note: 'story 故事 vs store 商店 vs storm 风暴 vs stony 石头的' },
+  { word: 'storm', confuses: ['store', 'story'], note: 'storm 风暴 vs store 商店 vs story 故事' },
+  { word: 'score', confuses: ['shore', 'scare', 'shore'], note: 'score 得分 vs shore 岸 vs scare 惊吓' },
+  { word: 'mine', confuses: ['nine', 'fine', 'line'], note: 'mine 我的/矿 vs nine 九 vs fine 好的 vs line 线' },
+  { word: 'nine', confuses: ['mine', 'fine', 'line', 'none'], note: 'nine 九 vs mine 矿 vs fine 好的 vs line 线 vs none 没有' },
+  { word: 'fine', confuses: ['mine', 'nine', 'line', 'find'], note: 'fine 好的/罚款 vs mine 矿 vs nine 九 vs line 线 vs find 找到' },
+  { word: 'line', confuses: ['mine', 'nine', 'fine', 'live'], note: 'line 线 vs mine 矿 vs nine 九 vs fine 好的 vs live 生活' },
+  { word: 'find', confuses: ['fine', 'mind', 'kind'], note: 'find 找到 vs fine 好的 vs mind 思想 vs kind 种类' },
+  { word: 'mind', confuses: ['find', 'kind', 'mine'], note: 'mind 思想 vs find 找到 vs kind 种类 vs mine 我的' },
+  { word: 'kind', confuses: ['find', 'mind', 'blind'], note: 'kind 种类 vs find 找到 vs mind 思想 vs blind 盲的' },
+  { word: 'race', confuses: ['face', 'rate', 'rice'], note: 'race 比赛 vs face 脸 vs rate 比率 vs rice 米饭' },
+  { word: 'face', confuses: ['race', 'fact', 'fade'], note: 'face 脸 vs race 比赛 vs fact 事实 vs fade 褪色' },
+  { word: 'rate', confuses: ['race', 'late', 'date'], note: 'rate 比率 vs race 比赛 vs late 迟的 vs date 日期' },
+  { word: 'late', confuses: ['rate', 'date', 'mate'], note: 'late 迟的 vs rate 比率 vs date 日期 vs mate 伙伴' },
+  { word: 'date', confuses: ['late', 'rate', 'duty'], note: 'date 日期 vs late 迟的 vs rate 比率 vs duty 责任' },
+  { word: 'duty', confuses: ['date', 'beauty'], note: 'duty 责任 vs date 日期 vs beauty 美丽' },
 ];
 
 // 编辑距离（Levenshtein distance）
@@ -8948,7 +9034,11 @@ function commonPrefixLen(a, b) {
 }
 
 // 查找易混词：返回与给定单词拼写相似但含义不同的词
+// v2.44.0 添加结果缓存，避免低端设备重复计算
+const _confusingCache = new Map();
 function findConfusingWords(term, items) {
+  const cacheKey = term.toLowerCase().trim() + '|' + items.length;
+  if (_confusingCache.has(cacheKey)) return _confusingCache.get(cacheKey);
   const key = term.toLowerCase().trim();
   const result = [];
   const seen = new Set();
@@ -8990,19 +9080,19 @@ function findConfusingWords(term, items) {
         scored.push({ item, dist, prefix });
       }
     }
-    // 按编辑距离升序排列，取前8个
+    // 按编辑距离升序排列，取前12个
     scored.sort((a, b) => a.dist - b.dist || b.prefix - a.prefix);
-    for (const { item } of scored.slice(0, 8)) {
+    for (const { item } of scored.slice(0, 12)) {
       if (!seen.has(item.term.toLowerCase())) {
         result.push(item);
         seen.add(item.term.toLowerCase());
       }
     }
   }
-  return result.slice(0, 10);
+  const _result = result.slice(0, 15);
+  _confusingCache.set(cacheKey, _result);
+  return _result;
 }
-
-// 获取易混词的说明
 function getConfusingNote(term) {
   const key = term.toLowerCase().trim();
   const entry = confusingWordsData.find(e => e.word === key);
@@ -9838,8 +9928,26 @@ function App() {
 
   // 全部词汇合并（词根词缀、对比、易错词基于全量词汇）
   const allWords = useMemo(() => {
-    return books.flatMap(b => b.items);
+    // v2.44.0 构建 wordBookMap：记录每个单词出现在哪些词库
+    const map = {};
+    const items = [];
+    for (const b of books) {
+      for (const item of b.items) {
+        const key = item.term.toLowerCase();
+        if (!map[key]) map[key] = [];
+        if (!map[key].includes(b.name)) map[key].push(b.name);
+        // 保留 sourceBooks 属性（已有则保留）
+        if (!item.sourceBooks) item.sourceBooks = [...map[key]];
+        else if (!item.sourceBooks.includes(b.name)) item.sourceBooks.push(b.name);
+        items.push(item);
+      }
+    }
+    wordBookMapRef.current = map;
+    return items;
   }, [books]);
+
+  // 词库映射 ref：供详情页和背诵页显示单词所属词库
+  const wordBookMapRef = useRef({});
 
   // 统一处理：点击单词 → 词库存在则跳转详情+发音，不存在则只发音
   function speakOrNavigate(word) {
@@ -11340,6 +11448,15 @@ function App() {
               <div className="cardMeta">
                 <span className="freqTag" style={{ color: freqColor(displayCurrent.frequency), borderColor: freqColor(displayCurrent.frequency) }}>{displayCurrent.frequency}</span>
                 {displayCurrent.pos && <span className="posTag" style={{ color: posColor(displayCurrent.pos), background: posColor(displayCurrent.pos) + '18' }}>{displayCurrent.pos}</span>}
+                {/* v2.44.0 显示单词所属词库 */}
+                {(() => {
+                  const books = (displayCurrent.sourceBooks && displayCurrent.sourceBooks.length > 0)
+                    ? displayCurrent.sourceBooks
+                    : (displayCurrent.source ? [displayCurrent.source] : []);
+                  if (books.length === 0) return null;
+                  const isMulti = books.length > 1;
+                  return <span style={{ fontSize: 11, background: isMulti ? '#dbeafe' : '#f3f4f6', color: isMulti ? '#1e40af' : '#9ca3af', padding: '1px 6px', borderRadius: 6, fontWeight: 500 }}>📚 {books.join('/')}</span>;
+                })()}
                 {progress[termKey(displayCurrent.term)] === 'mastered' && <span className="masteredTag">已掌握</span>}
               </div>
 
@@ -11523,12 +11640,16 @@ function App() {
                           <div className="points" style={{ marginTop: 8 }}>
                             <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>⚠️ 易混词</p>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                              {confusing.map(item => (
-                                <span key={item.id} style={{ display: 'inline-block', background: 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }}
+                              {confusing.map(item => {
+                                const inBank = !!findWordInBank(item.term);
+                                return (
+                                <span key={item.id} style={{ display: 'inline-block', background: inBank ? 'var(--primary-light)' : 'var(--border-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer', border: '1px solid var(--border-light)' }}
                                   onClick={() => { openDetailItem(item); }}>
                                   {item.term} <small style={{ opacity: 0.7 }}>{item.pos}</small>
+                                  {!inBank && <small style={{ opacity: 0.6, fontSize: 11 }}>（非当前词库）</small>}
                                 </span>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -12579,14 +12700,14 @@ function App() {
             })()}
           </div>
 
-          {/* 点单词自动发音开关（独立卡片） */}
+          {/* v2.44.0 合并自动发音开关：背诵页新单词自动发音 + 跳转单词自动发音 */}
           <div className="toggleCard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', marginTop: 12, borderRadius: 12, background: 'var(--primary-light)', border: '1px solid var(--border-light)' }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600 }}>🔊 点单词自动发音</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>点击单词跳转详情时自动发音</div>
+              <div style={{ fontSize: 15, fontWeight: 600 }}>🔊 自动发音（背诵新词 + 跳转）</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>背诵页出现新单词时自动发音，点击单词跳转详情时也自动发音</div>
             </div>
             <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0 }}>
-              <input type="checkbox" checked={settings.navAutoSpeak !== false} onChange={e => { const v = e.target.checked; setSettings(s => ({ ...s, navAutoSpeak: v })); saveSettings({ ...settings, navAutoSpeak: v }); }} style={{ opacity: 0, width: 0, height: 0 }} />
+              <input type="checkbox" checked={settings.navAutoSpeak !== false} onChange={e => { const v = e.target.checked; setSettings(s => ({ ...s, navAutoSpeak: v, autoSpeak: v })); saveSettings({ ...settings, navAutoSpeak: v, autoSpeak: v }); }} style={{ opacity: 0, width: 0, height: 0 }} />
               <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.navAutoSpeak !== false ? 'var(--primary)' : '#ccc', borderRadius: 26, transition: '0.3s' }}>
                 <span style={{ position: 'absolute', height: 20, width: 20, left: 3, bottom: 3, backgroundColor: 'white', borderRadius: '50%', transition: '0.3s', transform: settings.navAutoSpeak !== false ? 'translateX(22px)' : 'translateX(0)' }} />
               </span>
@@ -12659,13 +12780,8 @@ function App() {
                 <option value="8000">8.0秒</option>
               </select>
             </label>}
-            <label>切换单词自动朗读
-              <select value={settings.autoSpeak ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, autoSpeak: v })); saveSettings({ ...settings, autoSpeak: v }); }}>
-                <option value="on">开启（每个新单词自动发音）</option>
-                <option value="off">关闭</option>
-              </select>
-            </label>
-            {/* 跳转单词自动发音开关已移至上方独立卡片 */}
+            {/* v2.44.0 切换单词自动朗读已合并到上方自动发音开关 */}
+            {/* 跳转单词自动发音开关已合并到上方独立卡片 */}
             {isNativeApp && (
               <label>开屏更新公告
                 <select value={settings.showAnnouncement ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, showAnnouncement: v })); saveSettings({ ...settings, showAnnouncement: v }); }}>
@@ -13105,6 +13221,15 @@ function App() {
                 <div className="detailMetaRow">
                   {detailItem.pos && <span className="detailPosTag" style={{ color: posColor(detailItem.pos), background: posColor(detailItem.pos) + '18' }}>{detailItem.pos}</span>}
                   {detailItem.frequency && <span className="detailFreqTag" style={{ color: freqColor(detailItem.frequency) }}>{detailItem.frequency}</span>}
+                  {/* v2.44.0 显示单词所属词库 */}
+                  {(() => {
+                    const books = (detailItem.sourceBooks && detailItem.sourceBooks.length > 0)
+                      ? detailItem.sourceBooks
+                      : (wordBookMapRef.current[detailItem.term.toLowerCase()] || (detailItem.source ? [detailItem.source] : []));
+                    if (books.length === 0) return null;
+                    const isMulti = books.length > 1;
+                    return <span className="detailSourceTag" style={{ fontSize: 12, background: isMulti ? '#dbeafe' : '#f3f4f6', color: isMulti ? '#1e40af' : '#6b7280', padding: '2px 8px', borderRadius: 8, fontWeight: 500 }}>📚 {books.join(' / ')}</span>;
+                  })()}
                   {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag">✓ 已掌握</span>}
                 </div>
                 <h3 className="detailMeaning">{detailItem.meaning}</h3>

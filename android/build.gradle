@@ -29,6 +29,17 @@ allprojects {
         google()
         mavenCentral()
     }
+    // Force all modules to use build-tools 36.0.0 (already installed)
+    project.plugins.withId('com.android.library') {
+        android {
+            buildToolsVersion = "36.0.0"
+        }
+    }
+    project.plugins.withId('com.android.application') {
+        android {
+            buildToolsVersion = "36.0.0"
+        }
+    }
 }
 
 task clean(type: Delete) {
