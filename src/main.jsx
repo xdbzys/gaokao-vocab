@@ -11212,25 +11212,9 @@ function App() {
         setUpdateVersion(version);
         setUpdateChangelog(changelog);
 
-        // 原生APP：使用ApkUpdater插件静默后台下载APK
-        // v2.43.0：静默模式只预下载不自动拉起安装器（后台拉起安装器在 Android 10+ 会被系统
-        // 拦截且部分机型会闪退），等用户进入"我的"页点"立即更新"时再安装已下载的包
-        const apkUpdaterPlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkUpdater;
-        if (isNativeApp && apkUpdaterPlugin) {
-          setInAppDownloading(true);
-          setApkDownloadProgress(0);
-          const apkDownloadUrl = APK_DOWNLOAD_SOURCES[0].url;
-          apkUpdaterPlugin.downloadAndInstall({ url: apkDownloadUrl, autoInstall: false })
-            .then((result) => {
-              console.log('[Update] Silent download complete:', result);
-              setInAppDownloading(false);
-              setCloudStatus('新版本已就绪，请到「我的」页面点击"立即更新"完成安装');
-            })
-            .catch((err) => {
-              console.warn('[Update] Silent download failed:', err);
-              setInAppDownloading(false);
-              setCloudStatus('发现新版本，点击下方"立即更新"手动下载');
-            });
+        // v2.44.0: 静默下载APK在部分机型会闪退，改为仅提示有新版本，用户手动点更新走浏览器下载
+        if (isNativeApp) {
+          setCloudStatus('发现新版本，点击"立即更新"前往浏览器下载');
         } else {
           if (!silent) {
             setCloudStatus('发现新版本，点击下方按钮前往下载');
@@ -11250,54 +11234,11 @@ function App() {
     }
   }
 
-  // 执行APP更新：应用内下载APK并安装（不跳转浏览器）
+  // 执行APP更新：统一跳转浏览器下载（避免应用内下载闪退）
   async function applyUpdate() {
     if (!updateInfo || !updateInfo.hasUpdate) return;
 
-    // 优先使用原生ApkUpdater插件进行应用内下载安装
-    const apkUpdaterPlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkUpdater;
-    if (apkUpdaterPlugin && isNativeApp) {
-      setInAppDownloading(true);
-      setInAppDownloadError('');
-      setApkDownloadProgress(0);
-      setUpdateInfo(prev => ({ ...prev, updating: true }));
-      setCloudStatus('正在下载更新包...');
-
-      // 多个下载源，逐一尝试（v2.43.0：GitHub Releases 优先）
-      const downloadSources = APK_DOWNLOAD_SOURCES.map(s => s.url);
-
-      for (let i = 0; i < downloadSources.length; i++) {
-        const apkUrl = downloadSources[i];
-        try {
-          setCloudStatus(`正在从${APK_DOWNLOAD_SOURCES[i].name}下载（${i + 1}/${downloadSources.length}）...`);
-          const result = await apkUpdaterPlugin.downloadAndInstall({ url: apkUrl, autoInstall: true });
-          // 如果成功，安装界面已弹出
-          setCloudStatus('下载完成，请在弹出的安装界面中点击"安装"');
-          setUpdateInfo(prev => ({ ...prev, updating: false }));
-          setInAppDownloading(false);
-          return;
-        } catch (e) {
-          console.warn(`[ApkUpdater] Source ${i + 1} failed:`, e);
-          setCloudStatus(`下载源${APK_DOWNLOAD_SOURCES[i].name}失败，尝试下一个...`);
-        }
-      }
-
-      // 所有原生下载源都失败，回退到浏览器
-      setInAppDownloading(false);
-      setInAppDownloadError('应用内下载失败，正在打开浏览器下载...');
-      setCloudStatus('应用内下载失败，正在尝试浏览器下载...');
-      setUpdateInfo(prev => ({ ...prev, updating: false }));
-
-      // 浏览器回退
-      const fallbackUrl = downloadSources[0];
-      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-        try { await Capacitor.Plugins.Browser.open({ url: fallbackUrl }); return; } catch {}
-      }
-      window.open(fallbackUrl, '_blank');
-      return;
-    }
-
-    // 非原生环境或插件不可用：使用浏览器下载
+    // v2.44.0: 应用内下载在部分机型会闪退，统一走浏览器下载
     setUpdateInfo(prev => ({ ...prev, updating: true }));
     setCloudStatus('正在打开下载页面...');
     const apkUrl = APK_DOWNLOAD_SOURCES[0].url;
@@ -13087,34 +13028,12 @@ function App() {
                     // 如果静默下载已在进行中，直接跳转到设置页显示进度
                     if (inAppDownloading) return;
                     // 优先使用应用内下载安装（不跳转浏览器）
-                    const apkUpdaterPlugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkUpdater;
-                    if (apkUpdaterPlugin && isNativeApp) {
-                      setInAppDownloading(true);
-                      setApkDownloadProgress(0);
-                      setCloudStatus('正在下载更新包...');
-                      apkUpdaterPlugin.downloadAndInstall({ url: APK_DOWNLOAD_SOURCES[0].url, autoInstall: true })
-                        .then(() => {
-                          setCloudStatus('下载完成，请在弹出的安装界面中点击"安装"');
-                          setInAppDownloading(false);
-                        })
-                        .catch((e) => {
-                          console.warn('[ApkUpdater] Download failed:', e);
-                          setInAppDownloading(false);
-                          setCloudStatus('应用内下载失败，正在打开浏览器...');
-                          const url = APK_DOWNLOAD_SOURCES[0].url;
-                          if (window.Capacitor?.Plugins?.Browser) {
-                            Capacitor.Plugins.Browser.open({ url });
-                          } else {
-                            window.open(url, '_blank');
-                          }
-                        });
+                    // v2.44.0: 应用内下载在部分机型会闪退，统一走浏览器下载
+                    const url = APK_DOWNLOAD_SOURCES[0].url;
+                    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+                      Capacitor.Plugins.Browser.open({ url });
                     } else {
-                      const url = APK_DOWNLOAD_SOURCES[0].url;
-                      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-                        Capacitor.Plugins.Browser.open({ url });
-                      } else {
-                        window.open(url, '_blank');
-                      }
+                      window.open(url, '_blank');
                     }
                   }}>立即更新</button>
                 </div>
