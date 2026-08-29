@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>背群英蓝屏修复</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:#f0f7ff; color:#333; line-height:1.6; padding:20px; }
+.card { background:#fff; border-radius:16px; padding:24px; margin-bottom:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); }
+h1 { font-size:22px; margin-bottom:8px; color:#1565c0; }
+h2 { font-size:18px; margin:16px 0 8px; color:#1565c0; }
+p { margin-bottom:8px; font-size:15px; }
+.step { display:flex; gap:12px; margin:12px 0; align-items:flex-start; }
+.step-num { flex-shrink:0; width:28px; height:28px; background:#1565c0; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; }
+.step-content { flex:1; font-size:15px; }
+.btn { display:block; text-align:center; background:#1565c0; color:#fff; text-decoration:none; padding:14px 24px; border-radius:12px; font-size:17px; font-weight:bold; margin:16px 0; }
+.btn:active { background:#0d47a1; }
+.btn-outline { background:#fff; color:#1565c0; border:2px solid #1565c0; }
+.warn { background:#fff3e0; border-left:4px solid #ff9800; padding:12px 16px; border-radius:8px; margin:12px 0; font-size:14px; }
+.ok { background:#e8f5e9; border-left:4px solid #4caf50; padding:12px 16px; border-radius:8px; margin:12px 0; font-size:14px; }
+code { background:#f5f5f5; padding:2px 6px; border-radius:4px; font-size:13px; word-break:break-all; }
+.hide { display:none; }
+</style>
+</head>
+<body>
+
+<h1>背群英蓝屏修复</h1>
+<p>选择适合你的修复方式：</p>
+
+<div class="card">
+<h2>方式一：直接用网页版（最简单）</h2>
+<p>不用 ADB、不用电脑，直接在手机浏览器打开修复版：</p>
+<a class="btn" href="https://xdbzys.github.io/gaokao-vocab/%E8%83%8C%E7%BE%A4%E8%8B%B1.html">打开背群英网页版</a>
+<p>打开后点击浏览器菜单 →「添加到主屏幕」，以后从桌面图标打开即可。</p>
+<div class="ok">学习记录通过 localStorage 保存，与 APP 版数据独立，需要重新导入词库。</div>
+</div>
+
+<div class="card">
+<h2>方式二：ADB 修复 APP（保留学习记录）</h2>
+<p>通过 ADB 让蓝屏的 APP 加载修复版网页，学习记录不会丢失。</p>
+
+<h2 style="margin-top:20px">电脑 + USB 方式</h2>
+<div class="step"><div class="step-num">1</div><div class="step-content">手机开启 USB 调试：设置 → 关于手机 → 连点7次版本号 → 返回 → 开发者选项 → USB调试</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-content">电脑下载 <a href="https://developer.android.com/studio/releases/platform-tools" style="color:#1565c0">Android Platform Tools</a> 并解压</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-content">数据线连接手机，手机弹窗点「允许 USB 调试」</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-content">下载修复脚本 <a href="https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/fix_bluescreen.py" style="color:#1565c0">fix_bluescreen.py</a></div></div>
+<div class="step"><div class="step-num">5</div><div class="step-content">在 Platform Tools 目录运行：<code>python fix_bluescreen.py</code></div></div>
+
+<h2 style="margin-top:20px">手机 Termux 方式（无需电脑）</h2>
+<div class="step"><div class="step-num">1</div><div class="step-content">手机安装 <a href="https://f-droid.org/packages/com.termux/" style="color:#1565c0">Termux</a>（F-Droid 版）</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-content">在 Termux 运行：<code>pkg install python android-tools curl git</code></div></div>
+<div class="step"><div class="step-num">3</div><div class="step-content">开启无线调试：设置 → 开发者选项 → 无线调试 → 开启</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-content">在 Termux 运行：<code>adb connect localhost:5555</code>，手机弹窗点允许</div></div>
+<div class="step"><div class="step-num">5</div><div class="step-content">下载并运行：<code>curl -sL https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/fix_bluescreen.py -o fix.py && python fix.py</code></div></div>
+
+<div class="warn">注意：ADB 修复是临时的，APP 被杀进程后需要重新运行脚本。永久修复建议安装新版 APK。</div>
+</div>
+
+<div class="card">
+<h2>方式三：安装新版 APK（永久修复）</h2>
+<p>直接安装新版 APK 覆盖旧版，不影响学习记录：</p>
+<a class="btn btn-outline" href="https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk">下载新版 APK</a>
+<p>下载后直接安装，无需卸载旧版。</p>
+</div>
+
+</body>
+</html>
