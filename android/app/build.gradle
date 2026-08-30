@@ -3,7 +3,6 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.gaokao.vocab"
     compileSdk = rootProject.ext.compileSdkVersion
-    buildToolsVersion = "36.0.0"
     defaultConfig {
         applicationId "com.gaokao.vocab"
         minSdkVersion rootProject.ext.minSdkVersion
