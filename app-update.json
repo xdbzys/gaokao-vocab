@@ -1,8 +1,8 @@
 {
-  "version": "2.47.0",
-  "versionCode": 199,
-  "changelog": "🎉 新版本 2.47.0 已发布！\n\n本次更新重点修复数据恢复问题：\n\n【修复】数据恢复检测不到备份文件\n- 根因：旧版本只搜索一个目录，找不到就直接提示失败，用户无法手动选择\n- 修复：自动扫描 5 个常见位置（Documents/高考词汇备份、Documents/背群英备份、Documents、Downloads 等）\n- 新增：找不到文件时弹窗询问是否手动选择，不再直接失败\n- 新增：文件名模糊匹配（支持 gaokao、backup、备份、背群英等关键词）\n- 新增：找到文件时也可输入 0 手动选择其他文件\n\n点击下方\"立即更新\"即可在应用内下载安装。",
-  "devNotes": "v2.47.0: Fixed data restore (importData) not detecting backup files. Added multi-directory scanning, manual file picker fallback, fuzzy filename matching. Version bumped from 2.46.0 to 2.47.0.",
+  "version": "2.48.0",
+  "versionCode": 200,
+  "changelog": "🎉 背群英 v2.48.0 已发布！\n\n本次更新内容：\n\n【新增】高考总汇词库单词黄底标记\n- 在单词详情页中，仅来自高考总汇词库的单词会显示黄底标签\n- 多词库单词保持蓝底，其他词库单词保持灰底，反义词保持红底\n\n【修复】数据恢复丢失数据\n- 根因：旧版本备份只导出硬编码的15个键，遗漏了 gaokao_hidden_books 等新增键\n- 修复：改为导出全部 localStorage 数据，确保零丢失\n- 修复：恢复时不再过滤非字符串值，所有数据全部恢复\n- 优化：备份/恢复时显示实际数据项数量\n\n点击下方\"立即更新\"即可在应用内下载安装。",
+  "devNotes": "v2.48.0: Added yellow background for master-vocab-only words in detail page. Fixed data backup/restore: export ALL localStorage keys instead of hardcoded list, restore all values regardless of type, show item count in messages.",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
