@@ -47,8 +47,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.47.0';
-const APP_VERSION_CODE = 199;
+const APP_VERSION = '2.48.0';
+const APP_VERSION_CODE = 200;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -10718,17 +10718,14 @@ function App() {
 
   // 数据备份：导出所有 localStorage 数据为 JSON 文件
   async function exportData() {
-    const keys = [
-      'gaokao_progress', 'gaokao_settings', 'gaokao_study_log', 'gaokao_study_words_log', 'gaokao_downloaded',
-      'gaokao_wrong_words', 'customBooks', 'customSpelling', 'aiImportConfig',
-      'gaokao_study_books', 'gaokao_library_books', 'gaokao_hide_mastered',
-      'gaokao_dismissed_version', 'gaokao_avatar', 'gaokao_first_use'
-    ];
+    // v2.48.0: 导出全部 localStorage，不再使用硬编码列表，避免遗漏数据
     const data = {};
-    keys.forEach(k => {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
       const v = localStorage.getItem(k);
       if (v !== null) data[k] = v;
-    });
+    }
+    const totalKeys = Object.keys(data).length;
     const jsonStr = JSON.stringify(data, null, 2);
     const fileName = `gaokao-backup-${new Date().toISOString().slice(0,10)}.json`;
     const dirName = '高考词汇备份';
@@ -10745,7 +10742,7 @@ function App() {
           encoding: Encoding.UTF8
         });
         const uri = result.uri || '';
-        const msg = `数据已备份！\n\n保存位置：Documents/${dirName}/${fileName}\n${uri ? '\n完整路径：' + uri : ''}\n\n打开手机"文件管理器" → "Documents" → "高考词汇备份" 即可找到。`;
+        const msg = `数据已备份（共 ${totalKeys} 项）！\n\n保存位置：Documents/${dirName}/${fileName}\n${uri ? '\n完整路径：' + uri : ''}\n\n打开手机"文件管理器" → "Documents" → "高考词汇备份" 即可找到。`;
         alert(msg);
         return;
       } catch (e) {
@@ -10766,7 +10763,7 @@ function App() {
     const a = document.createElement('a');
     a.href = url; a.download = fileName; a.click();
     URL.revokeObjectURL(url);
-    alert(`数据已备份！文件名为 ${fileName}\n\n保存位置：浏览器"下载"文件夹\n请将此文件保存到安全位置，换设备或更新时可恢复。`);
+    alert(`数据已备份（共 ${totalKeys} 项）！文件名为 ${fileName}\n\n保存位置：浏览器"下载"文件夹\n请将此文件保存到安全位置，换设备或更新时可恢复。`);
   }
 
   // 数据恢复：从 JSON 文件导入所有数据
@@ -10836,10 +10833,16 @@ function App() {
             const data = JSON.parse(fileContent.data);
             if (!data || typeof data !== 'object') throw new Error('文件格式错误');
             let count = 0;
+            let detailList = [];
             Object.entries(data).forEach(([k, v]) => {
-              if (typeof v === 'string') { localStorage.setItem(k, v); count++; }
+              const val = typeof v === 'string' ? v : JSON.stringify(v);
+              localStorage.setItem(k, val);
+              count++;
+              if (k.startsWith('gaokao_') || k.startsWith('custom') || k.startsWith('ai')) {
+                detailList.push(k);
+              }
             });
-            alert(`成功从 ${uniqueFiles[idx].name} 恢复 ${count} 项数据，页面即将刷新。`);
+            alert(`成功从 ${uniqueFiles[idx].name} 恢复 ${count} 项数据（含 ${detailList.length} 个应用数据项），页面即将刷新。`);
             window.location.reload();
             return;
           } catch (err) {
@@ -10872,13 +10875,16 @@ function App() {
           const data = JSON.parse(ev.target.result);
           if (!data || typeof data !== 'object') throw new Error('文件格式错误');
           let count = 0;
+          let detailList = [];
           Object.entries(data).forEach(([k, v]) => {
-            if (typeof v === 'string') {
-              localStorage.setItem(k, v);
-              count++;
+            const val = typeof v === 'string' ? v : JSON.stringify(v);
+            localStorage.setItem(k, val);
+            count++;
+            if (k.startsWith('gaokao_') || k.startsWith('custom') || k.startsWith('ai')) {
+              detailList.push(k);
             }
           });
-          alert(`成功从「${file.name}」恢复 ${count} 项数据，页面即将刷新。`);
+          alert(`成功从「${file.name}」恢复 ${count} 项数据（含 ${detailList.length} 个应用数据项），页面即将刷新。`);
           window.location.reload();
         } catch (err) {
           alert('恢复失败：' + err.message + '\n\n请确认选择的是背群英备份文件（.json 格式）。');
@@ -11485,7 +11491,10 @@ function App() {
                     : (displayCurrent.source ? [displayCurrent.source] : []);
                   if (books.length === 0) return null;
                   const isMulti = books.length > 1;
-                  return <span style={{ fontSize: 11, background: isMulti ? '#dbeafe' : '#f3f4f6', color: isMulti ? '#1e40af' : '#9ca3af', padding: '1px 6px', borderRadius: 6, fontWeight: 500 }}>📚 {books.join('/')}</span>;
+                  const isMasterOnly = !isMulti && books[0] === '高考总汇词库';
+                  const bg = isMulti ? '#dbeafe' : isMasterOnly ? '#fef9c3' : '#f3f4f6';
+                  const clr = isMulti ? '#1e40af' : isMasterOnly ? '#a16207' : '#9ca3af';
+                  return <span style={{ fontSize: 11, background: bg, color: clr, padding: '1px 6px', borderRadius: 6, fontWeight: 500 }}>📚 {books.join('/')}</span>;
                 })()}
                 {progress[termKey(displayCurrent.term)] === 'mastered' && <span className="masteredTag">已掌握</span>}
               </div>
@@ -13236,7 +13245,10 @@ function App() {
                       : (wordBookMapRef.current[detailItem.term.toLowerCase()] || (detailItem.source ? [detailItem.source] : []));
                     if (books.length === 0) return null;
                     const isMulti = books.length > 1;
-                    return <span className="detailSourceTag" style={{ fontSize: 12, background: isMulti ? '#dbeafe' : '#f3f4f6', color: isMulti ? '#1e40af' : '#6b7280', padding: '2px 8px', borderRadius: 8, fontWeight: 500 }}>📚 {books.join(' / ')}</span>;
+                    const isMasterOnly = !isMulti && books[0] === '高考总汇词库';
+                    const bg = isMulti ? '#dbeafe' : isMasterOnly ? '#fef9c3' : '#f3f4f6';
+                    const clr = isMulti ? '#1e40af' : isMasterOnly ? '#a16207' : '#6b7280';
+                    return <span className="detailSourceTag" style={{ fontSize: 12, background: bg, color: clr, padding: '2px 8px', borderRadius: 8, fontWeight: 500 }}>📚 {books.join(' / ')}</span>;
                   })()}
                   {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag">✓ 已掌握</span>}
                 </div>
