@@ -47,8 +47,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.49.0';
-const APP_VERSION_CODE = 201;
+const APP_VERSION = '2.50.0';
+const APP_VERSION_CODE = 202;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -7826,6 +7826,7 @@ const builtInDownloads = [
 
 const PROGRESS_KEY = 'gaokao_progress';
 const SETTINGS_KEY = 'gaokao_settings';
+const MODE_KEY = 'gaokao_practice_mode';
 const STUDYLOG_KEY = 'gaokao_study_log';
 const STUDY_WORDS_KEY = 'gaokao_study_words_log';
 const DOWNLOAD_KEY = 'gaokao_downloaded';
@@ -7875,6 +7876,10 @@ function saveProgress(progress) {
 
 function loadSettings() {
   try {
+    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    // v2.50.0 独立存储背诵模式，防止设置对象变化时模式丢失
+    const savedMode = localStorage.getItem(MODE_KEY);
+    if (savedMode && !saved.mode) saved.mode = savedMode;
     return {
       dailyGoal: 50,
       speakRate: 0.78,
@@ -7889,15 +7894,18 @@ function loadSettings() {
       autoMaster: false,
       navAutoSpeak: true,
       volumeKeyNav: false,
-      ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')
+      ...saved
     };
   } catch {
-    return { dailyGoal: 50, speakRate: 0.78, mode: 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: false, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false };
+    const savedMode = localStorage.getItem(MODE_KEY);
+    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: false, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false };
   }
 }
 
 function saveSettings(settings) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  // v2.50.0 独立存储背诵模式，确保永不丢失
+  if (settings.mode) localStorage.setItem(MODE_KEY, settings.mode);
 }
 
 function loadBooks() {
@@ -10002,6 +10010,17 @@ function App() {
   function findWordInBank(word) {
     const w = String(word || '').trim().toLowerCase();
     return allWords.find(item => item.term.toLowerCase() === w);
+  }
+
+  // v2.50.0 判断单词是否只存在于高考总汇词库（用于详情区黄底标记）
+  function isMasterOnlyWord(word) {
+    const w = String(word || '').trim().toLowerCase();
+    if (!w) return false;
+    const bookList = wordBookMapRef.current[w];
+    if (!bookList || bookList.length === 0) return false;
+    // 只属于一个词库，且该词库是高考总汇词库
+    if (bookList.length !== 1) return false;
+    return bookList[0].startsWith('高考总汇词库');
   }
 
   // v2.43.0 词库外单词的词性+中文：优先当前词库，其次高考总汇词库
@@ -13309,16 +13328,25 @@ function App() {
                   <div className="detailSection detailWordForms">
                     <p className="detailSectionTitle">🔄 单词变形</p>
                     <div className="detailFormGrid">
-                      {enrichment.wordForms.noun && <div className="detailFormItem"><span className="detailFormLabel">名词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.noun)}>{enrichment.wordForms.noun}{extraWordInfo(enrichment.wordForms.noun) && <span className="exampleZhInline">（{extraWordInfo(enrichment.wordForms.noun)}）</span>}</span></div>}
-                      {enrichment.wordForms.adjective && <div className="detailFormItem"><span className="detailFormLabel">形容词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.adjective)}>{enrichment.wordForms.adjective}{extraWordInfo(enrichment.wordForms.adjective) && <span className="exampleZhInline">（{extraWordInfo(enrichment.wordForms.adjective)}）</span>}</span></div>}
-                      {enrichment.wordForms.adverb && <div className="detailFormItem"><span className="detailFormLabel">副词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.adverb)}>{enrichment.wordForms.adverb}{extraWordInfo(enrichment.wordForms.adverb) && <span className="exampleZhInline">（{extraWordInfo(enrichment.wordForms.adverb)}）</span>}</span></div>}
-                      {enrichment.wordForms.pastTense && <div className="detailFormItem"><span className="detailFormLabel">过去式</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.pastTense)}>{enrichment.wordForms.pastTense}</span></div>}
-                      {enrichment.wordForms.pastParticiple && <div className="detailFormItem"><span className="detailFormLabel">过去分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.pastParticiple)}>{enrichment.wordForms.pastParticiple}</span></div>}
-                      {enrichment.wordForms.presentParticiple && <div className="detailFormItem"><span className="detailFormLabel">现在分词</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.presentParticiple)}>{enrichment.wordForms.presentParticiple}</span></div>}
-                      {enrichment.wordForms.comparative && <div className="detailFormItem"><span className="detailFormLabel">比较级</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.comparative)}>{enrichment.wordForms.comparative}</span></div>}
-                      {enrichment.wordForms.superlative && <div className="detailFormItem"><span className="detailFormLabel">最高级</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.superlative)}>{enrichment.wordForms.superlative}</span></div>}
-                      {enrichment.wordForms.thirdPerson && <div className="detailFormItem"><span className="detailFormLabel">第三人称单数</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.thirdPerson)}>{enrichment.wordForms.thirdPerson}</span></div>}
-                      {enrichment.wordForms.plural && <div className="detailFormItem"><span className="detailFormLabel">复数</span><span className="detailFormValue" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(enrichment.wordForms.plural)}>{enrichment.wordForms.plural}</span></div>}
+                      {(() => {
+                        function formStyle(word) {
+                          return isMasterOnlyWord(word) ? { cursor: 'pointer', color: '#a16207', background: '#fef9c3', padding: '2px 6px', borderRadius: 6 } : { cursor: 'pointer' };
+                        }
+                        return (
+                          <>
+                      {enrichment.wordForms.noun && <div className="detailFormItem"><span className="detailFormLabel">名词</span><span className="detailFormValue" style={formStyle(enrichment.wordForms.noun)} onClick={() => speakOrNavigate(enrichment.wordForms.noun)}>{enrichment.wordForms.noun}{extraWordInfo(enrichment.wordForms.noun) && <span className="exampleZhInline">（{extraWordInfo(enrichment.wordForms.noun)}）</span>}</span></div>}
+                      {enrichment.wordForms.adjective && <div className="detailFormItem"><span className="detailFormLabel">形容词</span><span className="detailFormValue" style={formStyle(enrichment.wordForms.adjective)} onClick={() => speakOrNavigate(enrichment.wordForms.adjective)}>{enrichment.wordForms.adjective}{extraWordInfo(enrichment.wordForms.adjective) && <span className="exampleZhInline">（{extraWordInfo(enrichment.wordForms.adjective)}）</span>}</span></div>}
+                      {enrichment.wordForms.adverb && <div className="detailFormItem"><span className="detailFormLabel">副词</span><span className="detailFormValue" style={formStyle(enrichment.wordForms.adverb)} onClick={() => speakOrNavigate(enrichment.wordForms.adverb)}>{enrichment.wordForms.adverb}{extraWordInfo(enrichment.wordForms.adverb) && <span className="exampleZhInline">（{extraWordInfo(enrichment.wordForms.adverb)}）</span>}</span></div>}
+                      {enrichment.wordForms.pastTense && <div className="detailFormItem"><span className="detailFormLabel">过去式</span><span className="detailFormValue" style={formStyle(enrichment.wordForms.pastTense)} onClick={() => speakOrNavigate(enrichment.wordForms.pastTense)}>{enrichment.wordForms.pastTense}</span></div>}
+                      {enrichment.wordForms.pastParticiple && <div className="detailFormItem"><span className="detailFormLabel">过去分词</span><span className="detailFormValue" style={formStyle(enrichment.wordForms.pastParticiple)} onClick={() => speakOrNavigate(enrichment.wordForms.pastParticiple)}>{enrichment.wordForms.pastParticiple}</span></div>}
+                      {enrichment.wordForms.presentParticiple && <div className="detailFormItem"><span className="detailFormLabel">现在分词</span><span className="detailFormValue" style={formStyle(enrichment.wordForms.presentParticiple)} onClick={() => speakOrNavigate(enrichment.wordForms.presentParticiple)}>{enrichment.wordForms.presentParticiple}</span></div>}
+                      {enrichment.wordForms.comparative && <div className="detailFormItem"><span className="detailFormLabel">比较级</span><span className="detailFormValue" style={formStyle(enrichment.wordForms.comparative)} onClick={() => speakOrNavigate(enrichment.wordForms.comparative)}>{enrichment.wordForms.comparative}</span></div>}
+                      {enrichment.wordForms.superlative && <div className="detailFormItem"><span className="detailFormLabel">最高级</span><span className="detailFormValue" style={formStyle(enrichment.wordForms.superlative)} onClick={() => speakOrNavigate(enrichment.wordForms.superlative)}>{enrichment.wordForms.superlative}</span></div>}
+                      {enrichment.wordForms.thirdPerson && <div className="detailFormItem"><span className="detailFormLabel">第三人称单数</span><span className="detailFormValue" style={formStyle(enrichment.wordForms.thirdPerson)} onClick={() => speakOrNavigate(enrichment.wordForms.thirdPerson)}>{enrichment.wordForms.thirdPerson}</span></div>}
+                      {enrichment.wordForms.plural && <div className="detailFormItem"><span className="detailFormLabel">复数</span><span className="detailFormValue" style={formStyle(enrichment.wordForms.plural)} onClick={() => speakOrNavigate(enrichment.wordForms.plural)}>{enrichment.wordForms.plural}</span></div>}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 )}
@@ -13331,7 +13359,9 @@ function App() {
                       {enrichment.derivatives.map((d, i) => {
                         const derivWord = d.split(' ')[0];
                         const derivItem = allWords.find(w => w.term.toLowerCase() === derivWord.toLowerCase());
-                        return <span key={i} className="detailDerivTag" style={{ cursor: 'pointer' }} onClick={() => { if (derivItem) { openDetailItem(derivItem); if (settings.navAutoSpeak !== false) speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
+                        const masterOnly = derivItem && isMasterOnlyWord(derivWord);
+                        const derivStyle = masterOnly ? { cursor: 'pointer', background: '#fef9c3', color: '#a16207' } : { cursor: 'pointer' };
+                        return <span key={i} className="detailDerivTag" style={derivStyle} onClick={() => { if (derivItem) { openDetailItem(derivItem); if (settings.navAutoSpeak !== false) speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
                       })}
                     </div>
                   </div>
@@ -13345,7 +13375,9 @@ function App() {
                       {enrichment.synonyms.map((s, i) => {
                         const synWord = extractEnglish(s).split(/\s+/)[0];
                         const synItem = allWords.find(w => w.term.toLowerCase() === synWord.toLowerCase());
-                        return <span key={i} className="detailSynonymTag" style={{ cursor: 'pointer' }} onClick={() => { if (synItem) { openDetailItem(synItem); if (settings.navAutoSpeak !== false) speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
+                        const masterOnly = synItem && isMasterOnlyWord(synWord);
+                        const synStyle = masterOnly ? { cursor: 'pointer', background: '#fef9c3', color: '#a16207' } : { cursor: 'pointer' };
+                        return <span key={i} className="detailSynonymTag" style={synStyle} onClick={() => { if (synItem) { openDetailItem(synItem); if (settings.navAutoSpeak !== false) speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
                       })}
                     </div>
                   </div>
@@ -13390,8 +13422,11 @@ function App() {
                         {allFamily.map(item => {
                           const isAiTagged = aiFamilyTerms.includes(item.term.toLowerCase());
                           const inBank = !!findWordInBank(item.term);
+                          const masterOnly = inBank && isMasterOnlyWord(item.term);
+                          const familyBtnStyle = masterOnly ? { background: '#fef9c3', color: '#a16207', borderColor: '#fde68a' } : {};
                           return (
                             <button key={item.id} className={`detailFamilyBtn${isAiTagged ? ' aiTagged' : ''}`}
+                              style={familyBtnStyle}
                               onClick={() => { if (inBank) openDetailItem(item); }}>
                               {item.term} <small>{item.pos}</small>
                               {!inBank && item.meaning && <small style={{ opacity: 0.8 }}>（{getShortMeaning(item.meaning) || item.meaning}）</small>}
@@ -13421,8 +13456,11 @@ function App() {
                       <div className="detailTagWrap">
                         {confusing.map(item => {
                           const isAiTagged = isAiConfusingWord(detailItem.term, item.term);
+                          const masterOnly = isMasterOnlyWord(item.term);
+                          const confBtnStyle = masterOnly ? { background: '#fef9c3', color: '#a16207', borderColor: '#fde68a' } : {};
                           return (
                             <button key={item.id} className={`detailConfusingBtn${isAiTagged ? ' aiTagged' : ''}`}
+                              style={confBtnStyle}
                               onClick={() => openDetailItem(item)}>
                               {item.term} <small>{item.pos}</small>
                               {isAiTagged && <span className="aiDot">AI</span>}
