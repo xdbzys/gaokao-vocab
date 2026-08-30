@@ -47,8 +47,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.48.0';
-const APP_VERSION_CODE = 200;
+const APP_VERSION = '2.49.0';
+const APP_VERSION_CODE = 201;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -11491,9 +11491,9 @@ function App() {
                     : (displayCurrent.source ? [displayCurrent.source] : []);
                   if (books.length === 0) return null;
                   const isMulti = books.length > 1;
-                  const isMasterOnly = !isMulti && books[0] === '高考总汇词库';
-                  const bg = isMulti ? '#dbeafe' : isMasterOnly ? '#fef9c3' : '#f3f4f6';
-                  const clr = isMulti ? '#1e40af' : isMasterOnly ? '#a16207' : '#9ca3af';
+                  // v2.49.0: 单词只属于一个词库 → 黄底；属于多个词库 → 蓝底
+                  const bg = isMulti ? '#dbeafe' : '#fef9c3';
+                  const clr = isMulti ? '#1e40af' : '#a16207';
                   return <span style={{ fontSize: 11, background: bg, color: clr, padding: '1px 6px', borderRadius: 6, fontWeight: 500 }}>📚 {books.join('/')}</span>;
                 })()}
                 {progress[termKey(displayCurrent.term)] === 'mastered' && <span className="masteredTag">已掌握</span>}
@@ -13245,9 +13245,9 @@ function App() {
                       : (wordBookMapRef.current[detailItem.term.toLowerCase()] || (detailItem.source ? [detailItem.source] : []));
                     if (books.length === 0) return null;
                     const isMulti = books.length > 1;
-                    const isMasterOnly = !isMulti && books[0] === '高考总汇词库';
-                    const bg = isMulti ? '#dbeafe' : isMasterOnly ? '#fef9c3' : '#f3f4f6';
-                    const clr = isMulti ? '#1e40af' : isMasterOnly ? '#a16207' : '#6b7280';
+                    // v2.49.0: 单词只属于一个词库 → 黄底；属于多个词库 → 蓝底
+                    const bg = isMulti ? '#dbeafe' : '#fef9c3';
+                    const clr = isMulti ? '#1e40af' : '#a16207';
                     return <span className="detailSourceTag" style={{ fontSize: 12, background: bg, color: clr, padding: '2px 8px', borderRadius: 8, fontWeight: 500 }}>📚 {books.join(' / ')}</span>;
                   })()}
                   {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag">✓ 已掌握</span>}

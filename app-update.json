@@ -1,8 +1,8 @@
 {
-  "version": "2.48.0",
-  "versionCode": 200,
-  "changelog": "🎉 背群英 v2.48.0 已发布！\n\n本次更新内容：\n\n【新增】高考总汇词库单词黄底标记\n- 在单词详情页中，仅来自高考总汇词库的单词会显示黄底标签\n- 多词库单词保持蓝底，其他词库单词保持灰底，反义词保持红底\n\n【修复】数据恢复丢失数据\n- 根因：旧版本备份只导出硬编码的15个键，遗漏了 gaokao_hidden_books 等新增键\n- 修复：改为导出全部 localStorage 数据，确保零丢失\n- 修复：恢复时不再过滤非字符串值，所有数据全部恢复\n- 优化：备份/恢复时显示实际数据项数量\n\n点击下方\"立即更新\"即可在应用内下载安装。",
-  "devNotes": "v2.48.0: Added yellow background for master-vocab-only words in detail page. Fixed data backup/restore: export ALL localStorage keys instead of hardcoded list, restore all values regardless of type, show item count in messages.",
+  "version": "2.49.0",
+  "versionCode": 201,
+  "changelog": "🎉 背群英 v2.49.0 已发布！\n\n本次更新内容：\n\n【修复】单词词库标签颜色修正\n- 单词只属于一个词库时显示黄底标签（之前判断条件有误导致未生效）\n- 单词属于多个词库时显示蓝底标签\n- 反义词保持红底，逻辑统一\n\n【修复】数据恢复丢失数据\n- 根因：旧版本备份只导出硬编码的15个键，遗漏了 gaokao_hidden_books 等新增键\n- 修复：改为导出全部 localStorage 数据，确保零丢失\n- 修复：恢复时不再过滤非字符串值，所有数据全部恢复\n- 优化：备份/恢复时显示实际数据项数量\n\n点击下方\"立即更新\"即可在应用内下载安装。",
+  "devNotes": "v2.49.0: Fixed yellow background for single-book words - now any word belonging to exactly one wordbook shows yellow tag (was checking exact name match which failed due to count suffix). Also includes v2.48.0 data restore fix.",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
