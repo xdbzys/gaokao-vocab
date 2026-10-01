@@ -1,8 +1,8 @@
 {
-  "version": "2.51.0",
-  "versionCode": 203,
-  "changelog": "🎉 背群英 v2.51.0 已发布！\n\n本次更新内容：\n\n【修复】数据恢复显示条数不准确\n- 恢复后现在显示实际数据条数（如479个进度+10个错词等）\n- 不再只显示localStorage键数（10），而是显示完整数据明细\n- 修复非字符串类型数据可能被跳过恢复的问题\n\n点击下方\"立即更新\"即可在应用内下载安装。",
-  "devNotes": "v2.51.0: Fixed data restore message to show actual item counts (progress entries, wrong words, etc.) instead of just localStorage key count. Added restoreAllData helper with detailed breakdown. Also fixed typeof string check that could skip non-string values in BeiRiDan.",
+  "version": "2.52.0",
+  "versionCode": 204,
+  "changelog": "🎉 背群英 v2.52.0 已发布！\n\n本次更新内容：\n\n【新增】688高频词词库\n- 解析高频词文档，新增「688高频词」词库，按高考出现频次排序\n\n【修复】闪退与低版本兼容\n- 修复旧版本因 import.meta 语法导致的蓝屏闪退问题\n- 构建目标降为 es5，最低兼容安卓 5.0.2 (API 21)\n- minSdk 降至 21，覆盖更多老机型\n\n【修复】数据备份/恢复\n- 备份文件增加版本标记，恢复时自动跳过版本标记等不应覆盖的键\n- 校验设置数据合法性，避免旧备份导致新版本崩溃\n\n【优化】关联词\n- 收紧词族前缀匹配，删除仅拼写相似但无关联的假同源词\n- 补充 type/art/part/port 等真实同源词关联\n\n【优化】单词颜色\n- 仅存在于高考总汇词库的单词，在详情页由蓝色改为灰绿色\n\n点击下方\"立即更新\"即可在应用内下载安装。",
+  "devNotes": "v2.52.0: Added 688 high-frequency wordbook. Fixed import.meta blue-screen crash. Lowered minSdk to 21 (Android 5.0.2) and build target to es5. Made backup/restore version-safe. Tightened word-family matching. Changed master-only word color to gray-green.",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
