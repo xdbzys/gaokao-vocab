@@ -11083,9 +11083,18 @@ function App() {
     setSessionTotal(0);
   }
   function selectAllStudyBooks() {
-    const allIds = books.map(b => b.id);
-    setStudyBookIds(allIds);
-    try { localStorage.setItem('gaokao_study_books', allIds.join(',')); } catch {}
+    // 切换全选/全不选：已全选则重置为核心词库，否则全选
+    const visibleIds = books.filter(b => !b.id.includes('confused') && !b.id.includes('dual-sentiment') && !hiddenBookIds.includes(b.id)).map(b => b.id);
+    const selectableIds = wrongWords.length > 0 ? [...visibleIds, 'wrong-words'] : visibleIds;
+    const isAllSelected = selectableIds.length > 0 && selectableIds.every(id => studyBookIds.includes(id));
+    if (isAllSelected) {
+      setStudyBookIds(['gaokao-core']);
+      try { localStorage.setItem('gaokao_study_books', 'gaokao-core'); } catch {}
+    } else {
+      const allIds = books.map(b => b.id);
+      setStudyBookIds(allIds);
+      try { localStorage.setItem('gaokao_study_books', allIds.join(',')); } catch {}
+    }
     setTypeFilter('全部'); setIndex(0); setSessionCorrect(0); setSessionTotal(0);
   }
   function switchLibraryBook(id) {
@@ -11103,9 +11112,17 @@ function App() {
     setIndex(0);
   }
   function selectAllLibraryBooks() {
-    const allIds = books.map(b => b.id);
-    setLibraryBookIds(allIds);
-    try { localStorage.setItem('gaokao_library_books', allIds.join(',')); } catch {}
+    // 切换全选/全不选：已全选则重置为核心词库，否则全选
+    const selectableIds = books.filter(b => !hiddenBookIds.includes(b.id)).map(b => b.id);
+    const isAllSelected = selectableIds.length > 0 && selectableIds.every(id => libraryBookIds.includes(id));
+    if (isAllSelected) {
+      setLibraryBookIds(['gaokao-core']);
+      try { localStorage.setItem('gaokao_library_books', 'gaokao-core'); } catch {}
+    } else {
+      const allIds = books.map(b => b.id);
+      setLibraryBookIds(allIds);
+      try { localStorage.setItem('gaokao_library_books', allIds.join(',')); } catch {}
+    }
     setTypeFilter('全部'); setIndex(0);
   }
 
@@ -12175,7 +12192,7 @@ function App() {
               {showBookPicker && (
                 <div className="bookPickerDropdown">
                   <div className="bookPickerActions">
-                    <button onClick={selectAllStudyBooks}>全选</button>
+                    <button onClick={selectAllStudyBooks}>{(wrongWords.length > 0 ? [...books.filter(b => !b.id.includes('confused') && !b.id.includes('dual-sentiment') && !hiddenBookIds.includes(b.id)).map(b => b.id), 'wrong-words'] : books.filter(b => !b.id.includes('confused') && !b.id.includes('dual-sentiment') && !hiddenBookIds.includes(b.id)).map(b => b.id)).every(id => studyBookIds.includes(id)) ? '全不选' : '全选'}</button>
                     <button onClick={() => { setStudyBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_study_books', 'gaokao-core'); } catch {} }}>重置</button>
                   </div>
                   {/* 错词本（单独复习） */}
@@ -12571,7 +12588,7 @@ function App() {
               {showBookPicker2 && (
                 <div className="bookPickerDropdown">
                   <div className="bookPickerActions">
-                    <button onClick={selectAllLibraryBooks}>全选</button>
+                    <button onClick={selectAllLibraryBooks}>{books.filter(b => !hiddenBookIds.includes(b.id)).every(b => libraryBookIds.includes(b.id)) ? '全不选' : '全选'}</button>
                     <button onClick={() => { setLibraryBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_library_books', 'gaokao-core'); } catch {} }}>重置</button>
                   </div>
                   {books.filter(b => !hiddenBookIds.includes(b.id)).map(b => (

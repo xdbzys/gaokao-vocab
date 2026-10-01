@@ -1519,6 +1519,49 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   .tabIcon { width: 20px; height: 20px; }
 }
 
+/* ===== 翻译笔等窄长屏适配（宽度≤360px） ===== */
+@media (max-width: 360px) {
+  body { min-width: 0; }
+  .app { padding: max(12px, env(safe-area-inset-top)) 8px 90px; max-width: 100%; }
+  h1 { font-size: 19px; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 15px; }
+  .card { padding: 12px; }
+  .questionArea h2 { font-size: 24px; }
+  .topbar { gap: 8px; margin-bottom: 10px; }
+  .learnTop { gap: 6px; margin-bottom: 10px; }
+  .multiBookBtn { padding: 9px 10px; font-size: 13px; border-radius: 12px; }
+  button { padding: 9px 11px; font-size: 13px; border-radius: 12px; }
+  .tabbar {
+    width: calc(100vw - 6px);
+    padding: 4px 2px;
+    gap: 0;
+    border-radius: 16px;
+    bottom: max(6px, env(safe-area-inset-bottom));
+  }
+  .tabbar button { font-size: 9px; padding: 5px 1px; gap: 1px; }
+  .tabIcon { width: 18px; height: 18px; }
+  .bookPickerDropdown { max-height: 45vh; padding: 6px; border-radius: 12px; }
+  .bookPickerItem { font-size: 13px; }
+  .bookPickerActions button { padding: 6px 10px; font-size: 12px; }
+  .modalContent { border-radius: 16px; }
+  .detailSectionTitle { font-size: 14px; }
+  .posFilterRow button { padding: 5px 9px; font-size: 12px; }
+  .searchInput { padding: 9px 12px; font-size: 14px; }
+  .options { gap: 8px; }
+  .options button { padding: 12px 14px; font-size: 14px; border-radius: 14px; }
+  .navBtn { padding: 11px; font-size: 13px; }
+}
+
+/* 超窄屏（≤320px）进一步压缩 */
+@media (max-width: 320px) {
+  .app { padding-left: 6px; padding-right: 6px; }
+  h2 { font-size: 18px; }
+  .tabbar button { font-size: 8px; }
+  .tabIcon { width: 16px; height: 16px; }
+  button { padding: 8px 9px; font-size: 12px; }
+}
+
 /* ===== 多词库选择 ===== */
 .multiBookBtn {
   width: 100%;
