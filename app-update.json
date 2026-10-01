@@ -1,8 +1,8 @@
 {
-  "version": "2.55.0",
-  "versionCode": 207,
-  "changelog": "🎉 背群英 v2.55.0 已发布！\n\n本次更新内容：\n\n【彻底修复】安卓 5.0.2 翻译笔启动闪退\n- 根因：v2.54.0 仍依赖 Capacitor 8 运行时，其编译产物要求 API 24+，在安卓 5.0.2（内核 3.10.54）启动即崩溃\n- 方案：彻底移除 Capacitor 运行时，改用纯原生 WebView 容器\n  · MainActivity 改为原生 Activity + WebView，不再继承 BridgeActivity\n  · 自实现 NativeFS 文件桥接（备份/恢复仍写入 Documents/高考词汇备份/）\n  · 「立即更新」外链交给系统浏览器下载安装\n  · 移除 SplashScreen/AppCompat DayNight 等低版本易崩主题\n- 保留：minSdk 21、core library desugaring、MultiDex、ES5 转译\n- APK 由 6.7M 精简至 5.8M\n\n之前 2.53.0 / 2.54.0 仍提示\"很抱歉已停止运行\"的用户，请安装本版本即可正常打开。\n\n点击下方\"立即更新\"即可在浏览器下载安装。",
-  "devNotes": "v2.55.0: 彻底移除 Capacitor 运行时，改纯原生 WebView 容器，真正兼容安卓5.0.2(内核3.10.54)翻译笔",
+  "version": "2.55.1",
+  "versionCode": 208,
+  "changelog": "🎉 背群英 v2.55.1 已发布！\n\n本次更新内容：\n\n【修复】版本号显示与更新循环\n- 修复 v2.55.0 安装后仍显示\"2.53.0\"、并反复提示\"有新版本 2.55.0 却更新不了\"的问题\n- 原因：JS 端 APP_VERSION 常量未随版本号同步升级\n\n【修复】立即更新按钮无效\n- 新增原生 NativeShell.openExternal(url) 桥接，直接用 ACTION_VIEW 打开系统浏览器下载\n- 原因：纯 WebView 下 window.open 经 onCreateWindow 取不到目标 URL，点击无反应\n- 同时为主 WebView 增加 shouldOverrideUrlLoading，http(s) 外链一律交给浏览器\n\n仍基于纯原生 WebView 容器（已移除 Capacitor 运行时），兼容安卓 5.0.2（内核 3.10.54）翻译笔。\n\n⚠️ 如果你当前装的是会闪退或显示版本不对的旧版，且应用内\"立即更新\"点不动，请直接用翻译笔自带的浏览器打开下方链接手动下载安装：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
+  "devNotes": "v2.55.1: 修复APP_VERSION未升级导致的更新循环 + 新增NativeShell.openExternal可靠打开外链",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }

@@ -84,35 +84,61 @@ public class MainActivity extends Activity {
             }
         }, "VolumeKeyNative");
 
-        // 站内导航：保留在 WebView 内
-        webView.setWebViewClient(new WebViewClient());
-
-        // 外链/新窗口：交给系统浏览器打开（用于"立即更新"下载）
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, android.os.Message resultMsg) {
+        // 外链打开桥接：供 JS 侧 window.NativeShell.openExternal(url) 调用
+        // 直接走 ACTION_VIEW Intent，避免 window.open 在 onCreateWindow 中无法可靠取到目标 URL
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public void openExternal(String url) {
                 try {
-                    WebView.HitTestResult result = view.getHitTestResult();
-                    String url = (result != null) ? result.getExtra() : null;
-                    if (url == null || url.isEmpty()) {
-                        // 取不到具体链接时，回退到主 WebView 的当前 URL
-                        url = view.getUrl();
-                    }
-                    if (url != null && !url.isEmpty()) {
+                    if (url == null || url.isEmpty()) return;
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                } catch (Throwable ignored) {}
+            }
+        }, "NativeShell");
+
+        // 站内导航：保留在 WebView 内；http(s) 外链交给系统浏览器
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView v, String url) {
+                if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
+                    try {
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
-                    }
-                } catch (Throwable ignored) {}
-                // 不创建新 WebView 窗口
-                if (resultMsg != null) {
-                    try {
-                        android.os.Message href = (android.os.Message) resultMsg;
-                        // 通知浏览器窗口创建中止（发送空 transport）
-                        href.sendToTarget();
+                        return true;
                     } catch (Throwable ignored) {}
                 }
                 return false;
+            }
+        });
+
+        // window.open / target=_blank：用临时 WebView 拦截目标 URL 后交给系统浏览器
+        // 标准做法：创建临时 WebView，在其 WebViewClient.shouldOverrideUrlLoading 中打开外链
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, android.os.Message resultMsg) {
+                final WebView hitView = new WebView(MainActivity.this);
+                hitView.setWebViewClient(new WebViewClient() {
+                    @Override
+                    public boolean shouldOverrideUrlLoading(WebView v, String url) {
+                        if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
+                            try {
+                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            } catch (Throwable ignored) {}
+                        }
+                        return true; // 阻止在临时 WebView 内加载
+                    }
+                });
+                try {
+                    WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
+                    transport.setWebView(hitView);
+                    resultMsg.sendToTarget();
+                } catch (Throwable ignored) {}
+                return true;
             }
         });
 

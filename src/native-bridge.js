@@ -1,24 +1,38 @@
 // 纯 WebView 原生桥接层（替代 @capacitor/core 与 @capacitor/filesystem 运行时）
 // 目的：移除 Capacitor 运行时依赖，兼容 Android 5.0.2 (API 21) 翻译笔
-// 原生侧通过 WebView.addJavascriptInterface(window.NativeFS) 暴露文件读写接口
+// 原生侧通过 WebView.addJavascriptInterface 暴露：
+//   - window.NativeFS    文件读写（备份/恢复）
+//   - window.NativeShell.openExternal(url)  打开外链（用于"立即更新"下载）
 
 const NativeFS = (typeof window !== 'undefined') ? window.NativeFS : null;
+const NativeShell = (typeof window !== 'undefined') ? window.NativeShell : null;
 
 export const Directory = { Documents: 'DOCUMENTS', Downloads: 'DOWNLOADS', Data: 'DATA' };
 export const Encoding = { UTF8: 'utf8' };
 
+// 打开外链：优先走原生 ACTION_VIEW Intent（翻译笔上最可靠），
+// 其次 window.open（触发 onCreateWindow），最后 location.href 兜底
+async function openExternalUrl(url) {
+  if (NativeShell && typeof NativeShell.openExternal === 'function') {
+    NativeShell.openExternal(url);
+    return { completed: true };
+  }
+  if (typeof window !== 'undefined') {
+    try { window.open(url, '_blank'); return { completed: true }; } catch (e) {}
+    try { window.location.href = url; } catch (e) {}
+  }
+  return { completed: false };
+}
+
 // Capacitor 兼容对象：供现有 window.Capacitor.Plugins.* 引用
 export const Capacitor = {
-  isNativePlatform: () => !!NativeFS,
-  getPlatform: () => (NativeFS ? 'android' : 'web'),
+  isNativePlatform: () => !!(NativeFS || NativeShell),
+  getPlatform: () => ((NativeFS || NativeShell) ? 'android' : 'web'),
   convertFileSrc: (filePath) => filePath,
-  Plugins: NativeFS ? {
+  Plugins: (NativeFS || NativeShell) ? {
     Filesystem: null, // 由下方 Filesystem 实现承载
     Browser: {
-      open: async ({ url }) => {
-        if (typeof window !== 'undefined') window.open(url, '_blank');
-        return { completed: true };
-      }
+      open: async ({ url }) => openExternalUrl(url)
     }
   } : {}
 };
