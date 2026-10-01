@@ -3,42 +3,80 @@ import react from '@vitejs/plugin-react';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import fs from 'fs';
 import path from 'path';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
-// 自定义插件：viteSingleFile 之后替换 import.meta.url
-// 原因：@capacitor/filesystem web 实现使用 import.meta.url，
-// viteSingleFile 将所有 JS 内联到非 ES module 的 <script> 标签，
-// 导致 import.meta 不可用 → SyntaxError → 整个 JS 不执行 → 蓝屏
-function replaceImportMetaAfterInline() {
+// 自定义插件：viteSingleFile 之后做两件事：
+// 1) 替换 import.meta.* 为安全兜底（非 module 脚本中 import.meta 不可用 → 蓝屏闪退）
+// 2) 用 Babel 将内联 JS 转译为 ES5，兼容安卓 5.0.2 (Chromium 37-43)
+function postProcessForLegacyWebView() {
   return {
-    name: 'replace-import-meta-after-inline',
+    name: 'post-process-for-legacy-webview',
     enforce: 'post',
-    // closeBundle 在所有插件（含 viteSingleFile）处理完之后执行
     closeBundle() {
       const distDir = path.resolve(__dirname, 'dist');
       const htmlPath = path.join(distDir, 'index.html');
-      if (fs.existsSync(htmlPath)) {
-        let html = fs.readFileSync(htmlPath, 'utf8');
-        const before = (html.match(/import\.meta/g) || []).length;
-        html = html.replace(/import\.meta\.url/g, '""');
-        html = html.replace(/import\.meta\.resolve/g, 'undefined');
-        const after = (html.match(/import\.meta/g) || []).length;
-        fs.writeFileSync(htmlPath, html);
-        if (before > 0) {
-          console.log(`[replace-import-meta] Replaced ${before} import.meta occurrences (${after} remaining)`);
-        }
+      if (!fs.existsSync(htmlPath)) return;
+      let html = fs.readFileSync(htmlPath, 'utf8');
+
+      // 1) 替换 import.meta
+      const before = (html.match(/import\.meta/g) || []).length;
+      html = html.replace(/import\.meta\.url/g, '""');
+      html = html.replace(/import\.meta\.resolve/g, 'undefined');
+      html = html.replace(/import\.meta\.env\.[A-Za-z0-9_]+/g, 'undefined');
+      html = html.replace(/import\.meta\.env/g, '{}');
+      html = html.replace(/import\.meta\.glob[^\n;]*/g, '{}');
+      html = html.replace(/import\.meta/g, '{}');
+      if (before > 0) {
+        console.log(`[post] Replaced ${before} import.meta occurrences`);
       }
+
+      // 2) 用 Babel 将内联 <script> 转译为 ES5（兼容 Chromium 37+）
+      try {
+        const babel = require('@babel/core');
+        const scriptRegex = /<script([^>]*)>([\s\S]*?)<\/script>/gi;
+        let changed = false;
+        html = html.replace(scriptRegex, (match, attrs, code) => {
+          if (!code || !code.trim()) return match;
+          try {
+            const result = babel.transformSync(code, {
+              presets: [
+                [require('@babel/preset-env'), {
+                  targets: { chrome: '37' },
+                  loose: true,
+                  modules: false,
+                }],
+              ],
+              compact: false,
+              sourceMaps: false,
+            });
+            changed = true;
+            return `<script${attrs}>${result.code}</script>`;
+          } catch (e) {
+            console.warn('[post] Babel transform skipped for a script block:', e.message);
+            return match;
+          }
+        });
+        if (changed) {
+          console.log('[post] Babel ES5 transpile applied to inline scripts');
+        }
+      } catch (e) {
+        console.warn('[post] Babel not available, skipping ES5 transpile:', e.message);
+      }
+
+      fs.writeFileSync(htmlPath, html);
     },
   };
 }
 
 export default defineConfig({
   base: './',
-  plugins: [react(), viteSingleFile(), replaceImportMetaAfterInline()],
+  plugins: [react(), viteSingleFile(), postProcessForLegacyWebView()],
   define: {
     'import.meta.url': JSON.stringify(''),
   },
   build: {
-    // es2015：兼容安卓10 等旧版 WebView/浏览器（Chromium 61-79 不支持 ?. ?? 等新语法）
+    // es2015：esbuild 可完整支持；后续 Babel 再降级到 ES5
     target: 'es2015',
     cssCodeSplit: false,
   },
