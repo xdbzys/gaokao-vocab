@@ -1,8 +1,8 @@
 {
-  "version": "2.55.1",
-  "versionCode": 208,
-  "changelog": "🎉 背群英 v2.55.1 已发布！\n\n本次更新内容：\n\n【修复】版本号显示与更新循环\n- 修复 v2.55.0 安装后仍显示\"2.53.0\"、并反复提示\"有新版本 2.55.0 却更新不了\"的问题\n- 原因：JS 端 APP_VERSION 常量未随版本号同步升级\n\n【修复】立即更新按钮无效\n- 新增原生 NativeShell.openExternal(url) 桥接，直接用 ACTION_VIEW 打开系统浏览器下载\n- 原因：纯 WebView 下 window.open 经 onCreateWindow 取不到目标 URL，点击无反应\n- 同时为主 WebView 增加 shouldOverrideUrlLoading，http(s) 外链一律交给浏览器\n\n仍基于纯原生 WebView 容器（已移除 Capacitor 运行时），兼容安卓 5.0.2（内核 3.10.54）翻译笔。\n\n⚠️ 如果你当前装的是会闪退或显示版本不对的旧版，且应用内\"立即更新\"点不动，请直接用翻译笔自带的浏览器打开下方链接手动下载安装：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
-  "devNotes": "v2.55.1: 修复APP_VERSION未升级导致的更新循环 + 新增NativeShell.openExternal可靠打开外链",
+  "version": "2.55.2",
+  "versionCode": 209,
+  "changelog": "🎉 背群英 v2.55.2 已发布！\n\n【修复】安卓 5.0.2 翻译笔白屏\n- 根因：构建产物内联脚本仍带 type=\"module\"，安卓 5.0 WebView（Chromium ~37）不支持 ES modules（需 Chrome 61+），整个 React 包不执行 → 白屏\n- 修复：构建后处理剥离 type=\"module\"/crossorigin，转为经典脚本\n\n【补充】Chromium 37 关键 API polyfill\n- 新增 fetch（XHR 实现）、Object.assign、Object.entries/values、Array.from、Array/String.includes、Array.find/findIndex 兜底\n- 应用大量使用 .includes()，旧 WebView 缺失会直接抛错\n\n仍基于纯原生 WebView 容器（已移除 Capacitor 运行时）。\n\n⚠️ 若应用内更新点不动，请用翻译笔自带浏览器打开下方链接手动下载安装：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
+  "devNotes": "v2.55.2: 剥离type=module修复白屏 + 补 Chromium 37 关键 API polyfill(fetch/includes/Object.assign等)",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }

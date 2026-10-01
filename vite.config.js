@@ -31,6 +31,17 @@ function postProcessForLegacyWebView() {
         console.log(`[post] Replaced ${before} import.meta occurrences`);
       }
 
+      // 1.5) 剥离 <script type="module" ...> 的 module/crossorigin 属性
+      // 安卓 5.0.2 WebView (Chromium ~37) 不支持 ES modules (需 Chrome 61+)，
+      // 若保留 type="module"，整个内联脚本不会执行 → 白屏。
+      // viteSingleFile 已将所有依赖内联进单 <script>，无 import 留存，转经典脚本安全。
+      const moduleBefore = (html.match(/<script[^>]*type=["']module["'][^>]*>/gi) || []).length;
+      html = html.replace(/(<script\b[^>]*?)\s+type=["']module["']/gi, '$1');
+      html = html.replace(/(<script\b[^>]*?)\s+crossorigin(?!["'\w-])/gi, '$1');
+      if (moduleBefore > 0) {
+        console.log(`[post] Stripped type=module from ${moduleBefore} script tag(s)`);
+      }
+
       // 2) 用 Babel 将内联 <script> 转译为 ES5（兼容 Chromium 37+）
       try {
         const babel = require('@babel/core');

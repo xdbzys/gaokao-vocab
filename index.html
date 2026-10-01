@@ -133,6 +133,118 @@
             }
           }
         } catch (e) {}
+
+        // ===== 安卓 5.0.2 WebView (Chromium ~37) 关键 API 兜底 =====
+        // Object.assign (Chrome 45+)
+        if (typeof Object.assign !== 'function') {
+          Object.assign = function (target) {
+            if (target == null) throw new TypeError('Cannot convert undefined or null to object');
+            var to = Object(target);
+            for (var i = 1; i < arguments.length; i++) {
+              var src = arguments[i];
+              if (src != null) {
+                for (var k in src) {
+                  if (Object.prototype.hasOwnProperty.call(src, k)) to[k] = src[k];
+                }
+              }
+            }
+            return to;
+          };
+        }
+        // Object.keys 已在 Chrome 5+ 支持，entries/values (Chrome 54+)
+        if (typeof Object.entries !== 'function') {
+          Object.entries = function (obj) {
+            var arr = [];
+            for (var k in obj) {
+              if (Object.prototype.hasOwnProperty.call(obj, k)) arr.push([k, obj[k]]);
+            }
+            return arr;
+          };
+        }
+        if (typeof Object.values !== 'function') {
+          Object.values = function (obj) {
+            var arr = [];
+            for (var k in obj) {
+              if (Object.prototype.hasOwnProperty.call(obj, k)) arr.push(obj[k]);
+            }
+            return arr;
+          };
+        }
+        // Array.from (Chrome 45+)
+        if (typeof Array.from !== 'function') {
+          Array.from = function (arrLike, mapper, thisArg) {
+            var out = [];
+            var len = arrLike && arrLike.length >>> 0;
+            for (var i = 0; i < len; i++) {
+              var v = arrLike[i];
+              out.push(mapper ? mapper.call(thisArg, v, i) : v);
+            }
+            return out;
+          };
+        }
+        // Array.prototype.includes (Chrome 47+)
+        def(Array.prototype, 'includes', function (search) {
+          for (var i = 0; i < this.length; i++) { if (this[i] === search || (isNaN(this[i]) && isNaN(search) && typeof this[i] === 'number' && typeof search === 'number')) return true; }
+          return false;
+        });
+        // String.prototype.includes (Chrome 41+)
+        def(String.prototype, 'includes', function (search, start) {
+          if (start === undefined) start = 0;
+          if (start < 0) start = 0;
+          return String(this).indexOf(search, start) !== -1;
+        });
+        // Array.prototype.find (Chrome 45+) —— 应用/React 高频使用
+        def(Array.prototype, 'find', function (fn, thisArg) {
+          for (var i = 0; i < this.length; i++) { if (fn.call(thisArg, this[i], i, this)) return this[i]; }
+          return undefined;
+        });
+        // Array.prototype.findIndex (Chrome 45+)
+        def(Array.prototype, 'findIndex', function (fn, thisArg) {
+          for (var i = 0; i < this.length; i++) { if (fn.call(thisArg, this[i], i, this)) return i; }
+          return -1;
+        });
+        // Object.assign 之外的 ES2015 静态：Object.freeze/keys 已原生支持
+
+        // ===== fetch (Chrome 42+)：基于 XHR 的最小实现，仅覆盖应用所需 GET/JSON =====
+        if (typeof window.fetch !== 'function') {
+          window.fetch = function (input, init) {
+            init = init || {};
+            var method = (init.method || 'GET').toUpperCase();
+            var url = (typeof input === 'string') ? input : (input && input.url) || String(input);
+            return new Promise(function (resolve, reject) {
+              var xhr = new XMLHttpRequest();
+              xhr.open(method, url, true);
+              if (init.headers) {
+                var h = init.headers;
+                if (h instanceof Object) {
+                  for (var k in h) {
+                    if (Object.prototype.hasOwnProperty.call(h, k)) {
+                      try { xhr.setRequestHeader(k, h[k]); } catch (e) {}
+                    }
+                  }
+                }
+              }
+              xhr.onreadystatechange = function () {
+                if (xhr.readyState !== 4) return;
+                var ok = xhr.status >= 200 && xhr.status < 300;
+                var bodyText = xhr.responseText || '';
+                var resp = {
+                  ok: ok, status: xhr.status, statusText: xhr.statusText,
+                  headers: { get: function (n) { try { return xhr.getResponseHeader(n); } catch (e) { return null; } } },
+                  text: function () { return Promise.resolve(bodyText); },
+                  json: function () { return Promise.resolve(JSON.parse(bodyText)); },
+                  blob: function () { return Promise.resolve(new Blob([bodyText])); },
+                  clone: function () { return resp; }
+                };
+                if (ok) resolve(resp); else reject(new TypeError('Network request failed: ' + xhr.status));
+              };
+              xhr.onerror = function () { reject(new TypeError('Network request failed')); };
+              try {
+                xhr.send(init.body || null);
+              } catch (e) { reject(e); }
+            });
+          };
+        }
       })();
     </script>
     <script>
