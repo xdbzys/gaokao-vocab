@@ -1,8 +1,8 @@
 {
-  "version": "2.55.2",
-  "versionCode": 209,
-  "changelog": "🎉 背群英 v2.55.2 已发布！\n\n【修复】安卓 5.0.2 翻译笔白屏\n- 根因：构建产物内联脚本仍带 type=\"module\"，安卓 5.0 WebView（Chromium ~37）不支持 ES modules（需 Chrome 61+），整个 React 包不执行 → 白屏\n- 修复：构建后处理剥离 type=\"module\"/crossorigin，转为经典脚本\n\n【补充】Chromium 37 关键 API polyfill\n- 新增 fetch（XHR 实现）、Object.assign、Object.entries/values、Array.from、Array/String.includes、Array.find/findIndex 兜底\n- 应用大量使用 .includes()，旧 WebView 缺失会直接抛错\n\n仍基于纯原生 WebView 容器（已移除 Capacitor 运行时）。\n\n⚠️ 若应用内更新点不动，请用翻译笔自带浏览器打开下方链接手动下载安装：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
-  "devNotes": "v2.55.2: 剥离type=module修复白屏 + 补 Chromium 37 关键 API polyfill(fetch/includes/Object.assign等)",
+  "version": "2.55.3",
+  "versionCode": 210,
+  "changelog": "🎉 背群英 v2.55.3 已发布！\n\n【修复】安卓 5.0.2 翻译笔白屏（真正根因）\n前几版白屏有两个叠加死因：\n1. 经典脚本里残留 `exports.default = ...`（Babel commonjs 转译产物），经典脚本无 module/exports → ReferenceError → 整段脚本不执行\n2. Chromium 37 缺失 Map/Set/Symbol/WeakMap/WeakSet，React 19 重度依赖 new Map()/new Set() → ReferenceError\n\n修复：\n- 给每个经典内联脚本块注入 var module=...;var exports=...; 兜底对象\n- 在 <head> 最前注入 ES6 全局构造器 polyfill：Symbol/Map/Set/WeakMap/WeakSet/Promise（带 Symbol.iterator 让 Map/Set 可迭代）\n- Babel modules:'commonjs'，把顶层 export 转成 CommonJS 赋值\n\n仍基于纯原生 WebView 容器（已移除 Capacitor 运行时）。\n\n⚠️ 若应用内更新点不动，请用翻译笔自带浏览器打开下方链接手动下载安装：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
+  "devNotes": "v2.55.3: 注入module/exports兜底+ES6全局polyfill(Symbol/Map/Set/WeakMap/WeakSet/Promise)，根治Chromium37白屏",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
