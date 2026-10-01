@@ -12358,7 +12358,7 @@ function App() {
                       </div>
                     );
                   })()}
-                  <h3 style={{ color: isMasterOnlyWord(displayCurrent.term) ? '#6b8e7f' : undefined }}>{displayCurrent.term} &middot; {displayCurrent.meaning}</h3>
+                  <h3>{displayCurrent.term} &middot; {displayCurrent.meaning}</h3>
                   <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>
                   <div className="points">
                     {(showAll ? displayCurrent.allPoints : displayCurrent.corePoints.slice(0, 2)).map(p => <p key={p}>• {p}</p>)}
@@ -14006,7 +14006,7 @@ function App() {
             <div className="modal" style={{ zIndex: 1100 }} onClick={() => { setDetailHistory([]); setDetailItem(null); }}>
               <div className="modalContent" onClick={e => e.stopPropagation()}>
                 <div className="modalHeader">
-                  <h2 style={{ color: isMasterOnlyWord(detailItem.term) ? '#6b8e7f' : undefined }}>{detailItem.term}</h2>
+                  <h2>{detailItem.term}</h2>
                   {detailItem.phonetic && <p className="phoneticText">{detailItem.phonetic}</p>}
                   <button className="closeBtn" onClick={() => closeDetailItem()} title={detailHistory.length > 0 ? '返回上一个（' + detailHistory.length + '层）' : '关闭'}>{detailHistory.length > 0 ? '◀' : '✕'}</button>
                 </div>
@@ -14086,7 +14086,7 @@ function App() {
                     <div className="detailFormGrid">
                       {(() => {
                         function formStyle(word) {
-                          return isMasterOnlyWord(word) ? { cursor: 'pointer', color: '#a16207', background: '#fef9c3', padding: '2px 6px', borderRadius: 6 } : { cursor: 'pointer' };
+                          return isMasterOnlyWord(word) ? { cursor: 'pointer', color: '#4a6b5e', background: '#d6e4de', padding: '2px 6px', borderRadius: 6 } : { cursor: 'pointer' };
                         }
                         return (
                           <>
@@ -14116,7 +14116,7 @@ function App() {
                         const derivWord = d.split(' ')[0];
                         const derivItem = allWords.find(w => w.term.toLowerCase() === derivWord.toLowerCase());
                         const masterOnly = derivItem && isMasterOnlyWord(derivWord);
-                        const derivStyle = masterOnly ? { cursor: 'pointer', background: '#fef9c3', color: '#a16207' } : { cursor: 'pointer' };
+                        const derivStyle = masterOnly ? { cursor: 'pointer', background: '#d6e4de', color: '#4a6b5e' } : { cursor: 'pointer' };
                         return <span key={i} className="detailDerivTag" style={derivStyle} onClick={() => { if (derivItem) { openDetailItem(derivItem); if (settings.navAutoSpeak !== false) speak(derivWord, settings.speakRate); } else { speak(derivWord, settings.speakRate); } }}>{d}</span>;
                       })}
                     </div>
@@ -14132,7 +14132,7 @@ function App() {
                         const synWord = extractEnglish(s).split(/\s+/)[0];
                         const synItem = allWords.find(w => w.term.toLowerCase() === synWord.toLowerCase());
                         const masterOnly = synItem && isMasterOnlyWord(synWord);
-                        const synStyle = masterOnly ? { cursor: 'pointer', background: '#fef9c3', color: '#a16207' } : { cursor: 'pointer' };
+                        const synStyle = masterOnly ? { cursor: 'pointer', background: '#d6e4de', color: '#4a6b5e' } : { cursor: 'pointer' };
                         return <span key={i} className="detailSynonymTag" style={synStyle} onClick={() => { if (synItem) { openDetailItem(synItem); if (settings.navAutoSpeak !== false) speak(synWord, settings.speakRate); } else { speak(synWord, settings.speakRate); } }}>{s}</span>;
                       })}
                     </div>
@@ -14179,7 +14179,7 @@ function App() {
                           const isAiTagged = aiFamilyTerms.includes(item.term.toLowerCase());
                           const inBank = !!findWordInBank(item.term);
                           const masterOnly = inBank && isMasterOnlyWord(item.term);
-                          const familyBtnStyle = masterOnly ? { background: '#fef9c3', color: '#a16207', borderColor: '#fde68a' } : {};
+                          const familyBtnStyle = masterOnly ? { background: '#d6e4de', color: '#4a6b5e', borderColor: '#b8ccc3' } : {};
                           return (
                             <button key={item.id} className={`detailFamilyBtn${isAiTagged ? ' aiTagged' : ''}`}
                               style={familyBtnStyle}
@@ -14213,7 +14213,7 @@ function App() {
                         {confusing.map(item => {
                           const isAiTagged = isAiConfusingWord(detailItem.term, item.term);
                           const masterOnly = isMasterOnlyWord(item.term);
-                          const confBtnStyle = masterOnly ? { background: '#fef9c3', color: '#a16207', borderColor: '#fde68a' } : {};
+                          const confBtnStyle = masterOnly ? { background: '#d6e4de', color: '#4a6b5e', borderColor: '#b8ccc3' } : {};
                           return (
                             <button key={item.id} className={`detailConfusingBtn${isAiTagged ? ' aiTagged' : ''}`}
                               style={confBtnStyle}
