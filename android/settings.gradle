@@ -1,5 +1,5 @@
 include ':app'
-include ':capacitor-cordova-android-plugins'
-project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins/')
 
-apply from: 'capacitor.settings.gradle'
+// 已移除 Capacitor 运行时：不再引入 :capacitor-android / :capacitor-filesystem /
+// :capacitor-cordova-android-plugins 项目，避免其 API 24+ 编译产物在
+// 安卓 5.0.2 (API 21) 翻译笔启动崩溃

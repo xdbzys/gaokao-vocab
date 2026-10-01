@@ -1,8 +1,7 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import JSZip from 'jszip';
-import { Capacitor } from '@capacitor/core';
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Capacitor, Filesystem, Directory, Encoding } from './native-bridge';
 import './styles.css';
 import { getWordEnrichment } from './wordEnrichment';
 import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, presentParticipleRules, nounPluralRules } from './wordTransformations';
@@ -66,8 +65,13 @@ const UPDATE_SERVER_RAW = `https://gitee.com/${GITEE_OWNER}/${GITEE_REPO}/raw/ma
 const UPDATE_SERVER_API = `https://gitee.com/api/v5/repos/${GITEE_OWNER}/${GITEE_REPO}/contents/app-update.json?ref=${GITEE_BRANCH}`;
 // 添加时间戳防止 CDN 缓存
 const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
-// 正确检测原生APP：Capacitor Web 运行时在浏览器中也会注入 window.Capacitor，需用 isNativePlatform 区分
-const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform ? Capacitor.isNativePlatform() : !!(window.cordova);
+// 正确检测原生APP：
+// - 纯 WebView 容器：window.NativeFS 存在即为原生
+// - Capacitor 容器（已弃用）：用 isNativePlatform 区分
+// - Cordova 容器：window.cordova
+const isNativeApp = !!(window.NativeFS)
+  || (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform ? Capacitor.isNativePlatform() : false)
+  || !!(window.cordova);
 
 /* ============================
    一、内置词库数据

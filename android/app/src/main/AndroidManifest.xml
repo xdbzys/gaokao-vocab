@@ -2,8 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- 兼容安卓5.0.2 (API 21)：覆盖 Capacitor/Cordova 库要求的更高 minSdk -->
-    <uses-sdk tools:overrideLibrary="com.getcapacitor.android,com.getcapacitor.cordova,org.apache.cordova,io.ionic.libs.ionfilesystemlib,androidx.core,androidx.appcompat" />
+    <!-- 纯 WebView 容器：不再依赖 Capacitor/Cordova，无需 overrideLibrary -->
 
     <application
         android:allowBackup="true"
@@ -13,6 +12,7 @@
         android:supportsRtl="true"
         android:largeHeap="true"
         android:hardwareAccelerated="true"
+        android:requestLegacyExternalStorage="true"
         android:theme="@style/AppTheme">
 
         <activity
@@ -46,4 +46,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- 备份到公共 Documents 目录：API 21 安装时授予，API 23+ 运行时申请 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
 </manifest>

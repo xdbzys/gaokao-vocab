@@ -7,8 +7,8 @@ android {
         applicationId "com.gaokao.vocab"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-                versionCode 206
-        versionName "2.54.0"
+        versionCode 207
+        versionName "2.55.0"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
@@ -52,29 +52,25 @@ repositories {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
-    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core:$androidxCoreVersion"
     implementation "androidx.multidex:multidex:2.0.1"
-    implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
-    implementation project(':capacitor-cordova-android-plugins')
+
+    // 兼容安卓 5.0.2 (API 21)：Java 8+ API 调用需要 desugar
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
 
-apply from: 'capacitor.build.gradle'
-
-// 在 capacitor.build.gradle 之后覆盖编译选项，启用 core library desugaring
-// 兼容安卓 5.0.2 (API 21)：Java 8+ API 调用需要 desugar
+// 编译选项：启用 core library desugaring（API 21 上调用 Java 8+ API 需要）
+// 注意：已移除 Capacitor 运行时（capacitor.build.gradle 不再 apply），
+// 此处直接设置，无需在 capacitor.build.gradle 之后覆盖
 android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
         coreLibraryDesugaringEnabled true
     }
-}
-
-dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
 
 try {
