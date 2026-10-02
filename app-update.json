@@ -1,8 +1,8 @@
 {
-  "version": "2.55.6",
-  "versionCode": 213,
-  "changelog": "🎉 背群英 v2.55.6 已发布！\n\n【新增】云端热更新机制\n- 原生层优先从云端加载最新内容（Gitee/jsDelivr/GitHub Pages 多源容灾）\n- 安装此版本后，以后内容修复在云端完成，无需重装 APK\n- 离线时自动使用上次缓存版本\n\n【修复】白屏/闪退问题\n- 修复 Babel 转义导致控制字符（ZIP 签名 PK\\x03\\x04 等）破坏内联脚本\n- 修复状态机被字符串内 <script> 干扰导致主脚本未移到 body\n- createRoot 用 DOMContentLoaded 包裹确保 DOM 就绪\n\n【修复】安装冲突\n- 签名统一为 debug-key.jks（SHA-256: 42:4A:B2:DA:...）\n- 与 v2.52.0/v2.53.0 一致，可直接覆盖安装\n\n下载安装方法：\n复制下方链接，用手机浏览器打开，下载后点击安装即可（学习记录不会丢失）：\nhttps://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "devNotes": "v2.55.6 cloud-hotfix: Native-layer cloud loading + white screen fix (control char escape, script block state machine, DOMContentLoaded) + debug-key.jks signature",
+  "version": "2.55.7",
+  "versionCode": 214,
+  "changelog": "🎉 背群英 v2.55.7 已发布！\n\n【修复】启动红屏错误\n- 修复 Android WebView 下 Service Worker API 处于 invalid state 时\n  getRegistrations()/unregister()/caches 未捕获 rejection 导致的红屏\n- 所有 SW/Promise 调用逐层 catch，任何环境不再弹错误页\n- 原生层新增云端内容安全校验（__SW_GUARD__ 标记），坏版本不再污染缓存\n\n【说明】\n- 安装此版本后红屏立即消失（自动拒绝坏缓存，回退内置修复版）\n- 不重装也可自愈：云端已更新修复版，下次启动自动刷新\n- 学习记录不丢失，签名与旧版一致，可直接覆盖安装\n\n下载安装方法：\n复制下方链接，用手机浏览器打开，下载后点击安装即可：\nhttps://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
+  "devNotes": "v2.55.7: fix UnhandledRejection red screen (ServiceWorker invalid state in WebView file:// context). Full per-promise catch guards + __SW_GUARD__ content safety check in MainActivity (reject unsafe cloud cache, fallback to APK assets)",
   "apkUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
 }

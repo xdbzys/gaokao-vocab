@@ -49,6 +49,29 @@ public class MainActivity extends Activity {
     // 超时时间（毫秒）：翻译笔网络可能较慢
     private static final int DOWNLOAD_TIMEOUT = 8000;
 
+    /**
+     * v2.55.7: 内容安全校验
+     * 云端/缓存内容必须包含 __SW_GUARD__ 标记（v2.55.7 构建产物自带）。
+     * 不含标记的旧版本（如带未捕获 ServiceWorker rejection 的 v2.55.6 云端缓存）
+     * 在 file:// 协议下会触发 UnhandledRejection 红屏，必须拒绝加载。
+     */
+    private boolean isSafeContent(String content) {
+        return content != null && content.contains("__SW_GUARD__");
+    }
+
+    /** 读取文本文件（UTF-8），失败返回 null */
+    private String readFileText(File file) {
+        try {
+            byte[] data = new byte[(int) file.length()];
+            FileInputStream fis = new FileInputStream(file);
+            fis.read(data);
+            fis.close();
+            return new String(data, "UTF-8");
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -261,16 +284,26 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * 加载内容：缓存 > 本地 assets，同时后台检查云端更新
+     * 加载内容：安全缓存 > 本地 assets，同时后台检查云端更新
+     * v2.55.7: 缓存内容必须通过 isSafeContent 校验，否则删除缓存回退 APK 内置版本
      */
     private void loadContent() {
         File cacheFile = new File(getFilesDir(), CACHE_FILE);
         if (cacheFile.exists() && cacheFile.length() > 1000) {
-            // 有云端缓存，直接加载（上次拉取的版本，离线可用）
-            String cachePath = "file://" + cacheFile.getAbsolutePath();
-            Log.i("GaokaoVocab", "Loading from cloud cache: " + cachePath);
-            setContentView(webView);
-            webView.loadUrl(cachePath);
+            String cached = readFileText(cacheFile);
+            if (isSafeContent(cached)) {
+                // 缓存是安全版本，直接加载（上次拉取的版本，离线可用）
+                String cachePath = "file://" + cacheFile.getAbsolutePath();
+                Log.i("GaokaoVocab", "Loading from cloud cache: " + cachePath);
+                setContentView(webView);
+                webView.loadUrl(cachePath);
+            } else {
+                // 缓存是不安全版本（旧版坏 HTML），删除并回退 APK 内置版本
+                Log.w("GaokaoVocab", "Cached content unsafe (no __SW_GUARD__), falling back to assets");
+                cacheFile.delete();
+                setContentView(webView);
+                webView.loadUrl("file:///android_asset/public/index.html");
+            }
         } else {
             // 首次启动无缓存，加载本地 assets（APK 内置已修复版本）
             Log.i("GaokaoVocab", "No cache, loading local assets");
@@ -320,6 +353,11 @@ public class MainActivity extends Activity {
                         // 简单校验：必须包含 createRoot 才认为是有效内容
                         if (!content.contains("createRoot")) {
                             Log.w("GaokaoVocab", "Cloud content invalid (no createRoot), skip");
+                            continue;
+                        }
+                        // v2.55.7: 必须含安全标记，防止坏版本再次污染缓存
+                        if (!isSafeContent(content)) {
+                            Log.w("GaokaoVocab", "Cloud content unsafe (no __SW_GUARD__), skip");
                             continue;
                         }
 

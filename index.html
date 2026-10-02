@@ -249,19 +249,45 @@
     </script>
     <script>
       // 在任何内容加载前，强制注销所有旧 Service Worker 并清空缓存
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(regs) {
-          regs.forEach(function(r) { r.unregister(); });
-        });
-        if (window.caches) {
-          caches.keys().then(function(keys) {
-            keys.forEach(function(k) { caches.delete(k); });
-          });
-        }
-      }
+      // 注意：Android WebView（file:// 或 Capacitor）中 SW/caches API 处于 invalid state，
+      //       任何一层 Promise reject 都可能触发 unhandledrejection 红屏，
+      //       因此每个 Promise 都必须单独接 catch（外层 catch 兜不住 forEach 内的丢弃值）
+      window.__SW_GUARD__ = 1; // 安全标记：MainActivity 据此识别安全版本（勿删）
+      (function () {
+        try {
+          if ('serviceWorker' in navigator) {
+            var pRegs = navigator.serviceWorker.getRegistrations();
+            if (pRegs && pRegs.then) {
+              pRegs.then(function (regs) {
+                (regs || []).forEach(function (r) {
+                  try {
+                    var pu = r.unregister();
+                    if (pu && pu.catch) pu.catch(function () {});
+                  } catch (e) {}
+                });
+              }).catch(function () {});
+            }
+          }
+          if (window.caches) {
+            var pKeys = caches.keys();
+            if (pKeys && pKeys.then) {
+              pKeys.then(function (keys) {
+                (keys || []).forEach(function (k) {
+                  try {
+                    var pd = caches.delete(k);
+                    if (pd && pd.catch) pd.catch(function () {});
+                  } catch (e) {}
+                });
+              }).catch(function () {});
+            }
+          }
+        } catch (e) {}
+      })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#111827" />
+    <!-- __SW_GUARD__ 安全标记：MainActivity 云端内容校验用（勿删） -->
+    <meta name="__SW_GUARD__" content="v1" />
     <meta name="description" content="高中高考英语单词与短语背诵软件" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <!-- Apple PWA 支持 -->

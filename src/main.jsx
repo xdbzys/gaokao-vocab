@@ -46,8 +46,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.55.6';
-const APP_VERSION_CODE = 213;
+const APP_VERSION = '2.55.7';
+const APP_VERSION_CODE = 214;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -14324,8 +14324,23 @@ if (document.readyState === 'loading') {
 
 // Capacitor 应用不需要 Service Worker（资源从 APK 本地加载）
 // 注销已有的 Service Worker 以避免缓存外部 API 请求
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => {
-    regs.forEach(r => r.unregister());
-  });
-}
+// 注意：Android WebView 中 SW API 处于 invalid state，每个 Promise 都必须
+//       单独接 catch（外层 catch 兜不住 forEach 内丢弃的 unregister() Promise）
+window.__SW_GUARD__ = window.__SW_GUARD__ || 1; // 安全标记（勿删，MainActivity 校验用）
+(function () {
+  try {
+    if ('serviceWorker' in navigator) {
+      var pRegs = navigator.serviceWorker.getRegistrations();
+      if (pRegs && pRegs.then) {
+        pRegs.then(function (regs) {
+          (regs || []).forEach(function (r) {
+            try {
+              var pu = r.unregister();
+              if (pu && pu.catch) pu.catch(function () {});
+            } catch (e) {}
+          });
+        }).catch(function () {});
+      }
+    }
+  } catch (e) {}
+})();
