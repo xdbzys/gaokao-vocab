@@ -1,6 +1,7 @@
 package com.gaokao.vocab;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 import android.webkit.JavascriptInterface;
 
@@ -35,21 +36,44 @@ public class NativeFS {
         this.ctx = c;
     }
 
-    /** Documents 根目录。 */
+    /** Documents 根目录。
+     *  Android 11+ (API 30+) 分区存储限制：应用无法直接写入公共 Documents 目录。
+     *  - API 29 及以下：用公共 Documents（用户在文件管理器可见）
+     *  - API 30+：用应用专属外部存储 getExternalFilesDir(Documents)，
+     *    路径为 /storage/emulated/0/Android/data/<包名>/files/Documents，
+     *    始终可写，无需权限，避免崩溃。
+     */
     private File documentsRoot() {
-        File docs = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        if (docs == null) {
-            docs = new File(Environment.getExternalStorageDirectory(), "Documents");
+        File docs;
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+            docs = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+            if (docs == null) {
+                docs = new File(Environment.getExternalStorageDirectory(), "Documents");
+            }
+        } else {
+            // API 30+: 用应用专属外部目录，确保可写不崩溃
+            docs = ctx.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            if (docs == null) {
+                docs = new File(ctx.getFilesDir(), "Documents");
+            }
         }
-        try { if (!docs.exists()) docs.mkdirs(); } catch (Throwable ignored) {}
+        try { if (docs != null && !docs.exists()) docs.mkdirs(); } catch (Throwable ignored) {}
         return docs;
     }
 
     /** Downloads 根目录。 */
     private File downloadsRoot() {
-        File dl = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        if (dl == null) {
-            dl = new File(Environment.getExternalStorageDirectory(), "Download");
+        File dl;
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+            dl = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            if (dl == null) {
+                dl = new File(Environment.getExternalStorageDirectory(), "Download");
+            }
+        } else {
+            dl = ctx.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+            if (dl == null) {
+                dl = new File(ctx.getFilesDir(), "Download");
+            }
         }
         return dl;
     }
