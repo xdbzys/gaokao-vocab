@@ -1,8 +1,8 @@
 {
-  "version": "2.55.5",
-  "versionCode": 212,
-  "changelog": "🎉 背群英 v2.55.5 已发布！\n\n【关键修复】签名与历史版本一致，可直接覆盖安装 2.43.0\n- 改用 release-key.jks 签名（与 v2.43.0 等历史版本同签名），无需卸载旧版即可覆盖安装，保留应用数据\n- 解决之前版本因签名不一致导致无法更新的问题\n\n【修复】安卓 5.0.2 翻译笔白屏/闪退\n- 补全 Chromium 37 缺失 API：AbortController/TextEncoder/TextDecoder/Symbol/Map/Set/WeakMap/WeakSet/Promise/fetch/Object.assign/includes/find 等\n- 主脚本包 try-catch 包裹，错误全屏显示\n- 开启 WebView 远程调试（chrome://inspect 可看控制台）\n\n如果仍白屏，屏幕上会显示具体 JS 错误，请截图发我。\n\n⚠️ 请用翻译笔自带浏览器下载安装（可直接覆盖 2.43.0）：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
-  "devNotes": "v2.55.5: 改用release-key.jks签名（与2.43.0一致），可覆盖安装；补全polyfill+错误浮层",
+  "version": "2.55.6",
+  "versionCode": 213,
+  "changelog": "🎉 背群英 v2.55.6 已发布！\n\n【修复】2.43.0 在高版本安卓手机上闪退\n根因（2.43.0 三个高版本安卓崩溃源）：\n1. 启动主题继承 Theme.SplashScreen（core-splashscreen 1.2.0）—— Android 12+ 系统内置启动画面 API 与兼容库冲突，启动即 InflateException 崩溃\n2. targetSdkVersion=36 过高 —— Capacitor 8 未适配，触发新系统限制\n3. Capacitor 8 BridgeActivity —— 内部调用高版本变更行为的 API\n\nv2.55.6 修复：\n- 彻底移除 Capacitor 运行时，改用纯原生 WebView 容器\n- 启动主题改为 Theme.AppCompat.Light.NoActionBar，不再用 SplashScreen\n- 降级 AndroidX 库到稳定兼容版本\n- NativeFS 适配 Android 11+ 分区存储：API 30+ 用应用专属外部目录（getExternalFilesDir），避免写入公共 Documents 崩溃\n- 签名与 2.43.0 一致（release-key.jks），可直接覆盖安装，保留数据\n\n【修复】安卓 5.0.2 翻译笔白屏/闪退\n- 补全 Chromium 37 缺失 API polyfill\n- 错误全屏显示\n\n⚠️ 请用浏览器下载安装（可直接覆盖 2.43.0）：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
+  "devNotes": "v2.55.6: 修高版本安卓闪退(SplashScreen+Capacitor+targetSdk过高) + NativeFS适配Android11+分区存储",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
