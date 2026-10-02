@@ -1,8 +1,8 @@
 {
-  "version": "2.55.4",
-  "versionCode": 211,
-  "changelog": "🎉 背群英 v2.55.4 已发布！\n\n【修复】安卓 5.0.2 翻译笔白屏/闪退\n本轮补全所有已知 Chromium 37 缺失 API + 错误可见性：\n- 补 AbortController / AbortSignal（Chrome 66+，fetch 取消需要）\n- 补 TextEncoder / TextDecoder（Chrome 38+，React/编码需要）\n- 主脚本包 try-catch 包裹，任何同步错误都显示到屏幕\n- 全屏错误浮层：window.onerror / unhandledrejection 都展示错误信息+堆栈\n- 原生 WebView onReceivedError 弹窗显示加载错误\n- 开启 WebView 远程调试（chrome://inspect 可看控制台）\n\n如果仍白屏，屏幕上会显示具体的 JS 错误信息，请把截图发我。\n\n仍基于纯原生 WebView 容器（已移除 Capacitor 运行时）。\n\n⚠️ 若应用内更新点不动，请用翻译笔自带浏览器打开下方链接手动下载安装：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
-  "devNotes": "v2.55.4: 补AbortController/TextEncoder polyfill + 全屏错误浮层 + 原生onReceivedError + WebView远程调试",
+  "version": "2.55.5",
+  "versionCode": 212,
+  "changelog": "🎉 背群英 v2.55.5 已发布！\n\n【关键修复】签名与历史版本一致，可直接覆盖安装 2.43.0\n- 改用 release-key.jks 签名（与 v2.43.0 等历史版本同签名），无需卸载旧版即可覆盖安装，保留应用数据\n- 解决之前版本因签名不一致导致无法更新的问题\n\n【修复】安卓 5.0.2 翻译笔白屏/闪退\n- 补全 Chromium 37 缺失 API：AbortController/TextEncoder/TextDecoder/Symbol/Map/Set/WeakMap/WeakSet/Promise/fetch/Object.assign/includes/find 等\n- 主脚本包 try-catch 包裹，错误全屏显示\n- 开启 WebView 远程调试（chrome://inspect 可看控制台）\n\n如果仍白屏，屏幕上会显示具体 JS 错误，请截图发我。\n\n⚠️ 请用翻译笔自带浏览器下载安装（可直接覆盖 2.43.0）：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
+  "devNotes": "v2.55.5: 改用release-key.jks签名（与2.43.0一致），可覆盖安装；补全polyfill+错误浮层",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk",
   "webHtmlUrl": "https://xdbzys.github.io/gaokao-vocab/背群英.html"
 }
