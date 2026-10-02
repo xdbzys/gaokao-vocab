@@ -19,15 +19,17 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file(project.findProperty('MYAPP_UPLOAD_STORE_FILE') ?: 'release-key.jks')
-            storePassword project.findProperty('MYAPP_UPLOAD_STORE_PASSWORD') ?: 'gaokao123'
-            keyAlias project.findProperty('MYAPP_UPLOAD_KEY_ALIAS') ?: 'release'
-            keyPassword project.findProperty('MYAPP_UPLOAD_KEY_PASSWORD') ?: 'gaokao123'
+            // 使用 debug-key.jks（与已分发的 v2.52.0/v2.53.0 等版本签名一致），
+            // 用户可直接覆盖安装，无需卸载旧版
+            storeFile file(project.findProperty('MYAPP_UPLOAD_STORE_FILE') ?: 'debug-key.jks')
+            storePassword project.findProperty('MYAPP_UPLOAD_STORE_PASSWORD') ?: 'android'
+            keyAlias project.findProperty('MYAPP_UPLOAD_KEY_ALIAS') ?: 'debug'
+            keyPassword project.findProperty('MYAPP_UPLOAD_KEY_PASSWORD') ?: 'android'
         }
     }
     buildTypes {
         debug {
-            // 用 release 签名（release-key.jks），与历史版本（v2.43.0 等）签名一致，
+            // 用与已分发版本一致的签名（debug-key.jks），
             // 用户可直接覆盖安装，无需卸载旧版，保留应用数据
             signingConfig signingConfigs.release
         }

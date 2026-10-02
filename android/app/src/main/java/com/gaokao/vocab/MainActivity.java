@@ -1,7 +1,6 @@
 package com.gaokao.vocab;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -15,13 +14,21 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 /**
  * 纯原生 WebView 容器（不依赖 Capacitor 运行时）
  *
  * 目的：兼容 Android 5.0.2 (API 21) 翻译笔，避免 Capacitor 8
  * 编译产物（要求 API 24+）在低版本系统启动崩溃。
  *
- * - 加载本地 assets/public/index.html（离线可用）
+ * - 云端优先加载：每次启动先从云端拉取最新 index.html，缓存到本地后加载
+ * - 离线兜底：无网络时加载上次缓存的云端版本，再不行用 APK 内置版本
  * - 通过 NativeFS JavascriptInterface 提供文件读写（备份/恢复）
  * - 外链与"立即更新"在浏览器打开
  * - 音量键导航
@@ -30,6 +37,17 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private static boolean volumeKeyNavEnabled = false;
+
+    // ===== 云端热更新配置 =====
+    // 云端 index.html 地址（多源容灾：Gitee raw → jsDelivr CDN → GitHub Pages）
+    private static final String[] CLOUD_INDEX_URLS = {
+        "https://gitee.com/xdbzys/app/raw/master/web/index.html",
+        "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+        "https://xdbzys.github.io/gaokao-vocab/web/index.html"
+    };
+    private static final String CACHE_FILE = "cloud_index.html";
+    // 超时时间（毫秒）：翻译笔网络可能较慢
+    private static final int DOWNLOAD_TIMEOUT = 8000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +65,6 @@ public class MainActivity extends Activity {
         }
 
         webView = new WebView(this);
-        setContentView(webView);
 
         WebSettings s = webView.getSettings();
         s.setJavaScriptEnabled(true);
@@ -126,13 +143,6 @@ public class MainActivity extends Activity {
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 super.onReceivedError(view, errorCode, description, failingUrl);
                 Log.e("GaokaoVocab", "WebView error: " + errorCode + " " + description + " url=" + failingUrl);
-                try {
-                    new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("页面加载错误")
-                        .setMessage("code=" + errorCode + "\n" + description + "\nurl=" + failingUrl)
-                        .setPositiveButton("确定", null)
-                        .show();
-                } catch (Throwable ignored) {}
             }
         });
 
@@ -174,8 +184,117 @@ public class MainActivity extends Activity {
             try { webView.restoreState(savedInstanceState); } catch (Throwable ignored) {}
         }
 
-        // 加载本地构建产物（离线可用）
-        webView.loadUrl("file:///android_asset/public/index.html");
+        // ===== 云端优先加载策略 =====
+        // 1. 先用缓存或本地 assets 立即加载（用户不等待）
+        // 2. 后台从云端拉取最新版本，如有更新则缓存并刷新
+        loadContent();
+    }
+
+    /**
+     * 加载内容：缓存 > 本地 assets，同时后台检查云端更新
+     */
+    private void loadContent() {
+        File cacheFile = new File(getFilesDir(), CACHE_FILE);
+        if (cacheFile.exists() && cacheFile.length() > 1000) {
+            // 有云端缓存，直接加载（上次拉取的版本，离线可用）
+            String cachePath = "file://" + cacheFile.getAbsolutePath();
+            Log.i("GaokaoVocab", "Loading from cloud cache: " + cachePath);
+            setContentView(webView);
+            webView.loadUrl(cachePath);
+        } else {
+            // 首次启动无缓存，加载本地 assets（APK 内置已修复版本）
+            Log.i("GaokaoVocab", "No cache, loading local assets");
+            setContentView(webView);
+            webView.loadUrl("file:///android_asset/public/index.html");
+        }
+        // 后台检查云端更新（不阻塞 UI）
+        checkCloudUpdate();
+    }
+
+    /**
+     * 后台检查云端是否有新版 index.html
+     * 如有更新则下载到缓存，并在下次启动时生效
+     */
+    private void checkCloudUpdate() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (String cloudUrl : CLOUD_INDEX_URLS) {
+                    try {
+                        Log.i("GaokaoVocab", "Checking cloud: " + cloudUrl);
+                        HttpURLConnection conn = (HttpURLConnection) new URL(cloudUrl).openConnection();
+                        conn.setConnectTimeout(DOWNLOAD_TIMEOUT);
+                        conn.setReadTimeout(DOWNLOAD_TIMEOUT);
+                        conn.setRequestMethod("GET");
+                        conn.setRequestProperty("Cache-Control", "no-cache");
+                        conn.setUseCaches(false);
+                        int code = conn.getResponseCode();
+                        if (code != 200) {
+                            conn.disconnect();
+                            continue;
+                        }
+                        InputStream is = conn.getInputStream();
+                        // 读取全部内容
+                        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                        byte[] buf = new byte[8192];
+                        int n;
+                        while ((n = is.read(buf)) != -1) {
+                            baos.write(buf, 0, n);
+                        }
+                        is.close();
+                        conn.disconnect();
+                        byte[] data = baos.toByteArray();
+                        if (data.length < 1000) continue; // 内容太短，跳过
+
+                        String content = new String(data, "UTF-8");
+                        // 简单校验：必须包含 createRoot 才认为是有效内容
+                        if (!content.contains("createRoot")) {
+                            Log.w("GaokaoVocab", "Cloud content invalid (no createRoot), skip");
+                            continue;
+                        }
+
+                        File cacheFile = new File(getFilesDir(), CACHE_FILE);
+                        // 比对缓存：如果内容相同则不更新
+                        if (cacheFile.exists()) {
+                            byte[] oldData = new byte[(int) cacheFile.length()];
+                            FileInputStream fis = new FileInputStream(cacheFile);
+                            fis.read(oldData);
+                            fis.close();
+                            String oldContent = new String(oldData, "UTF-8");
+                            if (oldContent.equals(content)) {
+                                Log.i("GaokaoVocab", "Cloud content same as cache, no update");
+                                return; // 内容相同，无需更新
+                            }
+                        }
+
+                        // 写入缓存
+                        FileOutputStream fos = openFileOutput(CACHE_FILE, MODE_PRIVATE);
+                        fos.write(data);
+                        fos.close();
+                        Log.i("GaokaoVocab", "Cloud content cached (" + data.length + " bytes), reloading");
+
+                        // 刷新 WebView（切回主线程）
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    File cf = new File(getFilesDir(), CACHE_FILE);
+                                    String path = "file://" + cf.getAbsolutePath();
+                                    Log.i("GaokaoVocab", "Reloading from cloud cache: " + path);
+                                    webView.loadUrl(path);
+                                } catch (Throwable e) {
+                                    Log.e("GaokaoVocab", "Reload failed", e);
+                                }
+                            }
+                        });
+                        return; // 成功，退出循环
+                    } catch (Throwable e) {
+                        Log.w("GaokaoVocab", "Cloud check failed for " + cloudUrl + ": " + e.getMessage());
+                    }
+                }
+                Log.w("GaokaoVocab", "All cloud URLs failed, using local/cached version");
+            }
+        }).start();
     }
 
     @Override

@@ -14272,7 +14272,20 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+// 确保 DOM 就绪后再渲染（兼容内联脚本在解析时执行的场景）
+function mountApp() {
+  const rootEl = document.getElementById('root');
+  if (rootEl) {
+    createRoot(rootEl).render(<App />);
+  } else {
+    setTimeout(mountApp, 50);
+  }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', mountApp);
+} else {
+  mountApp();
+}
 
 // Capacitor 应用不需要 Service Worker（资源从 APK 本地加载）
 // 注销已有的 Service Worker 以避免缓存外部 API 请求

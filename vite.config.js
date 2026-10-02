@@ -19,6 +19,74 @@ function postProcessForLegacyWebView() {
       if (!fs.existsSync(htmlPath)) return;
       let html = fs.readFileSync(htmlPath, 'utf8');
 
+      // 0) 转义内联脚本中的 </script>
+      //    React DOM 创建 script 元素时用 innerHTML = "<script></script>"，
+      //    构建后 \x3c 被还原为 <，导致字符串内含 </script>。
+      //    HTML 解析器遇到 </script> 会提前结束脚本标签 → 脚本截断 → SyntaxError → 白屏。
+      //    必须把脚本内容里的 </script> 转义为 <\/script>（仅转义内容，不动真实闭合标签）。
+      //    用状态机精确定位每个脚本块的真实闭合标签（块内最后一个 </script>）。
+      {
+        let escaped = 0;
+        let result = '';
+        let i = 0;
+        const lower = html.toLowerCase();
+        while (i < html.length) {
+          const scriptStart = lower.indexOf('<script', i);
+          if (scriptStart === -1) {
+            result += html.slice(i);
+            break;
+          }
+          // 把 <script 之前的内容加入
+          result += html.slice(i, scriptStart);
+          // 找开始标签的闭合 >
+          const tagEnd = html.indexOf('>', scriptStart);
+          if (tagEnd === -1) { result += html.slice(scriptStart); break; }
+          const openTag = html.slice(scriptStart, tagEnd + 1);
+          // 脚本内容从 > 后开始
+          const contentStart = tagEnd + 1;
+          // 找下一个 <script 的位置（作为边界）
+          const nextScript = lower.indexOf('<script', contentStart);
+          // 真实闭合 </script> 是 [contentStart, nextScript) 区间内最后一个
+          const searchEnd = nextScript === -1 ? html.length : nextScript;
+          const closeIdx = lower.lastIndexOf('</script>', searchEnd - 1);
+          if (closeIdx === -1 || closeIdx < contentStart) {
+            // 没有闭合标签，原样输出
+            result += html.slice(scriptStart);
+            break;
+          }
+          let content = html.slice(contentStart, closeIdx);
+          // 转义内容中的所有 </script>
+          const matches = content.match(/<\/script>/gi);
+          if (matches) {
+            escaped += matches.length;
+            content = content.replace(/<\/script>/gi, '<\\/script>');
+          }
+          result += openTag + content + '</script>';
+          i = closeIdx + '</script>'.length;
+        }
+        html = result;
+        if (escaped > 0) {
+          console.log(`[post] Escaped ${escaped} </script> occurrences inside inline scripts`);
+        }
+      }
+
+      // 0.5) 修复 viteSingleFile 误替换 React 内部 script 创建字符串
+      //    React DOM 用 e.innerHTML = "<script>\x3c/script>" 创建可执行 script 元素。
+      //    viteSingleFile 的正则会把字符串内的 <script></script> 当作真实脚本标签，
+      //    用整页 HTML（style/head/body/root）替换掉，导致多行非法字符串 → SyntaxError。
+      //    匹配从 e.innerHTML = " 到后面的 removeChild，整体还原为正确字符串。
+      {
+        const before = html.length;
+        // 匹配从 e.innerHTML = " 到 e.removeChild 的整段（含被污染的多行字符串），整体替换
+        html = html.replace(
+          /e\.innerHTML\s*=\s*"[\s\S]*?e\.removeChild/g,
+          'e.innerHTML = "<script>\\x3c/script>", e = e.removeChild'
+        );
+        if (html.length !== before) {
+          console.log('[post] Restored React innerHTML script-creation string (fixed viteSingleFile corruption)');
+        }
+      }
+
       // 1) 替换 import.meta
       const before = (html.match(/import\.meta/g) || []).length;
       html = html.replace(/import\.meta\.url/g, '""');
@@ -314,7 +382,9 @@ function postProcessForLegacyWebView() {
                 el = document.createElement('div');
                 el.id = '__app_error_overlay__';
                 el.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483647;background:#1a1a2e;color:#f87171;font-family:monospace;font-size:13px;padding:14px;overflow:auto;white-space:pre-wrap;word-break:break-all;line-height:1.5;';
-                document.body.appendChild(el);
+                // body 可能尚未解析（脚本在 head 中提前执行时），回退到 documentElement
+                var host = document.body || document.documentElement;
+                if (host) host.appendChild(el);
               }
               var t = (new Date()).toLocaleString();
               el.innerHTML = '<b style="color:#fbbf24">[JS ERROR ' + t + ']</b>\\n' + String(msg).replace(/&/g,'&amp;').replace(/</g,'&lt;') + (stack ? '\\n\\n' + String(stack).replace(/&/g,'&amp;').replace(/</g,'&lt;').slice(0, 2000) : '');
@@ -341,8 +411,11 @@ function postProcessForLegacyWebView() {
         const babel = require('@babel/core');
         const scriptRegex = /<script([^>]*)>([\s\S]*?)<\/script>/gi;
         let changed = false;
+        let scriptIdx = 0;
         html = html.replace(scriptRegex, (match, attrs, code) => {
           if (!code || !code.trim()) return match;
+          console.log(`[post] Babel processing script ${scriptIdx}: len=${code.length}, hasCorruptedInnerHTML=${code.includes('e.innerHTML = "\n')}`);
+          scriptIdx++;
           try {
             const result = babel.transformSync(code, {
               presets: [
@@ -356,7 +429,10 @@ function postProcessForLegacyWebView() {
               sourceMaps: false,
             });
             changed = true;
-            return `<script${attrs}>${result.code}</script>`;
+            // Babel 会把字符串里的 \x3c 还原为 <，导致出现 </script>，
+            // 必须在放回 HTML 前转义，否则 HTML 解析器会误判脚本结束。
+            const safeCode = result.code.replace(/<\/script>/gi, '<\\/script>');
+            return `<script${attrs}>${safeCode}</script>`;
           } catch (e) {
             console.warn('[post] Babel transform skipped for a script block:', e.message);
             return match;
@@ -390,6 +466,113 @@ function postProcessForLegacyWebView() {
         );
       } catch (e) {
         console.warn('[post] Babel not available, skipping ES5 transpile:', e.message);
+      }
+
+      // 3) 将主应用脚本从 <head> 移到 </body> 之前
+      //    原因：type="module" 已被剥离（兼容 Android 5.0.2 Chromium 37），
+      //    经典脚本在 <head> 中会同步执行，此时 <body> 与 <div id="root"> 尚未解析，
+      //    document.getElementById('root') 返回 null → createRoot(null) 抛错 → 白屏。
+      //    移到 body 末尾可保证 #root 已存在。polyfill/错误捕获脚本仍留在 head。
+      //    注意：必须用状态机精确定位脚本块，因为脚本内容字符串里可能含 <script>/</script>。
+      try {
+        const bodyEndIdx = html.lastIndexOf('</body>');
+        if (bodyEndIdx > 0) {
+          // 用状态机找出所有脚本块
+          const blocks = [];
+          {
+            let i = 0;
+            const lower = html.toLowerCase();
+            while (i < html.length) {
+              const s = lower.indexOf('<script', i);
+              if (s === -1) break;
+              const tagEnd = html.indexOf('>', s);
+              if (tagEnd === -1) break;
+              const contentStart = tagEnd + 1;
+              // 查找真实闭合 </script>（跳过字符串内的 <script>）
+              let closeIdx = -1;
+              let scanFrom = contentStart;
+              while (scanFrom < html.length) {
+                const nextScript = lower.indexOf('<script', scanFrom);
+                const searchEnd = nextScript === -1 ? html.length : nextScript;
+                closeIdx = lower.lastIndexOf('</script>', searchEnd - 1);
+                if (closeIdx >= contentStart) break;
+                if (nextScript === -1) { closeIdx = -1; break; }
+                scanFrom = nextScript + 7;
+              }
+              if (closeIdx === -1 || closeIdx < contentStart) break;
+              blocks.push({ start: s, end: closeIdx + '</script>'.length, content: html.slice(contentStart, closeIdx) });
+              i = closeIdx + '</script>'.length;
+            }
+          }
+          // 找到主应用脚本（含 createRoot）
+          const mainBlock = blocks.find(b => /createRoot/.test(b.content));
+          if (mainBlock) {
+            const scriptBlock = html.slice(mainBlock.start, mainBlock.end);
+            // 从原位置移除
+            html = html.slice(0, mainBlock.start) + html.slice(mainBlock.end);
+            // 插入到 </body> 之前（移除后重新定位）
+            const realBodyEnd = html.lastIndexOf('</body>');
+            if (realBodyEnd > 0) {
+              html = html.slice(0, realBodyEnd) + scriptBlock + html.slice(realBodyEnd);
+              console.log('[post] Moved main app script to end of <body> (after #root)');
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[post] Failed to move main script to body:', e.message);
+      }
+
+      // 最终兜底：转义所有内联脚本内容中的 </script> 和控制字符
+      // Babel 可能把 \x3c/script> 或 <\/script> 还原为 </script>，
+      // 也可能把 \xNN 转义还原为字面控制字节（如 ZIP 签名 "PK\x03\x04"），
+      // 必须在写入文件前最后做一次转义，确保 HTML 解析器和 JS 引擎不会出错。
+      {
+        let escaped = 0;
+        let result = '';
+        let i = 0;
+        const lower = html.toLowerCase();
+        while (i < html.length) {
+          const scriptStart = lower.indexOf('<script', i);
+          if (scriptStart === -1) { result += html.slice(i); break; }
+          result += html.slice(i, scriptStart);
+          const tagEnd = html.indexOf('>', scriptStart);
+          if (tagEnd === -1) { result += html.slice(scriptStart); break; }
+          const openTag = html.slice(scriptStart, tagEnd + 1);
+          const contentStart = tagEnd + 1;
+          // 查找真实的闭合 </script>：
+          // 脚本内容字符串里可能含 <script>（如 React 的 innerHTML 字符串），
+          // 此时 nextScript 指向字符串内的 <script>，前面没有 </script>，
+          // 需要跳过它继续找下一个 <script>，直到找到有 </script> 闭合的真实脚本块。
+          let closeIdx = -1;
+          let scanFrom = contentStart;
+          while (scanFrom < html.length) {
+            const nextScript = lower.indexOf('<script', scanFrom);
+            const searchEnd = nextScript === -1 ? html.length : nextScript;
+            closeIdx = lower.lastIndexOf('</script>', searchEnd - 1);
+            if (closeIdx >= contentStart) break; // 找到真实闭合
+            if (nextScript === -1) { closeIdx = -1; break; }
+            scanFrom = nextScript + 7; // 跳过字符串内的 <script>
+          }
+          if (closeIdx === -1 || closeIdx < contentStart) {
+            result += html.slice(scriptStart); break;
+          }
+          let content = html.slice(contentStart, closeIdx);
+          const matches = content.match(/<\/script>/gi);
+          if (matches) {
+            escaped += matches.length;
+            content = content.replace(/<\/script>/gi, '<\\/script>');
+          }
+          // 转义控制字符（0x00-0x1F，除 \n\r\t）
+          content = content.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, function (c) {
+            return '\\x' + c.charCodeAt(0).toString(16).padStart(2, '0');
+          });
+          result += openTag + content + '</script>';
+          i = closeIdx + '</script>'.length;
+        }
+        html = result;
+        if (escaped > 0) {
+          console.log(`[post] Final escape: ${escaped} </script> inside scripts`);
+        }
       }
 
       fs.writeFileSync(htmlPath, html);
