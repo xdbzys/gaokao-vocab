@@ -117,6 +117,76 @@ public class MainActivity extends Activity {
             }
         }, "NativeShell");
 
+        // 应用内 APK 下载安装桥接：供 JS 侧 window.NativeApkInstaller.downloadAndInstall(url) 调用
+        // 不跳转浏览器，直接下载并弹出系统安装界面
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public void downloadAndInstall(final String url) {
+                if (url == null || url.isEmpty()) return;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(0, '开始下载...')");
+                            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+                            conn.setConnectTimeout(15000);
+                            conn.setReadTimeout(30000);
+                            conn.setRequestMethod("GET");
+                            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36");
+                            int code = conn.getResponseCode();
+                            if (code != 200) {
+                                notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(-1, '下载失败 HTTP " + code + "')");
+                                conn.disconnect();
+                                return;
+                            }
+                            int total = conn.getContentLength();
+                            InputStream is = conn.getInputStream();
+                            File dir = new File(getCacheDir(), "apk_updates");
+                            if (!dir.exists()) dir.mkdirs();
+                            File apkFile = new File(dir, "update.apk");
+                            FileOutputStream fos = new FileOutputStream(apkFile);
+                            byte[] buf = new byte[8192];
+                            int n, downloaded = 0;
+                            while ((n = is.read(buf)) != -1) {
+                                fos.write(buf, 0, n);
+                                downloaded += n;
+                                if (total > 0) {
+                                    int pct = downloaded * 100 / total;
+                                    notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(" + pct + ", '下载中 " + pct + "%')");
+                                }
+                            }
+                            fos.flush();
+                            fos.close();
+                            is.close();
+                            conn.disconnect();
+
+                            notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(100, '下载完成，准备安装...')");
+
+                            // 触发安装
+                            Uri apkUri;
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                apkUri = androidx.core.content.FileProvider.getUriForFile(
+                                    MainActivity.this,
+                                    getPackageName() + ".fileprovider",
+                                    apkFile
+                                );
+                            } else {
+                                apkUri = Uri.fromFile(apkFile);
+                            }
+                            Intent installIntent = new Intent(Intent.ACTION_VIEW);
+                            installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+                            installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(installIntent);
+                        } catch (Throwable e) {
+                            Log.e("GaokaoVocab", "APK download/install failed", e);
+                            notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(-1, '下载失败: " + e.getMessage() + "')");
+                        }
+                    }
+                }).start();
+            }
+        }, "NativeApkInstaller");
+
         // 启用 WebView 远程调试（Chrome://inspect 可看控制台/网络）
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -295,6 +365,19 @@ public class MainActivity extends Activity {
                 Log.w("GaokaoVocab", "All cloud URLs failed, using local/cached version");
             }
         }).start();
+    }
+
+    /**
+     * 在主线程执行 JS（用于从后台线程回调 JS）
+     */
+    private void notifyJs(final String js) {
+        if (webView == null) return;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try { webView.evaluateJavascript(js, null); } catch (Throwable ignored) {}
+            }
+        });
     }
 
     @Override

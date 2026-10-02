@@ -51,8 +51,8 @@ const APP_VERSION_CODE = 213;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
+  { name: 'jsDelivr CDN', url: 'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk' },
   { name: 'GitHub Releases', url: 'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk' },
-  { name: 'GitHub Pages', url: 'https://xdbzys.github.io/gaokao-vocab/app-debug.apk' },
   { name: 'Gitee', url: 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk' },
 ];
 // 内置更新服务器地址
@@ -12103,9 +12103,9 @@ function App() {
         setUpdateVersion(version);
         setUpdateChangelog(changelog);
 
-        // v2.44.0: 静默下载APK在部分机型会闪退，改为仅提示有新版本，用户手动点更新走浏览器下载
+        // v2.55.6: 原生应用支持应用内下载安装（NativeApkInstaller），无需浏览器
         if (isNativeApp) {
-          setCloudStatus('发现新版本，点击"立即更新"前往浏览器下载');
+          setCloudStatus('发现新版本，点击"立即更新"在应用内下载安装');
         } else {
           if (!silent) {
             setCloudStatus('发现新版本，点击下方按钮前往下载');
@@ -12129,10 +12129,33 @@ function App() {
   async function applyUpdate() {
     if (!updateInfo || !updateInfo.hasUpdate) return;
 
-    // v2.44.0: 应用内下载在部分机型会闪退，统一走浏览器下载
     setUpdateInfo(prev => ({ ...prev, updating: true }));
-    setCloudStatus('正在打开下载页面...');
     const apkUrl = APK_DOWNLOAD_SOURCES[0].url;
+    // 原生应用：调用 NativeApkInstaller 应用内下载安装（不跳转浏览器）
+    if (window.NativeApkInstaller && window.NativeApkInstaller.downloadAndInstall) {
+      setInAppDownloading(true);
+      setApkDownloadProgress(0);
+      setCloudStatus('正在下载更新...');
+      window.__apkUpdateProgress = (pct, msg) => {
+        if (pct < 0) {
+          setInAppDownloadError(msg || '下载失败');
+          setInAppDownloading(false);
+          setCloudStatus('下载失败：' + (msg || ''));
+        } else {
+          setApkDownloadProgress(pct);
+          setCloudStatus(msg || `下载中 ${pct}%`);
+          if (pct >= 100) {
+            setInAppDownloading(false);
+            setCloudStatus('下载完成，请在弹出的安装界面确认安装。');
+          }
+        }
+      };
+      window.NativeApkInstaller.downloadAndInstall(apkUrl);
+      setUpdateInfo(prev => ({ ...prev, updating: false }));
+      return;
+    }
+    // 非原生：打开浏览器下载
+    setCloudStatus('正在打开下载页面...');
     try {
       if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
         try { await Capacitor.Plugins.Browser.open({ url: apkUrl }); } catch {}
@@ -13921,10 +13944,22 @@ function App() {
                     setSection('settings');
                     // 如果静默下载已在进行中，直接跳转到设置页显示进度
                     if (inAppDownloading) return;
-                    // 优先使用应用内下载安装（不跳转浏览器）
-                    // v2.44.0: 应用内下载在部分机型会闪退，统一走浏览器下载
+                    // 原生应用：调用 NativeApkInstaller 应用内下载安装（不跳转浏览器）
                     const url = APK_DOWNLOAD_SOURCES[0].url;
-                    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+                    if (window.NativeApkInstaller && window.NativeApkInstaller.downloadAndInstall) {
+                      setInAppDownloading(true);
+                      setApkDownloadProgress(0);
+                      window.__apkUpdateProgress = (pct, msg) => {
+                        if (pct < 0) {
+                          setInAppDownloadError(msg || '下载失败');
+                          setInAppDownloading(false);
+                        } else {
+                          setApkDownloadProgress(pct);
+                          if (pct >= 100) setInAppDownloading(false);
+                        }
+                      };
+                      window.NativeApkInstaller.downloadAndInstall(url);
+                    } else if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
                       Capacitor.Plugins.Browser.open({ url });
                     } else {
                       window.open(url, '_blank');
