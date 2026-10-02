@@ -1,8 +1,0 @@
-{
-	"appId": "com.gaokao.vocab",
-	"appName": "背群英",
-	"webDir": "dist",
-	"server": {
-		"androidScheme": "https"
-	}
-}
