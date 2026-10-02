@@ -1,11 +1,13 @@
 package com.gaokao.vocab;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -98,6 +100,13 @@ public class MainActivity extends Activity {
             }
         }, "NativeShell");
 
+        // 启用 WebView 远程调试（Chrome://inspect 可看控制台/网络）
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                WebView.setWebContentsDebuggingEnabled(true);
+            }
+        } catch (Throwable ignored) {}
+
         // 站内导航：保留在 WebView 内；http(s) 外链交给系统浏览器
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -112,11 +121,29 @@ public class MainActivity extends Activity {
                 }
                 return false;
             }
+
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                super.onReceivedError(view, errorCode, description, failingUrl);
+                Log.e("GaokaoVocab", "WebView error: " + errorCode + " " + description + " url=" + failingUrl);
+                try {
+                    new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("页面加载错误")
+                        .setMessage("code=" + errorCode + "\n" + description + "\nurl=" + failingUrl)
+                        .setPositiveButton("确定", null)
+                        .show();
+                } catch (Throwable ignored) {}
+            }
         });
 
-        // window.open / target=_blank：用临时 WebView 拦截目标 URL 后交给系统浏览器
-        // 标准做法：创建临时 WebView，在其 WebViewClient.shouldOverrideUrlLoading 中打开外链
+        // 收集 console 输出到 Logcat，便于排查 JS 错误
         webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onConsoleMessage(android.webkit.ConsoleMessage cm) {
+                Log.d("GaokaoVocab-JS", cm.message() + " (" + cm.sourceId() + ":" + cm.lineNumber() + ")");
+                return super.onConsoleMessage(cm);
+            }
+
             @Override
             public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, android.os.Message resultMsg) {
                 final WebView hitView = new WebView(MainActivity.this);

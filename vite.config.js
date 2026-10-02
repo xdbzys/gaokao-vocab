@@ -233,11 +233,106 @@ function postProcessForLegacyWebView() {
               window.WeakSet = WeakSet;
             })();
           }
+          // AbortController / AbortSignal（Chrome 66+）—— fetch 取消等场景需要
+          if (typeof window.AbortController === 'undefined') {
+            (function () {
+              function AbortSignal() { this.aborted = false; this._cbs = []; }
+              AbortSignal.prototype.addEventListener = function (ev, cb) {
+                if (ev === 'abort') { if (this.aborted) { try { cb({ type: 'abort' }); } catch (e) {} } else { this._cbs.push(cb); } }
+              };
+              AbortSignal.prototype.removeEventListener = function () {};
+              AbortSignal.prototype.dispatchEvent = function () {};
+              AbortSignal.prototype._fire = function () {
+                this.aborted = true;
+                var cbs = this._cbs; this._cbs = [];
+                for (var i = 0; i < cbs.length; i++) { try { cbs[i]({ type: 'abort' }); } catch (e) {} }
+              };
+              function AbortController() { this.signal = new AbortSignal(); }
+              AbortController.prototype.abort = function () { this.signal._fire(); };
+              window.AbortController = AbortController;
+              window.AbortSignal = AbortSignal;
+            })();
+          }
+          // TextEncoder / TextDecoder（Chrome 38+）—— React / 部分库可能用到
+          if (typeof window.TextEncoder === 'undefined') {
+            (function () {
+              function TextEncoder() {}
+              TextEncoder.prototype.encode = function (str) {
+                str = String(str == null ? '' : str);
+                var bytes = [];
+                for (var i = 0; i < str.length; i++) {
+                  var c = str.charCodeAt(i);
+                  if (c < 0x80) bytes.push(c);
+                  else if (c < 0x800) { bytes.push(0xC0 | (c >> 6)); bytes.push(0x80 | (c & 0x3F)); }
+                  else if (c < 0xD800 || c >= 0xE000) { bytes.push(0xE0 | (c >> 12)); bytes.push(0x80 | ((c >> 6) & 0x3F)); bytes.push(0x80 | (c & 0x3F)); }
+                  else {
+                    i++; var c2 = str.charCodeAt(i);
+                    var cp = 0x10000 + ((c - 0xD800) << 10) + (c2 - 0xDC00);
+                    bytes.push(0xF0 | (cp >> 18)); bytes.push(0x80 | ((cp >> 12) & 0x3F));
+                    bytes.push(0x80 | ((cp >> 6) & 0x3F)); bytes.push(0x80 | (cp & 0x3F));
+                  }
+                }
+                var u = new Uint8Array(bytes.length);
+                for (var j = 0; j < bytes.length; j++) u[j] = bytes[j];
+                return u;
+              };
+              window.TextEncoder = TextEncoder;
+            })();
+          }
+          if (typeof window.TextDecoder === 'undefined') {
+            (function () {
+              function TextDecoder() {}
+              TextDecoder.prototype.decode = function (bytes) {
+                var str = '';
+                var i = 0;
+                while (i < bytes.length) {
+                  var b = bytes[i++];
+                  if (b < 0x80) str += String.fromCharCode(b);
+                  else if (b < 0xE0) { var b2 = bytes[i++]; str += String.fromCharCode(((b & 0x1F) << 6) | (b2 & 0x3F)); }
+                  else if (b < 0xF0) { var b2 = bytes[i++]; var b3 = bytes[i++]; str += String.fromCharCode(((b & 0x0F) << 12) | ((b2 & 0x3F) << 6) | (b3 & 0x3F)); }
+                  else { var b2 = bytes[i++]; var b3 = bytes[i++]; var b4 = bytes[i++]; var cp = ((b & 0x07) << 18) | ((b2 & 0x3F) << 12) | ((b3 & 0x3F) << 6) | (b4 & 0x3F) - 0x10000; str += String.fromCharCode(0xD800 + (cp >> 10), 0xDC00 + (cp & 0x3FF)); }
+                }
+                return str;
+              };
+              window.TextDecoder = TextDecoder;
+            })();
+          }
         })();
       </script>`;
       // 插入到 <head> 之后、第一个 polyfill <script> 之前
       html = html.replace(/<head>([\s\S]*?<script)/, '<head>' + es6Polyfill + '$1');
       console.log('[post] Injected ES6 global constructor polyfill (Symbol/Map/Set/WeakMap/WeakSet/Promise)');
+
+      // 1.7) 注入全局错误捕获脚本：任何 JS 错误都在屏幕上显示（避免白屏看不出原因）
+      //      必须在所有业务脚本之前注入。用一个全屏错误层展示错误信息 + 堆栈。
+      const errorCaptureScript = `<script>
+        (function () {
+          function showErr(msg, stack) {
+            try {
+              var el = document.getElementById('__app_error_overlay__');
+              if (!el) {
+                el = document.createElement('div');
+                el.id = '__app_error_overlay__';
+                el.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483647;background:#1a1a2e;color:#f87171;font-family:monospace;font-size:13px;padding:14px;overflow:auto;white-space:pre-wrap;word-break:break-all;line-height:1.5;';
+                document.body.appendChild(el);
+              }
+              var t = (new Date()).toLocaleString();
+              el.innerHTML = '<b style="color:#fbbf24">[JS ERROR ' + t + ']</b>\\n' + String(msg).replace(/&/g,'&amp;').replace(/</g,'&lt;') + (stack ? '\\n\\n' + String(stack).replace(/&/g,'&amp;').replace(/</g,'&lt;').slice(0, 2000) : '');
+            } catch (e) {}
+          }
+          window.addEventListener('error', function (e) {
+            showErr(e.message + ' (' + (e.filename || '') + ':' + (e.lineno || '') + ')', e.error && e.error.stack);
+          }, true);
+          window.addEventListener('unhandledrejection', function (e) {
+            var r = e.reason;
+            showErr('UnhandledRejection: ' + (r && r.message ? r.message : String(r)), r && r.stack);
+          }, true);
+          // 兜底：脚本块自身 try-catch 也走这里
+          window.__showAppError = showErr;
+        })();
+      </script>`;
+      html = html.replace(/(<head>[\s\S]*?<\/script>)/, '$1' + errorCaptureScript);
+      console.log('[post] Injected global error capture overlay');
 
       // 2) 用 Babel 将内联 <script> 转译为 ES5（兼容 Chromium 37+）
       //    注意：必须 modules:'commonjs'，把 ESM 的 import/export 转成 CommonJS。
@@ -281,14 +376,16 @@ function postProcessForLegacyWebView() {
             if (!code || !code.trim()) return m;
             // 只在脚本确实引用 module/exports 时注入，避免污染纯 IIFE 脚本块
             if (!/\bmodule\b/.test(code) && !/\bexports\b/.test(code)) return m;
-            // 注入到 "use strict"; 之后，避免覆盖严格模式指令
+            // 注入 module/exports 兜底 + try-catch 包裹：
+            // 任何同步错误都调用 window.__showAppError 显示到屏幕，避免白屏看不出原因
             var stub = 'var module=typeof module!=="undefined"&&module||{};var exports=typeof exports!=="undefined"&&exports||{};';
             // 若开头是 "use strict"; 紧跟其后
             var head = code.match(/^(\s*"use strict";\s*)/);
-            if (head) {
-              return '<script' + attrs + '>' + head[1] + stub + code.slice(head[1].length) + '</script>';
-            }
-            return '<script' + attrs + '>' + stub + code + '</script>';
+            var body = head ? code.slice(head[1].length) : code;
+            var prefix = head ? head[1] + stub : stub;
+            var wrapStart = 'try{';
+            var wrapEnd = '}catch(__e){try{window.__showAppError(__e&&__e.message?__e.message:String(__e),__e&&__e.stack);}catch(_x){}}';
+            return '<script' + attrs + '>' + prefix + wrapStart + body + wrapEnd + '</script>';
           }
         );
       } catch (e) {
