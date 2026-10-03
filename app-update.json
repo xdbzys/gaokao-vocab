@@ -1,8 +1,8 @@
 {
-  "version": "2.55.7",
-  "versionCode": 214,
-  "changelog": "🎉 背群英 v2.55.7 已发布！\n\n【修复】启动红屏错误\n- 修复 Android WebView 下 Service Worker API 处于 invalid state 时\n  getRegistrations()/unregister()/caches 未捕获 rejection 导致的红屏\n- 所有 SW/Promise 调用逐层 catch，任何环境不再弹错误页\n- 原生层新增云端内容安全校验（__SW_GUARD__ 标记），坏版本不再污染缓存\n\n【说明】\n- 安装此版本后红屏立即消失（自动拒绝坏缓存，回退内置修复版）\n- 不重装也可自愈：云端已更新修复版，下次启动自动刷新\n- 学习记录不丢失，签名与旧版一致，可直接覆盖安装\n\n下载安装方法：\n复制下方链接，用手机浏览器打开，下载后点击安装即可：\nhttps://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "devNotes": "v2.55.7: fix UnhandledRejection red screen (ServiceWorker invalid state in WebView file:// context). Full per-promise catch guards + __SW_GUARD__ content safety check in MainActivity (reject unsafe cloud cache, fallback to APK assets)",
+  "version": "2.55.9",
+  "versionCode": 216,
+  "changelog": "🎉 背群英 v2.55.9 已发布！\n\n【关键修复】自动发音开关失效（根源修复）\n- 修复老版本升级后自动发音开关显示为\"开\"但实际不发音：设置迁移缺陷导致开关状态与实际生效字段不一致\n- 现在开关状态与实际发音逻辑严格同步，升级后立即生效\n\n【修复】发音链路全面加固\n- 网络发音优先（有道词典真人发音），失败自动回退本地 TTS\n- 原生层允许无手势自动播放 + 允许 file:// 跨域访问音频资源\n- 修复快速切换单词时声音重叠、音频+TTS 双通道重叠杂音\n\n【修复】旧设备兼容性（Android 5.0.2 翻译笔）\n- 补齐 Chromium 37 缺失的运行时 API，修复启动红屏/功能崩溃\n\n下载安装方法：\n复制下方链接，用手机浏览器打开，下载后点击安装即可：\nhttps://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
+  "devNotes": "v2.55.9: fix autoSpeak settings migration (root cause of auto-pronunciation not working) + universal access from file URLs + toggle display driven by autoSpeak",
   "apkUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
 }

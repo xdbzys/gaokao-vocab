@@ -46,8 +46,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.55.7';
-const APP_VERSION_CODE = 214;
+const APP_VERSION = '2.55.9';
+const APP_VERSION_CODE = 216;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -8582,7 +8582,7 @@ function loadSettings() {
     // v2.50.0 独立存储背诵模式，防止设置对象变化时模式丢失
     const savedMode = localStorage.getItem(MODE_KEY);
     if (savedMode && !saved.mode) saved.mode = savedMode;
-    return {
+    const merged = {
       dailyGoal: 50,
       speakRate: 0.78,
       mode: 'en-to-cn',
@@ -8592,15 +8592,24 @@ function loadSettings() {
       autoJump: false,
       autoJumpDelay: 1500,
       showAnnouncement: true,
-      autoSpeak: false,
       autoMaster: false,
-      navAutoSpeak: true,
       volumeKeyNav: false,
+      // v2.55.9: 自动发音开关归一。
+      // v2.44.0 已把"背诵新词自动发音"与"跳转自动发音"合并为一个开关，
+      // 但老版本保存的设置里没有 autoSpeak 字段，旧默认 false 会导致：
+      // 开关显示为"开"（读的是 navAutoSpeak），实际 autoSpeak=false，自动发音永不触发。
+      // 迁移规则：saved 无 autoSpeak 字段时从 navAutoSpeak 派生，两者归一为同一值。
+      navAutoSpeak: true,
       ...saved
     };
+    if (!('autoSpeak' in saved) || typeof saved.autoSpeak !== 'boolean') {
+      merged.autoSpeak = merged.navAutoSpeak !== false;
+    }
+    merged.navAutoSpeak = merged.autoSpeak !== false;
+    return merged;
   } catch {
     const savedMode = localStorage.getItem(MODE_KEY);
-    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: false, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false };
+    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: true, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false };
   }
 }
 
@@ -10190,6 +10199,9 @@ function extractEnglish(text) {
 }
 
 const _audioCache = {};
+const _audioCacheKeys = []; // 插入顺序（LRU 淘汰用）
+const _AUDIO_CACHE_MAX = 60; // 低内存设备（翻译笔）防内存溢出上限
+let _lastAudio = null; // 当前在播的网络发音（切换单词时暂停，避免重叠）
 let _voicesWarmed = false;
 function _warmupVoices() {
   if (_voicesWarmed || !('speechSynthesis' in window)) return;
@@ -10199,6 +10211,18 @@ function _warmupVoices() {
     window.speechSynthesis.speak(u);
     _voicesWarmed = true;
   } catch {}
+}
+// v2.55.9: 超出上限时淘汰最旧的缓存 Audio 并释放资源
+function _evictAudioCacheIfNeeded() {
+  while (_audioCacheKeys.length > _AUDIO_CACHE_MAX) {
+    const key = _audioCacheKeys.shift();
+    const old = _audioCache[key];
+    delete _audioCache[key];
+    if (old) {
+      try { if (_lastAudio === old) _lastAudio = null; old.pause(); } catch (e) {}
+      try { old.src = ''; } catch (e) {}
+    }
+  }
 }
 function speak(text, rate) {
   if (!text) return;
@@ -10217,18 +10241,40 @@ function speak(text, rate) {
     } catch { return false; }
   };
   if (!_voicesWarmed) _warmupVoices();
-  if (isNativeApp) {
-    if (synthSpeak()) return;
-  }
+  // 停掉上一个网络发音（快速切换单词时不重叠）
+  if (_lastAudio) { try { _lastAudio.pause(); } catch (e) {} _lastAudio = null; }
   if (isEnglish) {
+    // 英文单词：优先有道网络发音。
+    // 翻译笔等设备 WebView 常无系统 TTS 引擎，speechSynthesis.speak() 不报错但无声，
+    // 因此网络音频优先，加载/播放失败（error 事件）再回退本地 TTS。
+    // 注意 Chromium 37 的 play() 不返回 Promise（已由 polyfill 兜底，此处再防御一次）。
     const url = `https://dict.youdao.com/dictvoice?type=2&audio=${encodeURIComponent(normalized)}`;
     let audio = _audioCache[normalized];
-    if (!audio) { audio = new Audio(url); _audioCache[normalized] = audio; }
-    audio.currentTime = 0;
-    audio.play().catch(() => { synthSpeak(); });
-    if (!isNativeApp) synthSpeak();
+    // v2.55.9: 回退去重——error 事件与 play() rejection 可能同时触发，
+    // 标志挂在 audio 对象上（同一 audio 只回退一次；每次发音调用前重置）
+    const fallback = function () {
+      if (audio.__fellBack) return;
+      audio.__fellBack = true;
+      if (_lastAudio === audio) _lastAudio = null;
+      synthSpeak();
+    };
+    if (!audio) {
+      audio = new Audio(url);
+      audio.addEventListener('error', fallback, false);
+      _audioCache[normalized] = audio;
+      _audioCacheKeys.push(normalized);
+      _evictAudioCacheIfNeeded();
+    }
+    _lastAudio = audio;
+    audio.__fellBack = false;
+    try { audio.currentTime = 0; } catch (e) {}
+    try {
+      const p = audio.play();
+      if (p && p.catch) p.catch(fallback);
+    } catch (e) { fallback(); }
     return;
   }
+  // 中文/混合文本：本地 TTS
   if (!synthSpeak()) { /* 静默失败，不打扰用户 */ }
 }
 
@@ -13559,15 +13605,16 @@ function App() {
           </div>
 
           {/* v2.44.0 合并自动发音开关：背诵页新单词自动发音 + 跳转单词自动发音 */}
+          {/* v2.55.9: 显示状态改由 autoSpeak 驱动（与 useEffect 实际判断的字段一致，避免显示开实际关） */}
           <div className="toggleCard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', marginTop: 12, borderRadius: 12, background: 'var(--primary-light)', border: '1px solid var(--border-light)' }}>
             <div>
               <div style={{ fontSize: 15, fontWeight: 600 }}>🔊 自动发音（背诵新词 + 跳转）</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>背诵页出现新单词时自动发音，点击单词跳转详情时也自动发音</div>
             </div>
             <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0 }}>
-              <input type="checkbox" checked={settings.navAutoSpeak !== false} onChange={e => { const v = e.target.checked; setSettings(s => ({ ...s, navAutoSpeak: v, autoSpeak: v })); saveSettings({ ...settings, navAutoSpeak: v, autoSpeak: v }); }} style={{ opacity: 0, width: 0, height: 0 }} />
-              <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.navAutoSpeak !== false ? 'var(--primary)' : '#ccc', borderRadius: 26, transition: '0.3s' }}>
-                <span style={{ position: 'absolute', height: 20, width: 20, left: 3, bottom: 3, backgroundColor: 'white', borderRadius: '50%', transition: '0.3s', transform: settings.navAutoSpeak !== false ? 'translateX(22px)' : 'translateX(0)' }} />
+              <input type="checkbox" checked={settings.autoSpeak !== false} onChange={e => { const v = e.target.checked; setSettings(s => ({ ...s, navAutoSpeak: v, autoSpeak: v })); saveSettings({ ...settings, navAutoSpeak: v, autoSpeak: v }); }} style={{ opacity: 0, width: 0, height: 0 }} />
+              <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.autoSpeak !== false ? 'var(--primary)' : '#ccc', borderRadius: 26, transition: '0.3s' }}>
+                <span style={{ position: 'absolute', height: 20, width: 20, left: 3, bottom: 3, backgroundColor: 'white', borderRadius: '50%', transition: '0.3s', transform: settings.autoSpeak !== false ? 'translateX(22px)' : 'translateX(0)' }} />
               </span>
             </label>
           </div>

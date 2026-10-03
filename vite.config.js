@@ -365,6 +365,210 @@ function postProcessForLegacyWebView() {
               window.TextDecoder = TextDecoder;
             })();
           }
+
+          // ===== Chromium 37 运行时 API polyfill =====
+          // Babel preset-env 只转译语法（无 useBuiltIns/core-js），
+          // 以下方法在旧 WebView（Chromium <41/42/45）原生缺失 → TypeError：
+          //   String.prototype.includes/startsWith/endsWith（41+）
+          //   Object.assign（45+）Array.from/of、Array.prototype.find/findIndex/includes/fill（45+）
+          //   Number.isInteger 等（ES6）、Math.trunc/sign 等（ES6）
+          //   window.fetch（42+）、Element.prototype.closest（41+）
+          //   HTMLMediaElement.play() 返回 Promise（50+，37 返回 undefined → .catch 报错）
+          // 音标/POS 处理与自动发音链路重度依赖以上 API。
+          (function () {
+            var Sp = String.prototype;
+            if (!Sp.includes) {
+              Sp.includes = function (s, p) {
+                var t = this;
+                if (s instanceof RegExp) throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
+                return t.indexOf(s, p) !== -1;
+              };
+            }
+            if (!Sp.startsWith) {
+              Sp.startsWith = function (s, p) {
+                var t = String(this);
+                if (s instanceof RegExp) throw new TypeError('First argument to String.prototype.startsWith must not be a regular expression');
+                p = p >>> 0;
+                var n = t.slice(p);
+                return n.slice(0, s.length) === s;
+              };
+            }
+            if (!Sp.endsWith) {
+              Sp.endsWith = function (s, p) {
+                var t = String(this);
+                if (s instanceof RegExp) throw new TypeError('First argument to String.prototype.endsWith must not be a regular expression');
+                if (p === undefined) p = t.length;
+                p = p >>> 0;
+                var n = t.slice(0, Math.min(p, t.length));
+                return n.slice(n.length - s.length) === s;
+              };
+            }
+            if (!Sp.repeat) {
+              Sp.repeat = function (n) {
+                var t = String(this);
+                n = n >>> 0;
+                var out = '';
+                for (var i = 0; i < n; i++) out += t;
+                return out;
+              };
+            }
+            var Ap = Array.prototype;
+            var Op = Object.prototype;
+            if (!Ap.find) {
+              Ap.find = function (fn) {
+                if (this == null) throw new TypeError('Array.prototype.find called on null or undefined');
+                var o = Object(this), len = o.length >>> 0;
+                for (var i = 0; i < len; i++) { if (fn(o[i], i, o)) return o[i]; }
+                return undefined;
+              };
+            }
+            if (!Ap.findIndex) {
+              Ap.findIndex = function (fn) {
+                if (this == null) throw new TypeError('Array.prototype.findIndex called on null or undefined');
+                var o = Object(this), len = o.length >>> 0;
+                for (var i = 0; i < len; i++) { if (fn(o[i], i, o)) return i; }
+                return -1;
+              };
+            }
+            if (!Ap.includes) {
+              Ap.includes = function (v) {
+                var o = Object(this), len = o.length >>> 0;
+                for (var i = 0; i < len; i++) { if (v === o[i] || (v !== v && o[i] !== o[i])) return true; }
+                return false;
+              };
+            }
+            if (!Ap.fill) {
+              Ap.fill = function (v, s, e) {
+                var o = Object(this), len = o.length >>> 0;
+                s = s >>> 0; e = (e === undefined) ? len : e >>> 0;
+                for (var i = s; i < Math.min(e, len); i++) o[i] = v;
+                return o;
+              };
+            }
+            if (typeof Array.from !== 'function') {
+              Array.from = function (arrLike, mapFn) {
+                var out = [];
+                if (arrLike == null) return out;
+                var len = arrLike.length >>> 0;
+                for (var i = 0; i < len; i++) {
+                  var v = arrLike[i];
+                  out.push(mapFn ? mapFn(v, i) : v);
+                }
+                return out;
+              };
+            }
+            if (typeof Array.of !== 'function') {
+              Array.of = function () { return Ap.slice.call(arguments); };
+            }
+            if (typeof Object.assign !== 'function') {
+              Object.assign = function (target) {
+                if (target == null) throw new TypeError('Cannot convert undefined or null to object');
+                var to = Object(target);
+                for (var i = 1; i < arguments.length; i++) {
+                  var src = arguments[i];
+                  if (src != null) {
+                    for (var k in src) { if (Op.hasOwnProperty.call(src, k)) to[k] = src[k]; }
+                  }
+                }
+                return to;
+              };
+            }
+            if (!Number.isInteger) Number.isInteger = function (v) { return typeof v === 'number' && isFinite(v) && Math.floor(v) === v; };
+            if (!Number.isFinite) Number.isFinite = function (v) { return typeof v === 'number' && isFinite(v); };
+            if (!Number.isNaN) Number.isNaN = function (v) { return typeof v === 'number' && isNaN(v); };
+            if (!Number.parseFloat) Number.parseFloat = parseFloat;
+            if (!Number.parseInt) Number.parseInt = parseInt;
+            if (!Number.EPSILON) Number.EPSILON = 2.220446049250313e-16;
+            if (!Number.MAX_SAFE_INTEGER) Number.MAX_SAFE_INTEGER = 9007199254740991;
+            if (!Number.MIN_SAFE_INTEGER) Number.MIN_SAFE_INTEGER = -9007199254740991;
+            if (!Number.isSafeInteger) Number.isSafeInteger = function (v) { return Number.isInteger(v) && Math.abs(v) <= Number.MAX_SAFE_INTEGER; };
+            if (!Math.trunc) Math.trunc = function (v) { v = +v; return (v < 0 ? Math.ceil(v) : Math.floor(v)); };
+            if (!Math.sign) Math.sign = function (v) { v = +v; if (v === 0 || isNaN(v)) return v; return v > 0 ? 1 : -1; };
+            if (!Math.log10) Math.log10 = function (v) { return Math.log(v) / Math.LN10; };
+            if (!Math.log2) Math.log2 = function (v) { return Math.log(v) / Math.LN2; };
+            if (!Math.cbrt) Math.cbrt = function (v) { var n = +v; return n < 0 ? -Math.pow(-n, 1 / 3) : Math.pow(n, 1 / 3); };
+            if (!Math.hypot) Math.hypot = function () { var s = 0; for (var i = 0; i < arguments.length; i++) s += arguments[i] * arguments[i]; return Math.sqrt(s); };
+            // Element.closest（41+）
+            if (typeof Element !== 'undefined' && !Element.prototype.closest) {
+              Element.prototype.closest = function (sel) {
+                var el = this;
+                while (el && el.nodeType === 1) {
+                  if (_matches(el, sel)) return el;
+                  el = el.parentNode || (el.host || null);
+                }
+                return null;
+              };
+            }
+            function _matches(el, sel) {
+              if (el.matches) return el.matches(sel);
+              if (el.msMatchesSelector) return el.msMatchesSelector(sel);
+              if (el.webkitMatchesSelector) return el.webkitMatchesSelector(sel);
+              var doc = el.ownerDocument;
+              var all = doc.querySelectorAll(sel);
+              for (var i = 0; i < all.length; i++) { if (all[i] === el) return true; }
+              return false;
+            }
+            // fetch（42+）：基于 XHR 的最小实现（支持 method/headers/body + Response.text/json）
+            if (typeof window.fetch !== 'function') {
+              window.fetch = function (input, init) {
+                init = init || {};
+                return new Promise(function (resolve, reject) {
+                  try {
+                    var url = (typeof input === 'string') ? input : ((input && input.url) || String(input));
+                    var method = (init.method || (input && input.method) || 'GET').toUpperCase();
+                    var xhr = new XMLHttpRequest();
+                    xhr.open(method, url, true);
+                    var headers = init.headers || (input && input.headers) || {};
+                    for (var k in headers) {
+                      if (Op.hasOwnProperty.call(headers, k)) {
+                        try { xhr.setRequestHeader(k, headers[k]); } catch (e) {}
+                      }
+                    }
+                    xhr.onreadystatechange = function () {
+                      if (xhr.readyState !== 4) return;
+                      var resp = {
+                        ok: xhr.status >= 200 && xhr.status < 300,
+                        status: xhr.status,
+                        statusText: xhr.statusText,
+                        url: url,
+                        text: function () { return Promise.resolve(String(xhr.responseText)); },
+                        json: function () {
+                          return new Promise(function (res, rej) {
+                            try { res(JSON.parse(String(xhr.responseText))); }
+                            catch (e) { rej(new SyntaxError('Unexpected token in JSON')); }
+                          });
+                        }
+                      };
+                      resolve(resp);
+                    };
+                    xhr.onerror = function () { reject(new TypeError('Network request failed: ' + url)); };
+                    xhr.ontimeout = function () { reject(new TypeError('Network request timed out: ' + url)); };
+                    var body = init.body || (input && input.body) || null;
+                    if (body && typeof body === 'object') { try { body = JSON.stringify(body); } catch (e) {} }
+                    xhr.send(body);
+                  } catch (e) { reject(e); }
+                });
+              };
+            }
+            // HTMLMediaElement.play() 返回 Promise（50+；Chromium 37 返回 undefined，
+            // 业务代码 audio.play().catch(...) 会 TypeError → 自动发音崩）
+            (function () {
+              var mp = window.HTMLMediaElement && window.HTMLMediaElement.prototype;
+              if (!mp || mp.__playPromisePatched) return;
+              var origPlay = mp.play;
+              mp.__playPromisePatched = true;
+              mp.play = function () {
+                var self = this;
+                try {
+                  var r = origPlay.call(self);
+                  if (r && typeof r.then === 'function') return r;
+                  return Promise.resolve();
+                } catch (e) {
+                  return Promise.reject(e);
+                }
+              };
+            })();
+          })();
         })();
       </script>`;
       // 插入到 <head> 之后、第一个 polyfill <script> 之前

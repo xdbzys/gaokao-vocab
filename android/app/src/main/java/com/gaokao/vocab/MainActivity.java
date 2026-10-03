@@ -103,6 +103,15 @@ public class MainActivity extends Activity {
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
         s.setDefaultTextEncodingName("UTF-8");
 
+        // 允许无用户手势自动播放音频（自动发音功能必需，API 17+）
+        // 不设置时 WebView 默认要求手势，切换单词的自动发音会被静默拒绝
+        try { s.setMediaPlaybackRequiresUserGesture(false); } catch (Throwable ignored) {}
+
+        // v2.55.9: 允许 file:// 页面跨域访问 https 资源（有道词典发音音频等）
+        // 页面以 file:// 协议加载（本地 assets / 云端缓存），API 16+ 默认关闭跨域，
+        // 部分 WebView 版本会拦截 file:// 发起的媒体/网络请求，导致自动发音无声
+        try { s.setAllowUniversalAccessFromFileURLs(true); } catch (Throwable ignored) {}
+
         // User-Agent 改为标准浏览器，避免 CDN 拦截 WebView 请求
         try {
             String ua = s.getUserAgentString();

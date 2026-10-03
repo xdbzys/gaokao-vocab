@@ -70,12 +70,13 @@ jobs:
           cd gitee-push
           mkdir -p web
           cp /home/runner/work/gaokao-vocab/gaokao-vocab/gaokao-vocab.apk gaokao-vocab.apk
-          cp /home/runner/work/gaokao-vocab/gaokao-vocab/web/index.html web/index.html
+          # v2.55.9: 用本次构建的 dist（而非仓库 web/），保证云端热更与 APK 内置资源严格同版本
+          cp /home/runner/work/gaokao-vocab/gaokao-vocab/dist/index.html web/index.html
           cp /home/runner/work/gaokao-vocab/gaokao-vocab/app-update.json app-update.json
           git config user.name "ci-bot"
           git config user.email "ci@bot.com"
           git add gaokao-vocab.apk web/index.html app-update.json
-          git commit -m "v2.55.6: cloud hotfix + white screen fix" || echo "no changes"
+          git commit -m "v2.55.9: auto-speak root-cause fix (settings migration) + audio hardening" || echo "no changes"
           git push origin master 2>&1 | tail -5 || echo "push failed"
           echo "APK + web/index.html + app-update.json pushed to Gitee"
 
