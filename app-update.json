@@ -1,8 +1,8 @@
 {
-  "version": "2.55.9",
-  "versionCode": 216,
-  "changelog": "🎉 背群英 v2.55.9 已发布！\n\n【关键修复】自动发音开关失效（根源修复）\n- 修复老版本升级后自动发音开关显示为\"开\"但实际不发音：设置迁移缺陷导致开关状态与实际生效字段不一致\n- 现在开关状态与实际发音逻辑严格同步，升级后立即生效\n\n【修复】发音链路全面加固\n- 网络发音优先（有道词典真人发音），失败自动回退本地 TTS\n- 原生层允许无手势自动播放 + 允许 file:// 跨域访问音频资源\n- 修复快速切换单词时声音重叠、音频+TTS 双通道重叠杂音\n\n【修复】旧设备兼容性（Android 5.0.2 翻译笔）\n- 补齐 Chromium 37 缺失的运行时 API，修复启动红屏/功能崩溃\n\n下载安装方法：\n复制下方链接，用手机浏览器打开，下载后点击安装即可：\nhttps://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "devNotes": "v2.55.9: fix autoSpeak settings migration (root cause of auto-pronunciation not working) + universal access from file URLs + toggle display driven by autoSpeak",
+  "version": "2.56.0",
+  "versionCode": 217,
+  "changelog": "🎉 背群英 v2.56.0 已发布！\n\n【修复】困难模式答题前后选项刷新\n- 修复答题后（尤其开启自动掌握/隐藏已掌握时）干扰项选项重新洗牌，导致答题前看到的选项与答题后\"选项词汇\"不一致的问题\n- 现在同一单词的选项在答题前后保持完全一致\n\n【新增】跨词库考点整合\n- 同一单词出现在多个词库时，点开该单词（背诵答题区/词条详情/温习页）展示所有词库该单词的考点合集\n- 各词库仍保留各自的单词条目，不合并单词；背诵多词库时进度条按单词去重计数\n\n下载安装方法：\n复制下方链接，用手机浏览器打开，下载后点击安装即可：\nhttps://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
+  "devNotes": "v2.56.0: options stability keyed by word+mode+difficulty+books (fixes pre/post-answer option refresh); cross-book corePoints/allPoints merge in answer box, detail modal and review; multi-book progress dedupe verified",
   "apkUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
 }

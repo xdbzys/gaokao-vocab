@@ -46,8 +46,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.55.9';
-const APP_VERSION_CODE = 216;
+const APP_VERSION = '2.56.0';
+const APP_VERSION_CODE = 217;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -10745,9 +10745,12 @@ function App() {
   // 词库映射 ref：供详情页和背诵页显示单词所属词库
   // 注意：ref 必须在 allWords 之前声明，否则 useMemo 中访问 wordBookMapRef 会触发 TDZ 错误
   const wordBookMapRef = useRef({});
+  // v2.56.0 跨词库考点整合：termKey → { core, all }（该单词在所有词库的考点并集，去重）
+  const wordPointsMapRef = useRef({});
   const allWords = useMemo(() => {
     // v2.44.0 构建 wordBookMap：记录每个单词出现在哪些词库
     const map = {};
+    const pointsMap = {};
     const items = [];
     for (const b of books) {
       for (const item of b.items) {
@@ -10757,12 +10760,38 @@ function App() {
         // 保留 sourceBooks 属性（已有则保留）
         if (!item.sourceBooks) item.sourceBooks = [...map[key]];
         else if (!item.sourceBooks.includes(b.name)) item.sourceBooks.push(b.name);
+        // v2.56.0 收集该单词在所有词库的考点（corePoints/allPoints 并集，精确去重）
+        const pk = termKey(item.term);
+        let pm = pointsMap[pk];
+        if (!pm) pm = pointsMap[pk] = { core: [], all: [] };
+        if (Array.isArray(item.corePoints)) {
+          for (const p of item.corePoints) { if (p && pm.core.indexOf(p) === -1) pm.core.push(p); }
+        }
+        if (Array.isArray(item.allPoints)) {
+          for (const p of item.allPoints) { if (p && pm.all.indexOf(p) === -1) pm.all.push(p); }
+        }
         items.push(item);
       }
     }
     wordBookMapRef.current = map;
+    wordPointsMapRef.current = pointsMap;
     return items;
   }, [books]);
+
+  // v2.56.0 跨词库考点整合：同一单词在多个词库的考点合并展示。
+  // 当前词条自身考点在前，其他词库的考点按词库顺序追加（去重）。
+  // 注意：仅整合考点展示，各词库的单词条目本身保留、不合并。
+  function getMergedPoints(item) {
+    const ownCore = Array.isArray(item.corePoints) ? item.corePoints : [];
+    const ownAll = Array.isArray(item.allPoints) ? item.allPoints : [];
+    const pm = wordPointsMapRef.current[termKey(item.term)];
+    if (!pm) return { corePoints: ownCore, allPoints: ownAll };
+    const corePoints = ownCore.slice();
+    for (const p of pm.core) { if (corePoints.indexOf(p) === -1) corePoints.push(p); }
+    const allPoints = ownAll.slice();
+    for (const p of pm.all) { if (allPoints.indexOf(p) === -1) allPoints.push(p); }
+    return { corePoints, allPoints };
+  }
 
   // 统一处理：点击单词 → 词库存在则跳转详情+发音，不存在则只发音
   function speakOrNavigate(word) {
@@ -10897,6 +10926,13 @@ function App() {
   const displayCurrent = forceShowItem || ((selected || showBack) && lockedCurrent.current) || current;
 
   // 问题1：4个选项（1正确+3干扰项）—— 根据难度模式选择干扰项策略
+  // v2.56.0 修复：答题前后选项刷新（困难模式"选项词汇"与答题选项不一致）。
+  // 原因：答题会触发 progress/wrongWords 变化 → 已掌握词库自动重建(books 引用变化)、
+  //       learnItems 重算(current 引用变化)，原 deps [books, displayCurrent, current,...]
+  //       任何一项变化都会重新 shuffle，生成一套全新的干扰项。
+  // 方案：以"显示单词 + 模式 + 难度 + 词库组合"为缓存键（optionsKey），
+  //       同一单词在答题期间（含答题后展示选项词汇）绝不重新生成选项。
+  const optionsKey = (displayCurrent ? termKey(displayCurrent.term) : '') + '|' + practiceMode + '|' + (settings.difficulty || 'easy') + '|' + learnActiveBook.id;
   const options = useMemo(() => {
     const item = displayCurrent || current;
     if (!item) return [];
@@ -11061,7 +11097,7 @@ function App() {
         return shuffle(values);
       }
     }
-  }, [books, displayCurrent, current, practiceMode, settings.difficulty]);
+  }, [optionsKey]); // v2.56.0: 仅当显示单词/模式/难度/词库变化时重新生成，防止答题后选项刷新
 
   // 选项 → 单词条目映射（困难模式答题后展示选项词汇，点击跳转该词考点）
   const optionItemMap = useMemo(() => {
@@ -12394,6 +12430,7 @@ function App() {
                 const isCorrect = selected && (practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning) === selected;
                 const enrichment = (isFlashcard || isCorrect) ? getWordEnrichment(displayCurrent.term) : null;
                 const showAll = isFlashcard || detailMode === 'full' || isCorrect;
+                const mergedPoints = getMergedPoints(displayCurrent); // v2.56.0 跨词库考点整合
                 return (
                 <div className="answerBox">
                   {selected && (
@@ -12451,7 +12488,8 @@ function App() {
                   <h3>{displayCurrent.term} &middot; {displayCurrent.meaning}</h3>
                   <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>
                   <div className="points">
-                    {(showAll ? displayCurrent.allPoints : displayCurrent.corePoints.slice(0, 2)).map(p => <p key={p}>• {p}</p>)}
+                    {/* v2.56.0: 跨词库整合考点——同一单词在所有词库的考点一并展示 */}
+                    {(showAll ? mergedPoints.allPoints : mergedPoints.corePoints.slice(0, 2)).map(p => <p key={p}>• {p}</p>)}
                   </div>
                   {/* 闪卡模式或答对时：显示全部考点和增强数据 */}
                   {(isFlashcard || isCorrect) && enrichment && (
@@ -12818,11 +12856,14 @@ function App() {
                         <div className="answerBox">
                           <h3>{reviewItem.term} &middot; {reviewItem.meaning}</h3>
                           {reviewItem.pos && <p className="muted">{reviewItem.pos} &middot; {reviewItem.source || ''}</p>}
-                          {reviewItem.corePoints && reviewItem.corePoints.length > 0 && (
-                            <div className="points">
-                              {reviewItem.corePoints.map((p, i) => <p key={i}>• {p}</p>)}
-                            </div>
-                          )}
+                          {(() => {
+                            const mp = getMergedPoints(reviewItem); // v2.56.0 跨词库考点整合
+                            return mp.corePoints.length > 0 ? (
+                              <div className="points">
+                                {mp.corePoints.map((p, i) => <p key={i}>• {p}</p>)}
+                              </div>
+                            ) : null;
+                          })()}
                           {reviewItem.examples && reviewItem.examples.length > 0 && (
                             <div className="examples" style={{ marginTop: 8 }}>
                               {reviewItem.examples.map((e, i) => {
@@ -14105,6 +14146,7 @@ function App() {
           {/* 词条详情弹窗 */}
           {detailItem && (() => {
             const enrichment = getWordEnrichment(detailItem.term);
+            const mergedPoints = getMergedPoints(detailItem); // v2.56.0 跨词库考点整合
             return (
             <div className="modal" style={{ zIndex: 1100 }} onClick={() => { setDetailHistory([]); setDetailItem(null); }}>
               <div className="modalContent" onClick={e => e.stopPropagation()}>
@@ -14149,10 +14191,11 @@ function App() {
                 )}
 
                 {/* 考点提示 */}
-                {detailItem.corePoints && detailItem.corePoints.length > 0 && (
+                {/* v2.56.0: 跨词库整合——无论从哪个词库点开，都展示该单词在所有词库的考点 */}
+                {mergedPoints.corePoints.length > 0 && (
                   <div className="detailSection detailExamPoints">
-                    <p className="detailSectionTitle">🎯 核心考点</p>
-                    {detailItem.corePoints.map((p, i) => <p key={i} className="detailPointItem">{p}</p>)}
+                    <p className="detailSectionTitle">🎯 核心考点{mergedPoints.corePoints.length > (detailItem.corePoints || []).length ? '（含其他词库）' : ''}</p>
+                    {mergedPoints.corePoints.map((p, i) => <p key={i} className="detailPointItem">{p}</p>)}
                   </div>
                 )}
 
@@ -14165,11 +14208,12 @@ function App() {
                 )}
 
                 {/* 知识点 */}
-                {detailItem.allPoints && detailItem.allPoints.length > 0 && (
+                {/* v2.56.0: 跨词库整合知识点 */}
+                {mergedPoints.allPoints.length > 0 && (
                   <div className="detailSection">
                     <p className="detailSectionTitle">💡 知识点</p>
                     <div className="points">
-                      {detailItem.allPoints.map((p, i) => <p key={i}>• {p}</p>)}
+                      {mergedPoints.allPoints.map((p, i) => <p key={i}>• {p}</p>)}
                     </div>
                   </div>
                 )}
