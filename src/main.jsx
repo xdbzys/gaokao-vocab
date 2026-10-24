@@ -11212,6 +11212,14 @@ function App() {
         });
       }
       navigator.mediaSession.playbackState = listenPlaying ? 'playing' : 'paused';
+      // 耳机线控 / 锁屏按钮：播放、暂停、上一首、下一首
+      if (navigator.mediaSession.setActionHandler) {
+        navigator.mediaSession.setActionHandler('play', function () { if (!listenPlayingRef.current) toggleListenPlay(); });
+        navigator.mediaSession.setActionHandler('pause', function () { if (listenPlayingRef.current) stopListenPlayback(); });
+        navigator.mediaSession.setActionHandler('stop', function () { stopListenPlayback(); });
+        navigator.mediaSession.setActionHandler('nexttrack', function () { listenNext(); });
+        navigator.mediaSession.setActionHandler('previoustrack', function () { listenPrev(); });
+      }
     } catch (e) {}
   }, [listenCurrent, listenPlaying]);
 
