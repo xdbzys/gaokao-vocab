@@ -42,14 +42,25 @@ jobs:
       - name: Build web
         run: npm run build
 
-      - name: Copy app-update.json to dist for GitHub Pages
-        run: cp app-update.json dist/app-update.json
-
       - name: Copy dist to Android assets
         run: |
           rm -rf android/app/src/main/assets/public
           mkdir -p android/app/src/main/assets
           cp -r dist android/app/src/main/assets/public
+
+      # 需求：从此往后每次更新同步网页版与官网内容
+      # 网页版 = dist/index.html（GitHub Pages 根路径 + 云端热更 web/index.html）
+      # 官网   = gaokao-vocab-site/（发布到 Pages 的 /site/ 子路径，含 assets 与隐私政策）
+      # 放在 APK assets 拷贝之后，避免官网静态资源被打进 APK
+      - name: Sync official site into Pages (/site/)
+        run: |
+          rm -rf dist/site
+          mkdir -p dist/site
+          cp -r gaokao-vocab-site/. dist/site/
+          mv dist/site/gaokao-vocab-site.html dist/site/index.html
+          cp privacy.html dist/site/privacy.html
+          echo "Synced official site -> dist/site/index.html"
+          ls -la dist/site
 
       - name: Build APK with debug-key.jks (matches distributed versions)
         run: |
@@ -76,7 +87,8 @@ jobs:
           git config user.name "ci-bot"
           git config user.email "ci@bot.com"
           git add gaokao-vocab.apk web/index.html app-update.json
-          git commit -m "v2.56.0: stable quiz options + merged cross-book exam points + dedup progress" || echo "no changes"
+          VERSION=$(node -p "require('/home/runner/work/gaokao-vocab/gaokao-vocab/app-update.json').version")
+          git commit -m "release v${VERSION}: sync APK + web + app-update.json" || echo "no changes"
           git push origin master 2>&1 | tail -5 || echo "push failed"
           echo "APK + web/index.html + app-update.json pushed to Gitee"
 

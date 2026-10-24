@@ -770,15 +770,15 @@
         <div class="stat-label">内置词库</div>
       </div>
       <div class="stat-item">
-        <div class="stat-num">3</div>
-        <div class="stat-label">背诵模式</div>
+        <div class="stat-num">4</div>
+        <div class="stat-label">学习模式</div>
       </div>
       <div class="stat-item">
         <div class="stat-num">163</div>
         <div class="stat-label">词根词缀</div>
       </div>
       <div class="stat-item">
-        <div class="stat-num">37</div>
+        <div class="stat-num">38</div>
         <div class="stat-label">版本迭代</div>
       </div>
       <div class="stat-item">
@@ -831,8 +831,8 @@
         <div class="method-num" style="background:linear-gradient(135deg,#22c55e,#16a34a);">5</div>
         <div class="method-body">
           <h3>多感官刺激 (Multi-Sensory)</h3>
-          <p>视觉（大字体+彩色标签）、听觉（真人发音+语速调节）、触觉（音量键翻页）三重感官协同，记忆留存率提升50%。</p>
-          <span class="tag">语音朗读 / 音量键翻页 / 彩色标注</span>
+          <p>视觉（大字体+彩色标签）、听觉（真人发音+听读模式循环播放+语速调节）、触觉（音量键翻页）三重感官协同，记忆留存率提升50%。</p>
+          <span class="tag">语音朗读 / 听读模式 / 音量键翻页</span>
         </div>
       </div>
       <div class="method-card">
@@ -1226,9 +1226,10 @@
   <section class="section" id="features">
     <div class="section-title">
       <h2>功能一览</h2>
-      <p>19项实用功能，覆盖词汇学习全流程</p>
+      <p>20项实用功能，覆盖词汇学习全流程</p>
     </div>
     <div class="features-grid">
+      <div class="feature-card"><span class="new-tag">新</span><div class="feature-icon" style="background:#eef2ff;">🎧</div><h3>听读模式</h3><p>音乐播放器式自动朗读，英文+中文循环播放，可调遍数/间隔/倍速</p></div>
       <div class="feature-card"><div class="feature-icon" style="background:#eff6ff;">📚</div><h3>多模式背诵</h3><p>英文选中文、中文选英文、闪卡三模式</p></div>
       <div class="feature-card"><div class="feature-icon" style="background:#f0fdf4;">🎯</div><h3>智能错词本</h3><p>答错自动收集，针对性复习</p></div>
       <div class="feature-card"><div class="feature-icon" style="background:#fef3c7;">✅</div><h3>已掌握追踪</h3><p>标记掌握单词，进度自动统计</p></div>
@@ -1258,6 +1259,42 @@
       <p>持续迭代，精益求精</p>
     </div>
     <div class="changelog-list">
+      <div class="changelog-item">
+        <div class="changelog-version">v2.57.0</div>
+        <div class="changelog-content">
+          <div class="date">2026年10月</div>
+          <ul>
+            <li><span class="changelog-tag tag-new">新增</span>听读模式：像音乐播放器一样自动播放英文单词 + 中文释义，用于通勤、睡前磨耳朵</li>
+            <li><span class="changelog-tag tag-new">新增</span>听读词库选择：支持多词库合并与错词本，可「隐藏已掌握」或「仅播放已掌握」</li>
+            <li><span class="changelog-tag tag-new">新增</span>朗读参数可调：英文 1/2/3 遍、中文 不读/1/2 遍、英→中/中→英/仅英文、词间间隔、遍间隔</li>
+            <li><span class="changelog-tag tag-new">新增</span>倍速、列表循环/单曲循环/播完停止、随机播放、播放列表跳转、后台播放与屏幕常亮</li>
+            <li><span class="changelog-tag tag-opt">优化</span>底部导航扩展为 7 项，360px / 320px 窄屏（翻译笔）自动压缩布局</li>
+            <li><span class="changelog-tag tag-opt">优化</span>网页版与官网内容从此版本起同步更新</li>
+          </ul>
+        </div>
+      </div>
+      <div class="changelog-item">
+        <div class="changelog-version">v2.56.0</div>
+        <div class="changelog-content">
+          <div class="date">2026年10月</div>
+          <ul>
+            <li><span class="changelog-tag tag-fix">修复</span>困难模式答题后选项重新洗牌，导致答题前后选项不一致的问题</li>
+            <li><span class="changelog-tag tag-new">新增</span>跨词库考点整合：同一单词在多个词库出现时，详情页汇总全部考点</li>
+            <li><span class="changelog-tag tag-opt">优化</span>多词库背诵进度按单词去重统计</li>
+          </ul>
+        </div>
+      </div>
+      <div class="changelog-item">
+        <div class="changelog-version">v2.55.9</div>
+        <div class="changelog-content">
+          <div class="date">2026年10月</div>
+          <ul>
+            <li><span class="changelog-tag tag-fix">修复</span>老用户设置迁移缺陷导致自动发音失效的问题</li>
+            <li><span class="changelog-tag tag-fix">修复</span>发音失败时系统语音与网络音频重复回退的问题</li>
+            <li><span class="changelog-tag tag-fix">修复</span>本地 file:// 页面无法加载网络发音音频的问题</li>
+          </ul>
+        </div>
+      </div>
       <div class="changelog-item">
         <div class="changelog-version">v2.38.0</div>
         <div class="changelog-content">

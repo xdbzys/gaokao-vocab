@@ -46,8 +46,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.56.0';
-const APP_VERSION_CODE = 217;
+const APP_VERSION = '2.57.0';
+const APP_VERSION_CODE = 218;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -10278,6 +10278,227 @@ function speak(text, rate) {
   if (!synthSpeak()) { /* 静默失败，不打扰用户 */ }
 }
 
+/* ============================
+   听读模式（音乐播放器式背单词）
+   调研结论（百词斩/墨墨/不背单词/Vocafy 等主流做法）：
+   - 英文默认 2 遍、中文 1 遍，英→中顺序（先回忆再给答案）
+   - 同语言重复间隔 ~0.6s，词间间隔默认 2s（可调 0.5~9s）
+   ============================ */
+const LISTEN_CFG_KEY = 'gaokao_listen_settings';
+const LISTEN_BOOKS_KEY = 'gaokao_listen_books';
+const LISTEN_FILTER_KEY = 'gaokao_listen_filter';
+
+function _clampNum(v, min, max, dflt) {
+  var n = Number(v);
+  if (!isFinite(n)) return dflt;
+  return Math.max(min, Math.min(max, n));
+}
+function _clampInt(v, min, max, dflt) {
+  var n = Math.round(Number(v));
+  if (!isFinite(n)) return dflt;
+  return Math.max(min, Math.min(max, n));
+}
+
+function loadListenCfg() {
+  try {
+    var s = JSON.parse(localStorage.getItem(LISTEN_CFG_KEY) || '{}') || {};
+    return {
+      enRepeat: _clampInt(s.enRepeat, 1, 5, 2),
+      zhRepeat: _clampInt(s.zhRepeat, 0, 2, 1),
+      order: (s.order === 'zh-en' || s.order === 'en') ? s.order : 'en-zh',
+      innerGap: _clampNum(s.innerGap, 0, 3, 0.6),
+      wordGap: _clampNum(s.wordGap, 0.5, 9, 2),
+      rate: _clampNum(s.rate, 0.5, 2, 1),
+      loop: (s.loop === 'one' || s.loop === 'off') ? s.loop : 'list',
+      shuffle: !!s.shuffle
+    };
+  } catch (e) {
+    return { enRepeat: 2, zhRepeat: 1, order: 'en-zh', innerGap: 0.6, wordGap: 2, rate: 1, loop: 'list', shuffle: false };
+  }
+}
+
+// 释义转朗读文本：去掉词性前缀（避免把 "v." 读成字母），分号转逗号
+function _meaningForSpeech(meaning) {
+  return String(meaning || '')
+    .replace(/^(vt\.|vi\.|n\.|v\.|a\.|adj\.|adv\.|prep\.|conj\.|pron\.|art\.|num\.|int\.|aux\.|modal\.|abbr\.)\s*/gi, '')
+    .replace(/[;；]/g, '，')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// 听读专用音频缓存（与背诵页 speak() 的缓存隔离，避免事件回调互相干扰）
+const _listenAudioCache = {};
+const _listenAudioKeys = [];
+let _listenAudio = null;
+let _listenTtsDone = null;
+let _listenWakeLock = null;
+
+function _getListenAudio(text) {
+  var a = _listenAudioCache[text];
+  if (!a) {
+    a = new Audio('https://dict.youdao.com/dictvoice?type=2&audio=' + encodeURIComponent(text));
+    _listenAudioCache[text] = a;
+    _listenAudioKeys.push(text);
+    while (_listenAudioKeys.length > 12) {
+      var k = _listenAudioKeys.shift();
+      var old = _listenAudioCache[k];
+      delete _listenAudioCache[k];
+      if (old) {
+        try { old.pause(); } catch (e) {}
+        try { old.src = ''; } catch (e) {}
+      }
+    }
+  }
+  return a;
+}
+
+// 停止一切听读声音（含进行中的 Promise 收尾）
+function stopListenAudio() {
+  if (_listenAudio) {
+    var a = _listenAudio;
+    _listenAudio = null;
+    try { a.pause(); } catch (e) {}
+    try { if (a.__done) a.__done(); } catch (e) {}
+  }
+  if (_listenTtsDone) {
+    var d = _listenTtsDone;
+    _listenTtsDone = null;
+    try { d(); } catch (e) {}
+  }
+  try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
+}
+
+// 原生层：后台播放 + 常亮（网页版走 Wake Lock）
+function setListenNativePlaying(on) {
+  try {
+    if (window.NativeAudio && window.NativeAudio.setBackgroundPlayback) window.NativeAudio.setBackgroundPlayback(!!on);
+    if (window.NativeAudio && window.NativeAudio.setKeepScreenOn) window.NativeAudio.setKeepScreenOn(!!on);
+  } catch (e) {}
+  try {
+    if (on) {
+      if (!_listenWakeLock && navigator.wakeLock && navigator.wakeLock.request) {
+        navigator.wakeLock.request('screen').then(function (w) {
+          _listenWakeLock = w;
+          try { w.addEventListener('release', function () { _listenWakeLock = null; }); } catch (e) {}
+        }).catch(function () {});
+      }
+    } else if (_listenWakeLock) {
+      try { _listenWakeLock.release(); } catch (e) {}
+      _listenWakeLock = null;
+    }
+  } catch (e) {}
+}
+
+// 可中断等待（暂停/切词时立即返回，不必等满间隔）
+function listenSleep(ms, token, tokenRef) {
+  return new Promise(function (resolve) {
+    var elapsed = 0;
+    var step = 100;
+    function tick() {
+      if (token !== tokenRef.current || elapsed >= ms) { resolve(); return; }
+      elapsed += step;
+      setTimeout(tick, step);
+    }
+    if (ms <= 0) { resolve(); return; }
+    setTimeout(tick, Math.min(step, ms));
+  });
+}
+
+// 本地 TTS 朗读，等待读完（含不触发 onend 的 WebView 兜底）
+function speakTtsAsync(text, lang, rate) {
+  return new Promise(function (resolve) {
+    if (!text || !('speechSynthesis' in window)) { resolve(); return; }
+    var settled = false;
+    var done = function () {
+      if (settled) return;
+      settled = true;
+      if (_listenTtsDone === done) _listenTtsDone = null;
+      resolve();
+    };
+    _listenTtsDone = done;
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = Math.max(0.5, Math.min(2, rate));
+      u.pitch = 1;
+      u.onend = done;
+      u.onerror = done;
+      window.speechSynthesis.speak(u);
+    } catch (e) { done(); return; }
+    var ms = lang === 'zh-CN'
+      ? 1200 + text.length * 300 / Math.max(0.5, rate)
+      : 1500 + text.length * 140 / Math.max(0.5, rate);
+    setTimeout(done, Math.max(1500, Math.min(30000, ms)));
+  });
+}
+
+// 英文网络发音（有道真人音），失败回退 TTS；等待播放结束
+function speakEnAsync(text, rate) {
+  return new Promise(function (resolve) {
+    var audio = _getListenAudio(text);
+    _listenAudio = audio;
+    var settled = false;
+    var fallbackStarted = false;
+    function done() {
+      if (settled) return;
+      settled = true;
+      try { audio.onended = null; audio.onerror = null; } catch (e) {}
+      audio.__done = null;
+      if (_listenAudio === audio) _listenAudio = null;
+      resolve();
+    }
+    function fallback() {
+      if (settled || fallbackStarted) return;
+      fallbackStarted = true;
+      try { audio.pause(); } catch (e) {}
+      try { audio.currentTime = 0; } catch (e) {}
+      speakTtsAsync(text, 'en-US', rate * 0.9).then(done);
+    }
+    audio.__done = done;
+    audio.onended = done;
+    audio.onerror = fallback;
+    try { audio.currentTime = 0; } catch (e) {}
+    try { audio.playbackRate = Math.max(0.5, Math.min(2, rate)); } catch (e) {}
+    try {
+      var p = audio.play();
+      if (p && p.catch) p.catch(fallback);
+    } catch (e) { fallback(); }
+    // 兜底：网络音频长时间未结束时不让播放器卡死
+    setTimeout(function () { if (!settled && !fallbackStarted) done(); }, 10000);
+  });
+}
+
+// 按设置生成朗读步骤（英文遍数、中文遍数、顺序）
+function buildListenSteps(cfg, enText, zhText) {
+  var en = [], zh = [], i;
+  for (i = 0; i < cfg.enRepeat; i++) en.push('en');
+  if (cfg.zhRepeat > 0 && zhText) for (i = 0; i < cfg.zhRepeat; i++) zh.push('zh');
+  if (cfg.order === 'zh-en') return zh.concat(en);
+  if (cfg.order === 'en') return en;
+  return en.concat(zh);
+}
+
+// 播放一个词条：逐遍朗读 + 遍间歇
+async function playListenItemAsync(item, cfg, token, tokenRef) {
+  var enText = String(item.term || '').trim();
+  if (!enText) return;
+  var zhText = _meaningForSpeech(item.meaning);
+  var steps = buildListenSteps(cfg, enText, zhText);
+  for (var i = 0; i < steps.length; i++) {
+    if (token !== tokenRef.current) return;
+    if (steps[i] === 'en') {
+      await speakEnAsync(enText, cfg.rate);
+    } else {
+      await speakTtsAsync(zhText, 'zh-CN', cfg.rate * 0.95);
+    }
+    if (token !== tokenRef.current) return;
+    if (i < steps.length - 1) {
+      await listenSleep(cfg.innerGap * 1000, token, tokenRef);
+    }
+  }
+}
+
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
 // 基于种子的稳定洗牌，相同种子产生相同顺序，避免进度更新时顺序跳变
@@ -10383,8 +10604,16 @@ const MeIcon = () => (
   </svg>
 );
 
+const ListenIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+  </svg>
+);
+
 const TABS = [
   { id: 'learn', label: '背诵', icon: LearnIcon },
+  { id: 'listen', label: '听读', icon: ListenIcon },
   { id: 'library', label: '词库', icon: LibraryIcon },
   { id: 'wrong', label: '错词本', icon: WrongIcon },
   { id: 'extend', label: '扩展', icon: ExtendIcon },
@@ -10413,6 +10642,31 @@ function App() {
   const [section, setSection] = useState('learn');
   const [showBookPicker, setShowBookPicker] = useState(false);
   const [showBookPicker2, setShowBookPicker2] = useState(false);
+
+  // ===== 听读模式（音乐播放器式）状态 =====
+  const [listenBookIds, setListenBookIds] = useState(() => {
+    try { const s = localStorage.getItem(LISTEN_BOOKS_KEY); return s ? s.split(',') : ['gaokao-core']; }
+    catch { return ['gaokao-core']; }
+  });
+  // all=全部 hide=隐藏已掌握 only=仅已掌握
+  const [listenFilter, setListenFilter] = useState(() => {
+    try {
+      const v = localStorage.getItem(LISTEN_FILTER_KEY);
+      return (v === 'all' || v === 'only') ? v : 'hide';
+    } catch { return 'hide'; }
+  });
+  const [listenCfg, setListenCfg] = useState(loadListenCfg);
+  const [listenIndex, setListenIndex] = useState(0);
+  const [listenPlaying, setListenPlaying] = useState(false);
+  const [listenShowCfg, setListenShowCfg] = useState(false);
+  const [listenShowPL, setListenShowPL] = useState(false);
+  const [listenShowBooks, setListenShowBooks] = useState(false);
+  const listenTokenRef = useRef(0);          // 播放代次：自增即取消旧循环
+  const listenCfgRef = useRef(listenCfg);
+  const listenQueueRef = useRef([]);         // 当前播放队列快照（播放中不随进度变化跳动）
+  const listenIndexRef = useRef(0);
+  const listenPlayingRef = useRef(false);
+  const listenSeedRef = useRef(Date.now());
   // 词性筛选（替代原来的type筛选）
   const [posFilter, setPosFilter] = useState('全部');
   const [typeFilter, setTypeFilter] = useState('全部');
@@ -10740,6 +10994,226 @@ function App() {
   // 当前页面对应的词库（仅用于 UI 显示标题等，不影响背诵页的词汇列表）
   const currentBookIds = section === 'learn' ? studyBookIds : libraryBookIds;
   const activeBook = section === 'learn' ? learnActiveBook : libraryActiveBook;
+
+  /* ===== 听读模式：词库 / 播放队列 / 播放引擎 ===== */
+  const listenActiveBook = useMemo(() => {
+    if (listenBookIds.includes('wrong-words')) {
+      return { id: 'wrong-words', name: '错词本', items: wrongWords, editable: false };
+    }
+    const selectedBooks = books.filter(b => listenBookIds.includes(b.id) && !hiddenBookIds.includes(b.id));
+    if (selectedBooks.length === 0) return { id: 'empty', name: '未选择词库', items: [], editable: false };
+    const seen = new Set();
+    const uniqueItems = [];
+    selectedBooks.forEach(b => {
+      b.items.forEach(item => {
+        const key = termKey(item.term);
+        if (!seen.has(key)) { seen.add(key); uniqueItems.push(item); }
+      });
+    });
+    return {
+      id: listenBookIds.join(','),
+      name: selectedBooks.length === 1 ? selectedBooks[0].name : `${selectedBooks.length}个词库`,
+      items: uniqueItems,
+      editable: false
+    };
+  }, [books, listenBookIds, wrongWords, hiddenBookIds]);
+
+  // 听读队列：受"全部 / 隐藏已掌握 / 仅已掌握"筛选与随机影响
+  const listenQueue = useMemo(() => {
+    let items = listenActiveBook.items.slice();
+    if (listenFilter === 'hide') {
+      items = items.filter(item => progress[termKey(item.term)] !== 'mastered');
+    } else if (listenFilter === 'only') {
+      items = items.filter(item => progress[termKey(item.term)] === 'mastered');
+    }
+    if (listenCfg.shuffle) items = seededShuffle(items, listenSeedRef.current);
+    return items;
+  }, [listenActiveBook, listenFilter, progress, listenCfg.shuffle]);
+
+  // 播放中优先使用队列快照，避免进度变化导致列表/索引跳动
+  const listenDisplayQueue = listenPlaying && listenQueueRef.current.length ? listenQueueRef.current : listenQueue;
+  const listenCurrent = listenDisplayQueue[listenIndex] || null;
+
+  // 听读统计（当前词库维度）
+  const listenStats = useMemo(() => {
+    const total = listenActiveBook.items.length;
+    let mastered = 0;
+    listenActiveBook.items.forEach(item => {
+      if (progress[termKey(item.term)] === 'mastered') mastered += 1;
+    });
+    return { total, mastered, remaining: total - mastered };
+  }, [listenActiveBook, progress]);
+
+  useEffect(() => { listenCfgRef.current = listenCfg; }, [listenCfg]);
+  useEffect(() => { listenPlayingRef.current = listenPlaying; }, [listenPlaying]);
+  useEffect(() => { listenSeedRef.current = Date.now(); }, [listenBookIds, listenFilter, listenCfg.shuffle]);
+  // 未播放时同步队列快照；播放中保持快照不变
+  useEffect(() => {
+    if (!listenPlaying) listenQueueRef.current = listenQueue;
+  }, [listenQueue, listenPlaying]);
+  useEffect(() => {
+    if (listenQueue.length && listenIndexRef.current >= listenQueue.length) {
+      listenIndexRef.current = 0;
+      setListenIndex(0);
+    }
+  }, [listenQueue.length]);
+
+  const updateListenCfg = function (patch) {
+    setListenCfg(function (prev) {
+      const next = { ...prev, ...patch };
+      try { localStorage.setItem(LISTEN_CFG_KEY, JSON.stringify(next)); } catch (e) {}
+      listenCfgRef.current = next;
+      return next;
+    });
+  };
+
+  const changeListenFilter = function (v) {
+    if (listenPlayingRef.current) stopListenPlayback();
+    setListenFilter(v);
+    try { localStorage.setItem(LISTEN_FILTER_KEY, v); } catch (e) {}
+  };
+
+  const toggleListenBook = function (id) {
+    if (listenPlayingRef.current) stopListenPlayback();
+    setListenBookIds(function (prev) {
+      let next;
+      if (id === 'wrong-words') {
+        next = prev.includes('wrong-words') ? prev.filter(x => x !== 'wrong-words') : ['wrong-words'];
+      } else {
+        const base = prev.filter(x => x !== 'wrong-words');
+        next = base.includes(id) ? base.filter(x => x !== id) : base.concat(id);
+        if (next.length === 0) next = [id]; // 至少保留一个词库
+      }
+      try { localStorage.setItem(LISTEN_BOOKS_KEY, next.join(',')); } catch (e) {}
+      return next;
+    });
+  };
+
+  const stopListenPlayback = function () {
+    listenTokenRef.current += 1;
+    stopListenAudio();
+    listenPlayingRef.current = false;
+    setListenPlaying(false);
+    setListenNativePlaying(false);
+  };
+
+  const startListenAt = async function (queue, startIdx) {
+    if (!queue || !queue.length) return;
+    const token = listenTokenRef.current + 1;
+    listenTokenRef.current = token;
+    listenQueueRef.current = queue;
+    let i = startIdx;
+    if (i >= queue.length) i = 0;
+    if (i < 0) i = 0;
+    listenIndexRef.current = i;
+    setListenIndex(i);
+    listenPlayingRef.current = true;
+    setListenPlaying(true);
+    setListenNativePlaying(true);
+    try {
+      while (token === listenTokenRef.current) {
+        const cfg = listenCfgRef.current;
+        if (i >= queue.length) {
+          if (cfg.loop === 'list') i = 0; else break;
+        }
+        listenIndexRef.current = i;
+        setListenIndex(i);
+        await playListenItemAsync(queue[i], cfg, token, listenTokenRef);
+        if (token !== listenTokenRef.current) return;
+        if (cfg.loop !== 'one') i += 1;
+        if (cfg.loop === 'off' && i >= queue.length) break;
+        await listenSleep(cfg.wordGap * 1000, token, listenTokenRef);
+      }
+    } finally {
+      if (token === listenTokenRef.current) {
+        listenPlayingRef.current = false;
+        setListenPlaying(false);
+        setListenNativePlaying(false);
+      }
+    }
+  };
+
+  const toggleListenPlay = function () {
+    if (listenPlayingRef.current) { stopListenPlayback(); return; }
+    const q = (listenQueueRef.current && listenQueueRef.current.length) ? listenQueueRef.current : listenQueue;
+    if (!q.length) return;
+    let idx = listenIndexRef.current;
+    if (idx >= q.length) idx = 0;
+    startListenAt(q, idx);
+  };
+
+  const listenNext = function () {
+    const q = (listenQueueRef.current && listenQueueRef.current.length) ? listenQueueRef.current : listenQueue;
+    if (!q.length) return;
+    const wasPlaying = listenPlayingRef.current;
+    let idx = listenIndexRef.current + 1;
+    if (idx >= q.length) idx = (listenCfgRef.current.loop === 'list') ? 0 : q.length - 1;
+    listenTokenRef.current += 1;
+    stopListenAudio();
+    listenIndexRef.current = idx;
+    setListenIndex(idx);
+    setListenPlaying(false);
+    listenPlayingRef.current = false;
+    if (wasPlaying) startListenAt(q, idx);
+  };
+
+  const listenPrev = function () {
+    const q = (listenQueueRef.current && listenQueueRef.current.length) ? listenQueueRef.current : listenQueue;
+    if (!q.length) return;
+    const wasPlaying = listenPlayingRef.current;
+    let idx = listenIndexRef.current - 1;
+    if (idx < 0) idx = (listenCfgRef.current.loop === 'list') ? q.length - 1 : 0;
+    listenTokenRef.current += 1;
+    stopListenAudio();
+    listenIndexRef.current = idx;
+    setListenIndex(idx);
+    setListenPlaying(false);
+    listenPlayingRef.current = false;
+    if (wasPlaying) startListenAt(q, idx);
+  };
+
+  const jumpListenTo = function (idx) {
+    const q = (listenQueueRef.current && listenQueueRef.current.length) ? listenQueueRef.current : listenQueue;
+    if (!q.length || idx < 0 || idx >= q.length) return;
+    const wasPlaying = listenPlayingRef.current;
+    listenTokenRef.current += 1;
+    stopListenAudio();
+    listenIndexRef.current = idx;
+    setListenIndex(idx);
+    setListenPlaying(false);
+    listenPlayingRef.current = false;
+    if (wasPlaying) startListenAt(q, idx);
+  };
+
+  // 进入背诵页时暂停听读，避免两路发音叠加
+  useEffect(() => {
+    if (section === 'learn' && listenPlayingRef.current) stopListenPlayback();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [section]);
+
+  // 离开应用/卸载时停止播放并释放常亮
+  useEffect(() => {
+    return function () {
+      listenTokenRef.current += 1;
+      stopListenAudio();
+      setListenNativePlaying(false);
+    };
+  }, []);
+
+  // 锁屏/通知栏媒体信息（现代浏览器渐进增强，旧 WebView 自动忽略）
+  useEffect(() => {
+    if (!listenCurrent || !('mediaSession' in navigator)) return;
+    try {
+      if (window.MediaMetadata) {
+        navigator.mediaSession.metadata = new window.MediaMetadata({
+          title: listenCurrent.term || '背群英 · 听读',
+          artist: listenCurrent.meaning || '',
+          album: '背群英 · 听读模式'
+        });
+      }
+      navigator.mediaSession.playbackState = listenPlaying ? 'playing' : 'paused';
+    } catch (e) {}
+  }, [listenCurrent, listenPlaying]);
 
   // 全部词汇合并（词根词缀、对比、易错词基于全量词汇）
   // 词库映射 ref：供详情页和背诵页显示单词所属词库
@@ -12627,6 +13101,164 @@ function App() {
             </div>
           ) : (
             <div className="empty">当前筛选下没有内容，请切换词库或分类。</div>
+          )}
+        </section>
+      )}
+
+      {/* ====== 听读页（音乐播放器式：自动播英文+中文） ====== */}
+      {section === 'listen' && (
+        <section className="panel listenPage">
+          <div className="listenTop">
+            <div className="multiBookSelect" style={{ position: 'relative', flex: 1 }}>
+              <button className="multiBookBtn" onClick={() => setListenShowBooks(!listenShowBooks)}>
+                {listenActiveBook.name} ▼
+              </button>
+              {listenShowBooks && (
+                <div className="bookPickerDropdown">
+                  <div className="bookPickerActions">
+                    <button onClick={() => { stopListenPlayback(); setListenBookIds(['gaokao-core']); try { localStorage.setItem(LISTEN_BOOKS_KEY, 'gaokao-core'); } catch (e) {} }}>重置</button>
+                  </div>
+                  {wrongWords.length > 0 && (
+                    <label className="bookPickerItem">
+                      <input type="checkbox" checked={listenBookIds.includes('wrong-words')} onChange={() => toggleListenBook('wrong-words')} />
+                      <span style={{ color: '#ef4444', fontWeight: 600 }}>错词本</span>
+                      <span className="bookCount">({wrongWords.length})</span>
+                    </label>
+                  )}
+                  {books.filter(b => !b.id.includes('confused') && !b.id.includes('dual-sentiment') && !hiddenBookIds.includes(b.id)).map(b => (
+                    <label key={b.id} className="bookPickerItem">
+                      <input type="checkbox" checked={listenBookIds.includes(b.id)} onChange={() => toggleListenBook(b.id)} />
+                      <span>{b.name}</span>
+                      <span className="bookCount">({b.items.length})</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+            <span className="progressTag">{listenDisplayQueue.length ? (listenIndex + 1) : 0}/{listenDisplayQueue.length}</span>
+          </div>
+
+          {/* 是否隐藏已掌握 / 是否只播放已掌握 */}
+          <div className="listenFilterRow">
+            <button className={listenFilter === 'all' ? 'on' : ''} onClick={() => changeListenFilter('all')}>全部 {listenStats.total}</button>
+            <button className={listenFilter === 'hide' ? 'on' : ''} onClick={() => changeListenFilter('hide')}>隐藏已掌握 {listenStats.remaining}</button>
+            <button className={listenFilter === 'only' ? 'on' : ''} onClick={() => changeListenFilter('only')}>仅已掌握 {listenStats.mastered}</button>
+          </div>
+          <div className="listenHint">
+            {listenFilter === 'hide' ? '已自动跳过标记为掌握的单词' : listenFilter === 'only' ? '只播放已标记掌握的单词，用于巩固复习' : '播放词库内全部单词'}
+          </div>
+
+          {/* 播放器主体 */}
+          <div className={'listenCard' + (listenPlaying ? ' playing' : '')}>
+            <div className={'listenArt' + (listenPlaying ? ' spin' : '')}>🎧</div>
+            {listenCurrent ? (
+              <React.Fragment>
+                <h2 className="listenWord">{listenCurrent.term}</h2>
+                {listenCurrent.phonetic && <div className="listenPhonetic">{listenCurrent.phonetic}</div>}
+                <div className="listenMeaning">{listenCurrent.meaning}</div>
+              </React.Fragment>
+            ) : (
+              <div className="listenEmpty">
+                {listenStats.total === 0 ? '当前词库没有单词' : (listenFilter === 'only' ? '还没有标记为已掌握的单词' : '没有可播放的单词')}
+              </div>
+            )}
+            <div className="listenBar">
+              <div className="listenBarFill" style={{ width: `${listenDisplayQueue.length ? ((listenIndex + 1) / listenDisplayQueue.length * 100) : 0}%` }} />
+            </div>
+            <div className="listenMeta">第 {listenDisplayQueue.length ? listenIndex + 1 : 0} / {listenDisplayQueue.length} 词 · 已掌握 {listenStats.mastered} / {listenStats.total}</div>
+          </div>
+
+          {/* 播放控制 */}
+          <div className="listenControls">
+            <button className="listenSkipBtn" onClick={listenPrev} disabled={!listenDisplayQueue.length} title="上一个">⏮</button>
+            <button className="listenPlayBtn" onClick={toggleListenPlay} disabled={!listenDisplayQueue.length} title="播放/暂停">
+              {listenPlaying ? '⏸' : '▶'}
+            </button>
+            <button className="listenSkipBtn" onClick={listenNext} disabled={!listenDisplayQueue.length} title="下一个">⏭</button>
+          </div>
+
+          {/* 快捷开关 */}
+          <div className="listenChips">
+            <button onClick={() => updateListenCfg({ loop: listenCfg.loop === 'list' ? 'one' : (listenCfg.loop === 'one' ? 'off' : 'list') })}>
+              {listenCfg.loop === 'list' ? '🔁 列表循环' : listenCfg.loop === 'one' ? '🔂 单曲循环' : '➡️ 播完停止'}
+            </button>
+            <button onClick={() => { const rates = [0.75, 1, 1.25, 1.5]; const cur = rates.indexOf(listenCfg.rate); updateListenCfg({ rate: rates[(cur + 1) % rates.length] }); }}>
+              ⏱ {listenCfg.rate}x
+            </button>
+            <button className={listenCfg.shuffle ? 'on' : ''} onClick={() => updateListenCfg({ shuffle: !listenCfg.shuffle })}>🔀 随机</button>
+            <button className={listenShowCfg ? 'on' : ''} onClick={() => setListenShowCfg(!listenShowCfg)}>⚙️ 参数</button>
+            <button className={listenShowPL ? 'on' : ''} onClick={() => setListenShowPL(!listenShowPL)}>☰ 列表</button>
+          </div>
+
+          {/* 朗读参数 */}
+          {listenShowCfg && (
+            <div className="listenSettings">
+              <div className="listenSettingRow">
+                <span>英文朗读</span>
+                <div className="listenSeg">
+                  {[1, 2, 3].map(n => (
+                    <button key={n} className={listenCfg.enRepeat === n ? 'on' : ''} onClick={() => updateListenCfg({ enRepeat: n })}>{n} 遍</button>
+                  ))}
+                </div>
+              </div>
+              <div className="listenSettingRow">
+                <span>中文朗读</span>
+                <div className="listenSeg">
+                  {[0, 1, 2].map(n => (
+                    <button key={n} className={listenCfg.zhRepeat === n ? 'on' : ''} onClick={() => updateListenCfg({ zhRepeat: n })}>{n === 0 ? '不读' : n + ' 遍'}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="listenSettingRow">
+                <span>朗读顺序</span>
+                <div className="listenSeg">
+                  <button className={listenCfg.order === 'en-zh' ? 'on' : ''} onClick={() => updateListenCfg({ order: 'en-zh' })}>英→中</button>
+                  <button className={listenCfg.order === 'zh-en' ? 'on' : ''} onClick={() => updateListenCfg({ order: 'zh-en' })}>中→英</button>
+                  <button className={listenCfg.order === 'en' ? 'on' : ''} onClick={() => updateListenCfg({ order: 'en' })}>仅英文</button>
+                </div>
+              </div>
+              <div className="listenSettingRow">
+                <span>词间间隔</span>
+                <div className="listenSeg">
+                  {[1, 2, 3, 5].map(s => (
+                    <button key={s} className={listenCfg.wordGap === s ? 'on' : ''} onClick={() => updateListenCfg({ wordGap: s })}>{s}s</button>
+                  ))}
+                </div>
+              </div>
+              <div className="listenSettingRow">
+                <span>遍间隔</span>
+                <div className="listenSeg">
+                  {[0, 0.6, 1].map(s => (
+                    <button key={s} className={listenCfg.innerGap === s ? 'on' : ''} onClick={() => updateListenCfg({ innerGap: s })}>{s === 0 ? '无' : s + 's'}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="listenTip">推荐默认：英文 2 遍 → 中文 1 遍，词间 2 秒（参考百词斩 / 墨墨 / 不背单词的听读做法）</div>
+            </div>
+          )}
+
+          {/* 播放列表（窗口化渲染，避免大词库卡顿） */}
+          {listenShowPL && (
+            <div className="listenPlaylist">
+              {(() => {
+                const total = listenDisplayQueue.length;
+                if (!total) return <div className="listenEmpty">暂无单词</div>;
+                const startAt = Math.max(0, listenIndex - 40);
+                const endAt = Math.min(total, startAt + 120);
+                const rows = [];
+                for (let i2 = startAt; i2 < endAt; i2++) {
+                  const it = listenDisplayQueue[i2];
+                  rows.push(
+                    <button key={(it.term || '') + '_' + i2} className={'listenPLItem' + (i2 === listenIndex ? ' on' : '')} onClick={() => jumpListenTo(i2)}>
+                      <span className="listenPLIdx">{i2 + 1}</span>
+                      <span className="listenPLTerm">{it.term}</span>
+                      <span className="listenPLMeaning">{it.meaning}</span>
+                    </button>
+                  );
+                }
+                return rows;
+              })()}
+            </div>
           )}
         </section>
       )}

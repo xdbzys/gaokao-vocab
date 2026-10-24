@@ -37,6 +37,8 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private static boolean volumeKeyNavEnabled = false;
+    // 听读模式后台播放开关：开启时 onPause 不暂停 WebView，让 JS 音频继续播放
+    private static boolean backgroundPlaybackEnabled = false;
 
     // ===== 云端热更新配置 =====
     // 云端 index.html 地址（多源容灾：Gitee raw → jsDelivr CDN → GitHub Pages）
@@ -134,6 +136,28 @@ public class MainActivity extends Activity {
                 volumeKeyNavEnabled = enabled;
             }
         }, "VolumeKeyNative");
+
+        // 听读模式音频桥接：供 JS 侧 window.NativeAudio 调用
+        // - setBackgroundPlayback(true)：App 退到后台时不暂停 WebView，音频继续播放
+        // - setKeepScreenOn(true)：听读播放期间保持屏幕常亮
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public void setBackgroundPlayback(boolean enabled) {
+                backgroundPlaybackEnabled = enabled;
+            }
+
+            @JavascriptInterface
+            public void setKeepScreenOn(final boolean enabled) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (webView != null) webView.setKeepScreenOn(enabled);
+                        } catch (Throwable ignored) {}
+                    }
+                });
+            }
+        }, "NativeAudio");
 
         // 外链打开桥接：供 JS 侧 window.NativeShell.openExternal(url) 调用
         // 直接走 ACTION_VIEW Intent，避免 window.open 在 onCreateWindow 中无法可靠取到目标 URL
@@ -447,7 +471,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (webView != null) {
+        // 听读模式播放中：不暂停 WebView（否则音频被系统静音），保持后台播放
+        if (webView != null && !backgroundPlaybackEnabled) {
             try { webView.onPause(); } catch (Throwable ignored) {}
         }
     }

@@ -1457,6 +1457,314 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   color: var(--text-secondary);
 }
 
+/* ===== 听读页（音乐播放器式） ===== */
+.listenPage { padding-bottom: 12px; }
+
+.listenTop {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.listenFilterRow {
+  display: flex;
+  margin-bottom: 6px;
+}
+
+.listenFilterRow button {
+  flex: 1 1 0;
+  min-width: 0;
+  margin-right: 6px;
+  padding: 8px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 12px;
+  background: var(--border-light);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listenFilterRow button:last-child { margin-right: 0; }
+
+.listenFilterRow button.on {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+}
+
+.listenHint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.listenCard {
+  position: relative;
+  border-radius: 26px;
+  padding: 22px 18px 16px;
+  text-align: center;
+  background: linear-gradient(160deg, #eef4ff 0%, #ffffff 55%, #f5f9ff 100%);
+  border: 1px solid rgba(59, 130, 246, 0.14);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.12);
+  overflow: hidden;
+}
+
+.listenCard.playing {
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 12px 36px rgba(59, 130, 246, 0.22);
+}
+
+.listenArt {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  background: radial-gradient(circle at 35% 30%, #93c5fd, #3b82f6 70%);
+  box-shadow: 0 8px 22px rgba(59, 130, 246, 0.35);
+}
+
+.listenArt.spin { animation: listenSpin 6s linear infinite; }
+
+@keyframes listenSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.listenWord {
+  margin: 4px 0 2px;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.listenPhonetic {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.listenMeaning {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin: 2px 0 14px;
+  max-height: 66px;
+  overflow: hidden;
+}
+
+.listenEmpty {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  padding: 26px 8px;
+}
+
+.listenBar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(59, 130, 246, 0.14);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.listenBarFill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #60a5fa, #2563eb);
+  transition: width 0.3s ease;
+}
+
+.listenMeta {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.listenControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0 14px;
+}
+
+.listenPlayBtn {
+  width: 66px;
+  height: 66px;
+  margin: 0 26px;
+  border-radius: 50%;
+  font-size: 25px;
+  line-height: 1;
+  color: #fff;
+  background: linear-gradient(145deg, #3b82f6, #2563eb);
+  box-shadow: 0 8px 22px rgba(59, 130, 246, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.listenPlayBtn:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+.listenSkipBtn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 20px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-bg);
+  color: var(--primary-dark);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.listenSkipBtn:disabled { opacity: 0.4; }
+
+.listenChips {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.listenChips button {
+  margin: 0 6px 6px 0;
+  padding: 7px 11px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--border-light);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.listenChips button.on {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.listenSettings {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  background: var(--primary-bg);
+  border: 1px solid rgba(59, 130, 246, 0.14);
+}
+
+.listenSettingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.listenSettingRow > span {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  flex: 0 0 auto;
+  margin-right: 10px;
+}
+
+.listenSeg {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.listenSeg button {
+  margin: 0 0 0 5px;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.listenSeg button.on {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.listenTip {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+.listenPlaylist {
+  margin-top: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+}
+
+.listenPLItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  border-radius: 0;
+  background: #fff;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text);
+}
+
+.listenPLItem:last-child { border-bottom: 0; }
+
+.listenPLItem.on {
+  background: var(--primary-light);
+}
+
+.listenPLIdx {
+  flex: 0 0 34px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: right;
+  margin-right: 10px;
+}
+
+.listenPLItem.on .listenPLIdx { color: var(--primary-dark); font-weight: 700; }
+
+.listenPLTerm {
+  flex: 0 0 auto;
+  max-width: 42%;
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.listenPLMeaning {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ===== 底部Tab栏 ===== */
 .tabbar {
   position: fixed;
@@ -1464,7 +1772,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   bottom: max(10px, env(safe-area-inset-bottom));
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap: 2px;
   width: min(520px, calc(100vw - 16px));
   padding: 6px;
@@ -1551,6 +1859,20 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   .options { gap: 8px; }
   .options button { padding: 12px 14px; font-size: 14px; border-radius: 14px; }
   .navBtn { padding: 11px; font-size: 13px; }
+  /* 听读页窄屏压缩 */
+  .listenFilterRow button { font-size: 11px; padding: 7px 2px; margin-right: 4px; }
+  .listenCard { padding: 16px 12px 12px; border-radius: 20px; }
+  .listenArt { width: 64px; height: 64px; font-size: 28px; margin-bottom: 10px; }
+  .listenWord { font-size: 24px; }
+  .listenMeaning { font-size: 13px; }
+  .listenPlayBtn { width: 56px; height: 56px; margin: 0 18px; font-size: 21px; }
+  .listenSkipBtn { width: 42px; height: 42px; font-size: 17px; }
+  .listenChips button { padding: 6px 9px; font-size: 11px; margin-right: 5px; }
+  .listenSettingRow > span { font-size: 12px; }
+  .listenSeg button { padding: 5px 8px; font-size: 11px; margin-left: 4px; }
+  .listenPlaylist { max-height: 240px; }
+  .listenPLTerm { font-size: 13px; }
+  .listenPLMeaning { font-size: 11px; }
 }
 
 /* 超窄屏（≤320px）进一步压缩 */
