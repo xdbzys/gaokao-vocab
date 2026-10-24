@@ -1,8 +1,0 @@
-{
-  "version": "2.56.0",
-  "versionCode": 217,
-  "changelog": "🎉 背群英 v2.56.0 已发布！\n\n【修复】困难模式答题前后选项刷新\n- 修复答题后（尤其开启自动掌握/隐藏已掌握时）干扰项选项重新洗牌，导致答题前看到的选项与答题后\"选项词汇\"不一致的问题\n- 现在同一单词的选项在答题前后保持完全一致\n\n【新增】跨词库考点整合\n- 同一单词出现在多个词库时，点开该单词（背诵答题区/词条详情/温习页）展示所有词库该单词的考点合集\n- 各词库仍保留各自的单词条目，不合并单词；背诵多词库时进度条按单词去重计数\n\n下载安装方法：\n复制下方链接，用手机浏览器打开，下载后点击安装即可：\nhttps://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "devNotes": "v2.56.0: options stability keyed by word+mode+difficulty+books (fixes pre/post-answer option refresh); cross-book corePoints/allPoints merge in answer box, detail modal and review; multi-book progress dedupe verified",
-  "apkUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
-}
