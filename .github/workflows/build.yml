@@ -138,6 +138,7 @@ jobs:
         run: |
           git config user.name "ci-bot"
           git config user.email "ci@bot.com"
+          cp dist/index.html web/index.html
           git add -f gaokao-vocab.apk web/index.html
           if git diff --cached --quiet; then
             echo "Files unchanged, skip mirror commit"
@@ -158,6 +159,8 @@ jobs:
         run: |
           cp android/app/build/outputs/apk/debug/app-debug.apk dist/app-debug.apk
           cp android/app/build/outputs/apk/release/app-release.apk dist/app-release.apk
+          mkdir -p dist/web
+          cp dist/index.html dist/web/index.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
