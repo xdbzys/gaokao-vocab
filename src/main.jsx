@@ -10342,8 +10342,8 @@ function nativePlayUrlAsync(url, rate) {
     try {
       window.NativePlayer.playUrl(url, id, rate || 1);
     } catch (e) { finish(false); return; }
-    // 兜底：45 秒仍无回调按成功处理，避免整条播放链卡死
-    setTimeout(function () { finish(true); }, 45000);
+    // 兜底：15 秒仍无回调按成功处理，避免整条播放链卡死
+    setTimeout(function () { finish(true); }, 15000);
   });
 }
 
@@ -10356,11 +10356,12 @@ function speak(text, rate) {
   try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
   if (_lastAudio) { try { _lastAudio.pause(); } catch (e) {} _lastAudio = null; }
   try { if (window.NativePlayer && window.NativePlayer.stop) window.NativePlayer.stop(); } catch (e) {}
+  // 背诵页单次发音走应用内音频（不启动系统播放器，避免每次点小喇叭都弹通知栏）
   if (isEnglish) {
-    speakChainAsync(enAudioUrls(normalized), normalized, 'en-US', r, true);
+    speakChainAsync(enAudioUrls(normalized), normalized, 'en-US', r, false);
   } else {
     var zh = _zhSpeechText(normalized);
-    speakChainAsync(zhAudioUrls(zh, r), zh, 'zh-CN', r, true);
+    speakChainAsync(zhAudioUrls(zh, r), zh, 'zh-CN', r, false);
   }
 }
 
@@ -10503,11 +10504,12 @@ function speakChainAsync(urls, ttsText, ttsLang, rate, useNative) {
         return;
       }
       var url = list[i++];
-      if (_failedAudioUrls[url]) { next(); return; }
+      var failedAt = _failedAudioUrls[url];
+      if (failedAt && (Date.now() - failedAt) < 60000) { next(); return; }
       var p = (useNative && nativeAudioAvailable()) ? nativePlayUrlAsync(url, rate) : playUrlAsync(url, rate);
       p.then(function (ok) {
         if (ok) { resolve(); return; }
-        _failedAudioUrls[url] = true;
+        _failedAudioUrls[url] = Date.now();
         next();
       });
     }
