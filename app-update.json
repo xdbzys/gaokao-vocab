@@ -1,8 +1,8 @@
 {
-  "version": "2.59.0",
-  "versionCode": 220,
-  "changelog": "🎉 背群英 v2.59.0 已发布！\n【更新】全新更新机制（更快更省流量）\n- 改用主流方案：启动先拉取极小的版本清单比对版本号，已是最新则完全不下载（秒级完成）\n- 需要更新时优先下载 gzip 压缩包（体积约为原来的 1/4），下载速度大幅提升\n- 下载源改为 GitHub Release（CDN 加速、稳定），并保留 jsDelivr / 网页版多源兜底\n- 修复旧方案“每次启动都全量下载 3.2MB 且 8 秒超时失败”导致的更新不可用问题\n\n【词库】校对与修复\n- 修复 27 处释义截断（末尾悬空标点导致内容不完整）\n- 清理 425 处与词性字段重复的冗余词性前缀（如 adj. 释义又写 a. ）\n- 统一 1156 处全角标点为半角，词库风格一致\n\n【兼容】继续兼容 Android 10 / MP5 / 英语翻译扫描笔等老设备\n\n下载安装方法：\n复制下方链接，用手机浏览器打开，下载后点击安装即可：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
-  "devNotes": "v2.59.0: manifest-first update (version.json compare -> skip if up-to-date), gzip bundle preferred, GitHub Release CDN primary source with jsDelivr/Pages fallback, read timeout raised to 60s; vocab fixes: truncated meanings, redundant POS prefixes, full-width punctuation",
+  "version": "2.60.0",
+  "versionCode": 221,
+  "changelog": "🎉 背群英 v2.60.0 已发布！\n\n【修复】听读模式：中文终于能读出来了\n- 根因：旧版用有道的英文发音接口读中文，实际只返回约 0.1 秒的静音片段，所以中文全程无声\n- 改为中文专用整句语音接口（支持标点与整条释义），失败自动切换备用源，最后才用系统语音兜底\n- 背诵页的中文发音同步修复，点小喇叭即可听到中文\n\n【新增】系统播放器（后台 / 锁屏 / 息屏播放）\n- 听读音频改由手机系统媒体通道播放：退出应用回到桌面、锁屏、息屏后继续朗读\n- 通知栏常驻播放卡片，可直接「上一词 / 暂停 / 下一词」\n- 支持耳机线控与锁屏媒体控制\n- 听读参数里新增「后台播放」开关：系统播放器 / 仅应用内，可随时切换\n\n【优化】\n- 发音来源改为多源自动回退：某个源失败自动换下一个，不再出现「部分单词无声」\n- 倍速调整实时生效（含系统播放器）\n\n下载安装方法（应用内自动提示，点一下即可）：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
+  "devNotes": "v2.60.0: (1) Chinese TTS rewritten - old code used youdao dictvoice?type=2 for Chinese which returns ~0.1s silent clip; new chain: baidu gettts(lan=zh, full sentence with punctuation) -> youdao le=zh (short terms only) -> system TTS; (2) native system player: PlayerService foreground service + MediaPlayer + MediaSession + notification actions + wake lock, window.NativePlayer JS bridge; (3) listen cfg systemPlayer toggle; (4) back button -> moveTaskToBack while playing; (5) POST_NOTIFICATIONS / FOREGROUND_SERVICE_MEDIA_PLAYBACK permissions",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "webHtmlUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html"
 }

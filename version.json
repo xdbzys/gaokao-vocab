@@ -1,9 +1,9 @@
 {
-  "version": "2.59.0",
-  "versionCode": 220,
+  "version": "2.60.0",
+  "versionCode": 221,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "🎉 背群英 v2.59.0 已发布！\n【更新】全新更新机制（更快更省流量）\n- 改用主流方案：启动先拉取极小的版本清单比对版本号，已是最新则完全不下载（秒级完成）\n- 需要更新时优先下载 gzip 压缩包（体积约为原来的 1/4），下载速度大幅提升\n- 下载源改为 GitHub Release（CDN 加速、稳定），"
+  "changelog": "🎉 背群英 v2.60.0 已发布！\n\n【修复】听读模式：中文终于能读出来了\n- 根因：旧版用有道的英文发音接口读中文，实际只返回约 0.1 秒的静音片段，所以中文全程无声\n- 改为中文专用整句语音接口（支持标点与整条释义），失败自动切换备用源，最后才用系统语音兜底\n- 背诵页的中文发音同步修复，点小喇叭即可听到中文"
 }
