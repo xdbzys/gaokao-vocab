@@ -1,8 +1,8 @@
 {
-  "version": "2.58.0",
-  "versionCode": 219,
-  "changelog": "🎉 背群英 v2.58.0 已发布！向下兼容 Android 10 / MP5 / 英语翻译扫描笔等老设备，并修复听读四项问题。\n\n原 2.57.0 内容：\n\n【新增】听读模式（音乐播放器式背单词）\n- 底部导航新增\"听读\"页：像听歌一样自动播放英文单词 + 中文释义\n- 可选词库（支持多词库合并、错词本），可\"隐藏已掌握\"或\"仅播放已掌握\"\n- 朗读参数可调：英文 1/2/3 遍、中文 不读/1/2 遍、英→中/中→英/仅英文、词间间隔 1/2/3/5 秒、遍间隔 无/0.6/1 秒\n- 默认按最常见做法：英文 2 遍 → 中文 1 遍，词间 2 秒\n- 倍速 0.75x/1x/1.25x/1.5x、列表循环/单曲循环/播完停止、随机播放\n- 播放列表可点任意单词跳转，播放中自动高亮当前词\n- 支持后台播放与屏幕常亮，耳机/锁屏切歌体验接近音乐 App\n- 英文走有道真人发音，网络异常自动回退系统语音\n\n【优化】\n- 底部导航由 6 项扩展为 7 项，窄屏（翻译笔 360/320px）自动压缩布局\n- 进入背诵页会自动暂停听读，避免两路发音叠加\n\n下载安装方法：\n复制下方链接，用手机浏览器打开，下载后点击安装即可：\nhttps://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "devNotes": "v2.57.0: new listen mode tab (music-player style EN+ZH auto playback), per-book multi-select + wrong-words, mastered filter (all/hide/only), configurable EN/ZH repeat, order, word gap, inner gap, rate, loop, shuffle, playlist jump, background playback via NativeAudio bridge + wakeLock, tabbar 7 columns",
-  "apkUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "version": "2.59.0",
+  "versionCode": 220,
+  "changelog": "🎉 背群英 v2.59.0 已发布！\n【更新】全新更新机制（更快更省流量）\n- 改用主流方案：启动先拉取极小的版本清单比对版本号，已是最新则完全不下载（秒级完成）\n- 需要更新时优先下载 gzip 压缩包（体积约为原来的 1/4），下载速度大幅提升\n- 下载源改为 GitHub Release（CDN 加速、稳定），并保留 jsDelivr / 网页版多源兜底\n- 修复旧方案“每次启动都全量下载 3.2MB 且 8 秒超时失败”导致的更新不可用问题\n\n【词库】校对与修复\n- 修复 27 处释义截断（末尾悬空标点导致内容不完整）\n- 清理 425 处与词性字段重复的冗余词性前缀（如 adj. 释义又写 a. ）\n- 统一 1156 处全角标点为半角，词库风格一致\n\n【兼容】继续兼容 Android 10 / MP5 / 英语翻译扫描笔等老设备\n\n下载安装方法：\n复制下方链接，用手机浏览器打开，下载后点击安装即可：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
+  "devNotes": "v2.59.0: manifest-first update (version.json compare -> skip if up-to-date), gzip bundle preferred, GitHub Release CDN primary source with jsDelivr/Pages fallback, read timeout raised to 60s; vocab fixes: truncated meanings, redundant POS prefixes, full-width punctuation",
+  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
+  "webHtmlUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html"
 }
