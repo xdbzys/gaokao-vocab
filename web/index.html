@@ -35452,7 +35452,11 @@ var Wg = By(function (yo) {
           try {
             c.onended = null, c.onerror = null, c.onplaying = null;
           } catch (A) {}
-          Tt === c && (Tt = null), _m().then(function () {
+          Tt === c && (Tt = null);
+          try {
+            c.pause();
+          } catch (A) {}
+          _m().then(function () {
             d(!!w);
           });
         }
