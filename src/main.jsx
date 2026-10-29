@@ -10547,6 +10547,8 @@ function setListenNativePlaying(on) {
   try {
     if (window.NativeAudio && window.NativeAudio.setBackgroundPlayback) window.NativeAudio.setBackgroundPlayback(!!on);
     if (window.NativeAudio && window.NativeAudio.setKeepScreenOn) window.NativeAudio.setKeepScreenOn(!!on);
+    // 停止播放时一并停掉系统播放器，撤掉通知栏卡片（避免播完仍残留常驻通知）
+    if (!on && window.NativePlayer && window.NativePlayer.stop) window.NativePlayer.stop();
   } catch (e) {}
   try {
     if (on) {
