@@ -20,6 +20,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.io.ByteArrayOutputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 /**
  * 纯原生 WebView 容器（不依赖 Capacitor 运行时）
@@ -41,15 +45,27 @@ public class MainActivity extends Activity {
     private static boolean backgroundPlaybackEnabled = false;
 
     // ===== 云端热更新配置 =====
-    // 云端 index.html 地址（多源容灾：Gitee raw → jsDelivr CDN → GitHub Pages）
+    // v2.59.0 主流更新方案：① 先拉约 300 字节的版本清单秒级比对 → ② 仅必要时才下载正文（优先 gzip）
+    // 第一步：版本清单地址（多源容灾：jsDelivr → GitHub Pages → raw）
+    private static final String[] CLOUD_VERSION_URLS = {
+        "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/version.json",
+        "https://xdbzys.github.io/gaokao-vocab/version.json",
+        "https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/version.json"
+    };
+    // 第二步：正文地址（优先 GitHub Release CDN，稳定且加速；jsDelivr / Pages 兜底）
     private static final String[] CLOUD_INDEX_URLS = {
-        "https://gitee.com/xdbzys/app/raw/master/web/index.html",
+        "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
         "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
         "https://xdbzys.github.io/gaokao-vocab/web/index.html"
     };
     private static final String CACHE_FILE = "cloud_index.html";
-    // 超时时间（毫秒）：翻译笔网络可能较慢
-    private static final int DOWNLOAD_TIMEOUT = 8000;
+    private static final String PREF_NAME = "cloud_update";
+    private static final String PREF_KEY_VER = "cached_version_code";
+    // 超时：清单极小用短超时快速切换源；正文较大，读取超时放宽，慢网络也不会被中断
+    private static final int MANIFEST_TIMEOUT = 6000;
+    private static final int CONNECT_TIMEOUT = 8000;
+    private static final int READ_TIMEOUT = 60000;
+    private static final int DOWNLOAD_TIMEOUT = 60000;
 
     /**
      * v2.55.7: 内容安全校验
@@ -348,95 +364,175 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * 后台检查云端是否有新版 index.html
-     * 如有更新则下载到缓存，并在下次启动时生效
+     * 后台检查云端更新（v2.59.0 主流方案：版本清单 + Release CDN + gzip）
+     *
+     * 旧方案问题：每次启动都全量下载 3.2MB 的 index.html 并与缓存逐字节比对，
+     * 且 8 秒超时在慢网络下几乎必然失败 —— 这就是"更新不可用"的根因。
+     *
+     * 新方案：
+     *  ① 先拉取约 300 字节的 version.json，比对 versionCode；
+     *  ② 版本号一致 → 直接结束，零大流量、秒级完成（解决每次 3.2MB 的痛点）；
+     *  ③ 版本号更新 → 优先拉取 gzip 压缩包（体积约为原始 1/4，下载显著加快）；
+     *  ④ 源优先级：GitHub Release（CDN 加速、稳定）→ jsDelivr → GitHub Pages；
+     *  ⑤ 读取超时放宽到 60 秒，避免大文件在慢网络下被中断。
      */
     private void checkCloudUpdate() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                for (String cloudUrl : CLOUD_INDEX_URLS) {
-                    try {
-                        Log.i("GaokaoVocab", "Checking cloud: " + cloudUrl);
-                        HttpURLConnection conn = (HttpURLConnection) new URL(cloudUrl).openConnection();
-                        conn.setConnectTimeout(DOWNLOAD_TIMEOUT);
-                        conn.setReadTimeout(DOWNLOAD_TIMEOUT);
-                        conn.setRequestMethod("GET");
-                        conn.setRequestProperty("Cache-Control", "no-cache");
-                        conn.setUseCaches(false);
-                        int code = conn.getResponseCode();
-                        if (code != 200) {
-                            conn.disconnect();
-                            continue;
-                        }
-                        InputStream is = conn.getInputStream();
-                        // 读取全部内容
-                        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-                        byte[] buf = new byte[8192];
-                        int n;
-                        while ((n = is.read(buf)) != -1) {
-                            baos.write(buf, 0, n);
-                        }
-                        is.close();
-                        conn.disconnect();
-                        byte[] data = baos.toByteArray();
-                        if (data.length < 1000) continue; // 内容太短，跳过
-
-                        String content = new String(data, "UTF-8");
-                        // 简单校验：必须包含 createRoot 才认为是有效内容
-                        if (!content.contains("createRoot")) {
-                            Log.w("GaokaoVocab", "Cloud content invalid (no createRoot), skip");
-                            continue;
-                        }
-                        // v2.55.7: 必须含安全标记，防止坏版本再次污染缓存
-                        if (!isSafeContent(content)) {
-                            Log.w("GaokaoVocab", "Cloud content unsafe (no __SW_GUARD__), skip");
-                            continue;
-                        }
-
-                        File cacheFile = new File(getFilesDir(), CACHE_FILE);
-                        // 比对缓存：如果内容相同则不更新
-                        if (cacheFile.exists()) {
-                            byte[] oldData = new byte[(int) cacheFile.length()];
-                            FileInputStream fis = new FileInputStream(cacheFile);
-                            fis.read(oldData);
-                            fis.close();
-                            String oldContent = new String(oldData, "UTF-8");
-                            if (oldContent.equals(content)) {
-                                Log.i("GaokaoVocab", "Cloud content same as cache, no update");
-                                return; // 内容相同，无需更新
-                            }
-                        }
-
-                        // 写入缓存
-                        FileOutputStream fos = openFileOutput(CACHE_FILE, MODE_PRIVATE);
-                        fos.write(data);
-                        fos.close();
-                        Log.i("GaokaoVocab", "Cloud content cached (" + data.length + " bytes), reloading");
-
-                        // 刷新 WebView（切回主线程）
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    File cf = new File(getFilesDir(), CACHE_FILE);
-                                    String path = "file://" + cf.getAbsolutePath();
-                                    Log.i("GaokaoVocab", "Reloading from cloud cache: " + path);
-                                    webView.loadUrl(path);
-                                } catch (Throwable e) {
-                                    Log.e("GaokaoVocab", "Reload failed", e);
-                                }
-                            }
-                        });
-                        return; // 成功，退出循环
-                    } catch (Throwable e) {
-                        Log.w("GaokaoVocab", "Cloud check failed for " + cloudUrl + ": " + e.getMessage());
+                // ① 版本清单（多源容灾，取第一个可用）
+                int remoteVer = -1;
+                for (String u : CLOUD_VERSION_URLS) {
+                    String txt = httpGetText(u, MANIFEST_TIMEOUT);
+                    if (txt == null) continue;
+                    int v = parseVersionCode(txt);
+                    if (v > 0) {
+                        remoteVer = v;
+                        Log.i("GaokaoVocab", "Manifest from " + u + " -> v" + v);
+                        break;
                     }
                 }
-                Log.w("GaokaoVocab", "All cloud URLs failed, using local/cached version");
+                int cachedVer = getCachedVersionCode();
+                if (remoteVer > 0 && cachedVer > 0 && remoteVer <= cachedVer) {
+                    Log.i("GaokaoVocab", "Up to date (cached v" + cachedVer + " >= remote v" + remoteVer + "), skip download");
+                    return;
+                }
+                // ② 需要更新（或首次/未知版本）→ 下载正文
+                byte[] data = null;
+                for (String u : CLOUD_INDEX_URLS) {
+                    byte[] gz = httpGetBytes(u + ".gz", true);
+                    if (gz != null && gz.length > 1000) {
+                        data = gz;
+                        Log.i("GaokaoVocab", "Index downloaded (gzip) from " + u + ".gz, " + gz.length + " bytes");
+                        break;
+                    }
+                    byte[] raw = httpGetBytes(u, false);
+                    if (raw != null && raw.length > 1000) {
+                        data = raw;
+                        Log.i("GaokaoVocab", "Index downloaded from " + u + ", " + raw.length + " bytes");
+                        break;
+                    }
+                }
+                if (data == null) {
+                    Log.w("GaokaoVocab", "All cloud URLs failed, using local/cached version");
+                    return;
+                }
+                String content;
+                try {
+                    content = new String(data, "UTF-8");
+                } catch (Throwable e) {
+                    return;
+                }
+                if (!content.contains("createRoot")) {
+                    Log.w("GaokaoVocab", "Cloud content invalid (no createRoot), skip");
+                    return;
+                }
+                if (!isSafeContent(content)) {
+                    Log.w("GaokaoVocab", "Cloud content unsafe (no __SW_GUARD__), skip");
+                    return;
+                }
+                try {
+                    FileOutputStream fos = openFileOutput(CACHE_FILE, MODE_PRIVATE);
+                    fos.write(data);
+                    fos.close();
+                    saveCachedVersionCode(remoteVer);
+                    Log.i("GaokaoVocab", "Cloud content cached (" + data.length + " bytes), reloading");
+                } catch (Throwable e) {
+                    Log.e("GaokaoVocab", "Write cache failed", e);
+                    return;
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            File cf = new File(getFilesDir(), CACHE_FILE);
+                            String path = "file://" + cf.getAbsolutePath();
+                            Log.i("GaokaoVocab", "Reloading from cloud cache: " + path);
+                            webView.loadUrl(path);
+                        } catch (Throwable e) {
+                            Log.e("GaokaoVocab", "Reload failed", e);
+                        }
+                    }
+                });
             }
         }).start();
     }
+
+    /** 读取远程文本（用于极小的版本清单） */
+    private String httpGetText(String urlStr, int timeoutMs) {
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection) new URL(urlStr).openConnection();
+            conn.setConnectTimeout(timeoutMs);
+            conn.setReadTimeout(timeoutMs);
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Cache-Control", "no-cache");
+            conn.setUseCaches(false);
+            if (conn.getResponseCode() != 200) return null;
+            InputStream is = conn.getInputStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buf = new byte[4096];
+            int n;
+            while ((n = is.read(buf)) != -1) baos.write(buf, 0, n);
+            is.close();
+            return new String(baos.toByteArray(), "UTF-8");
+        } catch (Throwable e) {
+            return null;
+        } finally {
+            if (conn != null) { try { conn.disconnect(); } catch (Throwable ignored) {} }
+        }
+    }
+
+    /** 读取远程字节；tryGzip=true 时按 gzip 解压（预压缩的 .gz 静态文件） */
+    private byte[] httpGetBytes(String urlStr, boolean tryGzip) {
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection) new URL(urlStr).openConnection();
+            conn.setConnectTimeout(CONNECT_TIMEOUT);
+            conn.setReadTimeout(READ_TIMEOUT);
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Cache-Control", "no-cache");
+            conn.setUseCaches(false);
+            if (tryGzip) conn.setRequestProperty("Accept-Encoding", "gzip");
+            if (conn.getResponseCode() != 200) return null;
+            InputStream is = conn.getInputStream();
+            if (tryGzip) is = new GZIPInputStream(is);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buf = new byte[8192];
+            int n;
+            while ((n = is.read(buf)) != -1) baos.write(buf, 0, n);
+            is.close();
+            return baos.toByteArray();
+        } catch (Throwable e) {
+            return null;
+        } finally {
+            if (conn != null) { try { conn.disconnect(); } catch (Throwable ignored) {} }
+        }
+    }
+
+    /** 从版本清单 JSON 提取 versionCode（不依赖 org.json，兼容低版本系统） */
+    private int parseVersionCode(String json) {
+        try {
+            Matcher m = Pattern.compile("\"versionCode\"\\s*:\\s*(\\d+)").matcher(json);
+            if (m.find()) return Integer.parseInt(m.group(1));
+        } catch (Throwable ignored) {}
+        return -1;
+    }
+
+    private int getCachedVersionCode() {
+        try {
+            return getSharedPreferences(PREF_NAME, MODE_PRIVATE).getInt(PREF_KEY_VER, -1);
+        } catch (Throwable e) {
+            return -1;
+        }
+    }
+
+    private void saveCachedVersionCode(int code) {
+        try {
+            getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit().putInt(PREF_KEY_VER, code).apply();
+        } catch (Throwable ignored) {}
+    }
+
 
     /**
      * 在主线程执行 JS（用于从后台线程回调 JS）

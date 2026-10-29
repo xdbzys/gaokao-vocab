@@ -45,6 +45,34 @@ jobs:
       - name: Copy app-update.json to dist for GitHub Pages
         run: cp app-update.json dist/app-update.json
 
+      # v2.59.0 主流更新方案：生成极小版本清单 + gzip 压缩包
+      # 软件端先拉约 300 字节的 version.json 比对 versionCode，一致则完全不下载正文；
+      # 需要更新时优先拉取 .gz（体积约为原始 1/4），显著提速并节省流量。
+      - name: Generate version manifest + gzip bundle
+        run: |
+          node -e "
+            const fs=require('fs');
+            const u=JSON.parse(fs.readFileSync('app-update.json','utf8'));
+            const base='https://github.com/xdbzys/gaokao-vocab/releases/latest/download';
+            const mf={
+              version:u.version,
+              versionCode:u.versionCode,
+              webUrl:base+'/index.html',
+              webGzUrl:base+'/index.html.gz',
+              apkUrl:base+'/app-release.apk',
+              apkUrlCdn:'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk',
+              changelog:(u.changelog||'').slice(0,160)
+            };
+            const s=JSON.stringify(mf,null,2);
+            fs.writeFileSync('dist/version.json', s);
+            fs.writeFileSync('version.json', s);
+            console.log('version.json ->', s);
+          "
+          gzip -9 -c dist/index.html > dist/index.html.gz
+          cp dist/index.html.gz index.html.gz
+          echo "--- 体积对比 ---"
+          ls -la dist/index.html dist/index.html.gz version.json
+
       - name: Copy dist to Android assets
         run: |
           rm -rf android/app/src/main/assets/public
@@ -104,6 +132,8 @@ jobs:
           tag_name: v${{ github.run_number }}
           files: |
             dist/index.html
+            dist/index.html.gz
+            version.json
             背群英.html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -139,7 +169,7 @@ jobs:
           git config user.name "ci-bot"
           git config user.email "ci@bot.com"
           cp dist/index.html web/index.html
-          git add -f gaokao-vocab.apk web/index.html
+          git add -f gaokao-vocab.apk web/index.html version.json
           if git diff --cached --quiet; then
             echo "Files unchanged, skip mirror commit"
           else
@@ -154,6 +184,7 @@ jobs:
           sleep 20
           curl -s -m 120 "https://purge.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk" || echo "purge failed (non-fatal)"
           curl -s -m 120 "https://purge.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html" || echo "purge failed (non-fatal)"
+          curl -s -m 120 "https://purge.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/version.json" || echo "purge failed (non-fatal)"
 
       - name: Copy APK to dist
         run: |
