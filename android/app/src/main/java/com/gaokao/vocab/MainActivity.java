@@ -105,6 +105,16 @@ public class MainActivity extends Activity {
             } catch (Throwable ignored) {}
         }
 
+        // API 33+ 通知权限：听读后台播放的控制卡片需要，缺失时通知栏不可见（播放仍正常）
+        if (Build.VERSION.SDK_INT >= 33) {
+            try {
+                if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 1002);
+                }
+            } catch (Throwable ignored) {}
+        }
+
         webView = new WebView(this);
 
         WebSettings s = webView.getSettings();
@@ -174,6 +184,68 @@ public class MainActivity extends Activity {
                 });
             }
         }, "NativeAudio");
+
+        // v2.60.0 系统播放器桥接：供 JS 侧 window.NativePlayer 调用
+        // 音频改由原生 MediaPlayer 前台服务输出（系统媒体通道）：
+        // 退出应用 / 锁屏 / 息屏后继续播放，通知栏与耳机线控可直接控制
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public boolean isAvailable() {
+                return true;
+            }
+
+            @JavascriptInterface
+            public void playUrl(String url, String id, float rate) {
+                try {
+                    Intent i = new Intent(MainActivity.this, PlayerService.class);
+                    i.setAction(PlayerService.ACTION_PLAY);
+                    i.putExtra(PlayerService.EXTRA_URL, url);
+                    i.putExtra(PlayerService.EXTRA_ID, id);
+                    i.putExtra(PlayerService.EXTRA_RATE, rate);
+                    startServiceCompat(i);
+                } catch (Throwable ignored) {}
+            }
+
+            @JavascriptInterface
+            public void pause() { sendPlayerAction(PlayerService.ACTION_PAUSE); }
+
+            @JavascriptInterface
+            public void resume() { sendPlayerAction(PlayerService.ACTION_RESUME); }
+
+            @JavascriptInterface
+            public void stop() { sendPlayerAction(PlayerService.ACTION_STOP); }
+
+            @JavascriptInterface
+            public void setRate(float rate) {
+                try {
+                    Intent i = new Intent(MainActivity.this, PlayerService.class);
+                    i.setAction(PlayerService.ACTION_RATE);
+                    i.putExtra(PlayerService.EXTRA_RATE, rate);
+                    startServiceCompat(i);
+                } catch (Throwable ignored) {}
+            }
+
+            @JavascriptInterface
+            public void setTitle(String title) {
+                try {
+                    Intent i = new Intent(MainActivity.this, PlayerService.class);
+                    i.setAction(PlayerService.ACTION_TITLE);
+                    i.putExtra(PlayerService.EXTRA_TITLE, title);
+                    startServiceCompat(i);
+                } catch (Throwable ignored) {}
+            }
+        }, "NativePlayer");
+
+        // 播放服务 → JS 回调（播放结束 / 出错 / 通知栏与线控按键）
+        try {
+            PlayerService.setCallback(new PlayerService.PlayerCallback() {
+                @Override
+                public void onEvent(String id, String type) {
+                    notifyJs("window.__nativeAudioEvent && window.__nativeAudioEvent('"
+                            + String.valueOf(id) + "','" + String.valueOf(type) + "')");
+                }
+            });
+        } catch (Throwable ignored) {}
 
         // 外链打开桥接：供 JS 侧 window.NativeShell.openExternal(url) 调用
         // 直接走 ACTION_VIEW Intent，避免 window.open 在 onCreateWindow 中无法可靠取到目标 URL
@@ -559,9 +631,36 @@ public class MainActivity extends Activity {
     public void onBackPressed() {
         if (webView != null && webView.canGoBack()) {
             webView.goBack();
-        } else {
-            super.onBackPressed();
+            return;
         }
+        // v2.60.0：听读播放中按返回键 → 退到桌面但保留进程与播放（等同音乐 App 行为）。
+        // 音频由 PlayerService 前台服务托管，通知栏仍可暂停 / 上一词 / 下一词；
+        // 非播放状态维持原退出逻辑
+        if (backgroundPlaybackEnabled) {
+            try {
+                moveTaskToBack(true);
+                return;
+            } catch (Throwable ignored) {}
+        }
+        super.onBackPressed();
+    }
+
+    /** 启动播放服务（API 26+ 需 startForegroundService，失败回退普通 startService） */
+    private void startServiceCompat(Intent i) {
+        try {
+            if (Build.VERSION.SDK_INT >= 26) startForegroundService(i);
+            else startService(i);
+        } catch (Throwable e) {
+            try { startService(i); } catch (Throwable ignored) {}
+        }
+    }
+
+    private void sendPlayerAction(String action) {
+        try {
+            Intent i = new Intent(MainActivity.this, PlayerService.class);
+            i.setAction(action);
+            startServiceCompat(i);
+        } catch (Throwable ignored) {}
     }
 
     @Override
@@ -583,6 +682,9 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        // 应用真正退出（用户划掉卡片 / 系统回收）时停止系统播放器，避免残留通知
+        try { stopService(new Intent(this, PlayerService.class)); } catch (Throwable ignored) {}
+        try { PlayerService.setCallback(null); } catch (Throwable ignored) {}
         if (webView != null) {
             try {
                 webView.stopLoading();
