@@ -10456,7 +10456,12 @@ function speakEnAsync(text, rate) {
       speakTtsAsync(text, 'en-US', rate * 0.9).then(done);
     }
     audio.__done = done;
-    audio.onended = done;
+    // 修复 BUG2：有道对部分词返回空响应时 ended 仍会触发但 duration 为 0，
+    // 此时不能静默跳过，必须回退 TTS 真正发声
+    audio.onended = function () {
+      if (!fallbackStarted && !(audio.duration > 0)) { fallback(); return; }
+      done();
+    };
     audio.onerror = fallback;
     try { audio.currentTime = 0; } catch (e) {}
     try { audio.playbackRate = Math.max(0.5, Math.min(2, rate)); } catch (e) {}
@@ -10464,8 +10469,56 @@ function speakEnAsync(text, rate) {
       var p = audio.play();
       if (p && p.catch) p.catch(fallback);
     } catch (e) { fallback(); }
-    // 兜底：网络音频长时间未结束时不让播放器卡死
-    setTimeout(function () { if (!settled && !fallbackStarted) done(); }, 10000);
+    // 修复 BUG2：10 秒内仍无播放进度（卡在加载/无声）则回退 TTS，而非静默跳过；
+    // 若已在正常播放则信任 onended 收尾
+    setTimeout(function () {
+      if (settled || fallbackStarted) return;
+      if (!audio.currentTime || audio.currentTime < 0.05) fallback();
+      else done();
+    }, 10000);
+  });
+}
+
+// 中文朗读：优先有道真人发音（与英文同款接口，支持中文文本），失败/无音回退系统 TTS
+// 修复 BUG4：原实现中文仅走 speechSynthesis，若环境无中文 TTS 引擎则整句静默无声音
+function speakZhAsync(text, rate) {
+  return new Promise(function (resolve) {
+    if (!text) { resolve(); return; }
+    var audio = _getListenAudio(text);
+    _listenAudio = audio;
+    var settled = false, fallbackStarted = false;
+    function done() {
+      if (settled) return;
+      settled = true;
+      try { audio.onended = null; audio.onerror = null; } catch (e) {}
+      audio.__done = null;
+      if (_listenAudio === audio) _listenAudio = null;
+      resolve();
+    }
+    function fallback() {
+      if (settled || fallbackStarted) return;
+      fallbackStarted = true;
+      try { audio.pause(); } catch (e) {}
+      try { audio.currentTime = 0; } catch (e) {}
+      speakTtsAsync(text, 'zh-CN', rate).then(done);
+    }
+    audio.__done = done;
+    audio.onended = function () {
+      if (!fallbackStarted && !(audio.duration > 0)) { fallback(); return; }
+      done();
+    };
+    audio.onerror = fallback;
+    try { audio.currentTime = 0; } catch (e) {}
+    try { audio.playbackRate = Math.max(0.5, Math.min(2, rate)); } catch (e) {}
+    try {
+      var p = audio.play();
+      if (p && p.catch) p.catch(fallback);
+    } catch (e) { fallback(); }
+    setTimeout(function () {
+      if (settled || fallbackStarted) return;
+      if (!audio.currentTime || audio.currentTime < 0.05) fallback();
+      else done();
+    }, 10000);
   });
 }
 
@@ -10490,7 +10543,9 @@ async function playListenItemAsync(item, cfg, token, tokenRef) {
     if (steps[i] === 'en') {
       await speakEnAsync(enText, cfg.rate);
     } else {
-      await speakTtsAsync(zhText, 'zh-CN', cfg.rate * 0.95);
+      // 修复 BUG4：中文不再只依赖系统 TTS（无中文引擎时整句静默），
+      // 改为优先有道真人发音，失败/无音再回退系统 TTS
+      await speakZhAsync(zhText, cfg.rate * 0.95);
     }
     if (token !== tokenRef.current) return;
     if (i < steps.length - 1) {
@@ -11199,6 +11254,30 @@ function App() {
       setListenNativePlaying(false);
     };
   }, []);
+
+  // 修复 BUG1：切到后台 / 关闭标签页 / 页面隐藏时停止听读，
+  // 解决“退出应用后仍在播放、无法停止”的问题
+  useEffect(() => {
+    const onHide = function () {
+      if (document.visibilityState === 'hidden' || document.hidden) {
+        if (listenPlayingRef.current) stopListenPlayback();
+      }
+    };
+    const onPageHide = function () { if (listenPlayingRef.current) stopListenPlayback(); };
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', onPageHide);
+    return function () {
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', onPageHide);
+    };
+  }, []);
+
+  // 修复 BUG3：播放中实时应用倍速，使参数调整立即生效（不必等到下一词）
+  useEffect(() => {
+    if (listenPlaying && _listenAudio) {
+      try { _listenAudio.playbackRate = Math.max(0.5, Math.min(2, listenCfg.rate)); } catch (e) {}
+    }
+  }, [listenCfg.rate, listenPlaying]);
 
   // 锁屏/通知栏媒体信息（现代浏览器渐进增强，旧 WebView 自动忽略）
   useEffect(() => {
