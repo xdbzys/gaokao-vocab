@@ -12795,6 +12795,14 @@ function App() {
 
       console.log('[Update] Local versionCode:', APP_VERSION_CODE, 'Remote:', data.versionCode);
       let hasUpdate = data.versionCode > APP_VERSION_CODE;
+      // v2.60.0：网页热更先于安装包生效，JS 里的版本号会被热更抬高，
+      // 导致“安装包还是旧版却检测不到更新”。用安装包能力探测兜底：
+      // 原生应用若没有系统播放器桥接（window.NativePlayer），即代表安装包低于 2.60.0，
+      // 此时只要远端已是 2.60.0 就强制提示安装包更新
+      if (isNativeApp && !(window.NativePlayer && typeof window.NativePlayer.playUrl === 'function')
+          && data.versionCode >= 221) {
+        hasUpdate = true;
+      }
       const changelog = data.changelog || data.updateLog || '';
       let version = data.version || data.versionCode;
       const finalChangelog = hasUpdate ? (data.changelog || data.updateLog || changelog) : changelog;
