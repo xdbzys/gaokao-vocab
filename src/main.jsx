@@ -10538,6 +10538,8 @@ function playUrlAsync(url, rate) {
       if (timer) clearTimeout(timer);
       try { audio.onended = null; audio.onerror = null; audio.onplaying = null; } catch (e) {}
       if (_listenAudio === audio) _listenAudio = null;
+      // 收尾时确保停住，避免暂停恢复后与下一个词的声音重叠
+      try { audio.pause(); } catch (e) {}
       listenPauseGate().then(function () { resolve(!!ok); });
     }
     audio.onplaying = function () { started = true; };
