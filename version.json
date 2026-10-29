@@ -1,9 +1,9 @@
 {
-  "version": "2.61.0",
-  "versionCode": 222,
+  "version": "2.62.0",
+  "versionCode": 223,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "🎉 背群英 v2.61.0 已发布！\n\n【中文自然度】改由手机自带语音引擎朗读\n- 之前用网络机械音，听起来“人机味”重\n- 现在默认走手机系统中文语音（讯飞 / 百度 / Google 离线引擎），自然度更好、零加载延迟\n- 读不出中文的设备会自动回退网络语音；也可在听读参数里手动切「中文发音：系统语音 / 网络语"
+  "changelog": "🎉 背群英 v2.62.0 已发布！\n\n【听读像听歌软件一样可控】\n- 音频改用本地 MP3 文件播放（先缓存再播），时长精确、进度可拖动\n- 锁屏、通知栏、蓝牙耳机、车机都能看到进度条并拖动，和音乐播放器一致\n- 媒体卡片显示「单词 / 释义 / 背群英听读」，锁屏也能看到正在读什么\n- 耳机线控支持播放暂停、上一"
 }
