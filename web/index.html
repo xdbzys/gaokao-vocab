@@ -35484,7 +35484,7 @@ var Dg = Ay(function (yo) {
   }
   function oc(m) {
     try {
-      window.NativeAudio && window.NativeAudio.setBackgroundPlayback && window.NativeAudio.setBackgroundPlayback(!!m), window.NativeAudio && window.NativeAudio.setKeepScreenOn && window.NativeAudio.setKeepScreenOn(!!m);
+      window.NativeAudio && window.NativeAudio.setBackgroundPlayback && window.NativeAudio.setBackgroundPlayback(!!m), window.NativeAudio && window.NativeAudio.setKeepScreenOn && window.NativeAudio.setKeepScreenOn(!!m), !m && window.NativePlayer && window.NativePlayer.stop && window.NativePlayer.stop();
     } catch (f) {}
     try {
       if (m) {
