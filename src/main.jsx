@@ -8,6 +8,45 @@ import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, pre
 import { masterVocabSeed, masterVocabLookup } from './gaokaoMasterVocab';
 
 /* ============================
+   低版本 / 多设备兼容加固（Android 10 / MP5 / 翻译扫描笔等老 WebView）
+   - localStorage 兜底：受限 WebView / 隐私模式禁用时自动降级为内存存储，避免白屏崩溃
+   - 该加固在业务代码前执行，覆盖全文件所有 localStorage 读写
+   - 设备能力探测结果挂到 window.__devCaps，供 UI 做友好提示（不影响功能）
+   ============================ */
+(function () {
+  try {
+    var ls = window.localStorage;
+    if (ls && ls.getItem && ls.setItem) {
+      var _g = ls.getItem.bind(ls), _s = ls.setItem.bind(ls), _r = ls.removeItem.bind(ls), _c = ls.clear.bind(ls);
+      ls.getItem = function (k) { try { return _g(k); } catch (e) { return null; } };
+      ls.setItem = function (k, v) { try { return _s(k, v); } catch (e) {} };
+      ls.removeItem = function (k) { try { return _r(k); } catch (e) {} };
+      ls.clear = function () { try { return _c(); } catch (e) {} };
+    }
+  } catch (e) {
+    // localStorage 完全不可用：用内存对象兜底，保证应用仍可运行（仅不持久化）
+    var _mem = {};
+    var _store = {
+      getItem: function (k) { return Object.prototype.hasOwnProperty.call(_mem, k) ? _mem[k] : null; },
+      setItem: function (k, v) { _mem[k] = String(v); },
+      removeItem: function (k) { delete _mem[k]; },
+      clear: function () { _mem = {}; },
+      key: function (i) { return Object.keys(_mem)[i] || null; }
+    };
+    Object.defineProperty(_store, 'length', { get: function () { return Object.keys(_mem).length; } });
+    try { Object.defineProperty(window, 'localStorage', { value: _store, configurable: true }); } catch (e2) {}
+  }
+  try {
+    window.__devCaps = {
+      tts: ('speechSynthesis' in window) && typeof SpeechSynthesisUtterance !== 'undefined',
+      wakeLock: ('wakeLock' in navigator) && !!(navigator.wakeLock && navigator.wakeLock.request),
+      mediaSession: 'mediaSession' in navigator,
+      localStorage: (function () { try { window.localStorage.setItem('__cap_test__', '1'); window.localStorage.removeItem('__cap_test__'); return true; } catch (e) { return false; } })()
+    };
+  } catch (e) {}
+})();
+
+/* ============================
    CDN 动态加载（避免 pdfjs/tesseract 的 import.meta 语法导致 SyntaxError）
    pdfjs-dist@6.x 和 tesseract.js@7.x 使用 import.meta，在 viteSingleFile
    打包到非 ES module 的 <script> 标签时会报 SyntaxError，导致整个 JS 不执行（蓝屏）。
@@ -46,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.57.0';
-const APP_VERSION_CODE = 218;
+const APP_VERSION = '2.58.0';
+const APP_VERSION_CODE = 219;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -10377,10 +10416,12 @@ function setListenNativePlaying(on) {
   try {
     if (on) {
       if (!_listenWakeLock && navigator.wakeLock && navigator.wakeLock.request) {
-        navigator.wakeLock.request('screen').then(function (w) {
-          _listenWakeLock = w;
-          try { w.addEventListener('release', function () { _listenWakeLock = null; }); } catch (e) {}
-        }).catch(function () {});
+        try {
+          navigator.wakeLock.request('screen').then(function (w) {
+            _listenWakeLock = w;
+            try { w.addEventListener('release', function () { _listenWakeLock = null; }); } catch (e) {}
+          }).catch(function () {});
+        } catch (e) {}
       }
     } else if (_listenWakeLock) {
       try { _listenWakeLock.release(); } catch (e) {}
