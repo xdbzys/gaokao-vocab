@@ -1,0 +1,9 @@
+{
+  "version": "2.59.0",
+  "versionCode": 220,
+  "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
+  "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
+  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
+  "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
+  "changelog": "🎉 背群英 v2.59.0 已发布！\n【更新】全新更新机制（更快更省流量）\n- 改用主流方案：启动先拉取极小的版本清单比对版本号，已是最新则完全不下载（秒级完成）\n- 需要更新时优先下载 gzip 压缩包（体积约为原来的 1/4），下载速度大幅提升\n- 下载源改为 GitHub Release（CDN 加速、稳定），"
+}
