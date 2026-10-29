@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.60.0';
-const APP_VERSION_CODE = 221;
+const APP_VERSION = '2.61.0';
+const APP_VERSION_CODE = 222;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -10309,6 +10309,62 @@ function enAudioUrls(text) {
   ];
 }
 
+// ===== v2.61.0：暂停 / 继续闸门 =====
+// 目标：像音乐 App 一样，通知栏、锁屏、耳机线控、App 内按钮都能真正「暂停」再「继续」，
+// 而不是一点暂停就把整条播放链取消（旧行为会导致继续时从头重读当前词）
+var _listenPausedFlag = false;
+var _listenResumeWaiters = [];
+function listenIsPaused() { return _listenPausedFlag; }
+function listenSetPaused(v) {
+  _listenPausedFlag = !!v;
+  if (!_listenPausedFlag) {
+    var ws = _listenResumeWaiters.slice();
+    _listenResumeWaiters.length = 0;
+    for (var i = 0; i < ws.length; i++) { try { ws[i](); } catch (e) {} }
+  }
+}
+// 暂停中挂起，恢复后立即继续
+function listenPauseGate() {
+  if (!_listenPausedFlag) return Promise.resolve();
+  return new Promise(function (res) { _listenResumeWaiters.push(res); });
+}
+
+// ===== v2.61.0：中文发音源偏好 =====
+// system = 设备系统语音引擎（国产机多为讯飞/百度离线引擎，自然度好、零延迟）
+// net    = 网络语音（通用兜底，任何设备都能出声，但音色偏机械）
+function _listenZhSourcePref() {
+  try {
+    var s = JSON.parse(localStorage.getItem(LISTEN_CFG_KEY) || '{}') || {};
+    return s.zhSource === 'net' ? 'net' : 'system';
+  } catch (e) { return 'system'; }
+}
+
+// 系统是否存在可用中文语音（无中文引擎时 speak() 不报错但无声，必须探测）
+var _zhVoiceCache = null;
+var _zhVoiceChecked = false;
+function getZhTtsVoice() {
+  try {
+    if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return null;
+    if (_zhVoiceCache) return _zhVoiceCache;
+    var vs = [];
+    try { vs = window.speechSynthesis.getVoices() || []; } catch (e) { vs = []; }
+    for (var i = 0; i < vs.length; i++) {
+      var l = String(vs[i].lang || '').toLowerCase();
+      if (l.indexOf('zh') === 0 || l.indexOf('cmn') === 0) { _zhVoiceCache = vs[i]; return _zhVoiceCache; }
+    }
+  } catch (e) {}
+  return null;
+}
+// 语音列表可能异步就绪，变化后刷新缓存
+try {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    if (window.speechSynthesis.addEventListener) {
+      window.speechSynthesis.addEventListener('voiceschanged', function () { _zhVoiceCache = null; });
+    }
+    window.speechSynthesis.onvoiceschanged = function () { _zhVoiceCache = null; };
+  }
+} catch (e) {}
+
 // 系统播放器：原生 MediaPlayer 前台服务，退出应用/锁屏/息屏后仍可播放
 var _nativeAudioSeq = 0;
 var _nativeAudioCbs = {};
@@ -10323,7 +10379,7 @@ try {
         return;
       }
       var cb = _nativeAudioCbs[id];
-      if (cb) { delete _nativeAudioCbs[id]; cb(type === 'end' || type === 'complete'); }
+      if (cb) cb(type);
     } catch (e) {}
   };
 } catch (e) {}
@@ -10332,18 +10388,35 @@ function nativePlayUrlAsync(url, rate) {
   return new Promise(function (resolve) {
     var id = String(++_nativeAudioSeq);
     var settled = false;
+    var started = false;
+    var timer = null;
+    function clearT() { if (timer) { clearTimeout(timer); timer = null; } }
+    function armTimer(ms) {
+      clearT();
+      timer = setTimeout(function () {
+        // 暂停中不断续期，避免恢复后立刻跳到下一个词
+        if (listenIsPaused()) { armTimer(ms); return; }
+        finish(started);
+      }, ms);
+    }
     function finish(ok) {
       if (settled) return;
       settled = true;
+      clearT();
       delete _nativeAudioCbs[id];
-      resolve(!!ok);
+      // 暂停中先挂起，恢复后再收尾
+      listenPauseGate().then(function () { resolve(!!ok); });
     }
-    _nativeAudioCbs[id] = finish;
+    _nativeAudioCbs[id] = function (type) {
+      if (type === 'start') { started = true; armTimer(60000); return; }
+      if (type === 'error') { finish(false); return; }
+      finish(true);
+    };
     try {
       window.NativePlayer.playUrl(url, id, rate || 1);
     } catch (e) { finish(false); return; }
-    // 兜底：15 秒仍无回调按成功处理，避免整条播放链卡死
-    setTimeout(function () { finish(true); }, 15000);
+    // 15 秒仍未真正起播 → 判定该源失败（加载失败 / 空音频）
+    armTimer(15000);
   });
 }
 
@@ -10399,10 +10472,11 @@ function loadListenCfg() {
       rate: _clampNum(s.rate, 0.5, 2, 1),
       loop: (s.loop === 'one' || s.loop === 'off') ? s.loop : 'list',
       shuffle: !!s.shuffle,
-      systemPlayer: s.systemPlayer !== false
+      systemPlayer: s.systemPlayer !== false,
+      zhSource: s.zhSource === 'net' ? 'net' : 'system'
     };
   } catch (e) {
-    return { enRepeat: 2, zhRepeat: 1, order: 'en-zh', innerGap: 0.6, wordGap: 2, rate: 1, loop: 'list', shuffle: false, systemPlayer: true };
+    return { enRepeat: 2, zhRepeat: 1, order: 'en-zh', innerGap: 0.6, wordGap: 2, rate: 1, loop: 'list', shuffle: false, systemPlayer: true, zhSource: 'system' };
   }
 }
 
@@ -10464,7 +10538,7 @@ function playUrlAsync(url, rate) {
       if (timer) clearTimeout(timer);
       try { audio.onended = null; audio.onerror = null; audio.onplaying = null; } catch (e) {}
       if (_listenAudio === audio) _listenAudio = null;
-      resolve(!!ok);
+      listenPauseGate().then(function () { resolve(!!ok); });
     }
     audio.onplaying = function () { started = true; };
     audio.onended = function () {
@@ -10493,16 +10567,23 @@ function playUrlAsync(url, rate) {
   });
 }
 
-// 依次尝试各发音来源：系统播放器 → 网络真人音 → 系统 TTS
+// 依次尝试各发音来源：系统播放器 / 应用内音频 → 网络真人音 → 系统 TTS
 function speakChainAsync(urls, ttsText, ttsLang, rate, useNative) {
   return new Promise(function (resolve) {
     var list = urls || [];
     var i = 0;
+    var ttsTried = false;
+    function tryTts() {
+      if (ttsTried) { resolve(); return; }
+      ttsTried = true;
+      speakTtsAsync(ttsText, ttsLang, rate).then(function (ok) {
+        if (ok) { resolve(); return; }
+        // 系统语音不可用（无引擎/被静默）：若还有没试过的网络源，回头再试
+        if (i < list.length) next(); else resolve();
+      });
+    }
     function next() {
-      if (i >= list.length) {
-        speakTtsAsync(ttsText, ttsLang, rate).then(function () { resolve(); });
-        return;
-      }
+      if (i >= list.length) { tryTts(); return; }
       var url = list[i++];
       var failedAt = _failedAudioUrls[url];
       if (failedAt && (Date.now() - failedAt) < 60000) { next(); return; }
@@ -10574,6 +10655,8 @@ function listenSleep(ms, token, tokenRef) {
     var step = 100;
     function tick() {
       if (token !== tokenRef.current || elapsed >= ms) { resolve(); return; }
+      // 暂停中不累计间隔，恢复后接着等剩余时间
+      if (listenIsPaused()) { setTimeout(tick, step); return; }
       elapsed += step;
       setTimeout(tick, step);
     }
@@ -10582,32 +10665,46 @@ function listenSleep(ms, token, tokenRef) {
   });
 }
 
-// 本地 TTS 朗读，等待读完（含不触发 onend 的 WebView 兜底）
+// 系统语音朗读：返回 Promise<boolean>（true = 确实发声了）
+// 修复：部分设备无 TTS 引擎时 speak() 不报错也不触发 onend/onerror，
+// 旧实现会静默等待整段超时，表现为"中文没声音"。这里用 onstart 探活：
+// 1.8 秒内没有 onstart 即判定该设备发不出声，立即回退网络语音
 function speakTtsAsync(text, lang, rate) {
   return new Promise(function (resolve) {
-    if (!text || !('speechSynthesis' in window)) { resolve(); return; }
+    if (!text || !('speechSynthesis' in window)) { resolve(false); return; }
     var settled = false;
-    var done = function () {
+    var started = false;
+    var done = function (ok) {
       if (settled) return;
       settled = true;
       if (_listenTtsDone === done) _listenTtsDone = null;
-      resolve();
+      listenPauseGate().then(function () { resolve(ok !== false); });
     };
     _listenTtsDone = done;
     try {
       window.speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(text);
       u.lang = lang;
+      var v = (lang === 'zh-CN') ? getZhTtsVoice() : null;
+      if (v) { try { u.voice = v; } catch (e) {} }
       u.rate = Math.max(0.5, Math.min(2, rate));
       u.pitch = 1;
-      u.onend = done;
-      u.onerror = done;
+      u.onstart = function () { started = true; };
+      u.onend = function () { done(started); };
+      u.onerror = function () { done(false); };
       window.speechSynthesis.speak(u);
-    } catch (e) { done(); return; }
+    } catch (e) { done(false); return; }
+    // 探活：1.8 秒仍无 onstart → 判定无声，回退
+    setTimeout(function () {
+      if (!settled && !started) {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+        done(false);
+      }
+    }, 1800);
     var ms = lang === 'zh-CN'
       ? 1200 + text.length * 300 / Math.max(0.5, rate)
       : 1500 + text.length * 140 / Math.max(0.5, rate);
-    setTimeout(done, Math.max(1500, Math.min(30000, ms)));
+    setTimeout(function () { done(started); }, Math.max(1500, Math.min(30000, ms)));
   });
 }
 
@@ -10618,12 +10715,20 @@ function speakEnAsync(text, rate) {
   return speakChainAsync(enAudioUrls(t), t, 'en-US', rate || 1, listenSystemPlayerOn());
 }
 
-// 中文朗读：百度整句 TTS → 有道短词 TTS → 系统 TTS
-// 修复 BUG4：旧实现用有道英文接口（type=2）读中文，只返回约 0.1 秒静音，导致中文完全听不到
+// 中文朗读（v2.61.0 自然度优先）
+// 顺序：设备系统中文语音（讯飞/百度/Google 离线引擎，明显比网页机械音自然、零延迟）
+//   → 网络整句语音 → 网络短词语音 → 系统语音兜底
+// 旧实现用有道英文接口（type=2）读中文，只返回约 0.1 秒静音，是"中文完全听不到"的根因
 function speakZhAsync(text, rate) {
   var t = _zhSpeechText(text);
   if (!t) return Promise.resolve();
-  return speakChainAsync(zhAudioUrls(t, rate), t, 'zh-CN', rate || 1, listenSystemPlayerOn());
+  var chain = function () { return speakChainAsync(zhAudioUrls(t, rate), t, 'zh-CN', rate || 1, listenSystemPlayerOn()); };
+  if (_listenZhSourcePref() === 'net') return chain();
+  if (!getZhTtsVoice()) return chain();
+  return speakTtsAsync(t, 'zh-CN', rate || 1).then(function (ok) {
+    if (ok) return;
+    return chain();
+  });
 }
 
 
@@ -10819,6 +10924,8 @@ function App() {
   const [listenCfg, setListenCfg] = useState(loadListenCfg);
   const [listenIndex, setListenIndex] = useState(0);
   const [listenPlaying, setListenPlaying] = useState(false);
+  // v2.61.0：真正的「暂停」状态（与 listenPlaying 独立，暂停时仍视为一次播放会话）
+  const [listenPaused, setListenPaused] = useState(false);
   const [listenShowCfg, setListenShowCfg] = useState(false);
   const [listenShowPL, setListenShowPL] = useState(false);
   const [listenShowBooks, setListenShowBooks] = useState(false);
@@ -10827,6 +10934,7 @@ function App() {
   const listenQueueRef = useRef([]);         // 当前播放队列快照（播放中不随进度变化跳动）
   const listenIndexRef = useRef(0);
   const listenPlayingRef = useRef(false);
+  const listenPausedRef = useRef(false);
   const listenSeedRef = useRef(Date.now());
   // 词性筛选（替代原来的type筛选）
   const [posFilter, setPosFilter] = useState('全部');
@@ -11252,10 +11360,41 @@ function App() {
 
   const stopListenPlayback = function () {
     listenTokenRef.current += 1;
+    listenPausedRef.current = false;
+    listenSetPaused(false);
+    setListenPaused(false);
     stopListenAudio();
     listenPlayingRef.current = false;
     setListenPlaying(false);
     setListenNativePlaying(false);
+  };
+
+  // v2.61.0：真正的暂停——挂起播放链并暂停当前声音，可从通知栏 / 锁屏 / 线控 / App 内按钮恢复
+  const pauseListen = function (skipNative) {
+    if (!listenPlayingRef.current || listenPausedRef.current) return;
+    listenPausedRef.current = true;
+    listenSetPaused(true);
+    setListenPaused(true);
+    if (!skipNative) { try { if (window.NativePlayer && window.NativePlayer.pause) window.NativePlayer.pause(); } catch (e) {} }
+    try { if (_listenAudio && _listenAudio.pause) _listenAudio.pause(); } catch (e) {}
+    try { if ('speechSynthesis' in window && window.speechSynthesis.pause) window.speechSynthesis.pause(); } catch (e) {}
+    try { if (navigator.mediaSession) navigator.mediaSession.playbackState = 'paused'; } catch (e) {}
+  };
+
+  const resumeListen = function (skipNative) {
+    if (!listenPlayingRef.current || !listenPausedRef.current) return;
+    listenPausedRef.current = false;
+    listenSetPaused(false);
+    setListenPaused(false);
+    if (!skipNative) { try { if (window.NativePlayer && window.NativePlayer.resume) window.NativePlayer.resume(); } catch (e) {} }
+    try {
+      if (_listenAudio && _listenAudio.play) {
+        var p = _listenAudio.play();
+        if (p && p.catch) p.catch(function () {});
+      }
+    } catch (e) {}
+    try { if ('speechSynthesis' in window && window.speechSynthesis.resume) window.speechSynthesis.resume(); } catch (e) {}
+    try { if (navigator.mediaSession) navigator.mediaSession.playbackState = 'playing'; } catch (e) {}
   };
 
   const startListenAt = async function (queue, startIdx) {
@@ -11268,6 +11407,9 @@ function App() {
     if (i < 0) i = 0;
     listenIndexRef.current = i;
     setListenIndex(i);
+    listenPausedRef.current = false;
+    listenSetPaused(false);
+    setListenPaused(false);
     listenPlayingRef.current = true;
     setListenPlaying(true);
     setListenNativePlaying(true);
@@ -11295,7 +11437,10 @@ function App() {
   };
 
   const toggleListenPlay = function () {
-    if (listenPlayingRef.current) { stopListenPlayback(); return; }
+    if (listenPlayingRef.current) {
+      if (listenPausedRef.current) resumeListen(); else pauseListen();
+      return;
+    }
     const q = (listenQueueRef.current && listenQueueRef.current.length) ? listenQueueRef.current : listenQueue;
     if (!q.length) return;
     let idx = listenIndexRef.current;
@@ -11403,26 +11548,41 @@ function App() {
           album: '背群英 · 听读模式'
         });
       }
-      navigator.mediaSession.playbackState = listenPlaying ? 'playing' : 'paused';
+      navigator.mediaSession.playbackState = listenPausedRef.current ? 'paused' : (listenPlaying ? 'playing' : 'paused');
       // 耳机线控 / 锁屏按钮：播放、暂停、上一首、下一首
       if (navigator.mediaSession.setActionHandler) {
-        navigator.mediaSession.setActionHandler('play', function () { if (!listenPlayingRef.current) toggleListenPlay(); });
-        navigator.mediaSession.setActionHandler('pause', function () { if (listenPlayingRef.current) stopListenPlayback(); });
+        navigator.mediaSession.setActionHandler('play', function () {
+          if (listenPausedRef.current) resumeListen();
+          else if (!listenPlayingRef.current) toggleListenPlay();
+        });
+        navigator.mediaSession.setActionHandler('pause', function () { if (listenPlayingRef.current) pauseListen(); });
         navigator.mediaSession.setActionHandler('stop', function () { stopListenPlayback(); });
         navigator.mediaSession.setActionHandler('nexttrack', function () { listenNext(); });
         navigator.mediaSession.setActionHandler('previoustrack', function () { listenPrev(); });
       }
     } catch (e) {}
-    // v2.60.0：原生通知栏 / 锁屏 / 耳机线控按钮回调入口
+    // v2.61.0：原生通知栏 / 锁屏 / 耳机线控按钮回调入口（真正的暂停 / 继续）
     try {
       window.__nativeMediaAction = function (action) {
+        // 原生层已自行切换播放状态时，JS 只同步状态、不再反向下发指令
         if (action === 'nexttrack') listenNext();
         else if (action === 'previoustrack') listenPrev();
-        else if (action === 'playpause') toggleListenPlay();
+        else if (action === 'paused') pauseListen(true);
+        else if (action === 'resumed') resumeListen(true);
+        else if (action === 'pause') pauseListen();
+        else if (action === 'play' || action === 'resume') {
+          if (listenPausedRef.current) resumeListen();
+          else if (!listenPlayingRef.current) toggleListenPlay();
+        }
+        else if (action === 'playpause') {
+          if (!listenPlayingRef.current) toggleListenPlay();
+          else if (listenPausedRef.current) resumeListen();
+          else pauseListen();
+        }
         else if (action === 'stop') stopListenPlayback();
       };
     } catch (e) {}
-  }, [listenCurrent, listenPlaying]);
+  }, [listenCurrent, listenPlaying, listenPaused]);
 
   // 全部词汇合并（词根词缀、对比、易错词基于全量词汇）
   // 词库映射 ref：供详情页和背诵页显示单词所属词库
@@ -13389,7 +13549,7 @@ function App() {
           <div className="listenControls">
             <button className="listenSkipBtn" onClick={listenPrev} disabled={!listenDisplayQueue.length} title="上一个">⏮</button>
             <button className="listenPlayBtn" onClick={toggleListenPlay} disabled={!listenDisplayQueue.length} title="播放/暂停">
-              {listenPlaying ? '⏸' : '▶'}
+              {listenPlaying && !listenPaused ? '⏸' : '▶'}
             </button>
             <button className="listenSkipBtn" onClick={listenNext} disabled={!listenDisplayQueue.length} title="下一个">⏭</button>
           </div>
@@ -13457,7 +13617,16 @@ function App() {
                   <button className={listenCfg.systemPlayer === false ? 'on' : ''} onClick={() => updateListenCfg({ systemPlayer: false })}>仅应用内</button>
                 </div>
               </div>
+              <div className="listenSettingRow">
+                <span>中文发音</span>
+                <div className="listenSeg">
+                  <button className={listenCfg.zhSource !== 'net' ? 'on' : ''} onClick={() => updateListenCfg({ zhSource: 'system' })}>系统语音</button>
+                  <button className={listenCfg.zhSource === 'net' ? 'on' : ''} onClick={() => updateListenCfg({ zhSource: 'net' })}>网络语音</button>
+                </div>
+              </div>
               <div className="listenTip">推荐默认：英文 2 遍 → 中文 1 遍，词间 2 秒（参考百词斩 / 墨墨 / 不背单词的听读做法）</div>
+              <div className="listenTip">中文默认用手机自带语音引擎（讯飞 / 百度 / Google 离线引擎），比网络机械音自然且零延迟；若你的设备读不出中文，请切「网络语音」</div>
+              <div className="listenTip">暂停 / 继续：应用内按钮、通知栏卡片、锁屏与耳机线控都可控制，暂停后从当前词接着读，不会从头重来</div>
               <div className="listenTip">{listenSystemPlayerOn() ? '已连接系统播放器：退出应用、锁屏、息屏后继续播放，通知栏可暂停 / 上一词 / 下一词' : '当前安装包未内置系统播放器（中文发音已随热更新生效）。后台播放需 v2.60.0 及以上版本，请到「我的 → 检查更新」一键安装'}</div>
             </div>
           )}

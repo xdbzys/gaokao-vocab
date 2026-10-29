@@ -120,7 +120,23 @@ public class PlayerService extends Service {
         }
         if (ACTION_MEDIA.equals(action)) {
             String a = intent.getStringExtra(EXTRA_MEDIA_ACTION);
-            emit("", a == null ? "playpause" : a);
+            if (a == null || a.length() == 0) a = "playpause";
+            // 先在原生层立即切换播放/暂停（即使 JS 无响应也能马上生效），
+            // 再以「已暂停 / 已继续」的状态事件通知 JS 同步界面，
+            // 避免 JS 再反向发一次 pause/resume 造成"按播放反而暂停"
+            if ("playpause".equals(a)) {
+                if (mPaused) resumeInternal();
+                else pauseInternal();
+                emit("", mPaused ? "paused" : "resumed");
+            } else if ("pause".equals(a)) {
+                pauseInternal();
+                emit("", "paused");
+            } else if ("play".equals(a) || "resume".equals(a)) {
+                resumeInternal();
+                emit("", "resumed");
+            } else {
+                emit("", a);
+            }
             return START_STICKY;
         }
         if (ACTION_RATE.equals(action)) {
@@ -213,6 +229,8 @@ public class PlayerService extends Service {
                         mPaused = false;
                         updateSessionState(PlaybackState.STATE_PLAYING);
                         updateNotification();
+                        // 通知 JS“真的开始播了”，用于区分「加载中」与「播放中」，避免暂停时被误判为播完
+                        emit(mId, "start");
                     } catch (Throwable e) {
                         Log.e(TAG, "start failed", e);
                         emit(mId, "error");
@@ -367,12 +385,14 @@ public class PlayerService extends Service {
             mSession.setCallback(new MediaSession.Callback() {
                 @Override
                 public void onPlay() {
-                    emit("", "playpause");
+                    resumeInternal();
+                    emit("", "resumed");
                 }
 
                 @Override
                 public void onPause() {
-                    emit("", "playpause");
+                    pauseInternal();
+                    emit("", "paused");
                 }
 
                 @Override
