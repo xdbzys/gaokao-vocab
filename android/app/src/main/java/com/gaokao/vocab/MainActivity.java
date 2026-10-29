@@ -1,11 +1,14 @@
 package com.gaokao.vocab;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.webkit.JavascriptInterface;
@@ -18,12 +21,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.ByteArrayOutputStream;
+import java.security.MessageDigest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * 纯原生 WebView 容器（不依赖 Capacitor 运行时）
@@ -185,25 +194,49 @@ public class MainActivity extends Activity {
             }
         }, "NativeAudio");
 
-        // v2.60.0 系统播放器桥接：供 JS 侧 window.NativePlayer 调用
+        // v2.62.0 系统播放器桥接：供 JS 侧 window.NativePlayer 调用
         // 音频改由原生 MediaPlayer 前台服务输出（系统媒体通道）：
         // 退出应用 / 锁屏 / 息屏后继续播放，通知栏与耳机线控可直接控制
+        // v2.62.0：音频先下载为本地 MP3 文件再播放 —— 时长精确、进度可拖动、断网也能播
         webView.addJavascriptInterface(new Object() {
             @JavascriptInterface
             public boolean isAvailable() {
                 return true;
             }
 
+            /** 播放：优先本地 MP3 缓存文件；未缓存则先下载再播；下载失败直接播网络地址 */
             @JavascriptInterface
-            public void playUrl(String url, String id, float rate) {
-                try {
-                    Intent i = new Intent(MainActivity.this, PlayerService.class);
-                    i.setAction(PlayerService.ACTION_PLAY);
-                    i.putExtra(PlayerService.EXTRA_URL, url);
-                    i.putExtra(PlayerService.EXTRA_ID, id);
-                    i.putExtra(PlayerService.EXTRA_RATE, rate);
-                    startServiceCompat(i);
-                } catch (Throwable ignored) {}
+            public void playUrl(final String url, final String id, final float rate) {
+                if (url == null || url.length() == 0) return;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        File f = ttsCacheFile(url);
+                        if (f != null && f.exists() && f.length() > 256) {
+                            startPlay(null, f.getAbsolutePath(), id, rate);
+                            return;
+                        }
+                        if (f != null && downloadToFile(url, f, 12000)) {
+                            startPlay(null, f.getAbsolutePath(), id, rate);
+                            return;
+                        }
+                        startPlay(url, null, id, rate);
+                    }
+                }).start();
+            }
+
+            /** 直接播放本地 MP3 文件（离线听读） */
+            @JavascriptInterface
+            public void playFile(final String path, final String id, final float rate) {
+                if (path == null || path.length() == 0) return;
+                startPlay(null, path, id, rate);
+            }
+
+            /** 判断某音频是否已在本地缓存（用于 UI 显示"已缓存"） */
+            @JavascriptInterface
+            public boolean isCached(String url) {
+                File f = ttsCacheFile(url);
+                return f != null && f.exists() && f.length() > 256;
             }
 
             @JavascriptInterface
@@ -227,20 +260,151 @@ public class MainActivity extends Activity {
 
             @JavascriptInterface
             public void setTitle(String title) {
+                sendPlayerMeta(title, null, null);
+            }
+
+            /** 同步单词 / 释义 / 词库名到锁屏与通知栏（与音乐播放器一致的卡片信息） */
+            @JavascriptInterface
+            public void setMeta(String title, String artist, String album) {
+                sendPlayerMeta(title, artist, album);
+            }
+
+            /** 拖动进度（毫秒） */
+            @JavascriptInterface
+            public void seek(int ms) {
                 try {
                     Intent i = new Intent(MainActivity.this, PlayerService.class);
-                    i.setAction(PlayerService.ACTION_TITLE);
-                    i.putExtra(PlayerService.EXTRA_TITLE, title);
+                    i.setAction(PlayerService.ACTION_SEEK);
+                    i.putExtra(PlayerService.EXTRA_SEEK, ms);
                     startServiceCompat(i);
                 } catch (Throwable ignored) {}
             }
+
+            @JavascriptInterface
+            public int getPosition() {
+                try { return PlayerService.peekPosition(); } catch (Throwable ignored) { return 0; }
+            }
+
+            @JavascriptInterface
+            public int getDuration() {
+                try { return PlayerService.peekDuration(); } catch (Throwable ignored) { return 0; }
+            }
+
+            /** 下载单个 MP3 到手机「下载」目录（异步，结果回调 window.__mp3Saved(path)） */
+            @JavascriptInterface
+            public void downloadMp3(final String url, final String fileName) {
+                if (url == null || url.length() == 0) return;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        File cached = ttsCacheFile(url);
+                        File src = null;
+                        if (cached != null && cached.exists() && cached.length() > 256) {
+                            src = cached;
+                        } else {
+                            File tmp = new File(getCacheDir(), "mp3_out_" + System.currentTimeMillis() + ".mp3");
+                            if (downloadToFile(url, tmp, 30000)) src = tmp;
+                        }
+                        if (src == null) {
+                            notifyJs("window.__mp3Saved && window.__mp3Saved('')");
+                            return;
+                        }
+                        String name = fileName;
+                        if (name == null || name.length() == 0) name = "audio.mp3";
+                        if (!name.toLowerCase().endsWith(".mp3")) name += ".mp3";
+                        String path = saveToDownloads(src, name, "audio/mpeg");
+                        notifyJs("window.__mp3Saved && window.__mp3Saved('" + jsEscape(path) + "')");
+                    }
+                }).start();
+            }
         }, "NativePlayer");
+
+        // v2.62.0 批量 MP3 下载：JS 传入 [{url,name}]，原生下载并打包成 zip 存到「下载」目录
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public void downloadZip(final String json, final String zipName) {
+                if (json == null || json.length() == 0) return;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String zname = (zipName == null || zipName.length() == 0) ? "背群英听读MP3.zip" : zipName;
+                        if (!zname.toLowerCase().endsWith(".zip")) zname += ".zip";
+                        File out = new File(getCacheDir(), "zip_" + System.currentTimeMillis() + ".zip");
+                        ZipOutputStream zos = null;
+                        try {
+                            JSONArray arr = new JSONArray(json);
+                            int total = arr.length();
+                            zos = new ZipOutputStream(new FileOutputStream(out));
+                            byte[] buf = new byte[8192];
+                            for (int i = 0; i < total; i++) {
+                                JSONObject o = arr.optJSONObject(i);
+                                if (o == null) continue;
+                                String url = o.optString("url", "");
+                                String name = o.optString("name", (i + 1) + ".mp3");
+                                if (url.length() == 0) continue;
+                                notifyJs("window.__mp3Progress && window.__mp3Progress(" + i + "," + total + ")");
+                                File f = ttsCacheFile(url);
+                                if (f == null || (!f.exists() && !downloadToFile(url, f, 30000))) continue;
+                                FileInputStream fis = null;
+                                try {
+                                    zos.putNextEntry(new ZipEntry(name));
+                                    fis = new FileInputStream(f);
+                                    int n;
+                                    while ((n = fis.read(buf)) != -1) zos.write(buf, 0, n);
+                                    zos.closeEntry();
+                                } catch (Throwable e) {
+                                    Log.w("GaokaoVocab", "zip entry failed: " + name);
+                                } finally {
+                                    if (fis != null) { try { fis.close(); } catch (Throwable ignored) {} }
+                                }
+                            }
+                            notifyJs("window.__mp3Progress && window.__mp3Progress(" + total + "," + total + ")");
+                        } catch (Throwable e) {
+                            Log.e("GaokaoVocab", "downloadZip failed", e);
+                        } finally {
+                            if (zos != null) { try { zos.close(); } catch (Throwable ignored) {} }
+                        }
+                        if (!out.exists() || out.length() < 100) {
+                            notifyJs("window.__mp3ZipDone && window.__mp3ZipDone('')");
+                            return;
+                        }
+                        String path = saveToDownloads(out, zname, "application/zip");
+                        notifyJs("window.__mp3ZipDone && window.__mp3ZipDone('" + jsEscape(path) + "')");
+                    }
+                }).start();
+            }
+        }, "NativeMp3");
+
+        // 剪贴板桥接：导出词库时一键复制（file:// 下 navigator.clipboard 常不可用）
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public boolean copy(String text) {
+                try {
+                    android.content.ClipboardManager cm =
+                            (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    if (cm == null) return false;
+                    cm.setPrimaryClip(android.content.ClipData.newPlainText("背群英词库", text == null ? "" : text));
+                    return true;
+                } catch (Throwable e) {
+                    return false;
+                }
+            }
+        }, "NativeClipboard");
 
         // 播放服务 → JS 回调（播放结束 / 出错 / 通知栏与线控按键）
         try {
             PlayerService.setCallback(new PlayerService.PlayerCallback() {
                 @Override
                 public void onEvent(String id, String type) {
+                    // v2.62.0：进度上报（progress:当前位置:总时长），用于 App 内进度条与界面同步
+                    if (type != null && type.startsWith("progress:")) {
+                        String[] p = type.substring(9).split(":");
+                        if (p.length >= 2) {
+                            notifyJs("window.__nativeProgress && window.__nativeProgress("
+                                    + p[0] + "," + p[1] + ")");
+                        }
+                        return;
+                    }
                     notifyJs("window.__nativeAudioEvent && window.__nativeAudioEvent('"
                             + String.valueOf(id) + "','" + String.valueOf(type) + "')");
                 }
@@ -516,18 +680,47 @@ public class MainActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        final File cf = new File(getFilesDir(), CACHE_FILE);
+                        final String path = "file://" + cf.getAbsolutePath();
+                        // v2.62.0：更新不再打断用户。
+                        // 若用户正在听读播放 / 答题，则只写缓存（下次启动自动生效）并提示，
+                        // 避免"用着用着页面突然跳回首页"
                         try {
-                            File cf = new File(getFilesDir(), CACHE_FILE);
-                            String path = "file://" + cf.getAbsolutePath();
-                            Log.i("GaokaoVocab", "Reloading from cloud cache: " + path);
-                            webView.loadUrl(path);
+                            if (webView != null) {
+                                webView.evaluateJavascript(
+                                        "(function(){try{return !!(window.__shouldDeferUpdate && window.__shouldDeferUpdate());}catch(e){return false}})()",
+                                        new android.webkit.ValueCallback<String>() {
+                                            @Override
+                                            public void onReceiveValue(String value) {
+                                                boolean defer = value != null && value.contains("true");
+                                                if (defer) {
+                                                    Log.i("GaokaoVocab", "Update deferred to next launch (busy)");
+                                                    notifyJs("window.__onUpdateReady && window.__onUpdateReady()");
+                                                    return;
+                                                }
+                                                doReload(path);
+                                            }
+                                        });
+                                return;
+                            }
                         } catch (Throwable e) {
-                            Log.e("GaokaoVocab", "Reload failed", e);
+                            Log.w("GaokaoVocab", "defer check failed, reload directly", e);
                         }
+                        doReload(path);
                     }
                 });
             }
         }).start();
+    }
+
+    /** 用刚下载好的云端版本刷新页面（JS 侧会自行恢复上次所在页面，不会跳回首页） */
+    private void doReload(String path) {
+        try {
+            Log.i("GaokaoVocab", "Reloading from cloud cache: " + path);
+            if (webView != null) webView.loadUrl(path);
+        } catch (Throwable e) {
+            Log.e("GaokaoVocab", "Reload failed", e);
+        }
     }
 
     /** 读取远程文本（用于极小的版本清单） */
@@ -661,6 +854,151 @@ public class MainActivity extends Activity {
             i.setAction(action);
             startServiceCompat(i);
         } catch (Throwable ignored) {}
+    }
+
+    /** 启动播放：path 为本地 MP3 文件路径时优先使用，否则用网络地址 */
+    private void startPlay(String url, String path, String id, float rate) {
+        try {
+            Intent i = new Intent(MainActivity.this, PlayerService.class);
+            i.setAction(PlayerService.ACTION_PLAY);
+            if (path != null && path.length() > 0) i.putExtra(PlayerService.EXTRA_PATH, path);
+            if (url != null && url.length() > 0) i.putExtra(PlayerService.EXTRA_URL, url);
+            i.putExtra(PlayerService.EXTRA_ID, id == null ? "" : id);
+            i.putExtra(PlayerService.EXTRA_RATE, rate);
+            startServiceCompat(i);
+        } catch (Throwable ignored) {}
+    }
+
+    private void sendPlayerMeta(String title, String artist, String album) {
+        try {
+            Intent i = new Intent(MainActivity.this, PlayerService.class);
+            i.setAction(PlayerService.ACTION_META);
+            if (title != null) i.putExtra(PlayerService.EXTRA_TITLE, title);
+            if (artist != null) i.putExtra(PlayerService.EXTRA_ARTIST, artist);
+            if (album != null) i.putExtra(PlayerService.EXTRA_ALBUM, album);
+            startServiceCompat(i);
+        } catch (Throwable ignored) {}
+    }
+
+    // ================= MP3 缓存 / 下载 / 保存到下载目录 =================
+
+    /** 音频缓存文件：getCacheDir()/tts/<md5(url)>.mp3 */
+    private File ttsCacheFile(String url) {
+        if (url == null || url.length() == 0) return null;
+        try {
+            File dir = new File(getCacheDir(), "tts");
+            if (!dir.exists()) dir.mkdirs();
+            return new File(dir, md5(url) + ".mp3");
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    private String md5(String s) {
+        try {
+            MessageDigest d = MessageDigest.getInstance("MD5");
+            byte[] b = d.digest(s.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte x : b) sb.append(String.format("%02x", x));
+            return sb.toString();
+        } catch (Throwable e) {
+            return String.valueOf(Math.abs(s.hashCode()));
+        }
+    }
+
+    /** 下载到指定文件，成功返回 true */
+    private boolean downloadToFile(String urlStr, File dst, int timeoutMs) {
+        HttpURLConnection conn = null;
+        InputStream is = null;
+        FileOutputStream fos = null;
+        File tmp = null;
+        try {
+            tmp = new File(dst.getAbsolutePath() + ".tmp");
+            conn = (HttpURLConnection) new URL(urlStr).openConnection();
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(timeoutMs);
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36");
+            if (conn.getResponseCode() != 200) return false;
+            is = conn.getInputStream();
+            fos = new FileOutputStream(tmp);
+            byte[] buf = new byte[8192];
+            int n;
+            while ((n = is.read(buf)) != -1) fos.write(buf, 0, n);
+            fos.close();
+            fos = null;
+            if (tmp.length() < 256) return false;   // 空音频视为失败
+            if (dst.exists()) dst.delete();
+            return tmp.renameTo(dst);
+        } catch (Throwable e) {
+            return false;
+        } finally {
+            if (is != null) { try { is.close(); } catch (Throwable ignored) {} }
+            if (fos != null) { try { fos.close(); } catch (Throwable ignored) {} }
+            if (conn != null) { try { conn.disconnect(); } catch (Throwable ignored) {} }
+            if (tmp != null && tmp.exists() && !dst.exists()) { try { tmp.delete(); } catch (Throwable ignored) {} }
+        }
+    }
+
+    /** 保存文件到手机「下载」目录：API 29+ 用 MediaStore（免权限），低版本用公共目录，失败回退应用专属目录 */
+    private String saveToDownloads(File src, String displayName, String mime) {
+        try {
+            if (Build.VERSION.SDK_INT >= 29) {
+                ContentValues cv = new ContentValues();
+                cv.put(MediaStore.Downloads.DISPLAY_NAME, displayName);
+                cv.put(MediaStore.Downloads.MIME_TYPE, mime);
+                cv.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/背群英");
+                cv.put(MediaStore.Downloads.IS_PENDING, 1);
+                Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+                if (uri != null) {
+                    OutputStream os = getContentResolver().openOutputStream(uri);
+                    copyTo(src, os);
+                    os.close();
+                    cv.clear();
+                    cv.put(MediaStore.Downloads.IS_PENDING, 0);
+                    getContentResolver().update(uri, cv, null, null);
+                    return "下载/背群英/" + displayName;
+                }
+            } else {
+                File dir = new File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_DOWNLOADS), "背群英");
+                dir.mkdirs();
+                File dst = new File(dir, displayName);
+                FileOutputStream fos = new FileOutputStream(dst);
+                copyTo(src, fos);
+                fos.close();
+                return dst.getAbsolutePath();
+            }
+        } catch (Throwable e) {
+            Log.w("GaokaoVocab", "saveToDownloads public failed: " + e.getMessage());
+        }
+        // 兜底：应用专属下载目录（无需任何权限，一定成功）
+        try {
+            File dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+            if (dir != null) {
+                dir.mkdirs();
+                File dst = new File(dir, displayName);
+                FileOutputStream fos = new FileOutputStream(dst);
+                copyTo(src, fos);
+                fos.close();
+                return dst.getAbsolutePath();
+            }
+        } catch (Throwable ignored) {}
+        return "";
+    }
+
+    private void copyTo(File src, OutputStream os) throws java.io.IOException {
+        FileInputStream fis = new FileInputStream(src);
+        byte[] buf = new byte[8192];
+        int n;
+        while ((n = fis.read(buf)) != -1) os.write(buf, 0, n);
+        fis.close();
+    }
+
+    /** 转义字符串，安全地拼进 JS 单引号字符串 */
+    private String jsEscape(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").replace("\r", "");
     }
 
     @Override

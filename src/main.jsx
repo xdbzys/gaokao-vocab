@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.61.0';
-const APP_VERSION_CODE = 222;
+const APP_VERSION = '2.62.0';
+const APP_VERSION_CODE = 223;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -10298,6 +10298,196 @@ function zhAudioUrls(text, rate) {
   return urls;
 }
 
+// ===== v2.62.0：剪贴板 / 文件保存 / ZIP 打包 / MP3 下载 工具 =====
+
+// 复制文本到剪贴板：原生桥接 → 浏览器 API → execCommand 三级回退
+// file:// 协议不是安全上下文，navigator.clipboard 在旧 WebView 常不可用，因此必须做回退
+function copyTextToClipboard(text) {
+  try {
+    if (window.NativeClipboard && typeof window.NativeClipboard.copy === 'function') {
+      if (window.NativeClipboard.copy(text)) return true;
+    }
+  } catch (e) {}
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (e) {}
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.style.top = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return !!ok;
+  } catch (e) { return false; }
+}
+
+// 触发浏览器 / 系统下载
+function saveBlobAs(blob, filename) {
+  try {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 3000);
+    return true;
+  } catch (e) { return false; }
+}
+
+// 文本存成文件：原生优先写入 Documents，失败回退浏览器下载
+async function saveTextFile(text, fileName) {
+  try {
+    if (typeof isNativeApp !== 'undefined' && isNativeApp && typeof Filesystem !== 'undefined' && Filesystem) {
+      var dirName = '背群英导出';
+      try { await Filesystem.mkdir({ path: dirName, directory: Directory.Documents }); } catch (e) {}
+      await Filesystem.writeFile({
+        path: dirName + '/' + fileName,
+        data: text,
+        directory: Directory.Documents,
+        encoding: Encoding.UTF8
+      });
+      return 'Documents/' + dirName + '/' + fileName;
+    }
+  } catch (e) {}
+  try {
+    saveBlobAs(new Blob([text], { type: 'text/plain;charset=utf-8' }), fileName);
+  } catch (e) {}
+  return '';
+}
+
+// CRC32（ZIP 必需）
+var _crcTable = (function () {
+  var t = new Uint32Array(256);
+  for (var n = 0; n < 256; n++) {
+    var c = n;
+    for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(buf) {
+  var c = 0xFFFFFFFF;
+  for (var i = 0; i < buf.length; i++) c = _crcTable[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+// 纯 JS ZIP 打包（store 模式：MP3 本身已压缩，不再二次压缩，速度最快）
+function zipStore(files) {
+  var chunks = [], central = [], offset = 0;
+  var enc = (typeof TextEncoder !== 'undefined') ? new TextEncoder() : null;
+  function strBytes(str) {
+    if (enc) return enc.encode(str);
+    var a = [];
+    for (var i = 0; i < str.length; i++) {
+      var c = str.charCodeAt(i);
+      if (c < 0x80) a.push(c);
+      else if (c < 0x800) a.push(0xC0 | (c >> 6), 0x80 | (c & 63));
+      else a.push(0xE0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
+    }
+    return new Uint8Array(a);
+  }
+  function u16(v) { return [v & 255, (v >> 8) & 255]; }
+  function u32(v) { return [v & 255, (v >> 8) & 255, (v >> 16) & 255, (v >>> 24) & 255]; }
+  for (var i = 0; i < files.length; i++) {
+    var name = strBytes(files[i].name);
+    var data = files[i].data;
+    var crc = crc32(data);
+    var lh = new Uint8Array([].concat(
+      [80, 75, 3, 4], u16(20), u16(0x0800), u16(0), u16(0), u16(0),
+      u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0)));
+    chunks.push(lh, name, data);
+    var ch = new Uint8Array([].concat(
+      [80, 75, 1, 2], u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0),
+      u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0), u16(0),
+      u16(0), u16(0), u32(0), u32(offset)));
+    central.push(ch, name);
+    offset += lh.length + name.length + data.length;
+  }
+  var centralSize = 0;
+  for (var j = 0; j < central.length; j++) centralSize += central[j].length;
+  var end = new Uint8Array([].concat(
+    [80, 75, 5, 6], u16(0), u16(0), u16(files.length), u16(files.length),
+    u32(centralSize), u32(offset), u16(0)));
+  return new Blob(chunks.concat(central, [end]), { type: 'application/zip' });
+}
+
+// 下载单个 MP3：原生保存到「下载/背群英」，网页触发下载
+function downloadMp3File(url, filename) {
+  if (!url) return Promise.resolve(false);
+  try {
+    if (window.NativePlayer && window.NativePlayer.downloadMp3) {
+      window.NativePlayer.downloadMp3(url, filename);
+      return Promise.resolve(true);
+    }
+  } catch (e) {}
+  return fetch(url).then(function (r) { return r.blob(); }).then(function (b) {
+    if (!b || b.size < 256) return false;
+    return saveBlobAs(b, filename);
+  }).catch(function () { return false; });
+}
+
+// 批量下载 MP3 并打包：原生用 Java 层打包（快、省内存），网页端用 JS zip
+// onProgress(done, total, path)；done < 0 表示结束，path 为保存路径（网页端为空）
+function downloadMp3Zip(tasks, zipName, onProgress) {
+  if (!tasks || !tasks.length) { if (onProgress) onProgress(-1, 0, ''); return; }
+  try {
+    if (window.NativeMp3 && window.NativeMp3.downloadZip) {
+      window.__mp3Progress = function (d, t) { if (onProgress) onProgress(d, t, ''); };
+      window.__mp3ZipDone = function (p) { if (onProgress) onProgress(-1, tasks.length, p || ''); };
+      window.NativeMp3.downloadZip(JSON.stringify(tasks), zipName);
+      return;
+    }
+  } catch (e) {}
+  (async function () {
+    var files = [];
+    for (var i = 0; i < tasks.length; i++) {
+      try {
+        var r = await fetch(tasks[i].url);
+        var b = await r.blob();
+        if (b && b.size > 256) {
+          var ab = await b.arrayBuffer();
+          files.push({ name: tasks[i].name, data: new Uint8Array(ab) });
+        }
+      } catch (e) {}
+      if (onProgress) onProgress(i + 1, tasks.length, '');
+    }
+    try {
+      var zip = zipStore(files);
+      saveBlobAs(zip, zipName);
+    } catch (e) {}
+    if (onProgress) onProgress(-1, tasks.length, '');
+  })();
+}
+
+// 毫秒转 mm:ss
+function fmtDuration(ms) {
+  var t = Math.max(0, Math.floor((Number(ms) || 0) / 1000));
+  var m = Math.floor(t / 60);
+  var sec = t % 60;
+  return m + ':' + (sec < 10 ? '0' + sec : sec);
+}
+
+// v2.62.0：热更新不再打断用户。听读播放 / 答题中返回 true → 原生把新版本留到下次启动生效
+try {
+  window.__shouldDeferUpdate = function () {
+    try { return !!(window.__listenBusy && window.__listenBusy()); } catch (e) { return false; }
+  };
+  window.__onUpdateReady = function () {
+    try { if (window.__onUpdateReadyCb) window.__onUpdateReadyCb(); } catch (e) {}
+  };
+} catch (e) {}
+
 // 英文发音候选源：有道美音 → 有道英音 → 百度英文 → 系统 TTS
 function enAudioUrls(text) {
   var t = String(text || '').trim();
@@ -10749,7 +10939,13 @@ async function playListenItemAsync(item, cfg, token, tokenRef) {
   var enText = String(item.term || '').trim();
   if (!enText) return;
   var zhText = _meaningForSpeech(item.meaning);
-  try { if (window.NativePlayer && window.NativePlayer.setTitle) window.NativePlayer.setTitle(enText + ' · ' + (_zhSpeechText(zhText) || '')); } catch (e) {}
+  try {
+    if (window.NativePlayer && window.NativePlayer.setMeta) {
+      window.NativePlayer.setMeta(enText, _zhSpeechText(zhText) || '高考词汇', '背群英 · 听读');
+    } else if (window.NativePlayer && window.NativePlayer.setTitle) {
+      window.NativePlayer.setTitle(enText + ' · ' + (_zhSpeechText(zhText) || ''));
+    }
+  } catch (e) {}
   var steps = buildListenSteps(cfg, enText, zhText);
   for (var i = 0; i < steps.length; i++) {
     if (token !== tokenRef.current) return;
@@ -10907,7 +11103,20 @@ function App() {
     }
     catch { return ['gaokao-core']; }
   });
-  const [section, setSection] = useState('learn');
+  // v2.62.0：记住上次所在页面，热更新 / 刷新后自动回到原页面，不再"无故跳回首页"
+  const [section, setSection] = useState(() => {
+    try {
+      const v = localStorage.getItem('gaokao_section');
+      return (v && TABS.some(t => t.id === v)) ? v : 'learn';
+    } catch (e) { return 'learn'; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('gaokao_section', section); } catch (e) {}
+  }, [section]);
+  // 供原生判断"是否正忙"：听读播放中时热更新延后到下次启动，避免播放被打断
+  useEffect(() => {
+    try { window.__listenBusy = function () { return !!listenPlayingRef.current; }; } catch (e) {}
+  }, []);
   const [showBookPicker, setShowBookPicker] = useState(false);
   const [showBookPicker2, setShowBookPicker2] = useState(false);
 
@@ -10916,6 +11125,20 @@ function App() {
     try { const s = localStorage.getItem(LISTEN_BOOKS_KEY); return s ? s.split(',') : ['gaokao-core']; }
     catch { return ['gaokao-core']; }
   });
+  // v2.62.0：真实播放进度（系统播放器模式下有准确时长，可拖动）
+  const [listenPos, setListenPos] = useState(0);
+  const [listenDur, setListenDur] = useState(0);
+  // v2.62.0：MP3 下载面板
+  const [listenShowMp3, setListenShowMp3] = useState(false);
+  const [mp3Count, setMp3Count] = useState(50);
+  const [mp3WithZh, setMp3WithZh] = useState(true);
+  const [mp3Busy, setMp3Busy] = useState(false);
+  const [mp3State, setMp3State] = useState(null);
+  // v2.62.0：词库导出（txt，供百词斩等 App 导入）
+  const [showExport, setShowExport] = useState(false);
+  const [exportScope, setExportScope] = useState('book');
+  const [exportSep, setExportSep] = useState('tab');
+  const [exportMsg, setExportMsg] = useState('');
   // all=全部 hide=隐藏已掌握 only=仅已掌握
   const [listenFilter, setListenFilter] = useState(() => {
     try {
@@ -11585,6 +11808,150 @@ function App() {
       };
     } catch (e) {}
   }, [listenCurrent, listenPlaying, listenPaused]);
+
+  // v2.62.0：接收原生真实播放进度（本地 MP3 文件播放，时长精确），同步 App 进度条与系统媒体卡片
+  useEffect(() => {
+    try {
+      window.__nativeProgress = function (pos, dur) {
+        try {
+          setListenPos(pos);
+          if (dur > 0) setListenDur(dur);
+          if (dur > 0 && 'mediaSession' in navigator && navigator.mediaSession.setPositionState) {
+            navigator.mediaSession.setPositionState({
+              duration: dur / 1000,
+              position: Math.min(pos, dur) / 1000,
+              playbackRate: listenCfg.rate || 1
+            });
+          }
+        } catch (e) {}
+      };
+    } catch (e) {}
+    return function () { try { window.__nativeProgress = null; } catch (e) {} };
+  }, [listenCfg.rate]);
+
+  // v2.62.0：拖动进度（系统播放器模式）
+  const seekListen = function (ms) {
+    try { setListenPos(ms); } catch (e) {}
+    try {
+      if (window.NativePlayer && window.NativePlayer.seek) window.NativePlayer.seek(Math.max(0, Math.round(ms)));
+    } catch (e) {}
+    try {
+      if ('mediaSession' in navigator && navigator.mediaSession.setPositionState && listenDur > 0) {
+        navigator.mediaSession.setPositionState({ duration: listenDur / 1000, position: ms / 1000, playbackRate: listenCfg.rate || 1 });
+      }
+    } catch (e) {}
+  };
+
+  // v2.62.0：下载当前单词 MP3
+  const downloadCurrentMp3 = function () {
+    if (!listenCurrent) return;
+    var term = String(listenCurrent.term || 'word');
+    var url = (enAudioUrls(term) || [])[0];
+    if (!url) return;
+    downloadMp3File(url, term.replace(/[^0-9a-zA-Z\-]/g, '_') + '.mp3');
+    setMp3State({ done: 0, total: 1, msg: '已开始下载「' + term + '」' });
+  };
+
+  // v2.62.0：批量下载听读 MP3 并打包
+  const doDownloadMp3 = function () {
+    if (mp3Busy) return;
+    var list = mp3Count > 0 ? listenDisplayQueue.slice(0, mp3Count) : listenDisplayQueue.slice();
+    if (!list.length) { alert('当前没有可下载的单词'); return; }
+    var tasks = [];
+    list.forEach(function (item, i) {
+      var num = ('00' + (i + 1)).slice(-3);
+      var term = String(item.term || '');
+      var base = num + '_' + term.replace(/[^0-9a-zA-Z\-]/g, '_');
+      var enUrl = (enAudioUrls(term) || [])[0];
+      if (enUrl) tasks.push({ url: enUrl, name: base + '_英.mp3' });
+      if (mp3WithZh) {
+        var zh = _zhSpeechText(item.meaning);
+        var zhUrl = (zhAudioUrls(zh, listenCfg.rate) || [])[0];
+        if (zhUrl) tasks.push({ url: zhUrl, name: base + '_中.mp3' });
+      }
+    });
+    if (!tasks.length) { alert('没有可下载的音频'); return; }
+    setMp3Busy(true);
+    setMp3State({ done: 0, total: tasks.length, msg: '准备中' });
+    downloadMp3Zip(tasks, '背群英听读MP3_' + list.length + '词.zip', function (done, total, path) {
+      if (done < 0) {
+        setMp3Busy(false);
+        setMp3State({ done: total, total: total, msg: path ? ('已保存：' + path) : '已打包下载' });
+        try {
+          if (path) alert('MP3 压缩包已保存：\n' + path + '\n\n用「文件管理 → 下载 → 背群英」查看，解压后可拷进 MP3 播放器 / 点读笔离线听。');
+          else alert('MP3 压缩包已生成，请在下载列表中查看。');
+        } catch (e) {}
+        return;
+      }
+      setMp3State({ done: done, total: total, msg: '下载中' });
+    });
+  };
+
+  // v2.62.0：构建导出文本（百词斩 / 其他背单词 App 可直接导入的 txt）
+  const buildExportText = function () {
+    var src = [];
+    if (exportScope === 'wrong') {
+      src = (wrongWords || []).map(function (w) {
+        return { term: w.term || w.word || '', meaning: w.meaning || '' };
+      });
+    } else if (exportScope === 'filtered') {
+      src = (filteredItems || []).map(function (it) {
+        return { term: it.term || '', meaning: it.meaning || '' };
+      });
+    } else if (exportScope === 'all') {
+      (books || []).forEach(function (b) {
+        if (hiddenBookIds.includes(b.id)) return;
+        (b.items || []).forEach(function (it) {
+          src.push({ term: it.term || '', meaning: it.meaning || '' });
+        });
+      });
+    } else if (exportScope === 'mastered' || exportScope === 'unmastered') {
+      var pool = [];
+      (books || []).forEach(function (b) {
+        if (hiddenBookIds.includes(b.id)) return;
+        (b.items || []).forEach(function (it) { pool.push(it); });
+      });
+      src = pool.filter(function (it) {
+        var st = progress[termKey(it.term)];
+        return exportScope === 'mastered' ? st === 'mastered' : st !== 'mastered';
+      }).map(function (it) { return { term: it.term || '', meaning: it.meaning || '' }; });
+    } else {
+      src = ((activeBook && activeBook.items) || []).map(function (it) {
+        return { term: it.term || '', meaning: it.meaning || '' };
+      });
+    }
+    var sep = exportSep === 'space' ? ' ' : '\t';
+    var seen = {};
+    var lines = [];
+    src.forEach(function (w) {
+      var t = String(w.term || '').trim();
+      var m = String(w.meaning || '').replace(/\s+/g, ' ').trim();
+      if (!t) return;
+      var k = t.toLowerCase();
+      if (seen[k]) return;
+      seen[k] = 1;
+      lines.push(m ? (t + sep + m) : t);
+    });
+    return lines.join('\n');
+  };
+
+  const doCopyExport = function () {
+    var text = buildExportText();
+    if (!text) { setExportMsg('没有可导出的单词'); return; }
+    var ok = copyTextToClipboard(text);
+    var n = text.split('\n').length;
+    setExportMsg(ok ? ('已复制 ' + n + ' 个单词到剪贴板，去百词斩「自制词单 → 导入」粘贴即可')
+                    : ('复制失败，请改用「下载 txt」'));
+  };
+
+  const doDownloadExport = function () {
+    var text = buildExportText();
+    if (!text) { setExportMsg('没有可导出的单词'); return; }
+    var name = '背群英词库_' + exportScope + '_' + new Date().toISOString().slice(0, 10) + '.txt';
+    saveTextFile(text, name).then(function (p) {
+      setExportMsg(p ? ('已保存到 ' + p) : ('已下载 ' + name));
+    });
+  };
 
   // 全部词汇合并（词根词缀、对比、易错词基于全量词汇）
   // 词库映射 ref：供详情页和背诵页显示单词所属词库
@@ -13015,23 +13382,15 @@ function App() {
       if (silent && hasUpdate && (data.apkUrl || data.appUrl)) {
         // 网页版：如果有 webHtmlUrl，静默更新页面内容（保留localStorage）
         if (!isNativeApp && data.webHtmlUrl) {
-          try {
-            console.log('[Update] 网页版静默更新:', data.webHtmlUrl);
-            const resp = await fetch(data.webHtmlUrl);
-            if (resp.ok) {
-              const newHtml = await resp.text();
-              // 验证新HTML包含有效内容
-              if (newHtml && newHtml.includes('<!doctype') || newHtml.includes('<html')) {
-                console.log('[Update] 网页版更新成功，替换页面内容');
-                document.open();
-                document.write(newHtml);
-                document.close();
-                return;
-              }
-            }
-            console.warn('[Update] 网页版更新下载失败');
-          } catch (webErr) {
-            console.warn('[Update] 网页版更新失败:', webErr);
+          // v2.62.0：不再 document.write 整页重写 —— 那会把用户踢回首页、打断听读播放。
+          // 改为：记录"新版本已就绪"，空闲时刷新（页面位置由 gaokao_section 自动恢复）
+          try { localStorage.setItem('gaokao_web_update_ready', String(data.versionCode || 0)); } catch (e) {}
+          const busy = (function () { try { return !!(window.__listenBusy && window.__listenBusy()); } catch (e) { return false; } })();
+          if (!busy) {
+            setTimeout(function () {
+              try { window.location.reload(); } catch (e) {}
+            }, 1200);
+            return;
           }
         }
 
@@ -13527,24 +13886,53 @@ function App() {
             {listenFilter === 'hide' ? '已自动跳过标记为掌握的单词' : listenFilter === 'only' ? '只播放已标记掌握的单词，用于巩固复习' : '播放词库内全部单词'}
           </div>
 
-          {/* 播放器主体 */}
+          {/* 播放器主体（v2.62.0：音乐播放器式布局） */}
           <div className={'listenCard' + (listenPlaying ? ' playing' : '')}>
-            <div className={'listenArt' + (listenPlaying ? ' spin' : '')}>🎧</div>
-            {listenCurrent ? (
-              <React.Fragment>
-                <h2 className="listenWord">{listenCurrent.term}</h2>
-                {listenCurrent.phonetic && <div className="listenPhonetic">{listenCurrent.phonetic}</div>}
-                <div className="listenMeaning">{listenCurrent.meaning}</div>
-              </React.Fragment>
+            <div className="listenCoverRow">
+              <div className={'listenCoverArt' + (listenPlaying && !listenPaused ? ' spin' : '')}>🎧</div>
+              <div className="listenCoverMain">
+                {listenCurrent ? (
+                  <React.Fragment>
+                    <div className="listenWord">{listenCurrent.term}</div>
+                    <div className="listenSubRow">
+                      {listenCurrent.phonetic ? <span className="listenPhonetic">{listenCurrent.phonetic}</span> : null}
+                      {listenCurrent.pos ? <span className="listenPosTag">{listenCurrent.pos}</span> : null}
+                    </div>
+                    <div className="listenMeaning">{listenCurrent.meaning}</div>
+                  </React.Fragment>
+                ) : (
+                  <div className="listenEmpty">
+                    {listenStats.total === 0 ? '当前词库没有单词' : (listenFilter === 'only' ? '还没有标记为已掌握的单词' : '没有可播放的单词')}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {listenSystemPlayerOn() && listenDur > 0 ? (
+              <div className="listenSeekRow">
+                <input
+                  className="listenSeek"
+                  type="range"
+                  min={0}
+                  max={listenDur}
+                  step={200}
+                  value={Math.min(listenPos, listenDur)}
+                  onChange={e => seekListen(Number(e.target.value))}
+                />
+                <div className="listenTimeRow">
+                  <span>{fmtDuration(listenPos)}</span>
+                  <span>{fmtDuration(listenDur)}</span>
+                </div>
+              </div>
             ) : (
-              <div className="listenEmpty">
-                {listenStats.total === 0 ? '当前词库没有单词' : (listenFilter === 'only' ? '还没有标记为已掌握的单词' : '没有可播放的单词')}
+              <div className="listenBar">
+                <div className="listenBarFill" style={{ width: `${listenDisplayQueue.length ? ((listenIndex + 1) / listenDisplayQueue.length * 100) : 0}%` }} />
               </div>
             )}
-            <div className="listenBar">
-              <div className="listenBarFill" style={{ width: `${listenDisplayQueue.length ? ((listenIndex + 1) / listenDisplayQueue.length * 100) : 0}%` }} />
+            <div className="listenMeta">
+              第 {listenDisplayQueue.length ? listenIndex + 1 : 0} / {listenDisplayQueue.length} 词 · 已掌握 {listenStats.mastered} / {listenStats.total}
+              {listenSystemPlayerOn() ? ' · 系统播放器（锁屏 / 通知栏 / 耳机线控可用）' : ''}
             </div>
-            <div className="listenMeta">第 {listenDisplayQueue.length ? listenIndex + 1 : 0} / {listenDisplayQueue.length} 词 · 已掌握 {listenStats.mastered} / {listenStats.total}</div>
           </div>
 
           {/* 播放控制 */}
@@ -13554,6 +13942,7 @@ function App() {
               {listenPlaying && !listenPaused ? '⏸' : '▶'}
             </button>
             <button className="listenSkipBtn" onClick={listenNext} disabled={!listenDisplayQueue.length} title="下一个">⏭</button>
+            <button className="listenMp3Btn" onClick={downloadCurrentMp3} disabled={!listenCurrent} title="下载本词 MP3">⬇</button>
           </div>
 
           {/* 快捷开关 */}
@@ -13566,8 +13955,37 @@ function App() {
             </button>
             <button className={listenCfg.shuffle ? 'on' : ''} onClick={() => updateListenCfg({ shuffle: !listenCfg.shuffle })}>🔀 随机</button>
             <button className={listenShowCfg ? 'on' : ''} onClick={() => setListenShowCfg(!listenShowCfg)}>⚙️ 参数</button>
+            <button className={listenShowMp3 ? 'on' : ''} onClick={() => setListenShowMp3(!listenShowMp3)}>⬇ MP3</button>
             <button className={listenShowPL ? 'on' : ''} onClick={() => setListenShowPL(!listenShowPL)}>☰ 列表</button>
           </div>
+
+          {/* v2.62.0：MP3 下载面板 */}
+          {listenShowMp3 && (
+            <div className="listenSettings">
+              <div className="listenSettingRow">
+                <span>下载范围</span>
+                <div className="listenSeg">
+                  {[20, 50, 100, 300].map(n => (
+                    <button key={n} className={mp3Count === n ? 'on' : ''} onClick={() => setMp3Count(n)}>{n} 词</button>
+                  ))}
+                  <button className={mp3Count === 0 ? 'on' : ''} onClick={() => setMp3Count(0)}>全部</button>
+                </div>
+              </div>
+              <div className="listenSettingRow">
+                <span>音频内容</span>
+                <div className="listenSeg">
+                  <button className={mp3WithZh ? 'on' : ''} onClick={() => setMp3WithZh(true)}>英+中</button>
+                  <button className={!mp3WithZh ? 'on' : ''} onClick={() => setMp3WithZh(false)}>仅英文</button>
+                </div>
+              </div>
+              <button className="primary" style={{ width: '100%', marginTop: 10 }} onClick={doDownloadMp3} disabled={mp3Busy}>
+                {mp3Busy ? `打包中 ${mp3State ? mp3State.done : 0}/${mp3State ? mp3State.total : 0}` : '开始下载 MP3 压缩包'}
+              </button>
+              {mp3State && !mp3Busy && <div className="listenTip">{mp3State.msg}</div>}
+              <div className="listenTip">文件命名：001_abandon_英.mp3 / 001_abandon_中.mp3，打包为 zip。手机上保存到「文件管理 → 下载 → 背群英」，解压后可拷进 MP3 播放器、点读笔、MP5 离线听。</div>
+              <div className="listenTip">下载过的音频会复用缓存，第二次打包明显更快；听读播放也走同一份本地 MP3，断网可播、拖动进度不卡。</div>
+            </div>
+          )}
 
           {/* 朗读参数 */}
           {listenShowCfg && (
@@ -13741,7 +14159,42 @@ function App() {
               )}
             </div>
             <button onClick={createBook}>+ 新建</button>
+            <button className="exportVocabBtn" onClick={() => setShowExport(!showExport)}>导出词库</button>
           </div>
+          {showExport && (
+            <div className="exportPanel">
+              <div className="listenSettingRow">
+                <span>导出范围</span>
+                <div className="listenSeg">
+                  <button className={exportScope === 'book' ? 'on' : ''} onClick={() => setExportScope('book')}>当前词库</button>
+                  <button className={exportScope === 'filtered' ? 'on' : ''} onClick={() => setExportScope('filtered')}>筛选结果</button>
+                  <button className={exportScope === 'all' ? 'on' : ''} onClick={() => setExportScope('all')}>全部词库</button>
+                </div>
+              </div>
+              <div className="listenSettingRow">
+                <span>掌握状态</span>
+                <div className="listenSeg">
+                  <button className={exportScope === 'mastered' ? 'on' : ''} onClick={() => setExportScope('mastered')}>已掌握</button>
+                  <button className={exportScope === 'unmastered' ? 'on' : ''} onClick={() => setExportScope('unmastered')}>未掌握</button>
+                  <button className={exportScope === 'wrong' ? 'on' : ''} onClick={() => setExportScope('wrong')}>错词本</button>
+                </div>
+              </div>
+              <div className="listenSettingRow">
+                <span>分隔方式</span>
+                <div className="listenSeg">
+                  <button className={exportSep === 'tab' ? 'on' : ''} onClick={() => setExportSep('tab')}>Tab 分隔</button>
+                  <button className={exportSep === 'space' ? 'on' : ''} onClick={() => setExportSep('space')}>空格分隔</button>
+                </div>
+              </div>
+              <div className="exportActions">
+                <button className="primary" onClick={doCopyExport}>复制到剪贴板</button>
+                <button className="primary ghost" onClick={doDownloadExport}>下载 txt</button>
+              </div>
+              {exportMsg ? <div className="listenTip">{exportMsg}</div> : null}
+              <div className="listenTip">格式：每行「单词 + 分隔 + 释义」，百词斩「词单 → 批量导入」可直接识别；也能粘贴进 Excel / 墨墨 / 不背单词。</div>
+              <div className="listenTip">复制后：百词斩 → 我的词单 → 新建 → 批量导入 → 长按粘贴，即可生成自己的高考词单。</div>
+            </div>
+          )}
           <input className="searchInput" value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索英文、中文、词性..." />
           {/* 词性分类标签（横向滚动） */}
           <div className="posFilterRow">
