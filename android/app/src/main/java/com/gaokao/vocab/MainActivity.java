@@ -380,8 +380,8 @@ public class MainActivity extends Activity {
             @JavascriptInterface
             public boolean copy(String text) {
                 try {
-                    android.content.ClipboardManager cm =
-                            (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    android.content.ClipboardManager cm = (android.content.ClipboardManager)
+                            getSystemService(android.content.Context.CLIPBOARD_SERVICE);
                     if (cm == null) return false;
                     cm.setPrimaryClip(android.content.ClipData.newPlainText("背群英词库", text == null ? "" : text));
                     return true;

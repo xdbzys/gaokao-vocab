@@ -11137,7 +11137,7 @@ function App() {
   // v2.62.0：词库导出（txt，供百词斩等 App 导入）
   const [showExport, setShowExport] = useState(false);
   const [exportScope, setExportScope] = useState('book');
-  const [exportSep, setExportSep] = useState('tab');
+  const [exportSep, setExportSep] = useState('space');
   const [exportMsg, setExportMsg] = useState('');
   // all=全部 hide=隐藏已掌握 only=仅已掌握
   const [listenFilter, setListenFilter] = useState(() => {
@@ -11592,6 +11592,8 @@ function App() {
     listenPlayingRef.current = false;
     setListenPlaying(false);
     setListenNativePlaying(false);
+    // v2.62.0：停止后清掉进度条，避免残留上一次的播放时长
+    try { setListenPos(0); setListenDur(0); } catch (e) {}
   };
 
   // v2.61.0：真正的暂停——挂起播放链并暂停当前声音，可从通知栏 / 锁屏 / 线控 / App 内按钮恢复
@@ -11920,7 +11922,8 @@ function App() {
         return { term: it.term || '', meaning: it.meaning || '' };
       });
     }
-    var sep = exportSep === 'space' ? ' ' : '\t';
+    var onlyWord = exportSep === 'word';
+    var sep = exportSep === 'tab' ? '\t' : ' ';
     var seen = {};
     var lines = [];
     src.forEach(function (w) {
@@ -11930,7 +11933,7 @@ function App() {
       var k = t.toLowerCase();
       if (seen[k]) return;
       seen[k] = 1;
-      lines.push(m ? (t + sep + m) : t);
+      lines.push((onlyWord || !m) ? t : (t + sep + m));
     });
     return lines.join('\n');
   };
@@ -14182,8 +14185,9 @@ function App() {
               <div className="listenSettingRow">
                 <span>分隔方式</span>
                 <div className="listenSeg">
-                  <button className={exportSep === 'tab' ? 'on' : ''} onClick={() => setExportSep('tab')}>Tab 分隔</button>
                   <button className={exportSep === 'space' ? 'on' : ''} onClick={() => setExportSep('space')}>空格分隔</button>
+                  <button className={exportSep === 'tab' ? 'on' : ''} onClick={() => setExportSep('tab')}>Tab 分隔</button>
+                  <button className={exportSep === 'word' ? 'on' : ''} onClick={() => setExportSep('word')}>仅单词</button>
                 </div>
               </div>
               <div className="exportActions">
@@ -14191,8 +14195,8 @@ function App() {
                 <button className="primary ghost" onClick={doDownloadExport}>下载 txt</button>
               </div>
               {exportMsg ? <div className="listenTip">{exportMsg}</div> : null}
-              <div className="listenTip">格式：每行「单词 + 分隔 + 释义」，百词斩「词单 → 批量导入」可直接识别；也能粘贴进 Excel / 墨墨 / 不背单词。</div>
-              <div className="listenTip">复制后：百词斩 → 我的词单 → 新建 → 批量导入 → 长按粘贴，即可生成自己的高考词单。</div>
+              <div className="listenTip">默认「空格分隔」：每行「单词 释义」，这是百词斩批量导入最稳的格式；Tab 分隔适合粘进 Excel；只想要纯单词列表就选「仅单词」。</div>
+              <div className="listenTip">复制后：百词斩 → 我的词单 → 新建 → 批量导入 → 长按粘贴，即可生成自己的高考词单；墨墨 / 不背单词 / Anki 同样可粘贴导入。</div>
             </div>
           )}
           <input className="searchInput" value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索英文、中文、词性..." />
