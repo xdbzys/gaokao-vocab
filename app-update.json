@@ -1,8 +1,8 @@
 {
-  "version": "2.60.0",
-  "versionCode": 221,
-  "changelog": "🎉 背群英 v2.60.0 已发布！\n\n【修复】听读模式：中文终于能读出来了\n- 根因：旧版用有道的英文发音接口读中文，实际只返回约 0.1 秒的静音片段，所以中文全程无声\n- 改为中文专用整句语音接口（支持标点与整条释义），失败自动切换备用源，最后才用系统语音兜底\n- 背诵页的中文发音同步修复，点小喇叭即可听到中文\n\n【新增】系统播放器（后台 / 锁屏 / 息屏播放）\n- 听读音频改由手机系统媒体通道播放：退出应用回到桌面、锁屏、息屏后继续朗读\n- 通知栏常驻播放卡片，可直接「上一词 / 暂停 / 下一词」\n- 支持耳机线控与锁屏媒体控制\n- 听读参数里新增「后台播放」开关：系统播放器 / 仅应用内，可随时切换\n\n【优化】\n- 发音来源改为多源自动回退：某个源失败自动换下一个，不再出现「部分单词无声」\n- 倍速调整实时生效（含系统播放器）\n\n下载安装方法（应用内自动提示，点一下即可）：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
-  "devNotes": "v2.60.0: (1) Chinese TTS rewritten - old code used youdao dictvoice?type=2 for Chinese which returns ~0.1s silent clip; new chain: baidu gettts(lan=zh, full sentence with punctuation) -> youdao le=zh (short terms only) -> system TTS; (2) native system player: PlayerService foreground service + MediaPlayer + MediaSession + notification actions + wake lock, window.NativePlayer JS bridge; (3) listen cfg systemPlayer toggle; (4) back button -> moveTaskToBack while playing; (5) POST_NOTIFICATIONS / FOREGROUND_SERVICE_MEDIA_PLAYBACK permissions",
+  "version": "2.61.0",
+  "versionCode": 222,
+  "changelog": "🎉 背群英 v2.61.0 已发布！\n\n【中文自然度】改由手机自带语音引擎朗读\n- 之前用网络机械音，听起来“人机味”重\n- 现在默认走手机系统中文语音（讯飞 / 百度 / Google 离线引擎），自然度更好、零加载延迟\n- 读不出中文的设备会自动回退网络语音；也可在听读参数里手动切「中文发音：系统语音 / 网络语音」\n\n【像音乐一样暂停 / 继续】\n- 之前点暂停是直接停止，再点会从当前词重读\n- 现在是真正的暂停：暂停后从中断处接着读，不会重来\n- 应用内按钮、通知栏卡片、锁屏界面、耳机线控都能暂停 / 继续 / 上一词 / 下一词\n- 暂停时刻度不再往前走（词间与遍间暂停都不计时）\n\n【其它】\n- 系统语音增加“是否真的发声”探测：设备没有中文引擎时 1.8 秒内自动切到网络语音，不再静默无声\n- 修复通知栏与锁屏状态不同步导致的“按播放反而暂停”\n\n下载安装方法（应用内自动提示，点一下即可）：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
+  "devNotes": "v2.61.0: (1) Chinese voice now prefers device system TTS engine (speechSynthesis with zh voice detection + onstart probe + 1.8s fallback to network baidu/youdao), user toggle zhSource=system|net in listen cfg; (2) real pause/resume: _listenPausedFlag + listenPauseGate() suspends native/audio/TTS promises and listenSleep; pauseListen/resumeListen with skipNative flag; PlayerService emits resolved state events 'paused'/'resumed' instead of 'playpause' to avoid double-toggle; MediaSession callbacks pause/resume internally; (3) notification/line-out/headset controls map to real pause-resume",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "webHtmlUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html"
 }
