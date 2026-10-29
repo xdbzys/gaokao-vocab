@@ -68,10 +68,11 @@ jobs:
             fs.writeFileSync('version.json', s);
             console.log('version.json ->', s);
           "
-          gzip -9 -c dist/index.html > dist/index.html.gz
-          cp dist/index.html.gz index.html.gz
-          echo "--- 体积对比 ---"
-          ls -la dist/index.html dist/index.html.gz version.json
+          # 注意：.gz 只生成到仓库根，不能放进 dist（dist 会整体拷入 Android assets，
+          # 与 index.html 形成 Duplicate resources 导致 APK 构建失败）
+          gzip -9 -c dist/index.html > index.html.gz
+          echo "--- 体积对比（原始 vs gzip）---"
+          ls -la dist/index.html index.html.gz dist/version.json
 
       - name: Copy dist to Android assets
         run: |
@@ -132,7 +133,7 @@ jobs:
           tag_name: v${{ github.run_number }}
           files: |
             dist/index.html
-            dist/index.html.gz
+            index.html.gz
             version.json
             背群英.html
         env:
