@@ -5,5 +5,5 @@
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.69.0】听读参数轮盘化 + 精简界面 + 全面检修\nv听读参数全部改为轮盘调节：语速 0.50~2.00x（0.05 步进）、英文 1~5 遍、中文 0~3 遍、词间间隔 0~10 秒、遍间隔 0~3 秒，上下滑动即改，播放中立即生效；发音语速也换轮盘（0.50~1.50x）\nv移除「我的」页面的词库下载与网络搜索词库功能；删除高考核心词库；启动时自动清理不存在的词库引用与残留进度\nv删除软件内多余的说明文字，版本与功能说明统一收进更新公告\nv修复调节界面在部分机型上崩坏成白屏的问题（快捷开关改固定网格布局 + 新增全局错误兜底，异常时显示错误信息与重载按钮，不再白屏）\nv中文发音链加固：微软神经语音补齐官方鉴权参数，新增有道网络发音第三级兜底（神经语音 → 百度 → 有道 → 系统引擎），任何网络环境都有声"
+  "changelog": "【v2.69.0】听读参数轮盘化 + 精简界面 + 全面检修\nv听读参数全部改为轮盘调节：语速 0.50~2.00x（0.05 步进）、英文 1~5 遍、中文 0~3 遍、词间间隔 0~10 秒、遍间隔 0~3 秒，上下滑动即改，播放中立即生效；发音语速也换轮盘（0.50~1.50x）\nv移除「我的」页面的词库下载与网"
 }
