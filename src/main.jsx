@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.69.0';
-const APP_VERSION_CODE = 230;
+const APP_VERSION = '2.69.1';
+const APP_VERSION_CODE = 231;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -11094,7 +11094,7 @@ function WheelPicker(props) {
   return (
     <div
       className={'wheelPicker' + (props.compact ? ' compact' : '')}
-      style={{ width: width || '100%' }}
+      style={{ width: (typeof props.width === 'number') ? (props.width + 'px') : (props.width || '100%') }}
       onTouchStart={function (e) { onStart(e.touches[0].clientY); }}
       onTouchMove={function (e) { e.preventDefault(); onMove(e.touches[0].clientY); }}
       onTouchEnd={onEnd}
@@ -11151,6 +11151,16 @@ class AppErrorBoundary extends React.Component {
           <h2 style={{ fontSize: 18, margin: '0 0 8px' }}>界面出现异常</h2>
           <p style={{ fontSize: 13, color: '#6b7280', wordBreak: 'break-all', margin: '0 0 20px' }}>{msg}</p>
           <button className="primary" style={{ padding: '10px 32px' }} onClick={function () { try { localStorage.setItem('gaokao_last_error', msg); } catch (_) {} location.reload(); }}>重载应用</button>
+          <div style={{ marginTop: 14 }}>
+            <button style={{ padding: '8px 20px', fontSize: 13 }} onClick={function () {
+              try {
+                localStorage.removeItem(LISTEN_CFG_KEY);
+                localStorage.removeItem('gaokao_settings');
+                localStorage.setItem('gaokao_last_error', 'cleared: ' + msg);
+              } catch (_) {}
+              location.reload();
+            }}>重置听读与设置后重载</button>
+          </div>
         </div>
       );
     }
