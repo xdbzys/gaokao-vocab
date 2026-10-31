@@ -5,5 +5,5 @@
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "🎉 背群英 v2.63.0 已发布！\n\n【修复无故闪退】\n- 修复点「播放」后应用直接闪退的问题\n\n【系统媒体控制完整可用】\n- 控制中心 / 锁屏媒体卡片显示「正在播放 + 当前单词」，中文朗读期间同样可控\n\n【词库导出 txt 修复】\n- 「下载 txt」在 App 内直接写入「下载 → 背群英」；复制到剪贴板可粘贴进百词斩批量导入\n\n【导入算法优化】\n- 粘连文本智能断行、重复单词自动合并、已有单词自动跳过、噪音行过滤\n\n完整更新说明与安装包：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk"
+  "changelog": "🎉 背群英 v2.63.0 已发布！\n\n【修复无故闪退】\n- 修复点「播放」后应用直接闪退的问题（系统前台服务启动方式不合规导致）\n- 控制指令在播放器未运行时不再拉起服务，杜绝因此类操作引发的闪退\n\n【系统媒体控制完整可用】\n- 播放时，控制中心 / 锁屏的媒体卡片会显示「正在播放 + 当前单词」\n- 中文系统语音"
 }
