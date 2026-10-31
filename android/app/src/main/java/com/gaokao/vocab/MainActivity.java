@@ -299,6 +299,36 @@ public class MainActivity extends Activity {
                 } catch (Throwable ignored) {}
             }
 
+            /** v2.64.0：整库连续播放（Album 模式）
+             * JS 把选中的整库 words JSON 交给原生，原生像专辑一样连续播放整库，
+             * 锁屏 / 控制中心 / 耳机线控完整可控，无需逐词切换。 */
+            @JavascriptInterface
+            public void playAlbum(final String json) {
+                if (json == null || json.length() == 0) return;
+                try {
+                    // v2.64.0：整库可能数百词，JSON 超过 Intent Binder 事务上限，故先写缓存文件再传路径
+                    File f = new File(getCacheDir(), "album_req.json");
+                    java.io.FileOutputStream fos = new java.io.FileOutputStream(f);
+                    fos.write(json.getBytes("UTF-8"));
+                    fos.close();
+                    Intent i = new Intent(MainActivity.this, PlayerService.class);
+                    i.setAction(PlayerService.ACTION_ALBUM);
+                    i.putExtra(PlayerService.EXTRA_ALBUM_PATH, f.getAbsolutePath());
+                    startServiceCompat(i);
+                } catch (Throwable ignored) {}
+            }
+
+            /** v2.64.0：整库进度跳转（跳到第 index 个词，0-based） */
+            @JavascriptInterface
+            public void seekAlbum(int index) {
+                try {
+                    Intent i = new Intent(MainActivity.this, PlayerService.class);
+                    i.setAction(PlayerService.ACTION_ALBUM_SEEK);
+                    i.putExtra(PlayerService.EXTRA_ALBUM_INDEX, index);
+                    startServiceCompat(i);
+                } catch (Throwable ignored) {}
+            }
+
             @JavascriptInterface
             public int getPosition() {
                 try { return PlayerService.peekPosition(); } catch (Throwable ignored) { return 0; }

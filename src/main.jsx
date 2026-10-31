@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.63.0';
-const APP_VERSION_CODE = 224;
+const APP_VERSION = '2.64.0';
+const APP_VERSION_CODE = 225;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -11686,6 +11686,30 @@ function App() {
     try { if (navigator.mediaSession) navigator.mediaSession.playbackState = 'playing'; } catch (e) {}
   };
 
+  // v2.64.0：构建「整库专辑」JSON，交给原生连续播放（像音乐专辑），无需逐词切换。
+  // 与 PlayerService.startAlbum 的契约：{ album, rate, words:[{ word, meaning, enUrl, zhText }] }
+  function buildAlbumJson(queue, cfg, albumName) {
+    var rate = (cfg && cfg.rate) ? cfg.rate : 1;
+    var words = [];
+    for (var i = 0; i < queue.length; i++) {
+      var it = queue[i] || {};
+      var term = it.term || '';
+      var meaning = it.meaning || '';
+      var enUrls = enAudioUrls(term);
+      words.push({
+        word: term,
+        meaning: meaning,
+        enUrl: (enUrls && enUrls.length) ? enUrls[0] : '',
+        zhText: _zhSpeechText(meaning)
+      });
+    }
+    return JSON.stringify({
+      album: albumName || '背群英 · 听读词库',
+      rate: rate,
+      words: words
+    });
+  }
+
   const startListenAt = async function (queue, startIdx) {
     if (!queue || !queue.length) return;
     const token = listenTokenRef.current + 1;
@@ -11702,6 +11726,21 @@ function App() {
     listenPlayingRef.current = true;
     setListenPlaying(true);
     setListenNativePlaying(true);
+    // v2.64.0：APK 环境下整库连续播放——把整库交给原生像专辑一样连续播放，无需逐词切换。
+    // 锁屏 / 控制中心 / 耳机线控 / 蓝牙 / 车机完整可控；进度与当前词序号由原生
+    // __nativeMediaAction('album_index:N' / 'album_end') 回传同步，暂停/继续由 'paused'/'resumed' 同步。
+    if (listenSystemPlayerOn() && window.NativePlayer && typeof window.NativePlayer.playAlbum === 'function') {
+      try {
+        var aCfg = listenCfgRef.current;
+        var aName = (typeof listenActiveBook !== 'undefined' && listenActiveBook && listenActiveBook.name) ? listenActiveBook.name : '背群英 · 听读词库';
+        var albumJson = buildAlbumJson(queue, aCfg, aName);
+        window.NativePlayer.playAlbum(albumJson);
+        // 原生接管后续整库播放；JS 不再进入逐词循环（避免与原生双路发声）
+        return;
+      } catch (e) {
+        // 构建 / 下发失败则回退到网页逐词播放
+      }
+    }
     try {
       while (token === listenTokenRef.current) {
         const cfg = listenCfgRef.current;
@@ -11743,6 +11782,12 @@ function App() {
     const wasPlaying = listenPlayingRef.current;
     let idx = listenIndexRef.current + 1;
     if (idx >= q.length) idx = (listenCfgRef.current.loop === 'list') ? 0 : q.length - 1;
+    // v2.64.0：专辑模式下直接让原生命中跳到该词，无需重启播放（放在 stopListenAudio 之前，避免误停专辑）
+    if (wasPlaying && listenSystemPlayerOn() && window.NativePlayer && typeof window.NativePlayer.seekAlbum === 'function') {
+      listenIndexRef.current = idx; setListenIndex(idx);
+      try { window.NativePlayer.seekAlbum(idx); } catch (e) {}
+      return;
+    }
     listenTokenRef.current += 1;
     stopListenAudio();
     listenIndexRef.current = idx;
@@ -11758,6 +11803,11 @@ function App() {
     const wasPlaying = listenPlayingRef.current;
     let idx = listenIndexRef.current - 1;
     if (idx < 0) idx = (listenCfgRef.current.loop === 'list') ? q.length - 1 : 0;
+    if (wasPlaying && listenSystemPlayerOn() && window.NativePlayer && typeof window.NativePlayer.seekAlbum === 'function') {
+      listenIndexRef.current = idx; setListenIndex(idx);
+      try { window.NativePlayer.seekAlbum(idx); } catch (e) {}
+      return;
+    }
     listenTokenRef.current += 1;
     stopListenAudio();
     listenIndexRef.current = idx;
@@ -11771,6 +11821,12 @@ function App() {
     const q = (listenQueueRef.current && listenQueueRef.current.length) ? listenQueueRef.current : listenQueue;
     if (!q.length || idx < 0 || idx >= q.length) return;
     const wasPlaying = listenPlayingRef.current;
+    // v2.64.0：专辑模式下直接让原生命中跳到该词，无需重启播放
+    if (wasPlaying && listenSystemPlayerOn() && window.NativePlayer && typeof window.NativePlayer.seekAlbum === 'function') {
+      listenIndexRef.current = idx; setListenIndex(idx);
+      try { window.NativePlayer.seekAlbum(idx); } catch (e) {}
+      return;
+    }
     listenTokenRef.current += 1;
     stopListenAudio();
     listenIndexRef.current = idx;
@@ -11853,6 +11909,17 @@ function App() {
     // v2.61.0：原生通知栏 / 锁屏 / 耳机线控按钮回调入口（真正的暂停 / 继续）
     try {
       window.__nativeMediaAction = function (action) {
+        // v2.64.0：原生长期整库播放，回传当前词序号 / 播放结束，JS 同步界面
+        if (typeof action === 'string' && action.indexOf('album_index:') === 0) {
+          const n = parseInt(action.slice('album_index:'.length), 10);
+          if (!isNaN(n)) { listenIndexRef.current = n; try { setListenIndex(n); } catch (e) {} }
+          return;
+        }
+        if (action === 'album_end') {
+          listenPlayingRef.current = false;
+          try { setListenPlaying(false); setListenNativePlaying(false); setListenPos(0); setListenDur(0); } catch (e) {}
+          return;
+        }
         // 原生层已自行切换播放状态时，JS 只同步状态、不再反向下发指令
         if (action === 'nexttrack') listenNext();
         else if (action === 'previoustrack') listenPrev();

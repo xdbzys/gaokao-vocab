@@ -18,9 +18,20 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * 听读模式「系统播放器」服务（v2.62.0）
@@ -68,6 +79,13 @@ public class PlayerService extends Service {
     public static final String EXTRA_ALBUM = "album";
     public static final String EXTRA_SEEK = "seek";
     public static final String EXTRA_MEDIA_ACTION = "media_action";
+    // v2.64.0：整库连续播放（Album 模式）
+    public static final String ACTION_ALBUM = "com.gaokao.vocab.player.ALBUM";
+    public static final String ACTION_ALBUM_SEEK = "com.gaokao.vocab.player.ALBUM_SEEK";
+    public static final String EXTRA_ALBUM_JSON = "album_json";
+    public static final String EXTRA_ALBUM_INDEX = "album_index";
+    public static final String EXTRA_ALBUM_PATH = "album_path";
+
 
     private static final String TAG = "GaokaoPlayer";
     private static final String CHANNEL_ID = "gaokao_listen_playback";
@@ -123,12 +141,50 @@ public class PlayerService extends Service {
     private boolean mHasPlayed = false;
     private int mDuration = 0;
 
+    // ===== v2.64.0 Album 整库连续播放 =====
+    private static class AlbumWord {
+        String word;
+        String meaning;
+        String enUrl;
+        String zhText;
+        String key;
+        AlbumWord(String w, String m, String e, String z) {
+            word = w; meaning = m; enUrl = e; zhText = (z != null && z.length() > 0) ? z : m;
+            key = (w == null ? "" : w).toLowerCase().replaceAll("\\s+", "")
+                    + "_" + Math.abs((m == null ? "" : m).hashCode());
+        }
+    }
+    private boolean mAlbumMode = false;
+    private ArrayList<AlbumWord> mAlbumWords = new ArrayList<AlbumWord>();
+    private int mAlbumIndex = 0;
+    private String mAlbumName = "高考词汇";
+    private float mAlbumRate = 1f;
+    private int mAlbumAvgMs = 4500;
+    private int mAlbumTotal = 0;
+    private int mAlbumBaseMs = 0;
+    private int mAlbumPendingNext = -1;
+    private TextToSpeech mTts = null;
+    private boolean mTtsReady = false;
+    private File mAlbumCacheDir = null;
+
+
     /** 进度上报（每 500ms 一次，供锁屏 / 蓝牙 / JS 进度条使用） */
     private final Runnable mProgressTask = new Runnable() {
         @Override
         public void run() {
             try {
-                if (mPlayer != null && mHasPlayed && !mPaused) {
+                if (mAlbumMode) {
+                    // 整库连续播放：进度 = 当前词起始偏移 + 当前词内部进度（限幅到单词语估算时长）
+                    if (!mPaused) {
+                        int wordPos = 0;
+                        try { if (mPlayer != null && mHasPlayed) wordPos = mPlayer.getCurrentPosition(); } catch (Throwable ignored) {}
+                        int pos = mAlbumBaseMs + Math.min(wordPos, mAlbumAvgMs);
+                        int dur = (mAlbumTotal > 0 ? mAlbumTotal : 1) * mAlbumAvgMs;
+                        sPosition = pos; sDuration = dur;
+                        emit("", "progress:" + pos + ":" + dur);
+                        updateSessionState(PlaybackState.STATE_PLAYING);
+                    }
+                } else if (mPlayer != null && mHasPlayed && !mPaused) {
                     int pos = 0;
                     try {
                         pos = mPlayer.getCurrentPosition();
@@ -143,9 +199,8 @@ public class PlayerService extends Service {
                     if (mDuration > 0) {
                         sPosition = pos;
                         sDuration = mDuration;
-                        // 原生层进度：前缀 progress:，由 MainActivity 转成 JS 回调
                         emit("", "progress:" + pos + ":" + mDuration);
-                        updateSessionState(mPaused ? PlaybackState.STATE_PAUSED : PlaybackState.STATE_PLAYING);
+                        updateSessionState(PlaybackState.STATE_PLAYING);
                     }
                 }
             } catch (Throwable ignored) {
@@ -164,6 +219,9 @@ public class PlayerService extends Service {
         } catch (Throwable ignored) {
         }
         createChannel();
+        mAlbumCacheDir = new File(getCacheDir(), "album_media");
+        try { if (mAlbumCacheDir != null && !mAlbumCacheDir.exists()) mAlbumCacheDir.mkdirs(); } catch (Throwable ignored) {}
+        initTts();
         if (mHandler != null) mHandler.post(mProgressTask);
     }
 
@@ -254,6 +312,20 @@ public class PlayerService extends Service {
             updateNotification();
             return START_STICKY;
         }
+        // v2.64.0：整库连续播放
+        if (ACTION_ALBUM.equals(action)) {
+            String aj = intent.getStringExtra(EXTRA_ALBUM_PATH);
+            startAlbum(aj);
+            return START_STICKY;
+        }
+        if (ACTION_ALBUM_SEEK.equals(action)) {
+            int ai = intent.getIntExtra(EXTRA_ALBUM_INDEX, -1);
+            if (mAlbumMode && ai >= 0 && ai < mAlbumWords.size()) {
+                stopAlbumWord();
+                playAlbumWord(ai);
+            }
+            return START_STICKY;
+        }
         if (ACTION_PLAY.equals(action)) {
             String url = intent.getStringExtra(EXTRA_URL);
             String path = intent.getStringExtra(EXTRA_PATH);
@@ -287,6 +359,9 @@ public class PlayerService extends Service {
     @Override
     public void onDestroy() {
         sRunning = false;
+        mAlbumMode = false;
+        try { if (mTts != null) { mTts.stop(); mTts.shutdown(); mTts = null; } } catch (Throwable ignored) {}
+        mTtsReady = false;
         if (mHandler != null) {
             try {
                 mHandler.removeCallbacks(mProgressTask);
@@ -393,6 +468,7 @@ public class PlayerService extends Service {
 
     private void pauseInternal() {
         mPaused = true;
+        if (mTts != null) { try { mTts.stop(); } catch (Throwable ignored) {} }
         try {
             if (mPlayer != null && mPlayer.isPlaying()) mPlayer.pause();
         } catch (Throwable ignored) {
@@ -402,8 +478,21 @@ public class PlayerService extends Service {
     }
 
     private void resumeInternal() {
-        if (!mHasPlayed) return;
         mPaused = false;
+        if (mAlbumMode) {
+            if (mAlbumPendingNext >= 0) {
+                int n = mAlbumPendingNext; mAlbumPendingNext = -1; playAlbumWord(n); return;
+            }
+            if (mPlayer != null && mHasPlayed && !mPlayer.isPlaying()) {
+                try { mPlayer.start(); updateSessionState(PlaybackState.STATE_PLAYING); } catch (Throwable ignored) {}
+            } else {
+                // 合成中 / 词间间隔 / 已释放：恢复时重播当前词（类似音乐重播当前曲）
+                playAlbumWord(mAlbumIndex);
+            }
+            updateNotification();
+            return;
+        }
+        if (!mHasPlayed) return;
         try {
             if (mPlayer != null && !mPlayer.isPlaying()) {
                 mPlayer.start();
@@ -544,11 +633,21 @@ public class PlayerService extends Service {
 
                 @Override
                 public void onSkipToNext() {
+                    if (mAlbumMode) {
+                        int n = mAlbumIndex + 1;
+                        if (n < mAlbumWords.size()) { stopAlbumWord(); playAlbumWord(n); }
+                        return;
+                    }
                     emit("", "nexttrack");
                 }
 
                 @Override
                 public void onSkipToPrevious() {
+                    if (mAlbumMode) {
+                        int p = mAlbumIndex - 1;
+                        if (p >= 0) { stopAlbumWord(); playAlbumWord(p); }
+                        return;
+                    }
                     emit("", "previoustrack");
                 }
 
@@ -559,6 +658,14 @@ public class PlayerService extends Service {
 
                 @Override
                 public void onSeekTo(long pos) {
+                    if (mAlbumMode) {
+                        int idx = (int) (pos / mAlbumAvgMs);
+                        if (idx < 0) idx = 0;
+                        if (idx >= mAlbumWords.size()) idx = mAlbumWords.size() - 1;
+                        stopAlbumWord();
+                        playAlbumWord(idx);
+                        return;
+                    }
                     seekInternal((int) pos);
                 }
             });
@@ -575,6 +682,15 @@ public class PlayerService extends Service {
      */
     private void updateSessionState(int state) {
         if (mSession == null) return;
+        // v2.64.0：Album 模式用「整库估算进度」上报，锁屏 / 控制中心显示完整时间轴与可拖动进度条
+        if (mAlbumMode) {
+            int dur = (mAlbumTotal > 0 ? mAlbumTotal : 1) * mAlbumAvgMs;
+            int wordPos = 0;
+            try { if (mPlayer != null && mHasPlayed) wordPos = mPlayer.getCurrentPosition(); } catch (Throwable ignored) {}
+            int pos = mAlbumBaseMs + Math.min(wordPos, mAlbumAvgMs);
+            updateAlbumState(state, pos, dur);
+            return;
+        }
         try {
             int pos = 0;
             if (mPlayer != null && mHasPlayed) {
@@ -697,5 +813,358 @@ public class PlayerService extends Service {
         } catch (Throwable e) {
             Log.e(TAG, "startForeground failed", e);
         }
+    }
+
+    // ================= v2.64.0 Album 整库连续播放 =================
+    private String mZhPendingUtt = "";   // 中文合成超时去重标记
+
+    private void setAudioAttrs(MediaPlayer mp) {
+        if (Build.VERSION.SDK_INT >= 21) {
+            mp.setAudioAttributes(new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build());
+        } else {
+            mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        }
+    }
+
+    private int safeGetPos() {
+        try { if (mPlayer != null && mHasPlayed) return mPlayer.getCurrentPosition(); } catch (Throwable ignored) {}
+        return 0;
+    }
+
+    private String uriEncode(String v) {
+        try { return URLEncoder.encode(v == null ? "" : v, "UTF-8").replace("+", "%20"); }
+        catch (Throwable e) { return v == null ? "" : v; }
+    }
+
+    private void initTts() {
+        try {
+            mTts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+                @Override
+                public void onInit(int status) {
+                    if (status == TextToSpeech.SUCCESS && mTts != null) {
+                        int r = mTts.setLanguage(Locale.SIMPLIFIED_CHINESE);
+                        mTtsReady = (r != TextToSpeech.LANG_MISSING_DATA && r != TextToSpeech.LANG_NOT_SUPPORTED);
+                        try { mTts.setSpeechRate(1.0f); } catch (Throwable ignored) {}
+                        try {
+                            mTts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                                @Override public void onStart(String id) {}
+                                @Override public void onDone(String id) { onZhSynthesized(id); }
+                                @Override public void onError(String id) { onZhSynthesized(id); }
+                            });
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            });
+        } catch (Throwable ignored) {}
+    }
+
+    private void startAlbum(String json) {
+        if (json == null || json.length() == 0) return;
+        // v2.64.0：整库可能包含数百词，JSON 直接塞 Intent extra 会触发 Binder 事务上限
+        // （TransactionTooLargeException）。因此由 JS 端写入缓存文件，这里按路径读取。
+        if (json.startsWith("/") && new File(json).exists()) {
+            try {
+                java.io.FileInputStream fis = new java.io.FileInputStream(json);
+                java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+                byte[] bbuf = new byte[4096];
+                int bn;
+                while ((bn = fis.read(bbuf)) > 0) bos.write(bbuf, 0, bn);
+                fis.close();
+                json = new String(bos.toByteArray(), "UTF-8");
+            } catch (Throwable e) {
+                Log.e(TAG, "read album file failed", e);
+                return;
+            }
+        }
+        try {
+            org.json.JSONObject root = new org.json.JSONObject(json);
+            String name = root.optString("album", "\u9ad8\u8003\u8bcd\u6c47");
+            float rate = (float) root.optDouble("rate", 1.0);
+            org.json.JSONArray words = root.optJSONArray("words");
+            if (words == null || words.length() == 0) return;
+            ArrayList<AlbumWord> list = new ArrayList<AlbumWord>();
+            for (int i = 0; i < words.length(); i++) {
+                org.json.JSONObject o = words.getJSONObject(i);
+                String w = o.optString("word", "");
+                String m = o.optString("meaning", "");
+                String e = o.optString("enUrl", "");
+                String z = o.optString("zhText", m);
+                if (w == null || w.length() == 0) continue;
+                list.add(new AlbumWord(w, m, e, z));
+            }
+            if (list.isEmpty()) return;
+            releasePlayer();
+            mAlbumMode = true;
+            mAlbumWords = list;
+            mAlbumTotal = list.size();
+            mAlbumName = name;
+            mAlbumRate = Math.max(0.5f, Math.min(2.5f, rate));
+            mAlbumIndex = 0;
+            mAlbumBaseMs = 0;
+            mPaused = false;
+            mZhPendingUtt = "";
+            mTitle = name;
+            mArtist = list.get(0).word;
+            ensureSession();
+            updateSessionState(PlaybackState.STATE_PLAYING);
+            updateNotification();
+            playAlbumWord(0);
+        } catch (Throwable e) {
+            Log.e(TAG, "startAlbum failed", e);
+        }
+    }
+
+    private void playAlbumWord(final int idx) {
+        if (!mAlbumMode) return;
+        if (idx < 0 || idx >= mAlbumWords.size()) { finishAlbum(); return; }
+        mAlbumIndex = idx;
+        emit("", "album_index:" + idx);   // 通知 JS 当前词序号（高亮 / 序号显示）
+        mAlbumBaseMs = idx * mAlbumAvgMs;
+        mAlbumPendingNext = -1;
+        AlbumWord w = mAlbumWords.get(idx);
+        mArtist = w.word;
+        mTitle = mAlbumName;
+        updateNotification();
+        updateSessionState(mPaused ? PlaybackState.STATE_PAUSED : PlaybackState.STATE_PLAYING);
+        playAlbumEn(idx);
+    }
+
+    private void playAlbumEn(final int idx) {
+        if (!mAlbumMode || idx != mAlbumIndex || idx < 0 || idx >= mAlbumWords.size()) return;
+        final AlbumWord w = mAlbumWords.get(idx);
+        final File target = new File(mAlbumCacheDir, "en_" + w.key + ".mp3");
+        Runnable play = new Runnable() {
+            @Override public void run() {
+                if (!mAlbumMode || mAlbumIndex != idx) return;
+                if (target.exists() && target.length() > 200) {
+                    playAlbumFile(target, new Runnable() {
+                        @Override public void run() { playAlbumZh(idx); }
+                    });
+                } else if (w.enUrl != null && w.enUrl.length() > 0) {
+                    playAlbumUrl(w.enUrl, new Runnable() {
+                        @Override public void run() { playAlbumZh(idx); }
+                    });
+                } else {
+                    playAlbumZh(idx);
+                }
+            }
+        };
+        if (target.exists() && target.length() > 200) play.run();
+        else downloadToFile(w.enUrl, target, play);
+    }
+
+    private void playAlbumZh(final int idx) {
+        if (!mAlbumMode || idx != mAlbumIndex || idx < 0 || idx >= mAlbumWords.size()) return;
+        final AlbumWord w = mAlbumWords.get(idx);
+        if (mTtsReady && w.zhText != null && w.zhText.length() > 0) {
+            final String utt = "zh_" + w.key;
+            final File wav = new File(mAlbumCacheDir, utt + ".wav");
+            try { if (wav.exists()) wav.delete(); } catch (Throwable ignored) {}
+            releasePlayer();
+            mZhPendingUtt = utt;
+            try {
+                if (Build.VERSION.SDK_INT >= 29) {
+                    mTts.synthesizeToFile(w.zhText, null, wav, utt);
+                } else {
+                    HashMap<String, String> p = new HashMap<String, String>();
+                    mTts.synthesizeToFile(w.zhText, p, wav, utt);
+                }
+                // 超时兜底：部分机型不回调 onDone，2.5s 后自行续播
+                if (mHandler != null) mHandler.postDelayed(new Runnable() {
+                    @Override public void run() {
+                        if (!mAlbumMode || mAlbumIndex != idx) return;
+                        if (mZhPendingUtt.equals(utt)) {
+                            mZhPendingUtt = "";
+                            if (wav.exists() && wav.length() > 0) {
+                                playAlbumFile(wav, new Runnable() {
+                                    @Override public void run() { afterAlbumWord(idx); }
+                                });
+                            } else {
+                                playAlbumUrl("https://dict.youdao.com/dictvoice?audio=" + uriEncode(w.zhText) + "&le=zh",
+                                        new Runnable() { @Override public void run() { afterAlbumWord(idx); } });
+                            }
+                        }
+                    }
+                }, 2500);
+                return;
+            } catch (Throwable e) {
+                mZhPendingUtt = "";
+            }
+        }
+        // 回退：网络中文语音（有道 le=zh）经 MediaPlayer 播放
+        playAlbumUrl("https://dict.youdao.com/dictvoice?audio=" + uriEncode(w.zhText) + "&le=zh",
+                new Runnable() { @Override public void run() { afterAlbumWord(idx); } });
+    }
+
+    private void onZhSynthesized(final String id) {
+        if (!mAlbumMode) return;
+        if (mHandler != null) {
+            mHandler.post(new Runnable() {
+                @Override public void run() {
+                    if (!mZhPendingUtt.equals(id)) return; // 已被超时逻辑消费
+                    mZhPendingUtt = "";
+                    File wav = new File(mAlbumCacheDir, id + ".wav");
+                    if (wav.exists() && wav.length() > 0) {
+                        final int idx = mAlbumIndex;
+                        playAlbumFile(wav, new Runnable() {
+                            @Override public void run() { afterAlbumWord(idx); }
+                        });
+                    } else {
+                        afterAlbumWord(mAlbumIndex);
+                    }
+                }
+            });
+        }
+    }
+
+    private void afterAlbumWord(final int idx) {
+        if (!mAlbumMode || idx != mAlbumIndex) return;
+        final int next = idx + 1;
+        if (next >= mAlbumWords.size()) { finishAlbum(); return; }
+        long gap = (long) (mAlbumAvgMs * 0.3);
+        if (mHandler != null) mHandler.postDelayed(new Runnable() {
+            @Override public void run() {
+                if (!mAlbumMode || mAlbumIndex != idx) return;
+                if (mPaused) { mAlbumPendingNext = next; return; }
+                playAlbumWord(next);
+            }
+        }, gap);
+    }
+
+    private void playAlbumFile(final File fx, final Runnable onDone) {
+        releasePlayer();
+        requestFocus();
+        acquireWakeLock();
+        try {
+            mPlayer = new MediaPlayer();
+            setAudioAttrs(mPlayer);
+            mPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
+            mPlayer.setDataSource(fx.getAbsolutePath());
+            mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override public void onPrepared(MediaPlayer mp) {
+                    mHasPlayed = true;
+                    applyRateAlbum();
+                    try { if (!mPaused) mp.start(); } catch (Throwable e) { if (onDone != null) onDone.run(); }
+                }
+            });
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override public void onCompletion(MediaPlayer mp) { if (onDone != null) onDone.run(); }
+            });
+            mPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override public boolean onError(MediaPlayer mp, int what, int extra) { if (onDone != null) onDone.run(); return true; }
+            });
+            mPlayer.prepareAsync();
+        } catch (Throwable e) {
+            if (onDone != null) onDone.run();
+        }
+    }
+
+    private void playAlbumUrl(final String url, final Runnable onDone) {
+        if (url == null || url.length() == 0) { if (onDone != null) onDone.run(); return; }
+        releasePlayer();
+        requestFocus();
+        acquireWakeLock();
+        try {
+            mPlayer = new MediaPlayer();
+            setAudioAttrs(mPlayer);
+            mPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
+            mPlayer.setDataSource(url);
+            mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override public void onPrepared(MediaPlayer mp) {
+                    mHasPlayed = true;
+                    applyRateAlbum();
+                    try { if (!mPaused) mp.start(); } catch (Throwable e) { if (onDone != null) onDone.run(); }
+                }
+            });
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override public void onCompletion(MediaPlayer mp) { if (onDone != null) onDone.run(); }
+            });
+            mPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override public boolean onError(MediaPlayer mp, int what, int extra) { if (onDone != null) onDone.run(); return true; }
+            });
+            mPlayer.prepareAsync();
+        } catch (Throwable e) {
+            if (onDone != null) onDone.run();
+        }
+    }
+
+    private void downloadToFile(final String url, final File target, final Runnable onDone) {
+        if (url == null || url.length() == 0) { if (onDone != null) onDone.run(); return; }
+        new Thread(new Runnable() {
+            @Override public void run() {
+                try {
+                    URL u = new URL(url);
+                    HttpURLConnection c = (HttpURLConnection) u.openConnection();
+                    c.setConnectTimeout(15000);
+                    c.setReadTimeout(20000);
+                    c.setRequestProperty("User-Agent", "Mozilla/5.0");
+                    c.connect();
+                    InputStream in = new BufferedInputStream(c.getInputStream());
+                    FileOutputStream out = new FileOutputStream(target);
+                    byte[] buf = new byte[8192];
+                    int n;
+                    while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                    out.close();
+                    in.close();
+                    c.disconnect();
+                } catch (Throwable e) {
+                    try { if (target != null && target.exists()) target.delete(); } catch (Throwable ignored) {}
+                }
+                if (mHandler != null) mHandler.post(onDone);
+                else if (onDone != null) onDone.run();
+            }
+        }).start();
+    }
+
+    private void finishAlbum() {
+        mAlbumMode = false;
+        mPaused = true;
+        mZhPendingUtt = "";
+        releasePlayer();
+        updateSessionState(PlaybackState.STATE_PAUSED);
+        updateNotification();
+        emit("", "album_end");
+    }
+
+    private void stopAlbumWord() {
+        mAlbumPendingNext = -1;
+        mZhPendingUtt = "";
+        releasePlayer();
+        if (mTts != null) { try { mTts.stop(); } catch (Throwable ignored) {} }
+    }
+
+    private void applyRateAlbum() {
+        if (mPlayer == null) return;
+        if (Build.VERSION.SDK_INT < 23) return;
+        try {
+            float r = Math.max(0.5f, Math.min(2.5f, mAlbumRate));
+            android.media.PlaybackParams p = new android.media.PlaybackParams();
+            p.setSpeed(r);
+            mPlayer.setPlaybackParams(p);
+        } catch (Throwable ignored) {}
+    }
+
+    private void updateAlbumState(int state, int pos, int dur) {
+        if (mSession == null) return;
+        try {
+            PlaybackState.Builder b = new PlaybackState.Builder();
+            long actions = PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE
+                    | PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_STOP
+                    | PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS;
+            if (dur > 0) actions |= PlaybackState.ACTION_SEEK_TO;
+            b.setActions(actions);
+            if (Build.VERSION.SDK_INT >= 29) b.setState(state, pos, mPaused ? 0f : mAlbumRate, System.currentTimeMillis());
+            else b.setState(state, pos, mPaused ? 0f : 1f);
+            mSession.setPlaybackState(b.build());
+            MediaMetadata.Builder mb = new MediaMetadata.Builder();
+            mb.putString(MediaMetadata.METADATA_KEY_TITLE, mAlbumName);
+            mb.putString(MediaMetadata.METADATA_KEY_ARTIST, mArtist);
+            mb.putString(MediaMetadata.METADATA_KEY_ALBUM, "\u80cc\u7fa4\u82f1 \u00b7 \u542c\u8bfb");
+            mb.putLong(MediaMetadata.METADATA_KEY_DURATION, dur);
+            mSession.setMetadata(mb.build());
+        } catch (Throwable ignored) {}
     }
 }
