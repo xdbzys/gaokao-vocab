@@ -30,7 +30,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
 
 /**
@@ -963,15 +962,12 @@ public class PlayerService extends Service {
             final String utt = "zh_" + w.key;
             final File wav = new File(mAlbumCacheDir, utt + ".wav");
             try { if (wav.exists()) wav.delete(); } catch (Throwable ignored) {}
-            releasePlayer();
-            mZhPendingUtt = utt;
-            try {
-                if (Build.VERSION.SDK_INT >= 29) {
+                releasePlayer();
+                mZhPendingUtt = utt;
+                try {
+                    // synthesizeToFile(CharSequence, Bundle, File, String) 自 API 21 起可用；
+                    // 旧的 (String, HashMap, File, String) 重载在 compileSdk 33（API 33）已移除，故统一用新重载。
                     mTts.synthesizeToFile(w.zhText, null, wav, utt);
-                } else {
-                    HashMap<String, String> p = new HashMap<String, String>();
-                    mTts.synthesizeToFile(w.zhText, p, wav, utt);
-                }
                 // 超时兜底：部分机型不回调 onDone，2.5s 后自行续播
                 if (mHandler != null) mHandler.postDelayed(new Runnable() {
                     @Override public void run() {
