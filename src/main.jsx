@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.66.0';
-const APP_VERSION_CODE = 227;
+const APP_VERSION = '2.67.0';
+const APP_VERSION_CODE = 228;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -111,6 +111,29 @@ const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
 const isNativeApp = !!(window.NativeFS)
   || (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform ? Capacitor.isNativePlatform() : false)
   || !!(window.cordova);
+
+// v2.67.0：本机「安装包」真实版本（PackageManager 读取）。
+// 页面会被云端热更新抬高版本号，但原生功能只随 APK 更新 —— 两者不一致时
+// 界面看起来是新的、功能却还是旧的。返回 0 表示该安装包早于 v2.67.0（无此桥接）。
+function nativePkgVersionCode() {
+  if (!isNativeApp) return -1;
+  try {
+    if (window.NativeVersion && typeof window.NativeVersion.versionCode === 'function') {
+      const c = window.NativeVersion.versionCode();
+      if (typeof c === 'number' && c > 0) return c;
+    }
+  } catch (e) {}
+  return 0;
+}
+function nativePkgVersionName() {
+  if (!isNativeApp) return '';
+  try {
+    if (window.NativeVersion && typeof window.NativeVersion.versionName === 'function') {
+      return String(window.NativeVersion.versionName() || '');
+    }
+  } catch (e) {}
+  return '';
+}
 
 /* ============================
    一、内置词库数据
@@ -11271,6 +11294,9 @@ function App() {
   const [autoJumping, setAutoJumping] = useState(false);
   const [cloudStatus, setCloudStatus] = useState('');
   const [updateInfo, setUpdateInfo] = useState(null);
+  // v2.67.0：本机安装包的真实版本（决定是否真的需要装新 APK）
+  const [pkgVer, setPkgVer] = useState(() => ({ code: nativePkgVersionCode(), name: nativePkgVersionName() }));
+  const refreshPkgVer = () => setPkgVer({ code: nativePkgVersionCode(), name: nativePkgVersionName() });
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [showBrowserFallback, setShowBrowserFallback] = useState(false);
   // 静默自动更新相关状态
@@ -13599,14 +13625,23 @@ function App() {
       }
 
       console.log('[Update] Local versionCode:', APP_VERSION_CODE, 'Remote:', data.versionCode);
+      const nativeCode = nativePkgVersionCode();
+      const nativeName = nativePkgVersionName();
+      console.log('[Update] Installed package versionCode:', nativeCode, nativeName);
       let hasUpdate = data.versionCode > APP_VERSION_CODE;
-      // v2.60.0：网页热更先于安装包生效，JS 里的版本号会被热更抬高，
-      // 导致“安装包还是旧版却检测不到更新”。用安装包能力探测兜底：
-      // 原生应用若没有系统播放器桥接（window.NativePlayer），即代表安装包低于 2.60.0，
-      // 此时只要远端已是 2.60.0 就强制提示安装包更新
+      // v2.67.0 关键修复：页面会被云端热更新抬高到最新版本号，App 便误以为"已是最新版本"，
+      // 但本机安装的 APK 仍是旧的 —— 所有依赖原生代码的功能都不生效（听读配音 / 参数 / 立即出声）。
+      // 所以本机安装包的真实版本必须参与比对：只要比远端旧，就一定提示安装新安装包。
+      let pkgOutdated = false;
+      if (isNativeApp && data.versionCode > nativeCode) {
+        hasUpdate = true;
+        pkgOutdated = true;
+      }
+      // v2.60.0：旧安装包没有系统播放器桥接，能力探测兜底
       if (isNativeApp && !(window.NativePlayer && typeof window.NativePlayer.playUrl === 'function')
           && data.versionCode >= 221) {
         hasUpdate = true;
+        pkgOutdated = true;
       }
       const changelog = data.changelog || data.updateLog || '';
       let version = data.version || data.versionCode;
@@ -13614,6 +13649,16 @@ function App() {
       const finalVersion = hasUpdate ? (data.version || data.versionCode) : version;
 
       const apkUrl = data.apkUrl || data.appUrl || '';
+
+      const pkgInfo = {
+        pkgOutdated: pkgOutdated,
+        nativeCode: nativeCode,
+        nativeName: nativeName,
+        remoteCode: data.versionCode,
+      };
+      const pkgHint = pkgOutdated
+        ? `本机安装包为 v${nativeName || (nativeCode > 0 ? nativeCode : '2.66.0 以下')}，需安装 v${version} 安装包后听读新功能才生效`
+        : '';
 
       if (data.books && Array.isArray(data.books) && !hasUpdate) {
         setUpdateInfo({
@@ -13626,6 +13671,8 @@ function App() {
           appUrl: '',
           booksData: data.books,
           updating: false,
+          ...pkgInfo,
+          pkgHint: '',
         });
         if (!silent) setCloudStatus('发现词库更新');
       } else {
@@ -13637,10 +13684,17 @@ function App() {
           changelog: finalChangelog,
           apkUrl: apkUrl,
           appUrl: apkUrl,
+          apkUrlCdn: data.apkUrlCdn || '',
           booksData: data.books || null,
           updating: false,
+          ...pkgInfo,
+          pkgHint: pkgHint,
         });
-        if (!silent) setCloudStatus(hasUpdate ? `发现新版本 v${version}` : '已是最新版本');
+        if (!silent) {
+          setCloudStatus(hasUpdate
+            ? (pkgOutdated ? `需要安装新版安装包 v${version}（${pkgHint}）` : `发现新版本 v${version}`)
+            : '已是最新版本');
+        }
       }
 
       // 开屏公告：APP 专属，静默模式下如果用户开启了公告且未关闭过当前版本
@@ -13693,48 +13747,130 @@ function App() {
     }
   }
 
-  // 执行APP更新：统一跳转浏览器下载（避免应用内下载闪退）
-  async function applyUpdate() {
-    if (!updateInfo || !updateInfo.hasUpdate) return;
+  // v2.67.0：安装包下载候选源（按优先级排序）。
+  // 原生侧会解析每个下载结果里的 versionCode，比本机旧的源自动跳过，避免「装完还是旧版本」。
+  const apkCandidates = (info) => {
+    const list = [];
+    const push = (u) => { if (u && typeof u === 'string' && list.indexOf(u) < 0) list.push(u); };
+    push(info && info.apkUrlCdn);     // jsDelivr CDN 镜像（国内速度最快）
+    push(info && info.apkUrl);        // GitHub Release 官方直链（无 CDN 缓存延迟）
+    push('https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk');
+    push(APK_DOWNLOAD_SOURCES[0].url);
+    push('https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk');
+    push('https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk');
+    return list;
+  };
 
-    setUpdateInfo(prev => ({ ...prev, updating: true }));
-    const apkUrl = APK_DOWNLOAD_SOURCES[0].url;
-    // 原生应用：调用 NativeApkInstaller 应用内下载安装（不跳转浏览器）
-    if (window.NativeApkInstaller && window.NativeApkInstaller.downloadAndInstall) {
+  /**
+   * v2.67.0 统一的安装包更新入口（「我的 → 立即更新」与开屏公告都走这里）
+   * - 新安装包（NativeUpdater）：多源自动重试 + 下载后解析包内版本号 + 未知来源授权引导
+   * - 旧安装包（NativeApkInstaller）：依次尝试每个源，失败自动换下一个
+   * - 网页 / 无桥接：浏览器打开下载地址
+   */
+  async function installApk(info) {
+    const urls = apkCandidates(info || updateInfo);
+    const minCode = (info && info.remoteCode) || APP_VERSION_CODE;
+
+    const wireCallbacks = () => {
+      window.__apkUpdateProgress = (pct, msg) => {
+        if (pct < 0) return; // 失败原因统一由 __apkUpdateDetail 展示
+        setApkDownloadProgress(pct);
+        setCloudStatus(msg || `下载中 ${pct}%`);
+        setInAppDownloading(pct < 100);
+      };
+      window.__apkUpdateDetail = (evt, msg) => {
+        const tag = ({ source: '🔎 ', found: '✅ ', old_source: '⚠️ ', fail_source: '⚠️ ',
+                       installing: '📲 ', permission: '🔐 ', error: '❌ ' })[evt] || '';
+        if (msg) setCloudStatus(tag + msg);
+        if (evt === 'error' || evt === 'installing' || evt === 'permission') {
+          setInAppDownloading(false);
+          setUpdateInfo(prev => ({ ...prev, updating: false }));
+        }
+      };
+    };
+
+    if (isNativeApp && window.NativeUpdater && window.NativeUpdater.install) {
+      wireCallbacks();
+      setUpdateInfo(prev => ({ ...prev, updating: true }));
       setInAppDownloading(true);
       setApkDownloadProgress(0);
       setCloudStatus('正在下载更新...');
-      window.__apkUpdateProgress = (pct, msg) => {
-        if (pct < 0) {
-          setInAppDownloadError(msg || '下载失败');
+      window.NativeUpdater.install(JSON.stringify(urls), minCode);
+      setUpdateInfo(prev => ({ ...prev, updating: false }));
+      return;
+    }
+
+    if (isNativeApp && window.NativeApkInstaller && window.NativeApkInstaller.downloadAndInstall) {
+      wireCallbacks();
+      setUpdateInfo(prev => ({ ...prev, updating: true }));
+      setInAppDownloading(true);
+      setApkDownloadProgress(0);
+      let idx = 0;
+      const tryNext = () => {
+        if (idx >= urls.length) {
+          setCloudStatus('❌ 所有下载地址均失败，请改用下方「浏览器下载」安装');
           setInAppDownloading(false);
-          setCloudStatus('下载失败：' + (msg || ''));
-        } else {
+          setShowBrowserFallback(true);
+          setUpdateInfo(prev => ({ ...prev, updating: false }));
+          return;
+        }
+        const cur = urls[idx];
+        setCloudStatus(`🔎 正在尝试下载地址 ${idx + 1}/${urls.length}...`);
+        window.__apkUpdateProgress = (pct, msg) => {
+          if (pct < 0) { idx += 1; setApkDownloadProgress(0); setTimeout(tryNext, 400); return; }
           setApkDownloadProgress(pct);
           setCloudStatus(msg || `下载中 ${pct}%`);
           if (pct >= 100) {
             setInAppDownloading(false);
-            setCloudStatus('下载完成，请在弹出的安装界面确认安装。');
+            setCloudStatus('✅ 下载完成，请在系统安装界面点「安装」；若安装后版本号没变请告知我');
           }
-        }
+        };
+        window.NativeApkInstaller.downloadAndInstall(cur);
       };
-      window.NativeApkInstaller.downloadAndInstall(apkUrl);
+      tryNext();
       setUpdateInfo(prev => ({ ...prev, updating: false }));
       return;
     }
-    // 非原生：打开浏览器下载
+
+    // 网页 / 无桥接：浏览器打开下载
+    setUpdateInfo(prev => ({ ...prev, updating: true }));
     setCloudStatus('正在打开下载页面...');
     try {
       if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-        try { await Capacitor.Plugins.Browser.open({ url: apkUrl }); } catch {}
+        try { await Capacitor.Plugins.Browser.open({ url: urls[0] }); } catch {}
       } else {
-        window.open(apkUrl, '_blank');
+        window.open(urls[0], '_blank');
       }
-      setCloudStatus('已打开下载页面，下载完成后请安装。');
+      setCloudStatus('已打开下载页面，下载完成后安装即可。');
     } catch (e) {
       setCloudStatus(`打开失败：${e.message}`);
     }
     setUpdateInfo(prev => ({ ...prev, updating: false }));
+  }
+
+  // v2.67.0：一键复制更新诊断信息（页面版本 / 安装包版本 / 原生能力是否具备），便于快速定位
+  const copyUpdateDiag = () => {
+    const lines = [
+      '页面版本: v' + APP_VERSION + ' (' + APP_VERSION_CODE + ')',
+      '安装包版本: ' + (pkgVer.code > 0 ? ('v' + (pkgVer.name || pkgVer.code) + ' (' + pkgVer.code + ')') : '未知（低于 v2.67.0）'),
+      '可靠更新器 NativeUpdater: ' + (window.NativeUpdater ? '有' : '无'),
+      '应用内下载 NativeApkInstaller: ' + (window.NativeApkInstaller ? '有' : '无'),
+      '系统播放器 NativePlayer: ' + (window.NativePlayer ? '有' : '无'),
+      '整库合成 playAlbumFile: ' + (window.NativePlayer && typeof window.NativePlayer.playAlbumFile === 'function' ? '有' : '无'),
+      '更新检查状态: ' + (cloudStatus || '未执行'),
+    ];
+    try { lines.push('听读设置: ' + JSON.stringify(listenCfgRef.current || {})); } catch (e) {}
+    const txt = lines.join('\n');
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt);
+    } catch (e) {}
+    alert(txt);
+  };
+
+  // 执行APP更新
+  async function applyUpdate() {
+    if (!updateInfo || !updateInfo.hasUpdate) return;
+    await installApk(updateInfo);
   }
 
   // 对比记忆模块（基于 seed 数据，不依赖词库列表）
@@ -14342,6 +14478,7 @@ function App() {
               <div className="listenTip">中文默认走真人配音（度小娇等自然女声），比手机自带引擎更像真人；断网时自动降级到系统语音引擎，保证一定有声音</div>
               <div className="listenTip">改动上述任一参数后，若正在播放会立即按新参数重播；「语速」实时变速，不需要重新生成</div>
               <div className="listenTip">暂停 / 继续：应用内按钮、通知栏卡片、锁屏与耳机线控都可控制，暂停后从当前词接着读，不会从头重来</div>
+              <div className="listenTip">本机安装包 {pkgVer.code > 0 ? ('v' + (pkgVer.name || pkgVer.code)) : 'v2.66.0 或更早'} · 当前页面 v{APP_VERSION}。真人配音 / 点击立即出声 / 参数实时生效需要 v2.66.0 及以上安装包：{pkgVer.code > 0 && pkgVer.code < 228 ? '需到「我的 → 检查更新」安装新版' : '已就绪'}</div>
               <div className="listenTip">{listenSystemPlayerOn() ? '已连接系统播放器：退出应用、锁屏、息屏后继续播放，通知栏可暂停 / 上一词 / 下一词' : '当前安装包未内置系统播放器（中文发音已随热更新生效）。后台播放需 v2.60.0 及以上版本，请到「我的 → 检查更新」一键安装'}</div>
               {listenBuildInfo && <div className="listenTip" style={{ color: '#2563eb', fontWeight: 600 }}>{listenBuildInfo}</div>}
             </div>
@@ -15547,14 +15684,40 @@ function App() {
           <div className="cloudUpdateSection">
             <div className="updateHeader">
               <h3>🔄 版本更新</h3>
-              <span className="versionBadge">v{APP_VERSION}</span>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                <span className="versionBadge">页面 v{APP_VERSION}</span>
+                <span
+                  className="versionBadge pkgVerBadge"
+                  style={{
+                    background: (pkgVer.code > 0 && pkgVer.code >= APP_VERSION_CODE) ? 'rgba(34,197,94,0.12)' : 'rgba(249,115,22,0.14)',
+                    color: (pkgVer.code > 0 && pkgVer.code >= APP_VERSION_CODE) ? '#16a34a' : '#ea580c',
+                    cursor: 'pointer',
+                  }}
+                  onClick={refreshPkgVer}
+                >安装包 {pkgVer.code > 0 ? ('v' + (pkgVer.name || pkgVer.code)) : 'v2.66.0 或更早'}</span>
+              </div>
             </div>
             <p className="muted">点击检查更新，获取最新功能和词库。更新不会丢失任何个人数据。</p>
+            {pkgVer.code > 0 && pkgVer.code < APP_VERSION_CODE && (
+              <div style={{
+                margin: '10px 0 0 0', padding: '10px 12px', borderRadius: 10,
+                background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.28)',
+                color: '#9a3412', fontSize: 13, lineHeight: 1.65,
+              }}>
+                ⚠️ <b>本机安装包落后于页面</b>：页面已更新到 v{APP_VERSION}，但安装包还是 v{pkgVer.name || pkgVer.code}。
+                听读的真人配音、点击立即出声、朗读参数实时生效都依赖安装包，必须安装新版安装包才会生效。
+                点击「检查更新」后按提示安装即可（安装不会丢失数据）。
+              </div>
+            )}
             <div className="updateActions">
-              <button className="primary" onClick={() => checkCloudUpdate(false)} disabled={checkingUpdate}>
+              <button className="primary" onClick={() => { refreshPkgVer(); checkCloudUpdate(false); }} disabled={checkingUpdate}>
                 {checkingUpdate ? '检查中...' : '检查更新'}
               </button>
+              <button className="smallBtn" onClick={copyUpdateDiag}>🩺 诊断信息</button>
             </div>
+            <p className="muted" style={{ marginTop: 8, fontSize: 12, lineHeight: 1.6 }}>
+              若点更新后没有弹出安装界面：请在手机「设置 → 搜索「安装未知应用」→ 允许本应用安装」，然后回到这里再点一次。
+            </p>
             {updateInfo && (
               <div className="updateInfoBox">
                 {updateInfo.hasUpdate ? (
@@ -15578,8 +15741,15 @@ function App() {
                         </div>
                       </div>
                     )}
+                    {updateInfo.pkgHint ? (
+                      <p style={{ margin: '8px 0 0', fontSize: 12.5, color: '#ea580c', lineHeight: 1.6 }}>{updateInfo.pkgHint}</p>
+                    ) : null}
                     <button className="primary" onClick={applyUpdate} disabled={updateInfo.updating || inAppDownloading} style={{ marginTop: 8 }}>
-                      {inAppDownloading ? `下载中 ${apkDownloadProgress}%` : (updateInfo.updating ? '更新中...' : '立即更新')}
+                      {inAppDownloading ? `下载中 ${apkDownloadProgress}%` : (updateInfo.updating ? '更新中...' : (updateInfo.pkgOutdated ? `安装新版安装包 v${updateInfo.version}` : '立即更新'))}
+                    </button>
+                    <button className="smallBtn" style={{ marginTop: 8 }}
+                      onClick={() => window.open(updateInfo.apkUrl || updateInfo.apkUrlCdn || APK_DOWNLOAD_SOURCES[0].url, '_blank')}>
+                      🌐 浏览器下载安装包
                     </button>
                   </>
                 ) : (
@@ -15820,26 +15990,8 @@ function App() {
                     setSection('me'); // v2.65.0 修复：'settings' 不是合法 section，导致跳转空白页；更新入口在「我的」页
                     // 如果静默下载已在进行中，直接跳转到设置页显示进度
                     if (inAppDownloading) return;
-                    // 原生应用：调用 NativeApkInstaller 应用内下载安装（不跳转浏览器）
-                    const url = APK_DOWNLOAD_SOURCES[0].url;
-                    if (window.NativeApkInstaller && window.NativeApkInstaller.downloadAndInstall) {
-                      setInAppDownloading(true);
-                      setApkDownloadProgress(0);
-                      window.__apkUpdateProgress = (pct, msg) => {
-                        if (pct < 0) {
-                          setInAppDownloadError(msg || '下载失败');
-                          setInAppDownloading(false);
-                        } else {
-                          setApkDownloadProgress(pct);
-                          if (pct >= 100) setInAppDownloading(false);
-                        }
-                      };
-                      window.NativeApkInstaller.downloadAndInstall(url);
-                    } else if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-                      Capacitor.Plugins.Browser.open({ url });
-                    } else {
-                      window.open(url, '_blank');
-                    }
+                    // v2.67.0：统一走可靠更新入口（多源 + 版本校验 + 授权引导）
+                    installApk(updateInfo);
                   }}>立即更新</button>
                 </div>
               </div>

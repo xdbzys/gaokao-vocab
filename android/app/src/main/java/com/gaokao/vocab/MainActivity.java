@@ -588,6 +588,40 @@ public class MainActivity extends Activity {
             }
         }, "NativeApkInstaller");
 
+        // v2.67.0 安装包版本桥接：把 PackageManager 读到的「本机真实安装包版本」暴露给页面。
+        // 页面版本号会被云端热更新抬高，但原生代码只随 APK 更新，两者不一致时功能就不生效。
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public int versionCode() { return installedVersionCode(); }
+
+            @JavascriptInterface
+            public String versionName() {
+                try {
+                    android.content.pm.PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
+                    return pi.versionName == null ? "" : pi.versionName;
+                } catch (Throwable e) { return ""; }
+            }
+        }, "NativeVersion");
+
+        // v2.67.0 可靠更新器：多源下载 + APK 版本校验 + 未知来源授权引导。
+        // 修复「点了更新、装完还是旧版本」：下载后先解析包内 versionCode，
+        // 只要不高于本机就直接判定该源过期并换下一个源，不再把旧包装进手机。
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public boolean hasUpdater() { return true; }
+
+            /** urlsJson：下载地址数组（按优先级）；minCode：要求的最低 versionCode */
+            @JavascriptInterface
+            public void install(final String urlsJson, final int minCode) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        installUpdateInBackground(urlsJson, minCode);
+                    }
+                }).start();
+            }
+        }, "NativeUpdater");
+
         // 启用 WebView 远程调试（Chrome://inspect 可看控制台/网络）
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -1105,6 +1139,209 @@ public class MainActivity extends Activity {
     private String jsEscape(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").replace("\r", "");
+    }
+
+    /* ==================================================================
+       v2.67.0 可靠更新：多源下载 + 安装包版本校验 + 未知来源授权引导
+       根因：页面可被云端热更新抬高版本号，App 便误以为"已是最新版本"；
+       而 CDN 镜像可能尚未同步，点更新下载的仍是旧包 —— 装完版本号纹丝不动。
+       ================================================================== */
+
+    /** 已下载且确认比本机新的安装包（授权后再次点击可直接安装，无需重下） */
+    private File sPendingUpdateApk = null;
+
+    private int installedVersionCode() {
+        try {
+            android.content.pm.PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
+            return pi.versionCode;
+        } catch (Throwable e) {
+            return -1;
+        }
+    }
+
+    /** 解析 APK 文件里的 versionCode（无需安装即可判断新旧） */
+    private int archiveVersionCode(File apk) {
+        try {
+            android.content.pm.PackageInfo pi = getPackageManager()
+                    .getPackageArchiveInfo(apk.getAbsolutePath(), 0);
+            if (pi == null) return -1;
+            return pi.versionCode;
+        } catch (Throwable e) {
+            return -1;
+        }
+    }
+
+    private void apkDetail(String evt, String msg) {
+        notifyJs("window.__apkUpdateDetail && window.__apkUpdateDetail('" + evt + "','" + jsEscape(msg) + "')");
+    }
+
+    private boolean canInstallPackages() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return true;
+        try {
+            return getPackageManager().canRequestPackageInstalls();
+        } catch (Throwable e) {
+            return true;
+        }
+    }
+
+    /** 打开「允许安装未知应用」授权页（Android 8+ 必须，否则 ACTION_VIEW 会被系统直接丢弃） */
+    private void requestInstallPermission() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Intent it = new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+                it.setData(Uri.parse("package:" + getPackageName()));
+                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(it);
+            }
+        } catch (Throwable e) {
+            Log.w("GaokaoVocab", "open unknown source settings failed", e);
+        }
+    }
+
+    private boolean downloadApkFile(String urlStr, File target) {
+        HttpURLConnection conn = null;
+        try {
+            URL u = new URL(urlStr);
+            conn = (HttpURLConnection) u.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(30000);
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36");
+            conn.setRequestProperty("Accept", "application/vnd.android.package-archive,*/*");
+            if (conn.getResponseCode() != 200) return false;
+            int total = conn.getContentLength();
+            InputStream is = new java.io.BufferedInputStream(conn.getInputStream());
+            FileOutputStream fos = new FileOutputStream(target);
+            byte[] buf = new byte[16384];
+            int n, downloaded = 0, lastPct = -1;
+            while ((n = is.read(buf)) != -1) {
+                fos.write(buf, 0, n);
+                downloaded += n;
+                if (total > 0) {
+                    int pct = downloaded * 100 / total;
+                    if (pct != lastPct && pct % 10 == 0) {
+                        lastPct = pct;
+                        notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(" + pct
+                                + ", '下载中 " + pct + "%')");
+                    }
+                }
+            }
+            fos.flush();
+            fos.close();
+            is.close();
+            return target.exists() && target.length() > 100000;
+        } catch (Throwable e) {
+            return false;
+        } finally {
+            if (conn != null) {
+                try { conn.disconnect(); } catch (Throwable ignored) {}
+            }
+        }
+    }
+
+    private void launchInstall(File apk) {
+        try {
+            Uri apkUri;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                apkUri = androidx.core.content.FileProvider.getUriForFile(
+                        MainActivity.this, getPackageName() + ".fileprovider", apk);
+            } else {
+                apkUri = Uri.fromFile(apk);
+            }
+            Intent it = new Intent(Intent.ACTION_VIEW);
+            it.setDataAndType(apkUri, "application/vnd.android.package-archive");
+            it.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(it);
+            apkDetail("installing", "已打开系统安装界面，请点「安装」。安装完重新打开本应用即为新版本");
+        } catch (Throwable e) {
+            Log.e("GaokaoVocab", "launch install failed", e);
+            apkDetail("error", "无法打开安装界面：" + e.getMessage());
+        }
+    }
+
+    private void installUpdateInBackground(String urlsJson, int minCode) {
+        try {
+            int cur = installedVersionCode();
+            // 已存在确认更新的安装包：先检查授权，直接安装，避免重复下载
+            if (sPendingUpdateApk != null && sPendingUpdateApk.exists()) {
+                int pc = archiveVersionCode(sPendingUpdateApk);
+                if (pc > cur && (minCode <= 0 || pc >= minCode)) {
+                    if (!canInstallPackages()) {
+                        apkDetail("permission", "本机尚未允许安装未知应用，已为你打开授权页，请开启后返回再点「立即更新」");
+                        requestInstallPermission();
+                        return;
+                    }
+                    notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(100, '下载完成，准备安装...')");
+                    launchInstall(sPendingUpdateApk);
+                    return;
+                }
+            }
+            java.util.ArrayList<String> urls = new java.util.ArrayList<String>();
+            try {
+                if (urlsJson != null && urlsJson.trim().startsWith("[")) {
+                    JSONArray arr = new JSONArray(urlsJson);
+                    for (int i = 0; i < arr.length(); i++) {
+                        String u = arr.optString(i, "");
+                        if (u != null && u.length() > 8) urls.add(u);
+                    }
+                } else if (urlsJson != null && urlsJson.length() > 8) {
+                    urls.add(urlsJson);
+                }
+            } catch (Throwable e) {
+                if (urlsJson != null && urlsJson.length() > 8) urls.add(urlsJson);
+            }
+            if (urls.isEmpty()) {
+                apkDetail("error", "没有可用的下载地址，请改用浏览器下载安装");
+                return;
+            }
+            File dir = new File(getCacheDir(), "apk_updates");
+            if (!dir.exists()) dir.mkdirs();
+            String lastReason = "";
+            for (int i = 0; i < urls.size(); i++) {
+                String u = urls.get(i);
+                File f = new File(dir, "update_" + i + ".apk");
+                try { if (f.exists()) f.delete(); } catch (Throwable ignored) {}
+                apkDetail("source", "正在尝试下载地址 " + (i + 1) + "/" + urls.size());
+                notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(0, '连接下载地址 "
+                        + (i + 1) + "...')");
+                if (!downloadApkFile(u, f)) {
+                    lastReason = "下载地址 " + (i + 1) + " 无法下载";
+                    apkDetail("fail_source", lastReason);
+                    continue;
+                }
+                int pc = archiveVersionCode(f);
+                if (pc <= 0) {
+                    lastReason = "下载地址 " + (i + 1) + " 返回的不是有效安装包";
+                    apkDetail("fail_source", lastReason);
+                    continue;
+                }
+                if (pc <= cur) {
+                    lastReason = "下载地址 " + (i + 1) + " 还是旧版本（" + pc + "，本机 " + cur + "），自动换源";
+                    apkDetail("old_source", lastReason);
+                    continue;
+                }
+                if (minCode > 0 && pc < minCode) {
+                    lastReason = "下载地址 " + (i + 1) + " 版本不足（" + pc + " < " + minCode + "），自动换源";
+                    apkDetail("old_source", lastReason);
+                    continue;
+                }
+                sPendingUpdateApk = f;
+                apkDetail("found", "已获取新安装包（版本号 " + pc + "）");
+                notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(100, '下载完成，准备安装...')");
+                if (!canInstallPackages()) {
+                    apkDetail("permission", "本机尚未允许安装未知应用，已为你打开授权页；请在系统页面开启后返回，再点一次「立即更新」即可直接安装");
+                    requestInstallPermission();
+                    return;
+                }
+                launchInstall(f);
+                return;
+            }
+            apkDetail("error", lastReason.length() > 0 ? lastReason : "所有下载地址均失败，请检查网络后重试");
+        } catch (Throwable e) {
+            Log.e("GaokaoVocab", "installUpdate failed", e);
+            apkDetail("error", "更新失败：" + e.getMessage());
+        }
     }
 
     @Override
