@@ -1,9 +1,9 @@
 {
-  "version": "2.69.0",
-  "versionCode": 230,
+  "version": "2.69.1",
+  "versionCode": 231,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.69.0】听读参数轮盘化 + 精简界面 + 全面检修\nv听读参数全部改为轮盘调节：语速 0.50~2.00x（0.05 步进）、英文 1~5 遍、中文 0~3 遍、词间间隔 0~10 秒、遍间隔 0~3 秒，上下滑动即改，播放中立即生效；发音语速也换轮盘（0.50~1.50x）\nv移除「我的」页面的词库下载与网"
+  "changelog": "【v2.69.1】修复「界面出现异常」崩溃（紧急修复版）\nv修复 v2.69.0 轮盘组件的一处变量引用错误：打开「我的」页面 / 听读参数面板会直接崩溃并显示「界面出现异常」，现已在真实设备同款渲染环境下全页验证通过\nv已新增整套页面渲染自检（背诵 / 听读 / 词库 / 错词本 / 扩展 / 导入 / 我的 七个页"
 }
