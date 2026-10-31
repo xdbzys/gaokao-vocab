@@ -5,5 +5,5 @@
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.69.1】修复「界面出现异常」崩溃（紧急修复版）\nv修复 v2.69.0 轮盘组件的一处变量引用错误：打开「我的」页面 / 听读参数面板会直接崩溃并显示「界面出现异常」，现已在真实设备同款渲染环境下全页验证通过\nv已新增整套页面渲染自检（背诵 / 听读 / 词库 / 错词本 / 扩展 / 导入 / 我的 七个页面 + 听读参数面板逐个渲染），本次崩溃类型以后不会再出现\nv异常兜底页新增「重置听读与设置后重载」按钮：万一本地配置损坏也能一键自救，不必重装"
+  "changelog": "【v2.69.1】修复「界面出现异常」崩溃（紧急修复版）\nv修复 v2.69.0 轮盘组件的一处变量引用错误：打开「我的」页面 / 听读参数面板会直接崩溃并显示「界面出现异常」，现已在真实设备同款渲染环境下全页验证通过\nv已新增整套页面渲染自检（背诵 / 听读 / 词库 / 错词本 / 扩展 / 导入 / 我的 七个页"
 }
