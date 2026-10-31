@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.62.0';
-const APP_VERSION_CODE = 223;
+const APP_VERSION = '2.63.0';
+const APP_VERSION_CODE = 224;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -9930,15 +9930,35 @@ function isEntryStart(line) {
     || /^\[[A-Za-z][A-Za-z''\-]*\]/.test(safe);
 }
 
+// v2.63.0：粘连文本智能断行 —— 「abandon放弃banana香蕉」这类整段粘贴的文本
+// 在「中文字符紧跟英文字母」的边界切开；每行出现 ≥2 处边界才启用，避免误切正常释义
+function splitSquashedRow(line) {
+  try {
+    const bounds = line.match(/[\u4e00-\u9fa5][A-Za-z]/g) || [];
+    if (!bounds.length) return [line];
+    const parts = line.split(/(?<=[\u4e00-\u9fa5])(?=[A-Za-z])/).map(p => p.trim()).filter(Boolean);
+    if (parts.length < 2) return [line];
+    // 只有当每个分段都像完整词条（既含英文又含中文）时才确认切分；
+    // 否则视为正常释义/例句（如 "abandon v.放弃abandon doing" 的英文尾段），保持原行
+    const hasCjk = q => /[\u4e00-\u9fa5]/.test(q);
+    const hasEn = q => /[A-Za-z]/.test(q);
+    if (!parts.every(q => hasEn(q) && hasCjk(q))) return [line];
+    return parts;
+  } catch (e) { return [line]; }
+}
+
 function splitImportRecords(text) {
   const cleaned = cleanOcrText(text);
   const rows = cleaned.split('\n').map(l => l.trim()).filter(Boolean);
   const records = [];
   rows.forEach(line => {
-    const safe = stripNumberPrefix(line);
-    if (!safe) return;
-    if (isEntryStart(safe) || !records.length) records.push(safe);
-    else records[records.length - 1] = `${records[records.length - 1]} ${safe}`;
+    // v2.63.0：先做粘连断行，再按原逻辑合并续行
+    splitSquashedRow(line).forEach(piece => {
+      const safe = stripNumberPrefix(piece);
+      if (!safe) return;
+      if (isEntryStart(safe) || !records.length) records.push(safe);
+      else records[records.length - 1] = `${records[records.length - 1]} ${safe}`;
+    });
   });
   return records;
 }
@@ -10083,11 +10103,34 @@ function parseOneRecord(line, index, defaultType) {
   };
 }
 
+// v2.63.0：常见表头 / 页眉噪音行（无中文释义时直接跳过）
+const IMPORT_NOISE_TERMS = /^(word|words|vocab|vocabulary|list|unit|units|page|pages|day|date|name|answers?|key|exercise|test)$/i;
+
 function parseImportedText(text, defaultType = 'word') {
-  return splitImportRecords(text).map((line, i) => parseOneRecord(line, i, defaultType)).filter(item => {
+  const parsed = splitImportRecords(text).map((line, i) => parseOneRecord(line, i, defaultType)).filter(item => {
     const t = item.term.trim();
-    return /[A-Za-z]/.test(t) && !/^[A-Z]$/i.test(t) && t.length > 1;
+    if (!/[A-Za-z]/.test(t) || /^[A-Z]$/i.test(t) || t.length <= 1) return false;
+    if (IMPORT_NOISE_TERMS.test(t) && (!item.meaning || item.meaning === '请补充中文意思')) return false;
+    return true;
   });
+  // v2.63.0：本地去重合并 —— 同一单词多次出现时合并释义与考点，不再产生重复词条
+  const merged = [];
+  const seen = {};
+  let dupCount = 0;
+  parsed.forEach(it => {
+    const k = it.term.toLowerCase();
+    if (!seen[k]) { seen[k] = it; merged.push(it); return; }
+    dupCount++;
+    const prev = seen[k];
+    const m = it.meaning;
+    if (m && m !== '请补充中文意思' && (!prev.meaning || prev.meaning === '请补充中文意思')) prev.meaning = m;
+    else if (m && m !== '请补充中文意思' && prev.meaning.indexOf(m) === -1) prev.meaning += '；' + m;
+    (it.allPoints || []).forEach(p => {
+      if (p && p !== '已自动导入，建议补充完整用法' && prev.allPoints.indexOf(p) === -1) prev.allPoints.push(p);
+    });
+  });
+  parseImportedText.lastDupCount = dupCount;
+  return merged;
 }
 
 /* ============================
@@ -10347,6 +10390,14 @@ function saveBlobAs(blob, filename) {
 
 // 文本存成文件：原生优先写入 Documents，失败回退浏览器下载
 async function saveTextFile(text, fileName) {
+  // v2.63.0：原生桥接优先，直接写入「下载/背群英」
+  // （WebView 里 <a download> 对 blob 链接无效，旧版点「下载 txt」没有任何反应）
+  try {
+    if (window.NativeFile && window.NativeFile.saveText) {
+      var _np = window.NativeFile.saveText(text, fileName);
+      if (_np) return _np;
+    }
+  } catch (e) {}
   try {
     if (typeof isNativeApp !== 'undefined' && isNativeApp && typeof Filesystem !== 'undefined' && Filesystem) {
       var dirName = '背群英导出';
@@ -10768,7 +10819,7 @@ function speakChainAsync(urls, ttsText, ttsLang, rate, useNative) {
     function tryTts() {
       if (ttsTried) { resolve(); return; }
       ttsTried = true;
-      speakTtsAsync(ttsText, ttsLang, rate).then(function (ok) {
+      speakTtsAsync(ttsText, ttsLang, rate, useNative).then(function (ok) {
         if (ok) { resolve(); return; }
         // 系统语音不可用（无引擎/被静默）：若还有没试过的网络源，回头再试
         if (i < list.length) next(); else resolve();
@@ -10861,7 +10912,7 @@ function listenSleep(ms, token, tokenRef) {
 // 修复：部分设备无 TTS 引擎时 speak() 不报错也不触发 onend/onerror，
 // 旧实现会静默等待整段超时，表现为"中文没声音"。这里用 onstart 探活：
 // 1.8 秒内没有 onstart 即判定该设备发不出声，立即回退网络语音
-function speakTtsAsync(text, lang, rate) {
+function speakTtsAsync(text, lang, rate, companion) {
   return new Promise(function (resolve) {
     if (!text || !('speechSynthesis' in window)) { resolve(false); return; }
     var settled = false;
@@ -10869,6 +10920,8 @@ function speakTtsAsync(text, lang, rate) {
     var done = function (ok) {
       if (settled) return;
       settled = true;
+      // v2.63.0：TTS 结束时让原生媒体卡片退出「播放中」状态
+      try { if (companion && window.NativePlayer && window.NativePlayer.ttsState) window.NativePlayer.ttsState(false, 0); } catch (e2) {}
       if (_listenTtsDone === done) _listenTtsDone = null;
       listenPauseGate().then(function () { resolve(ok !== false); });
     };
@@ -10884,6 +10937,14 @@ function speakTtsAsync(text, lang, rate) {
       u.onstart = function () { started = true; };
       u.onend = function () { done(started); };
       u.onerror = function () { done(false); };
+      // v2.63.0：TTS 伴侣模式 —— 系统语音朗读期间让原生 PlayerService 保持前台
+      // 并上报「播放中」，锁屏 / 控制中心媒体卡片才会显示且可暂停 / 继续 / 切词
+      try {
+        var estMs = Math.max(1500, Math.min(30000, (lang === 'zh-CN'
+          ? 1200 + text.length * 300 / Math.max(0.5, rate)
+          : 1500 + text.length * 140 / Math.max(0.5, rate))));
+        if (companion && window.NativePlayer && window.NativePlayer.ttsState) window.NativePlayer.ttsState(true, Math.round(estMs));
+      } catch (e2) {}
       window.speechSynthesis.speak(u);
     } catch (e) { done(false); return; }
     // 探活：1.8 秒仍无 onstart → 判定无声，回退
@@ -10917,7 +10978,8 @@ function speakZhAsync(text, rate) {
   var chain = function () { return speakChainAsync(zhAudioUrls(t, rate), t, 'zh-CN', rate || 1, listenSystemPlayerOn()); };
   if (_listenZhSourcePref() === 'net') return chain();
   if (!getZhTtsVoice()) return chain();
-  return speakTtsAsync(t, 'zh-CN', rate || 1).then(function (ok) {
+  // v2.63.0：听读模式中文系统语音 → TTS 伴侣模式，媒体卡片保持可控
+  return speakTtsAsync(t, 'zh-CN', rate || 1, true).then(function (ok) {
     if (ok) return;
     return chain();
   });
@@ -13065,8 +13127,24 @@ function App() {
       setImportTargetBookId(nb.id);
       setImportStatus(`自动新建"${name}"并导入 ${items.length} 条`);
     } else {
-      updateBooks(books.map(b => b.id === targetId ? { ...b, items: [...b.items, ...items] } : b));
-      setImportStatus(`导入成功：${items.length} 条 → ${targetBook.name}`);
+      // v2.63.0：与目标词库已有词条比对，重复单词自动跳过，不再灌入重复项
+      const existKeys = {};
+      targetBook.items.forEach(it => { existKeys[String(it.term || '').toLowerCase()] = 1; });
+      const fresh = [];
+      let skipped = 0;
+      items.forEach(it => {
+        const k = String(it.term || '').toLowerCase();
+        if (existKeys[k]) { skipped++; return; }
+        existKeys[k] = 1;
+        fresh.push(it);
+      });
+      if (!fresh.length) {
+        setImportStatus(`没有新增：${items.length} 条都已存在于「${targetBook.name}」`);
+        return;
+      }
+      updateBooks(books.map(b => b.id === targetId ? { ...b, items: [...b.items, ...fresh] } : b));
+      setImportStatus(`导入成功：新增 ${fresh.length} 条 → ${targetBook.name}` + (skipped ? `（已跳过重复 ${skipped} 条）` : ''));
+      items = fresh;
     }
     // 导入后自动联网检查关联词（异步，不阻塞）
     autoCheckFamilyAfterImport(items);
@@ -13137,7 +13215,8 @@ function App() {
       setLastFile(file || null); setImportStatus('正在识别...');
       const text = await readFileText(file); setImportText(text);
       const items = parseImportedText(text, 'word');
-      setImportStatus(`识别完成：${items.length} 条。请确认后导入。`);
+      const _dup = parseImportedText.lastDupCount || 0;
+      setImportStatus(`识别完成：${items.length} 条` + (_dup ? `（自动合并重复 ${_dup} 条）` : '') + '。请确认后导入。');
     } catch (e) { setImportStatus(`失败：${e.message}`); }
   }
 

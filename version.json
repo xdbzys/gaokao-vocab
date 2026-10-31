@@ -1,9 +1,9 @@
 {
-  "version": "2.62.0",
-  "versionCode": 223,
+  "version": "2.63.0",
+  "versionCode": 224,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "🎉 背群英 v2.62.0 已发布！\n\n【听读像听歌软件一样可控】\n- 音频改用本地 MP3 文件播放（先缓存再播），时长精确、进度可拖动\n- 锁屏、通知栏、蓝牙耳机、车机都能看到进度条并拖动，和音乐播放器一致\n- 媒体卡片显示「单词 / 释义 / 背群英听读」，锁屏也能看到正在读什么\n- 耳机线控支持播放暂停、上一"
+  "changelog": "🎉 背群英 v2.63.0 已发布！\n\n【修复无故闪退】\n- 修复点「播放」后应用直接闪退的问题\n\n【系统媒体控制完整可用】\n- 控制中心 / 锁屏媒体卡片显示「正在播放 + 当前单词」，中文朗读期间同样可控\n\n【词库导出 txt 修复】\n- 「下载 txt」在 App 内直接写入「下载 → 背群英」；复制到剪贴板可粘贴进百词斩批量导入\n\n【导入算法优化】\n- 粘连文本智能断行、重复单词自动合并、已有单词自动跳过、噪音行过滤\n\n完整更新说明与安装包：\nhttps://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk"
 }

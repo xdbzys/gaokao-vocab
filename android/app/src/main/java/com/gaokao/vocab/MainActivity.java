@@ -53,6 +53,11 @@ public class MainActivity extends Activity {
     // 听读模式后台播放开关：开启时 onPause 不暂停 WebView，让 JS 音频继续播放
     private static boolean backgroundPlaybackEnabled = false;
 
+    // v2.63.0：最近一次 setMeta 的媒体信息（服务未运行时也记住，启动播放时随 ACTION_PLAY 带给服务）
+    private static volatile String sLastTitle = null;
+    private static volatile String sLastArtist = null;
+    private static volatile String sLastAlbum = null;
+
     // ===== 云端热更新配置 =====
     // v2.59.0 主流更新方案：① 先拉约 300 字节的版本清单秒级比对 → ② 仅必要时才下载正文（优先 gzip）
     // 第一步：版本清单地址（多源容灾：jsDelivr → GitHub Pages → raw）
@@ -250,6 +255,7 @@ public class MainActivity extends Activity {
 
             @JavascriptInterface
             public void setRate(float rate) {
+                if (!PlayerService.sRunning) return;
                 try {
                     Intent i = new Intent(MainActivity.this, PlayerService.class);
                     i.setAction(PlayerService.ACTION_RATE);
@@ -272,10 +278,23 @@ public class MainActivity extends Activity {
             /** 拖动进度（毫秒） */
             @JavascriptInterface
             public void seek(int ms) {
+                if (!PlayerService.sRunning) return;
                 try {
                     Intent i = new Intent(MainActivity.this, PlayerService.class);
                     i.setAction(PlayerService.ACTION_SEEK);
                     i.putExtra(PlayerService.EXTRA_SEEK, ms);
+                    startServiceCompat(i);
+                } catch (Throwable ignored) {}
+            }
+
+            /** v2.63.0：TTS 伴侣模式 —— 系统语音朗读期间保持媒体卡片可见可控 */
+            @JavascriptInterface
+            public void ttsState(boolean playing, int durationMs) {
+                try {
+                    Intent i = new Intent(MainActivity.this, PlayerService.class);
+                    i.setAction(PlayerService.ACTION_TTS);
+                    i.putExtra(PlayerService.EXTRA_TTS_PLAYING, playing);
+                    i.putExtra(PlayerService.EXTRA_TTS_DURATION, durationMs);
                     startServiceCompat(i);
                 } catch (Throwable ignored) {}
             }
@@ -390,6 +409,28 @@ public class MainActivity extends Activity {
                 }
             }
         }, "NativeClipboard");
+
+        // v2.63.0 文本保存桥接：词库导出 txt 直接写入「下载/背群英」
+        // （WebView 的 blob 链接 <a download> 不生效，旧版「下载 txt」点了没反应）
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public String saveText(String text, String fileName) {
+                try {
+                    if (text == null) return "";
+                    File tmp = new File(getCacheDir(), "txt_" + System.currentTimeMillis() + ".txt");
+                    FileOutputStream fos = new FileOutputStream(tmp);
+                    fos.write(text.getBytes("UTF-8"));
+                    fos.close();
+                    String name = (fileName == null || fileName.length() == 0) ? "export.txt" : fileName;
+                    if (!name.toLowerCase().endsWith(".txt")) name += ".txt";
+                    String p = saveToDownloads(tmp, name, "text/plain");
+                    tmp.delete();
+                    return p == null ? "" : p;
+                } catch (Throwable e) {
+                    return "";
+                }
+            }
+        }, "NativeFile");
 
         // 播放服务 → JS 回调（播放结束 / 出错 / 通知栏与线控按键）
         try {
@@ -849,6 +890,9 @@ public class MainActivity extends Activity {
     }
 
     private void sendPlayerAction(String action) {
+        // v2.63.0：服务未运行时直接忽略控制指令（不再用 startForegroundService 拉起服务，
+        // 旧逻辑启动后未调 startForeground 会触发 RemoteServiceException 导致无故闪退）
+        if (!PlayerService.sRunning) return;
         try {
             Intent i = new Intent(MainActivity.this, PlayerService.class);
             i.setAction(action);
@@ -865,11 +909,21 @@ public class MainActivity extends Activity {
             if (url != null && url.length() > 0) i.putExtra(PlayerService.EXTRA_URL, url);
             i.putExtra(PlayerService.EXTRA_ID, id == null ? "" : id);
             i.putExtra(PlayerService.EXTRA_RATE, rate);
+            // v2.63.0：带上最近一次 setMeta 的标题/释义，通知栏与媒体卡片立刻显示当前单词
+            if (sLastTitle != null && sLastTitle.length() > 0) i.putExtra(PlayerService.EXTRA_TITLE, sLastTitle);
+            if (sLastArtist != null && sLastArtist.length() > 0) i.putExtra(PlayerService.EXTRA_ARTIST, sLastArtist);
+            if (sLastAlbum != null && sLastAlbum.length() > 0) i.putExtra(PlayerService.EXTRA_ALBUM, sLastAlbum);
             startServiceCompat(i);
         } catch (Throwable ignored) {}
     }
 
     private void sendPlayerMeta(String title, String artist, String album) {
+        // v2.63.0：先记住最近的媒体信息，下次启动播放时随 ACTION_PLAY 一起带给服务
+        if (title != null && title.length() > 0) sLastTitle = title;
+        if (artist != null && artist.length() > 0) sLastArtist = artist;
+        if (album != null && album.length() > 0) sLastAlbum = album;
+        // 服务未运行时不再拉起（避免 FGS 未调 startForeground 闪退）
+        if (!PlayerService.sRunning) return;
         try {
             Intent i = new Intent(MainActivity.this, PlayerService.class);
             i.setAction(PlayerService.ACTION_META);

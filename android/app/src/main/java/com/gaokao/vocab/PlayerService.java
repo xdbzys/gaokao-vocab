@@ -54,6 +54,10 @@ public class PlayerService extends Service {
     public static final String ACTION_RATE = "com.gaokao.vocab.player.RATE";
     public static final String ACTION_META = "com.gaokao.vocab.player.META";
     public static final String ACTION_SEEK = "com.gaokao.vocab.player.SEEK";
+    // v2.63.0：TTS 伴侣模式（系统语音朗读期间保持媒体卡片可见可控）
+    public static final String ACTION_TTS = "com.gaokao.vocab.player.TTS";
+    public static final String EXTRA_TTS_PLAYING = "tts_playing";
+    public static final String EXTRA_TTS_DURATION = "tts_duration";
 
     public static final String EXTRA_URL = "url";
     public static final String EXTRA_PATH = "path";
@@ -99,6 +103,9 @@ public class PlayerService extends Service {
     public static int peekDuration() {
         return sDuration;
     }
+
+    /** 服务是否存活：MainActivity 据此决定控制指令是否下发（防 FGS 闪退） */
+    public static volatile boolean sRunning = false;
 
     private MediaPlayer mPlayer;
     private MediaSession mSession;
@@ -150,6 +157,7 @@ public class PlayerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        sRunning = true;
         mHandler = new Handler(Looper.getMainLooper());
         try {
             mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -161,6 +169,10 @@ public class PlayerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        // v2.63.0：任何启动路径都必须先进入前台 —— API 26+ 用 startForegroundService
+        // 启动后若不调 startForeground，系统直接抛 RemoteServiceException（无故闪退根源）。
+        // 旧版 ACTION_META / ACTION_STOP 等分支不进前台：点「播放」先 setMeta → 必闪退。
+        startForegroundCompat();
         if (intent == null) {
             return START_STICKY;
         }
@@ -220,6 +232,28 @@ public class PlayerService extends Service {
             updateSessionState(mPaused ? PlaybackState.STATE_PAUSED : PlaybackState.STATE_PLAYING);
             return START_STICKY;
         }
+        // v2.63.0：TTS 伴侣模式 —— 系统语音朗读（speechSynthesis）期间，
+        // 媒体卡片保持「播放中」，锁屏 / 控制中心 / 耳机线控可暂停、继续、切词。
+        // 声音仍由系统 TTS 引擎发出，原生只负责 MediaSession 状态与控制转发。
+        if (ACTION_TTS.equals(action)) {
+            boolean playing = intent.getBooleanExtra(EXTRA_TTS_PLAYING, false);
+            int dur = intent.getIntExtra(EXTRA_TTS_DURATION, 0);
+            if (playing) {
+                mHasPlayed = true;
+                mPaused = false;
+                if (dur > 0) {
+                    mDuration = dur;
+                    sPosition = 0;
+                    sDuration = dur;
+                }
+                updateSessionState(PlaybackState.STATE_PLAYING);
+            } else {
+                mPaused = true;
+                updateSessionState(PlaybackState.STATE_PAUSED);
+            }
+            updateNotification();
+            return START_STICKY;
+        }
         if (ACTION_PLAY.equals(action)) {
             String url = intent.getStringExtra(EXTRA_URL);
             String path = intent.getStringExtra(EXTRA_PATH);
@@ -252,6 +286,7 @@ public class PlayerService extends Service {
 
     @Override
     public void onDestroy() {
+        sRunning = false;
         if (mHandler != null) {
             try {
                 mHandler.removeCallbacks(mProgressTask);
@@ -273,6 +308,7 @@ public class PlayerService extends Service {
             stopForeground(true);
         } catch (Throwable ignored) {
         }
+        mInForeground = false;
         try {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             if (nm != null) nm.cancel(NOTIFY_ID);
@@ -554,7 +590,7 @@ public class PlayerService extends Service {
                     | PlaybackState.ACTION_STOP
                     | PlaybackState.ACTION_SKIP_TO_NEXT
                     | PlaybackState.ACTION_SKIP_TO_PREVIOUS;
-            if (mDuration > 0) actions |= PlaybackState.ACTION_SEEK_TO;
+            if (mDuration > 0 && mPlayer != null) actions |= PlaybackState.ACTION_SEEK_TO;
             b.setActions(actions);
             // 4 参数 setState（带速率与时间戳）仅 API 29+ 才有，低版本用 3 参数重载
             if (Build.VERSION.SDK_INT >= 29) {
@@ -645,7 +681,10 @@ public class PlayerService extends Service {
         }
     }
 
+    private boolean mInForeground = false;
+
     private void startForegroundCompat() {
+        if (mInForeground) return;
         try {
             Notification n = buildNotification();
             if (Build.VERSION.SDK_INT >= 29) {
@@ -654,6 +693,7 @@ public class PlayerService extends Service {
             } else {
                 startForeground(NOTIFY_ID, n);
             }
+            mInForeground = true;
         } catch (Throwable e) {
             Log.e(TAG, "startForeground failed", e);
         }
