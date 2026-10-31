@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.67.0';
-const APP_VERSION_CODE = 228;
+const APP_VERSION = '2.69.0';
+const APP_VERSION_CODE = 230;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -8343,50 +8343,6 @@ const builtInBooks = [
     items: makeAllItems(seedWords688, 'word', '688高频词')
   },
   {
-    id: 'gaokao-core',
-    name: '高考核心词库(原版48词)',
-    editable: false,
-    items: [
-      ['abandon','v.','放弃；遗弃','高频',['abandon oneself to 沉溺于'],['常考动词搭配'],['He abandoned smoking before the exam.|||他abandonedsmoking前这个考试。']],
-      ['ability','n.','能力；才能','高频',['have the ability to do 有能力做'],['ability 后常接不定式'],['Reading improves our ability to think.|||阅读改善我们的能力到认为。']],
-      ['absorb','v.','吸收；理解；使专注','高频',['be absorbed in 专心于'],['过去分词 absorbed 作形容词常考'],['She was absorbed in the novel.|||她是absorbed在这个小说。']],
-      ['access','n./v.','通道；机会；访问','高频',['have access to 有机会使用'],['access to 中 to 是介词'],['Students have access to online resources.|||Students有使用权到在线resources。']],
-      ['account','n./v.','账户；解释；认为','高频',['account for 解释；占比'],['account for 高频短语动词'],['Can you account for your absence?|||你能解释一下你缺席的原因吗？']],
-      ['achieve','v.','实现；取得','高频',['achieve one\'s goal 实现目标'],['名词 achievement'],['Hard work helps us achieve our dreams.|||硬的工作帮助我们achieve我们的dreams。']],
-      ['adapt','v.','适应；改编','高频',['adapt to 适应'],['to 为介词'],['We must adapt to changes quickly.|||我们必须适应到变化迅速。']],
-      ['admire','v.','钦佩；欣赏','高频',['admire sb for sth'],['for 是固定介词'],['I admire her for her courage.|||我钦佩她为了她勇气。']],
-      ['admit','v.','承认；准许进入','高频',['admit doing 承认做过'],['后接 doing 不接 to do'],['He admitted making a mistake.|||他承认制作一个错误。']],
-      ['advantage','n.','优点；优势','高频',['take advantage of 利用'],['反义 disadvantage'],['We should take advantage of every chance.|||我们应该拿优势的每机会。']],
-      ['affect','v.','影响；感动','高频',['be affected by 受……影响'],['effect 是名词"影响"常混'],['Weather affects our mood.|||度过影响我们的mood。']],
-      ['afford','v.','负担得起','高频',['afford to do'],['常与 can/could 连用'],['Many students cannot afford to waste time.|||许多studentscannotafford到waste时间。']],
-      ['aim','n./v.','目标；旨在','高频',['aim to do 打算做'],['aim at doing/sb'],['The activity is aimed at helping students.|||这个活动是aimed在帮助students。']],
-      ['allow','v.','允许','高频',['allow sb to do'],['注意 doing/to do 区别'],['We are not allowed to use phones in class.|||我们是不允许到用途phones在课堂。']],
-      ['anxious','adj.','焦虑的；渴望的','高频',['be anxious about 担心'],['anxiety n.焦虑'],['Parents are anxious about their children.|||Parents是anxious关于他们的孩子。']],
-      ['apply','v.','申请；应用','高频',['apply for 申请'],['application/applicant 派生'],['She applied for a scholarship.|||她applied为了一个奖学金。']],
-      ['approach','n./v.','方法；接近','高频',['an approach to doing'],['to 是介词后接 doing'],['This is a new approach to solving the problem.|||这个是一个新方法到solving这个问题。']],
-      ['avoid','v.','避免','高频',['avoid doing'],['后接 doing 不接 to do'],['Try to avoid making the same mistake.|||尝试到avoid制作这个相同的错误。']],
-      ['benefit','n./v.','好处；受益','高频',['benefit from'],['作文高频'],['Regular exercise has many benefits for both body and mind.|||定期锻炼对身心都有很多好处。']],
-      ['challenge','n./v.','挑战','高频',['face a challenge'],['challenging adj.有挑战性的'],['The task is challenging but meaningful.|||这个任务是challenging但是meaningful。']],
-      ['concern','n./v.','担心；涉及','高频',['be concerned about 担心'],['concerning prep.关于'],['Parents are concerned about safety.|||Parents是concerned关于安全。']],
-      ['contribute','v.','贡献；促成','高频',['contribute to 有助于'],['to 是介词'],['Everyone should contribute to protecting the environment.|||每个人都应该为保护环境做出贡献。']],
-      ['convenient','adj.','方便的','高频',['It is convenient for sb to do'],['不能说 sb is convenient'],['It is convenient for us to shop online.|||它是方便的为了我们到商店在线。']],
-      ['determine','v.','决定；确定','高频',['be determined to do 决心做'],['determination n.'],['Scientists determined the age of the fossil using carbon dating.|||科学家使用碳年代测定法确定了化石的年龄。']],
-      ['devote','v.','奉献；投入','高频',['devote oneself to doing'],['to 是介词'],['He devoted his entire life to studying ancient Chinese history.|||他毕生致力于研究中国古代历史。']],
-      ['evidence','n.','证据','高频',['there is evidence that'],['不可数名词常考'],['There is evidence that sleep affects memory.|||那里是证据那个睡眠影响记忆。']],
-      ['focus','n./v.','焦点；集中','高频',['focus on 集中于'],['作文高频'],['Focus on what you can control.|||聚焦在what你能control。']],
-      ['impress','v.','给……留下印象','高频',['be impressed by/with'],['impression n.'],['The speech impressed everyone deeply.|||这个speechimpressed大家deeply。']],
-      ['influence','n./v.','影响','高频',['have an influence on'],['affect 动词；effect/influence 名词'],['Parents have a great influence on their children\'s development.|||父母对孩子的成长有很大影响。']],
-      ['involve','v.','涉及；包含','高频',['be involved in 参与'],['后接 doing'],['The project involves students from three different schools.|||这个项目involvesstudents从three不同的schools。']],
-      ['opportunity','n.','机会','高频',['have an opportunity to do'],['chance/opportunity 辨析'],['The contest offers an opportunity to learn.|||这个contest提供一个机会到学习。']],
-      ['prevent','v.','阻止；预防','高频',['prevent sb from doing'],['被动 from 不可省'],['Vaccines help prevent many serious diseases.|||疫苗有助于预防许多严重疾病。']],
-      ['recommend','v.','推荐；建议','高频',['recommend doing'],['虚拟语气 should 可省'],['I recommend reading aloud every day.|||我recommend阅读aloud每天。']],
-      ['require','v.','要求；需要','高频',['require sb to do'],['requirement n.'],['The flowers require watering every day.|||这个flowers要求watering每天。']],
-      ['responsible','adj.','负责的','高频',['be responsible for'],['responsibility n.'],['Everyone is responsible for protecting nature.|||大家是responsible为了protecting自然。']],
-      ['significant','adj.','重要的；显著的','高频',['a significant difference'],['significance n.'],['Reading has a significant effect on writing.|||阅读有一个重要的效果在写。']],
-      ['solution','n.','解决办法','高频',['a solution to'],['to 是介词'],['We need a solution to the problem.|||我们需要一个解决方案到这个问题。']],
-    ].map((row, i) => makeItem(row, 'word', i))
-  },
-  {
     id: 'gaokao-985',
     name: '985阅读理解核心词汇',
     editable: false,
@@ -8464,121 +8420,6 @@ const choiceModes = [
   { id: 'flashcard', name: '闪卡模式' }
 ];
 
-/* ============================
-   五、内置可下载词库数据
-   ============================ */
-
-const builtInDownloads = [
-  {
-    id: 'dl-3500',
-    name: '高考3500基础词汇',
-    desc: '高考大纲3500核心词汇精选',
-    items: [
-      ['abandon','v.','放弃；遗弃','高频',['abandon oneself to 沉溺于'],['常考动词搭配'],['He abandoned smoking.|||他abandonedsmoking。']],
-      ['ability','n.','能力；才能','高频',['have the ability to do'],['后常接不定式'],['She has the ability to lead.|||她有这个能力到带领。']],
-      ['abroad','adv.','在国外；到处','高频',['go abroad 出国'],['study abroad 留学'],['He went abroad last year.|||他响在国外最后的年。']],
-      ['absence','n.','缺席；不在','高频',['absence of mind 心不在焉'],['in the absence of 缺乏'],['His absence was noticed.|||他的缺席是注意到。']],
-      ['absolute','adj.','绝对的；完全的','高频',['absolute power 绝对权力'],['absolutely adv.'],['It is absolute nonsense.|||它是absolutenonsense。']],
-      ['absorb','v.','吸收；使专心','高频',['be absorbed in 专心于'],['absorb knowledge 吸收知识'],['She was absorbed in reading.|||她是absorbed在阅读。']],
-      ['abstract','adj.','抽象的','高频',['abstract art 抽象艺术'],['abstract noun 抽象名词'],['The concept is too abstract.|||这个概念是也抽象。']],
-      ['academic','adj.','学术的','高频',['academic year 学年'],['academic performance 学业表现'],['He has good academic records.|||他有好学业records。']],
-      ['accelerate','v.','加速','中频',['accelerate the pace 加速'],['acceleration n.'],['The car accelerated quickly.|||这个汽车accelerated迅速。']],
-      ['accept','v.','接受；承认','高频',['accept an offer 接受提议'],['acceptable adj.'],['She accepted the invitation.|||她accepted这个invitation。']],
-      ['access','n.','通道；使用权','高频',['have access to 有权使用'],['accessible adj.'],['Students have access to the library.|||Students有使用权到这个图书馆。']],
-      ['accident','n.','事故；意外','高频',['by accident 偶然'],['accidental adj.'],['He had a car accident.|||他有一个汽车事故。']],
-      ['accompany','v.','陪伴；伴随','高频',['accompany sb 陪伴某人'],['accompanying adj.'],['She accompanied her mother.|||她accompanied她mother。']],
-      ['accomplish','v.','完成；实现','中频',['accomplish a task 完成任务'],['accomplishment n.'],['She accomplished her goal.|||她accomplished她目标。']],
-      ['account','n.','账户；描述','高频',['take into account 考虑'],['account for 解释'],['Please give an account of the event.|||请给一个账户的这个事件。']],
-      ['accurate','adj.','精确的','高频',['accurate description 精确描述'],['accuracy n.'],['The information is accurate.|||这个信息是准确。']],
-      ['accuse','v.','指控','中频',['accuse sb of sth 指控某人'],['accusation n.'],['He was accused of theft.|||他是accused的theft。']],
-      ['achieve','v.','实现；取得','高频',['achieve success 取得成功'],['achievement n.'],['She achieved great success.|||她achieved极大成功。']],
-      ['acknowledge','v.','承认；感谢','中频',['acknowledge receipt 确认收到'],['acknowledgement n.'],['He acknowledged his mistake.|||他acknowledged他的错误。']],
-      ['acquire','v.','获得；习得','中频',['acquire knowledge 获取知识'],['acquisition n.'],['She acquired a new skill.|||她acquired一个新技能。']],
-      ['adapt','v.','适应；改编','高频',['adapt to 适应'],['adaptation n.'],['We must adapt to changes.|||我们必须适应到变化。']],
-    ]
-  },
-  {
-    id: 'dl-phrase500',
-    name: '高考核心短语500',
-    desc: '高考高频必考短语精选',
-    items: [
-      ['as a result','短语','结果；因此','高频',['常放句首或句中作结果状语'],['as a result of 后接名词'],['He worked hard. As a result, he passed.|||他worked硬的作为一个结果他通过。']],
-      ['be absorbed in','短语','专心于','高频',['表示专注状态'],['同义 be buried in/concentrate on'],['She is absorbed in studying.|||她是absorbed在studying。']],
-      ['be concerned about','短语','担心；关心','高频',['about 表担心对象'],['as far as...concerned'],['Parents are concerned about safety.|||Parents是concerned关于安全。']],
-      ['break down','短语','出故障；崩溃','高频',['机器坏了；情绪崩溃'],['break up/out/through 区分'],['The car broke down.|||汽车抛锚了。']],
-      ['carry out','短语','执行；开展','高频',['carry out a plan/survey'],['常用于活动、调查'],['A survey was carried out.|||一个调查是携带出。']],
-      ['come up with','短语','提出；想出','高频',['提出想法/办法'],['同 think of/put forward'],['He came up with a good idea.|||他想出了一个好主意。']],
-      ['contribute to','短语','有助于；导致','高频',['to 是介词'],['make contributions to'],['Reading contributes to writing.|||阅读contributes到写。']],
-      ['deal with','短语','处理；涉及','高频',['how to deal with'],['deal with 与 do with 区别'],['We must deal with stress.|||我们必须deal与压力。']],
-      ['due to','短语','由于','高频',['后接名词/doing'],['because of/owing to 同义'],['The match was canceled due to rain.|||这个match是canceleddue到雨。']],
-      ['figure out','短语','弄清楚；计算出','中频',['figure out the meaning/problem'],['同 work out'],['Can you figure out the answer?|||你能想出答案吗？']],
-      ['get along with','短语','与...相处','高频',['get along well with sb'],['作文人际关系常用'],['She gets along well with classmates.|||她得到沿着well与classmates。']],
-      ['give rise to','短语','引起；导致','中频',['正式表达 cause'],['rise/arise/raise 易混'],['Pollution gives rise to health problems.|||Pollution给rise到健康problems。']],
-      ['in addition','短语','此外','高频',['句首连接补充信息'],['besides/furthermore 同义'],['In addition, exercise regularly.|||在additionexerciseregularly。']],
-      ['in case','短语','以防；万一','高频',['引导目的或条件状语从句'],['区别 in that case'],['Take an umbrella in case it rains.|||带把伞，以防下雨。']],
-      ['in charge of','短语','负责','高频',['人 be in charge of 事'],['charge 搭配辨析常考'],['She is in charge of the club.|||她是在charge的这个club。']],
-      ['make a difference','短语','有影响；起作用','高频',['make a difference to'],['环保/志愿主题常用'],['Small actions make a big difference.|||小actions做一个大的difference。']],
-      ['make full use of','短语','充分利用','高频',['后接时间/资源/机会'],['同 take advantage of'],['We should make full use of time.|||我们应该做满的用途的时间。']],
-      ['on behalf of','短语','代表','中频',['应用文开头常用'],['正式表达'],['On behalf of our class, I welcome you.|||我代表全班欢迎你。']],
-      ['put forward','短语','提出','中频',['put forward a suggestion/plan'],['更正式'],['A new plan was put forward.|||一项新计划被提了出来。']],
-      ['refer to','短语','提到；查阅','高频',['refer to a dictionary'],['一词多义常考'],['The word refers to a method.|||这个词refers到一个方法。']],
-    ]
-  },
-  {
-    id: 'dl-error200',
-    name: '高考易错词汇200',
-    desc: '常见易混易错词汇精选',
-    items: [
-      ['affect','v.','影响；感动','易错',['effect 是名词"影响"常混'],['affect/effect 辨析高频'],['Weather affects our mood.|||度过影响我们的mood。']],
-      ['principal','n./adj.','校长；主要的','易错',['principle 原则 常拼错'],['principal/principle 辨析'],['The principal is very kind.|||这个principal是非常种类。']],
-      ['stationary','adj.','静止的','易错',['stationery 文具 常混'],['stationary/stationery 辨析'],['The car was stationary.|||这个汽车是stationary。']],
-      ['desert','n./v.','沙漠；遗弃','易错',['dessert 甜品 常混'],['desert/dessert 辨析'],['The desert is very hot.|||这个沙漠是非常热的。']],
-      ['complement','n./v.','补充；赞美','易错',['compliment 赞美 常混'],['complement/compliment 辨析'],['This wine complements the dish.|||这个酒complements这个dish。']],
-      ['quite','adv.','相当；十分','易错',['quiet 安静的 常混'],['quite/quiet 辨析'],['She is quite good at math.|||她是相当好在math。']],
-      ['their','pron.','他们的','易错',['there 那里/they\'re 常混'],['their/there/they\'re 辨析'],['Their house is beautiful.|||他们的房子是美丽的。']],
-      ['loose','adj.','宽松的','易错',['lose 丢失 常混'],['loose/lose 辨析'],['The rope was loose.|||这个绳子是loose。']],
-      ['adopt','v.','收养；采用','易错',['adapt 适应 常混'],['adopt/adapt 辨析'],['They adopted a child.|||他们adopted一个孩子。']],
-      ['beside','prep.','在...旁边','易错',['besides 此外 常混'],['beside/besides 辨析'],['She sat beside me.|||她坐旁边我。']],
-      ['aisle','n.','过道','易错',['isle 岛屿 常混'],['aisle/isle 辨析'],['Walk down the aisle.|||走向下这个aisle。']],
-      ['bare','adj.','赤裸的','易错',['bear 熊/忍受 常混'],['bare/bear 辨析'],['The ground was bare.|||这个ground是bare。']],
-      ['council','n.','委员会','易错',['counsel 咨询 常混'],['council/counsel 辨析'],['The city council made a decision.|||这个城市council犯一个决定。']],
-      ['dessert','n.','甜点','易错',['desert 沙漠 常混'],['dessert/desert 辨析'],['She ordered dessert.|||她ordereddessert。']],
-      ['hangar','n.','机库','易错',['hanger 衣架 常混'],['hangar/hanger 辨析'],['The plane was in the hangar.|||这个飞机是在这个hangar。']],
-      ['immigrate','v.','移入','易错',['emigrate 移出 常混'],['immigrate/emigrate 辨析'],['He immigrated to the US.|||他immigrated到这个我们。']],
-      ['personal','adj.','个人的','易错',['personnel 人员 常混'],['personal/personnel 辨析'],['This is my personal opinion.|||这个是我的个人的观点。']],
-      ['sight','n.','景象；视力','易错',['site 现场/cite 引用 常混'],['sight/site/cite 辨析'],['The sight was amazing.|||这个sight是amazing。']],
-      ['who\'s','abbr.','who is/has','易错',['whose 谁的 常混'],['who\'s/whose 辨析'],['Who\'s coming to dinner?|||谁来吃晚饭？']],
-      ['your','pron.','你的','易错',['you\'re you are 常混'],['your/you\'re 辨析'],['What is your name?|||你叫什么名字？']],
-    ]
-  },
-  {
-    id: 'dl-familiar150',
-    name: '高考熟词生义150',
-    desc: '常见熟词生义现象精选',
-    items: [
-      ['accommodate','v.','提供住宿','生义',['常见义：容纳/适应'],['高考常考"提供住宿"义'],['The hotel can accommodate 500 guests.|||这个酒店能accommodateguests。']],
-      ['address','v.','处理；解决','生义',['常见义：地址/演讲'],['address a problem 解决问题'],['We must address this issue.|||我们必须address这个问题。']],
-      ['appreciate','v.','感激；升值','生义',['常见义：欣赏/感激'],['appreciate in value 升值'],['The house has appreciated.|||这个房子有appreciated。']],
-      ['book','v.','预订','生义',['常见义：书/本子'],['book a ticket 预订票'],['I booked a table for two.|||我booked一个桌子为了two。']],
-      ['capitalize','v.','利用','生义',['常见义：大写/资本化'],['capitalize on 利用机会'],['She capitalized on her fame.|||她capitalized在她fame。']],
-      ['conduct','n.','行为；举止','生义',['常见义：进行/指挥'],['good conduct 好行为'],['His conduct was excellent.|||他的conduct是优秀的。']],
-      ['company','n.','陪伴','生义',['常见义：公司'],['keep company 陪伴'],['I enjoy your company.|||我enjoy你的公司。']],
-      ['cook','n.','厨师','生义',['常见义：烹饪'],['He is a good cook.|||他是一个好cook。'],['The cook prepared a feast.|||这个厨师准备了一顿盛宴。']],
-      ['course','n.','课程；一道菜','生义',['常见义：过程/当然'],['of course 当然'],['The main course was delicious.|||这个主要过程是delicious。']],
-      ['draw','v.','得出；拉','生义',['常见义：画画/拉'],['draw a conclusion 得出结论'],['We can draw a conclusion from this.|||我们能画一个conclusion从这个。']],
-      ['drive','n.','动力；驱动','生义',['常见义：开车'],['the driving force 驱动力'],['Ambition is his driving force.|||抱负是他的driving力量。']],
-      ['earn','v.','赢得','生义',['常见义：赚得'],['earn respect 赢得尊重'],['She earned enough money to pay for her college tuition.|||她赚了足够的钱来支付大学学费。']],
-      ['observe','v.','遵守','生义',['常见义：观察'],['observe the rules 遵守规则'],['We must observe the law.|||我们必须observe这个法律。']],
-      ['plant','n.','工厂；设备','生义',['常见义：植物'],['a power plant 发电厂'],['The plant was closed.|||这个植物是closed。']],
-      ['position','v.','定位','生义',['常见义：位置/职位'],['position yourself 定位自己'],['She positioned herself near the door.|||她站在她自己靠近这个门。']],
-      ['read','v.','解读；理解','生义',['常见义：阅读'],['read one\'s mind 看出心思'],['I can read your expression.|||我能读懂你的表情。']],
-      ['rest','v.','依靠','生义',['常见义：休息'],['rest on 依赖'],['You should rest for a while after running the marathon.|||跑完马拉松后，您应该休息一段时间。']],
-      ['sound','adj.','合理的','生义',['常见义：声音/听起来'],['sound advice 合理的建议'],['The alarm sounded at exactly seven in the morning.|||闹钟正好在早上七点响起。']],
-      ['tell','v.','分辨','生义',['常见义：告诉'],['tell the difference 分辨'],['Can you tell me the time, please?|||请问能告诉我现在几点了吗？']],
-      ['weather','v.','经受住','生义',['常见义：天气'],['weather the storm 渡过难关'],['The company weathered the crisis.|||这个公司度过这个危机。']],
-    ]
-  }
-];
 
 /* ============================
    六、进度追踪和设置
@@ -8589,7 +8430,6 @@ const SETTINGS_KEY = 'gaokao_settings';
 const MODE_KEY = 'gaokao_practice_mode';
 const STUDYLOG_KEY = 'gaokao_study_log';
 const STUDY_WORDS_KEY = 'gaokao_study_words_log';
-const DOWNLOAD_KEY = 'gaokao_downloaded';
 const WRONG_KEY = 'gaokao_wrong_words';
 
 function loadProgress() {
@@ -8706,13 +8546,6 @@ function saveStudyWordsLog(log) {
   localStorage.setItem(STUDY_WORDS_KEY, JSON.stringify(log));
 }
 
-function loadDownloadedIds() {
-  try { return JSON.parse(localStorage.getItem(DOWNLOAD_KEY) || '[]'); } catch { return []; }
-}
-
-function saveDownloadedIds(ids) {
-  localStorage.setItem(DOWNLOAD_KEY, JSON.stringify(ids));
-}
 
 function loadWrongWords() {
   try { return JSON.parse(localStorage.getItem(WRONG_KEY) || '[]'); } catch { return []; }
@@ -10752,10 +10585,10 @@ function loadListenCfg() {
     var s = JSON.parse(localStorage.getItem(LISTEN_CFG_KEY) || '{}') || {};
     return {
       enRepeat: _clampInt(s.enRepeat, 1, 5, 2),
-      zhRepeat: _clampInt(s.zhRepeat, 0, 2, 1),
+      zhRepeat: _clampInt(s.zhRepeat, 0, 3, 1),
       order: (s.order === 'zh-en' || s.order === 'en') ? s.order : 'en-zh',
       innerGap: _clampNum(s.innerGap, 0, 3, 0.6),
-      wordGap: _clampNum(s.wordGap, 0.5, 9, 2),
+      wordGap: _clampNum(s.wordGap, 0, 10, 2),
       rate: _clampNum(s.rate, 0.5, 2, 1),
       loop: (s.loop === 'one' || s.loop === 'off') ? s.loop : 'list',
       shuffle: !!s.shuffle,
@@ -10771,8 +10604,11 @@ function loadListenCfg() {
 // 释义转朗读文本：去掉词性前缀（避免把 "v." 读成字母），分号转逗号
 function _meaningForSpeech(meaning) {
   return String(meaning || '')
+    .replace(/\[[^\]]{1,6}\]/g, ' ')  // [计] [医] 等领域标签念出来是噪音，全部剥掉
     .replace(/^(vt\.|vi\.|n\.|v\.|a\.|adj\.|adv\.|prep\.|conj\.|pron\.|art\.|num\.|int\.|aux\.|modal\.|abbr\.)\s*/gi, '')
     .replace(/[;；]/g, '，')
+    .replace(/[·、]/g, '，')
+    .replace(/[<>《》「」【】]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -11194,23 +11030,151 @@ const TABS = [
   { id: 'me', label: '我的', icon: MeIcon },
 ];
 
+// v2.69.0 轮盘取值网格（模块级常量，避免每次渲染重建导致滚轮跳动）
+const WHEEL_RATE = (function () { const a = []; for (let v = 0.5; v <= 2.001; v += 0.05) a.push(Math.round(v * 100) / 100); return a; })();
+const WHEEL_EN_REPEAT = [1, 2, 3, 4, 5];
+const WHEEL_ZH_REPEAT = [0, 1, 2, 3];
+const WHEEL_WORD_GAP = (function () { const a = []; for (let v = 0; v <= 10.001; v += 0.5) a.push(Math.round(v * 10) / 10); return a; })();
+const WHEEL_INNER_GAP = (function () { const a = []; for (let v = 0; v <= 3.001; v += 0.1) a.push(Math.round(v * 10) / 10); return a; })();
+const WHEEL_SPEAK_RATE = (function () { const a = []; for (let v = 0.5; v <= 1.501; v += 0.02) a.push(Math.round(v * 100) / 100); return a; })();
+
+/* ============================
+   v2.69.0 轮盘选择器（WheelPicker）
+   触摸滚动 + 自动吸附，用于听读参数等连续数值的自定义调节。
+   纯 React + touch 实现，无第三方依赖，旧 WebView 兼容。
+   ============================ */
+function WheelPicker(props) {
+  const ITEM_H = 42;
+  const VIS = 5;
+  const values = props.values || [];
+  const value = props.value;
+  const onChange = props.onChange || function () {};
+  const fmt = props.format || function (v) { return String(v); };
+  const idx = Math.max(0, values.indexOf(value));
+  const [off, setOff] = React.useState(idx * ITEM_H);
+  const [dragging, setDragging] = React.useState(false);
+  const drag = React.useRef(null);
+  const center = ((VIS - 1) / 2) * ITEM_H;
+
+  // 外部值变化（如重置）时同步滚轮位置
+  React.useEffect(function () {
+    const i = values.indexOf(value);
+    if (i >= 0) setOff(i * ITEM_H);
+  }, [value, values]);
+
+  function snapTo(px) {
+    const max = (values.length - 1) * ITEM_H;
+    let t = Math.round(px / ITEM_H) * ITEM_H;
+    t = Math.max(0, Math.min(max, t));
+    setOff(t);
+    const ni = Math.round(t / ITEM_H);
+    const nv = values[ni];
+    if (nv !== undefined && nv !== value) onChange(nv);
+  }
+
+  function onStart(y) {
+    drag.current = { y0: y, off0: off, moved: false };
+    setDragging(true);
+  }
+  function onMove(y) {
+    if (!drag.current) return;
+    const d = drag.current;
+    if (Math.abs(y - d.y0) > 4) d.moved = true;
+    const min = -ITEM_H, max = (values.length - 1) * ITEM_H + ITEM_H;
+    setOff(Math.max(min, Math.min(max, d.off0 + (d.y0 - y))));
+  }
+  function onEnd() {
+    if (!drag.current) return;
+    const cur = drag.current;
+    drag.current = null;
+    setDragging(false);
+    if (cur.moved) snapTo(off);
+  }
+
+  return (
+    <div
+      className={'wheelPicker' + (props.compact ? ' compact' : '')}
+      style={{ width: width || '100%' }}
+      onTouchStart={function (e) { onStart(e.touches[0].clientY); }}
+      onTouchMove={function (e) { e.preventDefault(); onMove(e.touches[0].clientY); }}
+      onTouchEnd={onEnd}
+      onTouchCancel={onEnd}
+      onMouseDown={function (e) { onStart(e.clientY); }}
+      onMouseMove={function (e) { if (drag.current) onMove(e.clientY); }}
+      onMouseUp={onEnd}
+      onMouseLeave={onEnd}
+    >
+      <div className="wheelHighlight" />
+      <div
+        className="wheelStrip"
+        style={{
+          transform: 'translateY(' + (center - off) + 'px)',
+          transition: dragging ? 'none' : 'transform 0.22s ease-out',
+        }}
+      >
+        {values.map(function (v, i) {
+          const dist = Math.abs(off / ITEM_H - i);
+          const op = Math.max(0.18, 1 - dist * 0.34);
+          const sc = Math.max(0.82, 1 - dist * 0.07);
+          return (
+            <div
+              key={String(v)}
+              className={'wheelItem' + (v === value ? ' on' : '')}
+              style={{ height: ITEM_H, opacity: op, transform: 'scale(' + sc + ')' }}
+              onClick={function () { if (!drag.current || !drag.current.moved) { setOff(i * ITEM_H); if (v !== value) onChange(v); } }}
+            >
+              {fmt(v)}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// v2.69.0 全局错误边界：任何渲染异常不再白屏，给出错误摘要与一键重载
+class AppErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { err: null };
+  }
+  static getDerivedStateFromError(e) {
+    try { window.__lastFatalError = (e && (e.message || String(e))) || 'unknown'; } catch (_) {}
+    return { err: e };
+  }
+  render() {
+    if (this.state.err) {
+      const msg = (this.state.err && (this.state.err.message || String(this.state.err))) || '未知错误';
+      return (
+        <div style={{ padding: '48px 24px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
+          <h2 style={{ fontSize: 18, margin: '0 0 8px' }}>界面出现异常</h2>
+          <p style={{ fontSize: 13, color: '#6b7280', wordBreak: 'break-all', margin: '0 0 20px' }}>{msg}</p>
+          <button className="primary" style={{ padding: '10px 32px' }} onClick={function () { try { localStorage.setItem('gaokao_last_error', msg); } catch (_) {} location.reload(); }}>重载应用</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   const [books, setBooks] = useState(loadBooks);
   // 背诵页词库选择（独立）
   const [studyBookIds, setStudyBookIds] = useState(() => {
     try {
       const saved = localStorage.getItem('gaokao_study_books');
-      return saved ? saved.split(',') : ['gaokao-core'];
+      return saved ? saved.split(',') : ['gaokao-3500'];
     }
-    catch { return ['gaokao-core']; }
+    catch { return ['gaokao-3500']; }
   });
   // 词库页词库选择（独立）
   const [libraryBookIds, setLibraryBookIds] = useState(() => {
     try {
       const saved = localStorage.getItem('gaokao_library_books');
-      return saved ? saved.split(',') : ['gaokao-core'];
+      return saved ? saved.split(',') : ['gaokao-3500'];
     }
-    catch { return ['gaokao-core']; }
+    catch { return ['gaokao-3500']; }
   });
   // v2.62.0：记住上次所在页面，热更新 / 刷新后自动回到原页面，不再"无故跳回首页"
   const [section, setSection] = useState(() => {
@@ -11231,8 +11195,8 @@ function App() {
 
   // ===== 听读模式（音乐播放器式）状态 =====
   const [listenBookIds, setListenBookIds] = useState(() => {
-    try { const s = localStorage.getItem(LISTEN_BOOKS_KEY); return s ? s.split(',') : ['gaokao-core']; }
-    catch { return ['gaokao-core']; }
+    try { const s = localStorage.getItem(LISTEN_BOOKS_KEY); return s ? s.split(',') : ['gaokao-3500']; }
+    catch { return ['gaokao-3500']; }
   });
   // v2.62.0：真实播放进度（系统播放器模式下有准确时长，可拖动）
   const [listenPos, setListenPos] = useState(0);
@@ -11263,6 +11227,7 @@ function App() {
   // v2.61.0：真正的「暂停」状态（与 listenPlaying 独立，暂停时仍视为一次播放会话）
   const [listenPaused, setListenPaused] = useState(false);
   const [listenShowCfg, setListenShowCfg] = useState(false);
+  const [listenShowSpeed, setListenShowSpeed] = useState(false);
   const [listenShowPL, setListenShowPL] = useState(false);
   const [listenShowBooks, setListenShowBooks] = useState(false);
   const listenTokenRef = useRef(0);          // 播放代次：自增即取消旧循环
@@ -11294,6 +11259,9 @@ function App() {
   const [autoJumping, setAutoJumping] = useState(false);
   const [cloudStatus, setCloudStatus] = useState('');
   const [updateInfo, setUpdateInfo] = useState(null);
+  // v2.68.0 百词斩同步导出：选词库 → 按 500 词/批复制为「英文逗号分隔单词串」
+  const [bcBookId, setBcBookId] = useState('');
+  const [bcBatch, setBcBatch] = useState(0);
   // v2.67.0：本机安装包的真实版本（决定是否真的需要装新 APK）
   const [pkgVer, setPkgVer] = useState(() => ({ code: nativePkgVersionCode(), name: nativePkgVersionName() }));
   const refreshPkgVer = () => setPkgVer({ code: nativePkgVersionCode(), name: nativePkgVersionName() });
@@ -11331,7 +11299,6 @@ function App() {
   const [settings, setSettings] = useState(loadSettings);
   const [studyLog, setStudyLog] = useState(loadStudyLog);
   const [studyWordsLog, setStudyWordsLog] = useState(loadStudyWordsLog);
-  const [downloadedIds, setDownloadedIds] = useState(loadDownloadedIds);
   const [wrongWords, setWrongWords] = useState(loadWrongWords);
   // 扩展页面的子tab
   const [extendTab, setExtendTab] = useState('affix');
@@ -12640,8 +12607,8 @@ function App() {
     // 错词本与普通词库互斥：选中错词本时只保留错词本，选中普通词库时移除错词本
     if (id === 'wrong-words') {
       if (studyBookIds.includes('wrong-words')) {
-        setStudyBookIds(['gaokao-core']);
-        try { localStorage.setItem('gaokao_study_books', 'gaokao-core'); } catch {}
+        setStudyBookIds(['gaokao-3500']);
+        try { localStorage.setItem('gaokao_study_books', 'gaokao-3500'); } catch {}
       } else {
         setStudyBookIds(['wrong-words']);
         try { localStorage.setItem('gaokao_study_books', 'wrong-words'); } catch {}
@@ -12649,7 +12616,7 @@ function App() {
     } else {
       if (studyBookIds.includes(id)) {
         const next = studyBookIds.filter(x => x !== id && x !== 'wrong-words');
-        if (next.length === 0) next.push('gaokao-core');
+        if (next.length === 0) next.push('gaokao-3500');
         setStudyBookIds(next);
         try { localStorage.setItem('gaokao_study_books', next.join(',')); } catch {}
       } else {
@@ -12669,8 +12636,8 @@ function App() {
     const selectableIds = wrongWords.length > 0 ? [...visibleIds, 'wrong-words'] : visibleIds;
     const isAllSelected = selectableIds.length > 0 && selectableIds.every(id => studyBookIds.includes(id));
     if (isAllSelected) {
-      setStudyBookIds(['gaokao-core']);
-      try { localStorage.setItem('gaokao_study_books', 'gaokao-core'); } catch {}
+      setStudyBookIds(['gaokao-3500']);
+      try { localStorage.setItem('gaokao_study_books', 'gaokao-3500'); } catch {}
     } else {
       const allIds = books.map(b => b.id);
       setStudyBookIds(allIds);
@@ -12681,7 +12648,7 @@ function App() {
   function switchLibraryBook(id) {
     if (libraryBookIds.includes(id)) {
       const next = libraryBookIds.filter(x => x !== id);
-      if (next.length === 0) next.push('gaokao-core');
+      if (next.length === 0) next.push('gaokao-3500');
       setLibraryBookIds(next);
       try { localStorage.setItem('gaokao_library_books', next.join(',')); } catch {}
     } else {
@@ -12697,8 +12664,8 @@ function App() {
     const selectableIds = books.filter(b => !hiddenBookIds.includes(b.id)).map(b => b.id);
     const isAllSelected = selectableIds.length > 0 && selectableIds.every(id => libraryBookIds.includes(id));
     if (isAllSelected) {
-      setLibraryBookIds(['gaokao-core']);
-      try { localStorage.setItem('gaokao_library_books', 'gaokao-core'); } catch {}
+      setLibraryBookIds(['gaokao-3500']);
+      try { localStorage.setItem('gaokao_library_books', 'gaokao-3500'); } catch {}
     } else {
       const allIds = books.map(b => b.id);
       setLibraryBookIds(allIds);
@@ -12820,6 +12787,12 @@ function App() {
     });
     return { study: beforeStudy - newStudyIds.length, library: beforeLibrary - newLibraryIds.length };
   }
+
+  // v2.69.0：启动时自动清理不存在的词库引用与残留进度（不再依赖手动按钮）
+  React.useEffect(function () {
+    try { cleanDeletedBookRefs(); } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 记录今日学习（同时记录具体学了哪些单词）
   function recordStudy(item) {
@@ -13321,8 +13294,8 @@ function App() {
     if (!confirm(`确定删除词库「${activeBook.name}」？`)) return;
     const next = books.filter(b => b.id !== activeBook.id);
     updateBooks(next);
-    setStudyBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_study_books', 'gaokao-core'); } catch {}
-    setLibraryBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_library_books', 'gaokao-core'); } catch {}
+    setStudyBookIds(['gaokao-3500']); try { localStorage.setItem('gaokao_study_books', 'gaokao-3500'); } catch {}
+    setLibraryBookIds(['gaokao-3500']); try { localStorage.setItem('gaokao_library_books', 'gaokao-3500'); } catch {}
   }
 
   function deleteItem(itemId) {
@@ -13532,16 +13505,6 @@ function App() {
     catch (e) { setImportStatus(`AI失败：${e.message}`); }
   }
 
-  // 问题4：内置词库下载
-  function handleDownload(dl) {
-    if (downloadedIds.includes(dl.id)) return;
-    const items = dl.items.map((row, i) => makeItem(row, row[0].includes(' ') ? 'phrase' : 'word', i));
-    const nb = { id: `dl-${Date.now()}`, name: dl.name, editable: true, items };
-    updateBooks([...books, nb]);
-    const next = [...downloadedIds, dl.id];
-    setDownloadedIds(next);
-    saveDownloadedIds(next);
-  }
 
   // 版本更新检查：优先使用 raw 直链，失败则回退到 API
   // silent 模式：静默检查，发现更新后自动下载APK，下载完成后弹出安装提示
@@ -13924,7 +13887,7 @@ function App() {
                 <div className="bookPickerDropdown">
                   <div className="bookPickerActions">
                     <button onClick={selectAllStudyBooks}>{(wrongWords.length > 0 ? [...books.filter(b => !b.id.includes('confused') && !b.id.includes('dual-sentiment') && !hiddenBookIds.includes(b.id)).map(b => b.id), 'wrong-words'] : books.filter(b => !b.id.includes('confused') && !b.id.includes('dual-sentiment') && !hiddenBookIds.includes(b.id)).map(b => b.id)).every(id => studyBookIds.includes(id)) ? '全不选' : '全选'}</button>
-                    <button onClick={() => { setStudyBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_study_books', 'gaokao-core'); } catch {} }}>重置</button>
+                    <button onClick={() => { setStudyBookIds(['gaokao-3500']); try { localStorage.setItem('gaokao_study_books', 'gaokao-3500'); } catch {} }}>重置</button>
                   </div>
                   {/* 错词本（单独复习） */}
                   {wrongWords.length > 0 && (
@@ -14264,7 +14227,7 @@ function App() {
               {listenShowBooks && (
                 <div className="bookPickerDropdown">
                   <div className="bookPickerActions">
-                    <button onClick={() => { stopListenPlayback(); setListenBookIds(['gaokao-core']); try { localStorage.setItem(LISTEN_BOOKS_KEY, 'gaokao-core'); } catch (e) {} }}>重置</button>
+                    <button onClick={() => { stopListenPlayback(); setListenBookIds(['gaokao-3500']); try { localStorage.setItem(LISTEN_BOOKS_KEY, 'gaokao-3500'); } catch (e) {} }}>重置</button>
                   </div>
                   {wrongWords.length > 0 && (
                     <label className="bookPickerItem">
@@ -14365,18 +14328,18 @@ function App() {
             <button className="listenMp3Btn" onClick={downloadCurrentMp3} disabled={!listenCurrent} title="下载本词 MP3">⬇</button>
           </div>
 
-          {/* 快捷开关 */}
+          {/* 快捷开关（v2.68.0：去 emoji 分段控件风格） */}
           <div className="listenChips">
             <button onClick={() => updateListenCfg({ loop: listenCfg.loop === 'list' ? 'one' : (listenCfg.loop === 'one' ? 'off' : 'list') })}>
-              {listenCfg.loop === 'list' ? '🔁 列表循环' : listenCfg.loop === 'one' ? '🔂 单曲循环' : '➡️ 播完停止'}
+              {listenCfg.loop === 'list' ? '循环 列表' : listenCfg.loop === 'one' ? '循环 单曲' : '循环 关'}
             </button>
-            <button onClick={() => { const rates = [0.75, 1, 1.25, 1.5]; const cur = rates.indexOf(listenCfg.rate); updateListenCfg({ rate: rates[(cur + 1) % rates.length] }); }}>
-              ⏱ {listenCfg.rate}x
+            <button className={listenShowSpeed ? 'on' : ''} onClick={() => setListenShowSpeed(!listenShowSpeed)}>
+              {listenCfg.rate.toFixed(2)}x
             </button>
-            <button className={listenCfg.shuffle ? 'on' : ''} onClick={() => updateListenCfg({ shuffle: !listenCfg.shuffle })}>🔀 随机</button>
-            <button className={listenShowCfg ? 'on' : ''} onClick={() => setListenShowCfg(!listenShowCfg)}>⚙️ 参数</button>
-            <button className={listenShowMp3 ? 'on' : ''} onClick={() => setListenShowMp3(!listenShowMp3)}>⬇ MP3</button>
-            <button className={listenShowPL ? 'on' : ''} onClick={() => setListenShowPL(!listenShowPL)}>☰ 列表</button>
+            <button className={listenCfg.shuffle ? 'on' : ''} onClick={() => updateListenCfg({ shuffle: !listenCfg.shuffle })}>随机</button>
+            <button className={listenShowCfg ? 'on' : ''} onClick={() => setListenShowCfg(!listenShowCfg)}>参数</button>
+            <button className={listenShowMp3 ? 'on' : ''} onClick={() => setListenShowMp3(!listenShowMp3)}>MP3</button>
+            <button className={listenShowPL ? 'on' : ''} onClick={() => setListenShowPL(!listenShowPL)}>列表</button>
           </div>
 
           {/* v2.62.0：MP3 下载面板 */}
@@ -14402,28 +14365,47 @@ function App() {
                 {mp3Busy ? `打包中 ${mp3State ? mp3State.done : 0}/${mp3State ? mp3State.total : 0}` : '开始下载 MP3 压缩包'}
               </button>
               {mp3State && !mp3Busy && <div className="listenTip">{mp3State.msg}</div>}
-              <div className="listenTip">文件命名：001_abandon_英.mp3 / 001_abandon_中.mp3，打包为 zip。手机上保存到「文件管理 → 下载 → 背群英」，解压后可拷进 MP3 播放器、点读笔、MP5 离线听。</div>
-              <div className="listenTip">下载过的音频会复用缓存，第二次打包明显更快；听读播放也走同一份本地 MP3，断网可播、拖动进度不卡。</div>
+            </div>
+          )}
+
+          {/* v2.69.0 语速快捷轮盘 */}
+          {listenShowSpeed && (
+            <div className="listenSettings listenSpeedSheet">
+              <div className="listenSettingRow" style={{ justifyContent: 'center' }}>
+                <span style={{ fontWeight: 700 }}>语速</span>
+              </div>
+              <WheelPicker values={WHEEL_RATE} value={listenCfg.rate} onChange={function (v) { updateListenCfg({ rate: v }); }} format={function (v) { return v.toFixed(2) + 'x'; }} width={180} />
             </div>
           )}
 
           {/* 朗读参数 */}
           {listenShowCfg && (
             <div className="listenSettings">
-              <div className="listenSettingRow">
-                <span>英文朗读</span>
-                <div className="listenSeg">
-                  {[1, 2, 3].map(n => (
-                    <button key={n} className={listenCfg.enRepeat === n ? 'on' : ''} onClick={() => updateListenCfg({ enRepeat: n })}>{n} 遍</button>
-                  ))}
+              {/* v2.69.0 数值参数全部改为轮盘调节：上下滑动选择，精度自定义 */}
+              <div className="wheelGrid">
+                <div className="wheelCell">
+                  <span>英文遍数</span>
+                  <WheelPicker values={WHEEL_EN_REPEAT} value={listenCfg.enRepeat} onChange={function (n) { updateListenCfg({ enRepeat: n }); }} format={function (v) { return v + ' 遍'; }} />
+                </div>
+                <div className="wheelCell">
+                  <span>中文遍数</span>
+                  <WheelPicker values={WHEEL_ZH_REPEAT} value={listenCfg.zhRepeat} onChange={function (n) { updateListenCfg({ zhRepeat: n }); }} format={function (v) { return v === 0 ? '不读中文' : v + ' 遍'; }} />
                 </div>
               </div>
-              <div className="listenSettingRow">
-                <span>中文朗读</span>
-                <div className="listenSeg">
-                  {[0, 1, 2].map(n => (
-                    <button key={n} className={listenCfg.zhRepeat === n ? 'on' : ''} onClick={() => updateListenCfg({ zhRepeat: n })}>{n === 0 ? '不读' : n + ' 遍'}</button>
-                  ))}
+              <div className="wheelGrid">
+                <div className="wheelCell">
+                  <span>语速</span>
+                  <WheelPicker values={WHEEL_RATE} value={listenCfg.rate} onChange={function (v) { updateListenCfg({ rate: v }); }} format={function (v) { return v.toFixed(2) + 'x'; }} />
+                </div>
+              </div>
+              <div className="wheelGrid">
+                <div className="wheelCell">
+                  <span>词间间隔</span>
+                  <WheelPicker values={WHEEL_WORD_GAP} value={listenCfg.wordGap} onChange={function (v) { updateListenCfg({ wordGap: v }); }} format={function (v) { return v + ' 秒'; }} />
+                </div>
+                <div className="wheelCell">
+                  <span>遍间隔</span>
+                  <WheelPicker values={WHEEL_INNER_GAP} value={listenCfg.innerGap} onChange={function (v) { updateListenCfg({ innerGap: v }); }} format={function (v) { return v + ' 秒'; }} />
                 </div>
               </div>
               <div className="listenSettingRow">
@@ -14432,22 +14414,6 @@ function App() {
                   <button className={listenCfg.order === 'en-zh' ? 'on' : ''} onClick={() => updateListenCfg({ order: 'en-zh' })}>英→中</button>
                   <button className={listenCfg.order === 'zh-en' ? 'on' : ''} onClick={() => updateListenCfg({ order: 'zh-en' })}>中→英</button>
                   <button className={listenCfg.order === 'en' ? 'on' : ''} onClick={() => updateListenCfg({ order: 'en' })}>仅英文</button>
-                </div>
-              </div>
-              <div className="listenSettingRow">
-                <span>词间间隔</span>
-                <div className="listenSeg">
-                  {[1, 2, 3, 5].map(s => (
-                    <button key={s} className={listenCfg.wordGap === s ? 'on' : ''} onClick={() => updateListenCfg({ wordGap: s })}>{s}s</button>
-                  ))}
-                </div>
-              </div>
-              <div className="listenSettingRow">
-                <span>遍间隔</span>
-                <div className="listenSeg">
-                  {[0, 0.6, 1].map(s => (
-                    <button key={s} className={listenCfg.innerGap === s ? 'on' : ''} onClick={() => updateListenCfg({ innerGap: s })}>{s === 0 ? '无' : s + 's'}</button>
-                  ))}
                 </div>
               </div>
               <div className="listenSettingRow">
@@ -14468,18 +14434,12 @@ function App() {
                 <div className="listenSettingRow">
                   <span>配音音色</span>
                   <div className="listenSeg">
-                    {[[0, '度小娇'], [3, '度逍遥'], [4, '度丫丫']].map(function (v) {
+                    {[[0, '晓晓·女'], [3, '云希·男'], [4, '晓伊·活力']].map(function (v) {
                       return <button key={v[0]} className={listenCfg.zhVoice === v[0] ? 'on' : ''} onClick={() => updateListenCfg({ zhVoice: v[0] })}>{v[1]}</button>;
                     })}
                   </div>
                 </div>
               )}
-              <div className="listenTip">推荐默认：英文 2 遍 → 中文 1 遍，词间 2 秒（参考百词斩 / 墨墨 / 不背单词的听读做法）</div>
-              <div className="listenTip">中文默认走真人配音（度小娇等自然女声），比手机自带引擎更像真人；断网时自动降级到系统语音引擎，保证一定有声音</div>
-              <div className="listenTip">改动上述任一参数后，若正在播放会立即按新参数重播；「语速」实时变速，不需要重新生成</div>
-              <div className="listenTip">暂停 / 继续：应用内按钮、通知栏卡片、锁屏与耳机线控都可控制，暂停后从当前词接着读，不会从头重来</div>
-              <div className="listenTip">本机安装包 {pkgVer.code > 0 ? ('v' + (pkgVer.name || pkgVer.code)) : 'v2.66.0 或更早'} · 当前页面 v{APP_VERSION}。真人配音 / 点击立即出声 / 参数实时生效需要 v2.66.0 及以上安装包：{pkgVer.code > 0 && pkgVer.code < 228 ? '需到「我的 → 检查更新」安装新版' : '已就绪'}</div>
-              <div className="listenTip">{listenSystemPlayerOn() ? '已连接系统播放器：退出应用、锁屏、息屏后继续播放，通知栏可暂停 / 上一词 / 下一词' : '当前安装包未内置系统播放器（中文发音已随热更新生效）。后台播放需 v2.60.0 及以上版本，请到「我的 → 检查更新」一键安装'}</div>
               {listenBuildInfo && <div className="listenTip" style={{ color: '#2563eb', fontWeight: 600 }}>{listenBuildInfo}</div>}
             </div>
           )}
@@ -14589,7 +14549,7 @@ function App() {
                 <div className="bookPickerDropdown">
                   <div className="bookPickerActions">
                     <button onClick={selectAllLibraryBooks}>{books.filter(b => !hiddenBookIds.includes(b.id)).every(b => libraryBookIds.includes(b.id)) ? '全不选' : '全选'}</button>
-                    <button onClick={() => { setLibraryBookIds(['gaokao-core']); try { localStorage.setItem('gaokao_library_books', 'gaokao-core'); } catch {} }}>重置</button>
+                    <button onClick={() => { setLibraryBookIds(['gaokao-3500']); try { localStorage.setItem('gaokao_library_books', 'gaokao-3500'); } catch {} }}>重置</button>
                   </div>
                   {books.filter(b => !hiddenBookIds.includes(b.id)).map(b => (
                     <label key={b.id} className="bookPickerItem">
@@ -15376,6 +15336,38 @@ function App() {
             <h2>导入词库</h2>
             <p className="muted">支持 TXT、复制粘贴、图片、PDF、PPTX、DOCX。配置AI后可使用大模型智能识别。</p>
 
+            {/* v2.68.0 百词斩同步：导出百词斩「添加单词」可识别的格式 */}
+            <div className="bcSyncBox">
+              <h3 style={{ margin: '0 0 6px', fontSize: 15 }}>📗 同步到百词斩</h3>
+              <p className="muted" style={{ marginTop: 0 }}>百词斩「添加单词」规则：单词间用<b>英文逗号</b>分隔、需区分大小写、单次最多 500 词。选择词库后按 500 词分批复制，到百词斩里粘贴提交即可，可多次分批加满。</p>
+              <select value={bcBookId} onChange={e => { setBcBookId(e.target.value); setBcBatch(0); }}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-primary)', fontSize: 14, marginBottom: 8 }}>
+                {books.map(b => <option key={b.id} value={b.id}>{b.name}（{b.items.length} 词）</option>)}
+              </select>
+              {(() => {
+                const bk = books.find(b => b.id === bcBookId);
+                if (!bk) return null;
+                const terms = bk.items.map(it => (it.term || '').trim()).filter(Boolean);
+                const BATCH = 500;
+                const totalBatches = Math.max(1, Math.ceil(terms.length / BATCH));
+                const batch = Math.min(bcBatch, totalBatches - 1);
+                const slice = terms.slice(batch * BATCH, batch * BATCH + BATCH).join(', ');
+                return (
+                  <>
+                    <p className="muted" style={{ margin: '4px 0 8px' }}>共 {terms.length} 词 → 分 {totalBatches} 批（每批 ≤500 词）</p>
+                    <div className="importBtnRow">
+                      <button className="primary" style={{ flex: 1 }} onClick={() => {
+                        const ok = copyTextToClipboard(slice);
+                        alert(ok ? `已复制第 ${batch + 1}/${totalBatches} 批（${slice.length} 个词）。\n\n打开百词斩 → 词本 → 添加单词 → 长按粘贴 → 提交即可。` : '复制失败，请长按下方文本手动全选复制：\n\n' + slice.slice(0, 200) + '…');
+                      }}>复制第 {batch + 1} 批</button>
+                      {batch > 0 && <button className="smallBtn" onClick={() => setBcBatch(batch - 1)}>上一批</button>}
+                      {batch + 1 < totalBatches && <button className="smallBtn" onClick={() => setBcBatch(batch + 1)}>下一批</button>}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
             {/* 上方4个按钮 */}
             <div className="importBtnRow">
               <button className="fileButton" onClick={() => document.getElementById('paste-btn')?.click()}>
@@ -15619,10 +15611,14 @@ function App() {
                 <option value="hard">困难（近义词/易混词/同词性）</option>
               </select>
             </label>
-            <label>发音语速
-              <select value={settings.speakRate} onChange={e => { const v = Number(e.target.value); setSettings(s => ({ ...s, speakRate: v })); saveSettings({ ...settings, speakRate: v }); }}>
-                {[0.5, 0.6, 0.78, 0.9, 1.0, 1.2, 1.5].map(r => <option key={r} value={r}>{r}x</option>)}
-              </select>
+            <label>发音语速（上下滑动调节）
+              <WheelPicker
+                values={WHEEL_SPEAK_RATE}
+                value={WHEEL_SPEAK_RATE.indexOf(settings.speakRate) >= 0 ? settings.speakRate : 0.78}
+                onChange={v => { setSettings(s => ({ ...s, speakRate: v })); saveSettings({ ...settings, speakRate: v }); }}
+                format={v => v.toFixed(2) + 'x'}
+                width={140}
+              />
             </label>
             <label>答对后自动标记已掌握
               <select value={settings.autoMaster ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, autoMaster: v })); saveSettings({ ...settings, autoMaster: v }); }}>
@@ -15819,64 +15815,7 @@ function App() {
             }}>访问官网</button>
           </div>
 
-          {/* 词库下载区域 */}
-          <div className="downloadSection">
-            <h3>词库下载</h3>
-            <div className="downloadList">
-              {builtInDownloads.map(dl => (
-                <div key={dl.id} className="downloadCard">
-                  <div>
-                    <h3>{dl.name}</h3>
-                    <p className="muted">{dl.desc} ({dl.items.length}条)</p>
-                  </div>
-                  {downloadedIds.includes(dl.id) ? (
-                    <span className="downloadedTag">已下载</span>
-                  ) : (
-                    <button className="downloadBtn" onClick={() => handleDownload(dl)}>下载</button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 网络搜索词库 */}
-          <div className="cloudUpdateSection" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
-            <h3 style={{ color: '#166534' }}>🌐 搜索网络词库</h3>
-            <p className="muted">输入你想找的词库名称，搜索后复制内容回来粘贴即可。</p>
-            <div className="netSearchRow">
-              <input
-                value={importText}
-                onChange={e => setImportText(e.target.value)}
-                placeholder="输入关键词搜索，或直接粘贴词库内容..."
-                style={{ flex: 1, minHeight: 60 }}
-              />
-              <button className="downloadBtn" onClick={() => {
-                const kw = importText.trim();
-                if (!kw) return;
-                // 短文本当作搜索关键词，长文本当作词库内容
-                if (kw.length < 30 && !kw.includes('\n')) {
-                  window.open('https://www.bing.com/search?q=' + encodeURIComponent(kw + ' 英语词汇表 词单'));
-                } else {
-                  const items = parseImportedText(kw, 'word');
-                  if (items.length > 0) {
-                    const name = `搜索词库-${new Date().toLocaleDateString()}`;
-                    const nb = { id: `net-${Date.now()}`, name, editable: true, items };
-                    updateBooks([...books, nb]);
-                    switchLibraryBook(nb.id);
-                    setImportText('');
-                    setImportStatus(`已导入：${name}（${items.length}条），已切换到该词库。`);
-                    setSection('learn');
-                  } else {
-                    setImportStatus('未能识别到有效词条，请检查格式。');
-                  }
-                }
-              }}>搜索/导入</button>
-            </div>
-            <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
-              输入短文本（如"四级词汇"）会打开搜索；粘贴大段词库内容会直接智能解析导入。
-            </p>
-            {importStatus && <p className="status" style={{ marginTop: 8 }}>{importStatus}</p>}
-          </div>
+          {/* v2.69.0：词库下载与网络搜索词库功能已移除（说明性内容统一收进更新公告） */}
 
           {/* 每个词库的重置进度 */}
           <div className="resetSection">
@@ -16342,7 +16281,11 @@ function App() {
 function mountApp() {
   const rootEl = document.getElementById('root');
   if (rootEl) {
-    createRoot(rootEl).render(<App />);
+    createRoot(rootEl).render(
+      <AppErrorBoundary>
+        <App />
+      </AppErrorBoundary>
+    );
   } else {
     setTimeout(mountApp, 50);
   }

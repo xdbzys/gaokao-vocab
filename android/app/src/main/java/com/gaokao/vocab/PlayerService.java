@@ -1150,21 +1150,72 @@ public class PlayerService extends Service {
         final Runnable afterDone = new Runnable() { @Override public void run() { onStageItemDone(idx); } };
         if (w.zhText == null || w.zhText.length() == 0) { onStageItemDone(idx); return; }
         boolean wantNet = !"system".equals(mCfgZhSource);
-        // ① 已预取到本地的真人配音（与整库合成线程共用缓存目录）→ 直接播，零延迟
+        // ① 已预取到本地的神经语音（Edge 神经语音 / 百度配音，与整库合成线程共用缓存目录）→ 直接播，零延迟
         if (wantNet) {
-            File netF = new File(mAlbumCacheDir, "zh_" + w.key + "_" + zhSuffix() + ".mp3");
+            File edgeF = new File(mAlbumCacheDir, "zh_" + w.key + "_" + zhSuffix() + ".mp3");
+            if (edgeF.exists() && edgeF.length() > 400) { playAlbumFile(edgeF, afterDone); return; }
+            File netF = new File(mAlbumCacheDir, "zh_" + w.key + "_net.mp3");
             if (!(netF.exists() && netF.length() > 200)) netF = new File(mAlbumCacheDir, "zh_" + w.key + "_net0.mp3");
+            if (!(netF.exists() && netF.length() > 200)) netF = new File(mAlbumCacheDir, "zh_" + w.key + "_yd.mp3");
             if (netF.exists() && netF.length() > 200) { playAlbumFile(netF, afterDone); return; }
         }
-        // ② 在线真人配音（播放失败会落到 ③）
-        if (wantNet && zhNetUrl(w.zhText) != null) {
-            final String nu = zhNetUrl(w.zhText);
-            playAlbumUrl(nu, afterDone, new Runnable() {
+        // ② 在线 Edge 神经语音：子线程同步合成（约 1 秒），失败自动落到 ③ 百度 / ④ 系统语音
+        if (wantNet) {
+            new Thread(new Runnable() {
                 @Override public void run() {
-                    if (!mAlbumMode || mAlbumIndex != idx) return;
-                    playAlbumZhSystem(idx);
+                    File ef = new File(mAlbumCacheDir, "zh_" + w.key + "_" + zhSuffix() + ".mp3");
+                    boolean ok = edgeTtsToFile(w.zhText, edgeVoiceName(), edgeRatePct(), ef);
+                    if (ok && mAlbumMode && mAlbumIndex == idx) {
+                        mHandler.post(new Runnable() {
+                            @Override public void run() {
+                                if (!mAlbumMode || mAlbumIndex != idx) return;
+                                File f2 = new File(mAlbumCacheDir, "zh_" + w.key + "_" + zhSuffix() + ".mp3");
+                                if (f2.exists() && f2.length() > 400) {
+                                    playAlbumFile(f2, afterDone);
+                                    return;
+                                }
+                                playAlbumZhSystem(idx);
+                            }
+                        });
+                        return;
+                    }
+                    // Edge 失败 → 百度在线配音（仍失败则 playAlbumZhSystem）
+                    if (mAlbumMode && mAlbumIndex == idx && zhNetUrl(w.zhText) != null) {
+                        final String nu = zhNetUrl(w.zhText);
+                        mHandler.post(new Runnable() {
+                            @Override public void run() {
+                                if (!mAlbumMode || mAlbumIndex != idx) return;
+                                playAlbumUrl(nu, afterDone, new Runnable() {
+                                    @Override public void run() {
+                                        if (!mAlbumMode || mAlbumIndex != idx) return;
+                                        // 百度也失败 → 有道网络音 → 仍失败才落系统引擎
+                                        String yu = youdaoZhUrl(w.zhText);
+                                        if (yu != null) {
+                                            playAlbumUrl(yu, afterDone, new Runnable() {
+                                                @Override public void run() {
+                                                    if (!mAlbumMode || mAlbumIndex != idx) return;
+                                                    playAlbumZhSystem(idx);
+                                                }
+                                            });
+                                        } else {
+                                            playAlbumZhSystem(idx);
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                        return;
+                    }
+                    if (mAlbumMode && mAlbumIndex == idx) {
+                        mHandler.post(new Runnable() {
+                            @Override public void run() {
+                                if (!mAlbumMode || mAlbumIndex != idx) return;
+                                playAlbumZhSystem(idx);
+                            }
+                        });
+                    }
                 }
-            });
+            }, "edge-tts-play").start();
             return;
         }
         playAlbumZhSystem(idx);
@@ -1510,7 +1561,228 @@ public class PlayerService extends Service {
 
     /** 中文音频文件名后缀：区分不同发音源 / 音色，避免切源后复用错预取缓存 */
     private String zhSuffix() {
-        return ("system".equals(mCfgZhSource) ? "sys" : "net" + mCfgZhVoice);
+        return ("system".equals(mCfgZhSource) ? "sys" : "e" + mCfgZhVoice);
+    }
+
+    /* ==================================================================
+       v2.68.0 微软 Edge 神经语音（与 Edge 浏览器朗读同源，番茄小说级音质）
+       旧方案 fanyi.baidu.com/gettts 的 per 音色参数实测无效（不同音色返回
+       完全相同的音频），这就是「中文听着还是机器味」的根因。
+       Edge TTS 是真正的神经网络音色：晓晓 / 云希 / 晓伊，断网或接口失败
+       自动回退 百度配音 → 手机自带语音引擎，保证一定有声音。
+       ================================================================== */
+    private static final String EDGE_HOST = "speech.platform.bing.com";
+    private static final String EDGE_PATH = "/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4";
+    private static final String EDGE_GEC_VERSION = "1-141.0.2279.2";
+    private static final String EDGE_ORIGIN = "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold";
+    private static final String EDGE_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0";
+
+    /** 音色映射：zhVoice 0 晓晓（女·自然·推荐） / 3 云希（男声） / 4 晓伊（女·活力） */
+    private String edgeVoiceName() {
+        if (mCfgZhVoice == 3) return "zh-CN-YunxiNeural";
+        if (mCfgZhVoice == 4) return "zh-CN-XiaoyiNeural";
+        return "zh-CN-XiaoxiaoNeural";
+    }
+
+    /** 语速 → Edge SSML 的 rate 百分比（例如 1.25x → +25%） */
+    private String edgeRatePct() {
+        int pct = Math.round((mAlbumRate - 1f) * 100);
+        return (pct >= 0 ? "+" : "") + pct + "%";
+    }
+
+    private static byte[] edgeRandomBytes(int n) {
+        byte[] b = new byte[n];
+        new java.util.Random().nextBytes(b);
+        return b;
+    }
+
+    private static String edgeRandomHex(int n) {
+        char[] hex = "0123456789abcdef".toCharArray();
+        StringBuilder sb = new StringBuilder(n);
+        java.util.Random r = new java.util.Random();
+        for (int i = 0; i < n; i++) sb.append(hex[r.nextInt(16)]);
+        return sb.toString();
+    }
+
+    private static String edgeTimestamp() {
+        try {
+            return new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US)
+                    .format(new java.util.Date());
+        } catch (Throwable e) {
+            return "2026-01-01T00:00:00.000Z";
+        }
+    }
+
+    private static String edgeReadLine(java.io.InputStream is) throws java.io.IOException {
+        StringBuilder sb = new StringBuilder();
+        while (true) {
+            int c = is.read();
+            if (c < 0) return sb.length() == 0 ? null : sb.toString();
+            if (c == '\n') return sb.toString().replaceAll("\r$", "");
+            sb.append((char) c);
+        }
+    }
+
+    private static String edgeXmlEscape(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("'", "&apos;");
+    }
+
+    /** Edge TTS 鉴权：Sec-MS-GEC = SHA256(向下取整到5分钟的Windows文件时间 + TrustedClientToken) 大写十六进制 */
+    private static String edgeSecGec() {
+        try {
+            long seconds = System.currentTimeMillis() / 1000L + 11644473600L;
+            seconds -= seconds % 300;
+            String input = (seconds * 10000000L) + "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] d = md.digest(input.getBytes("US-ASCII"));
+            StringBuilder sb = new StringBuilder(d.length * 2);
+            for (byte b : d) sb.append(String.format("%02X", b));
+            return sb.toString();
+        } catch (Throwable e) {
+            return "";
+        }
+    }
+
+    /** 写一帧 WebSocket 文本帧（客户端帧必须带掩码） */
+    private static void edgeWsWriteText(java.io.OutputStream os, String text) throws java.io.IOException {
+        byte[] data = text.getBytes("UTF-8");
+        byte[] mask = edgeRandomBytes(4);
+        java.io.ByteArrayOutputStream h = new java.io.ByteArrayOutputStream();
+        h.write(0x81); // FIN + text
+        int len = data.length;
+        if (len < 126) {
+            h.write(0x80 | len);
+        } else if (len < 65536) {
+            h.write(0x80 | 126);
+            h.write((len >> 8) & 0xff);
+            h.write(len & 0xff);
+        } else {
+            h.write(0x80 | 127);
+            for (int i = 7; i >= 0; i--) h.write((i < 4) ? 0 : 0); // 4GB 内不会走到这里
+        }
+        h.write(mask, 0, 4);
+        for (int i = 0; i < len; i++) data[i] = (byte) (data[i] ^ mask[i & 3]);
+        os.write(h.toByteArray());
+        os.write(data);
+        os.flush();
+    }
+
+    /** 读一帧 WebSocket 帧头，返回 [opcode, len]；连接关闭返回 null */
+    private static int[] edgeWsReadHeader(java.io.InputStream is) throws java.io.IOException {
+        int b1 = is.read();
+        if (b1 < 0) return null;
+        int b2 = is.read();
+        if (b2 < 0) return null;
+        int opcode = b1 & 0x0f;
+        long len = b2 & 0x7f;
+        if (len == 126) {
+            int a = is.read(), b = is.read();
+            if (a < 0 || b < 0) return null;
+            len = ((a & 0xff) << 8) | (b & 0xff);
+        } else if (len == 127) {
+            len = 0;
+            for (int i = 0; i < 8; i++) {
+                int c = is.read();
+                if (c < 0) return null;
+                len = (len << 8) | (c & 0xff);
+            }
+        }
+        if (len > 8 * 1024 * 1024) return null;
+        return new int[]{opcode, (int) len};
+    }
+
+    /**
+     * 微软 Edge 神经语音合成：成功把 MP3 写入 out 并返回 true；失败返回 false。
+     * 走 Edge 浏览器同款 WebSocket 接口，24kHz 神经音色，无需任何账号鉴权。
+     */
+    private boolean edgeTtsToFile(String text, String voice, String ratePct, File out) {
+        javax.net.ssl.SSLSocket sock = null;
+        try {
+            javax.net.ssl.SSLSocketFactory f =
+                    (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
+            sock = (javax.net.ssl.SSLSocket) f.createSocket(EDGE_HOST, 443);
+            sock.setSoTimeout(8000);
+            sock.startHandshake();
+            java.io.OutputStream os = sock.getOutputStream();
+            java.io.InputStream is = new java.io.BufferedInputStream(sock.getInputStream());
+
+            String gec = edgeSecGec();
+            String req = "GET " + EDGE_PATH + "&ConnectionId=" + edgeRandomHex(32)
+                    + (gec.length() > 0 ? "&Sec-MS-GEC=" + gec + "&Sec-MS-GEC-Version=" + EDGE_GEC_VERSION : "")
+                    + " HTTP/1.1\r\n"
+                    + "Host: " + EDGE_HOST + "\r\n"
+                    + "Connection: Upgrade\r\n"
+                    + "Upgrade: websocket\r\n"
+                    + "Sec-WebSocket-Key: " + android.util.Base64.encodeToString(edgeRandomBytes(16), android.util.Base64.NO_WRAP)
+                    + "\r\n"
+                    + "Sec-WebSocket-Version: 13\r\n"
+                    + "Origin: " + EDGE_ORIGIN + "\r\n"
+                    + "User-Agent: " + EDGE_UA + "\r\n"
+                    + "Pragma: no-cache\r\n"
+                    + "Cache-Control: no-cache\r\n\r\n";
+            os.write(req.getBytes("UTF-8"));
+            os.flush();
+
+            String status = edgeReadLine(is);
+            if (status == null || !status.contains("101")) return false;
+            while (true) {
+                String l = edgeReadLine(is);
+                if (l == null || l.length() == 0) break;
+            }
+
+            String ts = edgeTimestamp();
+            String cfg = "X-Timestamp:" + ts + "\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n"
+                    + "{\"context\":{\"synthesis\":{\"audio\":{\"metadataoptions\":"
+                    + "{\"sentenceBoundaryEnabled\":\"false\",\"wordBoundaryEnabled\":\"false\"},"
+                    + "\"outputFormat\":\"audio-24khz-48kbitrate-mono-mp3\"}}}}";
+            edgeWsWriteText(os, cfg);
+
+            String ssml = "X-RequestId:" + edgeRandomHex(16) + "\r\nContent-Type:application/ssml+xml\r\n"
+                    + "X-Timestamp:" + ts + "Z\r\nPath:ssml\r\n\r\n"
+                    + "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='zh-CN'>"
+                    + "<voice name='" + voice + "'>"
+                    + "<prosody rate='" + ratePct + "' pitch='+0Hz' volume='+0%'>"
+                    + edgeXmlEscape(text)
+                    + "</prosody></voice></speak>";
+            edgeWsWriteText(os, ssml);
+
+            java.io.FileOutputStream fos = new java.io.FileOutputStream(out);
+            boolean gotAudio = false;
+            long deadline = System.currentTimeMillis() + 12000;
+            while (System.currentTimeMillis() < deadline) {
+                int[] hd = edgeWsReadHeader(is);
+                if (hd == null) break;
+                int opcode = hd[0];
+                int len = hd[1];
+                byte[] payload = new byte[len];
+                int off = 0;
+                while (off < len) {
+                    int n = is.read(payload, off, len - off);
+                    if (n < 0) { off = -1; break; }
+                    off += n;
+                }
+                if (off < len) break;
+                if (opcode == 8) break;
+                if (opcode == 2 && len > 2) {
+                    int hl = ((payload[0] & 0xff) << 8) | (payload[1] & 0xff);
+                    String headers = new String(payload, 2, hl, "UTF-8");
+                    if (headers.contains("Path:turn.end")) break;
+                    if (headers.contains("Path:audio")) {
+                        fos.write(payload, 2 + hl, len - 2 - hl);
+                        gotAudio = true;
+                    }
+                }
+            }
+            fos.flush();
+            fos.close();
+            return gotAudio && out.exists() && out.length() > 400;
+        } catch (Throwable e) {
+            try { if (out != null) out.delete(); } catch (Throwable ignored) {}
+            return false;
+        } finally {
+            try { if (sock != null) sock.close(); } catch (Throwable ignored) {}
+        }
     }
 
     /** 网络真人配音 URL（百度翻译 TTS，per 指定音色：0 度小娇女声 / 3 度逍遥 / 4 度丫丫） */
@@ -1518,6 +1790,15 @@ public class PlayerService extends Service {
         try {
             return "https://fanyi.baidu.com/gettts?lan=zh&text=" + URLEncoder.encode(text, "UTF-8")
                     + "&spd=3&per=" + mCfgZhVoice + "&source=web";
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    /** 有道中文网络发音（Edge / 百度都失败时的第三级在线兜底） */
+    private String youdaoZhUrl(String text) {
+        try {
+            return "https://dict.youdao.com/dictvoice?audio=" + URLEncoder.encode(text, "UTF-8") + "&le=zh";
         } catch (Throwable e) {
             return null;
         }
@@ -1531,14 +1812,19 @@ public class PlayerService extends Service {
         return downloadToFileSync(w.enUrl, enF);
     }
 
-    /** 确保中文发音文件就绪（拟人优先：网络真人配音 → 失败回退本地语音引擎） */
+    /** 确保中文发音文件就绪（拟人优先：Edge 神经语音 → 百度配音 → 本地语音引擎） */
     private boolean ensureZhAudio(AlbumWord w) {
         if (w.zhText == null || w.zhText.length() == 0) return false;
         String suf = zhSuffix();
         if (!"system".equals(mCfgZhSource)) {
-            File net = new File(mAlbumCacheDir, "zh_" + w.key + "_" + suf + ".mp3");
+            File edge = new File(mAlbumCacheDir, "zh_" + w.key + "_" + suf + ".mp3");
+            if (edge.exists() && edge.length() > 400) return true;
+            if (edgeTtsToFile(w.zhText, edgeVoiceName(), "+0%", edge)) return true;
+            File net = new File(mAlbumCacheDir, "zh_" + w.key + "_net.mp3");
             if (net.exists() && net.length() > 200) return true;
             if (zhNetUrl(w.zhText) != null && downloadToFileSync(zhNetUrl(w.zhText), net)) return true;
+            File yd = new File(mAlbumCacheDir, "zh_" + w.key + "_yd.mp3");
+            if (youdaoZhUrl(w.zhText) != null && downloadToFileSync(youdaoZhUrl(w.zhText), yd)) return true;
         }
         File sys = new File(mAlbumCacheDir, "zh_" + w.key + "_sys.wav");
         if (sys.exists() && sys.length() > 44) return true;
@@ -1548,10 +1834,14 @@ public class PlayerService extends Service {
     /** 把已就绪的中文音频追加到输出流：先试当前发音源，再试另一种 */
     private boolean appendZhAudio(java.io.RandomAccessFile out, AlbumWord w) {
         String suf = zhSuffix();
-        File net = new File(mAlbumCacheDir, "zh_" + w.key + "_" + suf + ".mp3");
+        File edge = new File(mAlbumCacheDir, "zh_" + w.key + "_" + suf + ".mp3");
+        if (edge.exists() && edge.length() > 400 && appendAudioPcm(out, edge)) return true;
+        File net = new File(mAlbumCacheDir, "zh_" + w.key + "_net.mp3");
         if (net.exists() && net.length() > 200 && appendAudioPcm(out, net)) return true;
         File anyNet = new File(mAlbumCacheDir, "zh_" + w.key + "_net0.mp3");
         if (anyNet.exists() && anyNet.length() > 200 && appendAudioPcm(out, anyNet)) return true;
+        File yd = new File(mAlbumCacheDir, "zh_" + w.key + "_yd.mp3");
+        if (yd.exists() && yd.length() > 200 && appendAudioPcm(out, yd)) return true;
         File sys = new File(mAlbumCacheDir, "zh_" + w.key + "_sys.wav");
         if (sys.exists() && sys.length() > 44 && appendWavPcm(out, sys)) return true;
         return false;

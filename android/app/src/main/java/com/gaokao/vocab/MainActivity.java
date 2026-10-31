@@ -383,7 +383,7 @@ public class MainActivity extends Activity {
                         String name = fileName;
                         if (name == null || name.length() == 0) name = "audio.mp3";
                         if (!name.toLowerCase().endsWith(".mp3")) name += ".mp3";
-                        String path = saveToDownloads(src, name, "audio/mpeg");
+                        String path = saveAudioToMusic(src, name);
                         notifyJs("window.__mp3Saved && window.__mp3Saved('" + jsEscape(path) + "')");
                     }
                 }).start();
@@ -1127,8 +1127,51 @@ public class MainActivity extends Activity {
         return "";
     }
 
-    private void copyTo(File src, OutputStream os) throws java.io.IOException {
-        FileInputStream fis = new FileInputStream(src);
+    /**
+     * v2.68.0 保存音频到手机「音乐」库（音乐 App 直接可见、可同步到车机 / 手表）：
+     * API 29+ 走 MediaStore.Audio.Media（Music/背群英，免权限）；
+     * 低版本写公共 Music 目录后立即触发媒体扫描，系统音乐应用马上能扫到。
+     * 失败自动回退到 saveToDownloads（下载/背群英）。
+     */
+    private String saveAudioToMusic(File src, String displayName) {
+        try {
+            if (Build.VERSION.SDK_INT >= 29) {
+                ContentValues cv = new ContentValues();
+                cv.put(MediaStore.Audio.Media.DISPLAY_NAME, displayName);
+                cv.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mpeg");
+                cv.put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/背群英");
+                cv.put(MediaStore.Audio.Media.IS_PENDING, 1);
+                Uri uri = getContentResolver().insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, cv);
+                if (uri != null) {
+                    OutputStream os = getContentResolver().openOutputStream(uri);
+                    copyTo(src, os);
+                    os.close();
+                    cv.clear();
+                    cv.put(MediaStore.Audio.Media.IS_PENDING, 0);
+                    getContentResolver().update(uri, cv, null, null);
+                    return "音乐/背群英/" + displayName;
+                }
+            } else {
+                File dir = new File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_MUSIC), "背群英");
+                dir.mkdirs();
+                File dst = new File(dir, displayName);
+                FileOutputStream fos = new FileOutputStream(dst);
+                copyTo(src, fos);
+                fos.close();
+                try {
+                    android.media.MediaScannerConnection.scanFile(MainActivity.this,
+                            new String[]{dst.getAbsolutePath()}, new String[]{"audio/mpeg"}, null);
+                } catch (Throwable ignored) {}
+                return dst.getAbsolutePath();
+            }
+        } catch (Throwable e) {
+            Log.w("GaokaoVocab", "saveAudioToMusic failed: " + e.getMessage());
+        }
+        return saveToDownloads(src, displayName, "audio/mpeg");
+    }
+
+    private void copyTo(File src, OutputStream os) throws java.io.IOException {        FileInputStream fis = new FileInputStream(src);
         byte[] buf = new byte[8192];
         int n;
         while ((n = fis.read(buf)) != -1) os.write(buf, 0, n);

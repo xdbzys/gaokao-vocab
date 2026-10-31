@@ -7,8 +7,8 @@ android {
         applicationId "com.gaokao.vocab"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 228
-        versionName "2.67.0"
+        versionCode 230
+        versionName "2.69.0"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
