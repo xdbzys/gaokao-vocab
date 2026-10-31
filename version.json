@@ -5,5 +5,5 @@
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "🎉 背群英 v2.64.0 已发布！\n\n【听读彻底改为整库连续播放（像音乐专辑）】\n- 选中词库后整库连续播放，不再逐词切换；锁屏/控制中心媒体卡片显示词库名 + 整库进度条\n- 暂停/继续/上一词/下一词/拖动进度全部可用，耳机线控/蓝牙/车机/手表均可控制\n- 英文真人发音离线可播，中文用手机语音引擎合成，彻底解决手机控制不响应\n"
+  "changelog": "【v2.66.0】\nv听读中文改为真人配音（度小娇/度逍遥/度丫丫可切换），比自带引擎更像真人；断网自动降级系统语音，保证有声音\nv修复听读点击没声音：改成立即出声 + 后台生成整库音频（播放不再等待合成），并全程有回退链\nv修复参数设置无效：英文/中文遍数、朗读顺序、词间间隔、间隔秒数、发音源全部真正生效，改完立即重"
 }
