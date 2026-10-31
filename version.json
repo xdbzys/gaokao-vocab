@@ -1,9 +1,9 @@
 {
-  "version": "2.63.0",
-  "versionCode": 224,
+  "version": "2.64.0",
+  "versionCode": 225,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "🎉 背群英 v2.63.0 已发布！\n\n【修复无故闪退】\n- 修复点「播放」后应用直接闪退的问题（系统前台服务启动方式不合规导致）\n- 控制指令在播放器未运行时不再拉起服务，杜绝因此类操作引发的闪退\n\n【系统媒体控制完整可用】\n- 播放时，控制中心 / 锁屏的媒体卡片会显示「正在播放 + 当前单词」\n- 中文系统语音"
+  "changelog": "🎉 背群英 v2.64.0 已发布！\n\n【听读彻底改为「整库连续播放」（像音乐专辑）】\n- 选中词库后，把整个词库当作一张专辑连续播放，不再逐词切换\n- 锁屏 / 控制中心媒体卡片显示「正在播放 + 词库名 + 整库进度条」，暂停 / 继续 / 上一词 / 下一词 / 拖动进度全部可用\n- 英文真人发音下载到本地离线"
 }
