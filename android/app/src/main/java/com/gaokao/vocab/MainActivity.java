@@ -329,6 +329,28 @@ public class MainActivity extends Activity {
                 } catch (Throwable ignored) {}
             }
 
+            /**
+             * v2.65.0：整库合成单一音频文件后播放。
+             * 把整库（英文 mp3 + 中文 TTS + 词间静音）合成为一个 WAV 文件，
+             * 用单个 MediaPlayer 播放 —— MediaSession 拥有真实时长，锁屏 /
+             * 控制中心 / 耳机线控像控制一首完整音乐一样控制整库，可拖动进度。
+             * JSON 契约与 playAlbum 相同（写缓存文件传路径，规避 Binder 上限）。
+             */
+            @JavascriptInterface
+            public void playAlbumFile(final String json) {
+                if (json == null || json.length() == 0) return;
+                try {
+                    File f = new File(getCacheDir(), "album_req.json");
+                    java.io.FileOutputStream fos = new java.io.FileOutputStream(f);
+                    fos.write(json.getBytes("UTF-8"));
+                    fos.close();
+                    Intent i = new Intent(MainActivity.this, PlayerService.class);
+                    i.setAction(PlayerService.ACTION_ALBUM_FILE);
+                    i.putExtra(PlayerService.EXTRA_ALBUM_PATH, f.getAbsolutePath());
+                    startServiceCompat(i);
+                } catch (Throwable ignored) {}
+            }
+
             @JavascriptInterface
             public int getPosition() {
                 try { return PlayerService.peekPosition(); } catch (Throwable ignored) { return 0; }

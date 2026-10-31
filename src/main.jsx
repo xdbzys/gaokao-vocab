@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.64.0';
-const APP_VERSION_CODE = 225;
+const APP_VERSION = '2.65.0';
+const APP_VERSION_CODE = 226;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -1265,7 +1265,7 @@ const seedWords536_情感社科 = [
   ['objection', 'n.', '异议', '话题', ['情感社科话题词'], ['异议'], ['Some students raised an objection to the new rule.|||一些学生对新规定提出了异议。']],
   ['opposition', 'n.', '反对', '话题', ['情感社科话题词'], ['反对'], ['There was strong opposition to the new law.|||对新法律有强烈的反对声音。']],
   ['opposed', 'adj.', '反对的', '话题', ['情感社科话题词'], ['反对的'], ['She was opposed to the idea of working on weekends.|||她反对周末工作的想法。']],
-  ['depressed', 'adj.', '沮丧的', '话题', ['情感社科话题词'], ['沮丧的'], ['He felt depressed after failing the exam.|||考试失败后他感到沮丧。']],
+  ['depressed', 'adj.', '沮丧的；萧条的', '话题', ['情感社科话题词'], ['沮丧的；萧条的'], ['He felt depressed after failing the exam.|||考试失败后他感到沮丧。']],
   ['pessimistic', 'adj.', '悲观的', '话题', ['情感社科话题词'], ['悲观的'], ['He is pessimistic about his chances of winning.|||他对自己获胜的机会感到悲观。']],
   ['reluctant', 'adj.', '不情愿的', '话题', ['情感社科话题词'], ['不情愿的'], ['The child was reluctant to share his toys.|||那个孩子不情愿分享他的玩具。']],
   ['radical', 'adj.', '激进的', '话题', ['情感社科话题词'], ['激进的'], ['He proposed radical changes to the education system.|||他提出了对教育体系的激进改革。']],
@@ -1345,7 +1345,6 @@ const seedWords536_情感社科 = [
   ['community', 'n.', '社会(团体)', '话题', ['情感社科话题词'], ['社会(团体)'], ['Our community organized a clean-up event last weekend.|||我们社区上周末组织了一次清洁活动。']],
   ['celebrity', 'n.', '名人', '话题', ['情感社科话题词'], ['名人'], ['The celebrity was surrounded by reporters at the airport.|||那位名人在机场被记者团团围住。']],
   ['critically', 'adv.', '批判性地', '话题', ['情感社科话题词'], ['批判性地'], ['Students should think critically about what they read online.|||学生应批判性地思考在网上读到的内容。']],
-  ['depressed', 'adj.', '萧条的', '话题', ['情感社科话题词'], ['萧条的'], ['The country\'s depressed economy led to high unemployment.|||该国萧条的经济导致了高失业率。']],
   ['discipline', 'n.', '纪律', '话题', ['情感社科话题词'], ['纪律'], ['Good discipline is the foundation of a successful classroom.|||良好的纪律是成功课堂的基础。']],
   ['dishonest', 'adj.', '不诚实的', '话题', ['情感社科话题词'], ['不诚实的'], ['It is dishonest to cheat on an exam.|||考试作弊是不诚实的。']],
   ['efficient', 'adj.', '效率高的', '话题', ['情感社科话题词'], ['效率高的'], ['The new system is much more efficient than the old one.|||新系统比旧系统效率高得多。']],
@@ -1409,7 +1408,7 @@ const seedWords536_医药卫生 = [
   ['epidemic prevention', 'n.', '防疫', '话题', ['医药卫生话题词'], ['防疫'], ['The government has strengthened epidemic prevention measures in schools.|||政府加强了学校的防疫措施。']],
   ['respiratory disease', 'n.', '呼吸道疾病', '话题', ['医药卫生话题词'], ['呼吸道疾病'], ['Smoking increases the risk of developing a respiratory disease.|||吸烟会增加患呼吸道疾病的风险。']],
   ['infectious disease', 'n.', '传染病', '话题', ['医药卫生话题词'], ['传染病'], ['Hand washing is one of the best ways to prevent infectious disease.|||洗手是预防传染病的最佳方法之一。']],
-  ['non - infectious disease', 'n.', '非传染病', '话题', ['医药卫生话题词'], ['非传染病'], ['Diabetes is a non-infectious disease that affects millions of people.|||糖尿病是一种影响数百万人的非传染病。']],
+  ['non-infectious disease', 'n.', '非传染病', '话题', ['医药卫生话题词'], ['非传染病'], ['Diabetes is a non-infectious disease that affects millions of people.|||糖尿病是一种影响数百万人的非传染病。']],
   ['medical care', 'n.', '医疗护理', '话题', ['医药卫生话题词'], ['医疗护理'], ['Every citizen should have access to basic medical care.|||每位公民都应享有基本的医疗护理。']],
   ['healthcare system', 'n.', '医疗体系', '话题', ['医药卫生话题词'], ['医疗体系'], ['The country is working to improve its healthcare system.|||该国正在努力改善其医疗体系。']],
   ['diagnostic tool', 'n.', '诊断工具', '话题', ['医药卫生话题词'], ['诊断工具'], ['This new diagnostic tool can detect the disease at an early stage.|||这种新型诊断工具能在早期发现疾病。']],
@@ -1429,7 +1428,7 @@ const seedWords536_经济环保 = [
   ['inflation', 'n.', '通货膨胀', '话题', ['经济环保话题词'], ['通货膨胀'], ['High inflation has pushed up the prices of everyday goods.|||高通货膨胀推高了日常商品的价格。']],
   ['deflation', 'n.', '通货紧缩', '话题', ['经济环保话题词'], ['通货紧缩'], ['Deflation can lead to lower wages and fewer jobs.|||通货紧缩可能导致工资下降和就业减少。']],
   ['entrepreneurship', 'n.', '创业精神；创业', '话题', ['经济环保话题词'], ['创业精神；创业'], ['The school encourages entrepreneurship among its students.|||学校鼓励学生发扬创业精神。']],
-  ['e - commerce', 'n.', '电子商务', '话题', ['经济环保话题词'], ['电子商务'], ['E-commerce has changed the way people shop around the world.|||电子商务改变了全世界人们的购物方式。']],
+  ['e-commerce', 'n.', '电子商务', '话题', ['经济环保话题词'], ['电子商务'], ['E-commerce has changed the way people shop around the world.|||电子商务改变了全世界人们的购物方式。']],
   ['financial crisis', 'n.', '金融危机', '话题', ['经济环保话题词'], ['金融危机'], ['Many businesses went bankrupt during the financial crisis.|||许多企业在金融危机期间破产了。']],
   ['economic growth', 'n.', '经济增长', '话题', ['经济环保话题词'], ['经济增长'], ['The country has achieved steady economic growth over the past decade.|||过去十年里，该国实现了稳定的经济增长。']],
   ['trade deficit', 'n.', '贸易逆差', '话题', ['经济环保话题词'], ['贸易逆差'], ['A trade deficit means a country imports more than it exports.|||贸易逆差意味着一国的进口多于出口。']],
@@ -3902,7 +3901,6 @@ function makeAllItems(seedArr, type, source) {
 }
 
 const seedWords3500 = [
-  ['a', 'art. /ei/', '第一个字母 A; 一个; 第一的；art. [计] 累加器, 加法器, 地址, 振幅, 模拟, 区域, 面积, 汇编, 组件, 异步', '基础', [], [], []],
   ['abandon', 'v. /ә\'bændәn/', 'vt. 放弃, 抛弃, 遗弃, 使屈从, 沉溺, 放纵；n. 放任, 无拘束, 狂热', '基础', [], [], []],
   ['ability', 'n. /ә\'biliti/', 'n. 能力, 才干；[经] 能力, 才能', '基础', [], [], []],
   ['able', 'adj. /\'eibl/', 'a. 能干的, 能够的', '基础', [], [], []],
@@ -5107,7 +5105,6 @@ const seedWords3500 = [
   ['eye', 'n. /ai/', 'n. 眼睛, 视力, 看；vt. 看, 注视', '基础', [], [], []],
   ['eyesight', 'n. /\'aisait/', 'n. 视力, 目力', '基础', [], [], []],
   ['eyewitness', 'n. /ai\'witnis/', 'n. 目击者, 见证人', '基础', [], [], []],
-  ['f', 'n.', '女（的）；雌（的）；英尺', '基础', [], [], []],
   ['face', 'n. vt. /feis/', 'n. 脸, 面容, 正面, 外观；vt. 面对, 朝, 正视, 面临；vi. 朝, 向；[计] 现场可改变的控制元件', '基础', [], [], []],
   ['facial', 'adj. /\'feiʃәl/', 'n. 美颜, 脸部按摩；a. 脸的, 表面的, 脸部用的', '基础', [], [], []],
   ['facility', 'n.', '设备，设施；工具；容易，简易，便利', '基础', [], [], []],
@@ -5526,7 +5523,7 @@ const seedWords3500 = [
   ['hurt', 'v. n. adj. /hә:t/', 'n. 伤害, 创伤, 损害；v. 伤害, (使)伤心, 危害, 刺痛', '基础', [], [], []],
   ['husband', 'n. /\'hʌzbәnd/', 'n. 丈夫, 管理人, 节俭的人；vt. 节俭, 使成丈夫, 持有', '基础', [], [], []],
   ['hydrogen', 'n. /\'haidrәdʒәn/', 'n. 氢；[化] 氢H-2', '基础', [], [], []],
-  ['I', 'pron. /ai/', 'pron. 我；[计] 电流, 中断, 指令, 指示符', '基础', [], [], []],
+  ['I', 'pron. /ai/', 'pron. 我', '基础', [], [], []],
   ['ice', 'n. /ais/', 'n. 冰, 冰淇淋, 糖衣, 冷若冰霜, 矜持, 贿赂；vt. 使结冰, 冰镇, 覆以糖衣；vi. 结冰', '基础', [], [], []],
   ['ice-cream', 'n.', '冰淇淋', '基础', [], [], []],
   ['idea', 'n. /ai\'diә/', 'n. 主意, 办法, 理想, 思想, 概念, 意见；[医] 观念, 思想', '基础', [], [], []],
@@ -7658,7 +7655,6 @@ const seedWords688 = [
   ['store', 'n. vt.', '商店, 贮藏, 仓库, 备用品, 存储器；vt. 储存, 贮藏, 供给', '688高频词'],
   ['general', 'adj. n.', '一般, 将军, 大体；a. 全面的, 大体的, 总的, 一般的, 普遍的', '688高频词'],
   ['condition', 'n.', '情况, 条件；vt. 使健康, 以...为条件, 决定, 使适应', '688高频词'],
-  ['vary', 'v.', '变化，不同；使多样化', '688高频词'],
   ['vary', 'v.', '变化，不同；使多样化', '688高频词'],
   ['speech', 'n.', '演讲, 说话, 谈话, 言语, 引语, 民族语言；[医] 言语, 语言', '688高频词'],
   ['respect', 'vt. & n.', '尊敬, 尊重, 问候；vt. 尊敬, 注意, 遵守', '688高频词'],
@@ -10325,6 +10321,33 @@ function _zhSpeechText(text) {
   return t;
 }
 
+/* v2.65.0 听读专用中文精简：只读高考高频核心释义（前 1~2 个），大幅缩短整库音频时长。
+   规则（确定性纯函数）：
+   1) 丢弃 [计] [医] [经] 等领域标签释义组（词典噪音，与高考无关）
+   2) 取第一个义项组（词典按词频排序，第一个即最高频释义）
+   3) 逗号分隔的多个释义只取前 2 个
+   4) 去词性前缀 / 括号补充说明，总长限 16 字 */
+function _zhAlbumText(text) {
+  var t = String(text || '');
+  // 去掉领域标签释义组：如 "；[经] 能力, 才能" 整段移除
+  t = t.replace(/[；;]\s*\[[^\]]{1,6}\][^；;]*/g, '');
+  // 段首就是领域标签的（如 "[医] 失神"）
+  t = t.replace(/\[[^\]]{1,6}\][^；;]*/g, '');
+  // 取第一义项组
+  var seg = (t.split(/[；;\n]/)[0] || t);
+  // 去词性前缀（可能多个，如 "prep. adv." / "n. & vt."）
+  seg = seg.replace(/^((vt|vi|n|v|a|adj|adv|prep|conj|pron|art|num|int|aux|modal|abbr)\.\s*(&\s*(vt|vi|n|v|a|adj|adv|prep|conj|pron|art|num|int|aux|modal|abbr)\.\s*)?)+/i, '');
+  // 去括号补充说明
+  seg = seg.replace(/[（(][^）)]*[）)]/g, ' ');
+  // 逗号分义，取前 2 个（高频优先）
+  var parts = seg.split(/[，,、]/).map(function (s) { return s.trim(); }).filter(Boolean);
+  // 去掉截断残句（"的/了/在..." 单字虚词）与省略号
+  parts = parts.filter(function (s) { return s.length > 0 && !/^[的了吗呢吧在…\.]+$/.test(s); });
+  var out = parts.slice(0, 2).join('，').replace(/\s+/g, ' ').trim();
+  if (out.length > 16) out = out.slice(0, 16).replace(/[，,\s]+$/, '');
+  return out;
+}
+
 // 中文发音候选源（按可靠性排序）
 // 实测结论（v2.60.0）：
 //  - 百度翻译 gettts：支持整句、标点、长文本，作主源
@@ -11190,6 +11213,8 @@ function App() {
   // v2.62.0：真实播放进度（系统播放器模式下有准确时长，可拖动）
   const [listenPos, setListenPos] = useState(0);
   const [listenDur, setListenDur] = useState(0);
+  // v2.65.0：整库音频合成进度提示（"合成中 x/y"，完成后清空）
+  const [listenBuildInfo, setListenBuildInfo] = useState('');
   // v2.62.0：MP3 下载面板
   const [listenShowMp3, setListenShowMp3] = useState(false);
   const [mp3Count, setMp3Count] = useState(50);
@@ -11686,8 +11711,9 @@ function App() {
     try { if (navigator.mediaSession) navigator.mediaSession.playbackState = 'playing'; } catch (e) {}
   };
 
-  // v2.64.0：构建「整库专辑」JSON，交给原生连续播放（像音乐专辑），无需逐词切换。
-  // 与 PlayerService.startAlbum 的契约：{ album, rate, words:[{ word, meaning, enUrl, zhText }] }
+  // v2.65.0：构建「整库专辑」JSON，交给原生合成单一音频文件后连续播放。
+  // 与 PlayerService.startAlbumFile 的契约：{ album, rate, loop, words:[{ word, meaning, enUrl, zhText }] }
+  // zhText 用 _zhAlbumText 精简为高考高频释义（前 1~2 个），缩短整库时长
   function buildAlbumJson(queue, cfg, albumName) {
     var rate = (cfg && cfg.rate) ? cfg.rate : 1;
     var words = [];
@@ -11696,16 +11722,18 @@ function App() {
       var term = it.term || '';
       var meaning = it.meaning || '';
       var enUrls = enAudioUrls(term);
+      var zh = (_zhAlbumText(meaning) || _zhSpeechText(meaning) || '').trim();
       words.push({
         word: term,
         meaning: meaning,
         enUrl: (enUrls && enUrls.length) ? enUrls[0] : '',
-        zhText: _zhSpeechText(meaning)
+        zhText: zh
       });
     }
     return JSON.stringify({
       album: albumName || '背群英 · 听读词库',
       rate: rate,
+      loop: (cfg && cfg.loop === 'off') ? 'off' : 'list',
       words: words
     });
   }
@@ -11726,20 +11754,31 @@ function App() {
     listenPlayingRef.current = true;
     setListenPlaying(true);
     setListenNativePlaying(true);
-    // v2.64.0：APK 环境下整库连续播放——把整库交给原生像专辑一样连续播放，无需逐词切换。
-    // 锁屏 / 控制中心 / 耳机线控 / 蓝牙 / 车机完整可控；进度与当前词序号由原生
-    // __nativeMediaAction('album_index:N' / 'album_end') 回传同步，暂停/继续由 'paused'/'resumed' 同步。
-    if (listenSystemPlayerOn() && window.NativePlayer && typeof window.NativePlayer.playAlbum === 'function') {
+    // v2.65.0：APK 环境下把整库交给原生合成「单一音频文件」后连续播放——
+    // 选择词库 → 整库英音 + 中文高频释义 → 一个 WAV 文件 → 像一首完整音乐一样
+    // 在锁屏 / 控制中心 / 耳机线控 / 蓝牙 / 车机完整可控、可拖动进度，无需逐词切换。
+    if (listenSystemPlayerOn() && window.NativePlayer && typeof window.NativePlayer.playAlbumFile === 'function') {
       try {
         var aCfg = listenCfgRef.current;
         var aName = (typeof listenActiveBook !== 'undefined' && listenActiveBook && listenActiveBook.name) ? listenActiveBook.name : '背群英 · 听读词库';
         var albumJson = buildAlbumJson(queue, aCfg, aName);
-        window.NativePlayer.playAlbum(albumJson);
+        window.__lastAlbumJson = albumJson; // 合成失败时供回退 playAlbum 使用
+        window.NativePlayer.playAlbumFile(albumJson);
         // 原生接管后续整库播放；JS 不再进入逐词循环（避免与原生双路发声）
         return;
       } catch (e) {
-        // 构建 / 下发失败则回退到网页逐词播放
+        // 构建 / 下发失败则回退到下方逐词播放
       }
+    }
+    // 回退 1：v2.64.0 逐词专辑模式（旧 APK 热更新后无 playAlbumFile 桥接时）
+    if (listenSystemPlayerOn() && window.NativePlayer && typeof window.NativePlayer.playAlbum === 'function') {
+      try {
+        var aCfg2 = listenCfgRef.current;
+        var aName2 = (typeof listenActiveBook !== 'undefined' && listenActiveBook && listenActiveBook.name) ? listenActiveBook.name : '背群英 · 听读词库';
+        window.__lastAlbumJson = buildAlbumJson(queue, aCfg2, aName2);
+        window.NativePlayer.playAlbum(window.__lastAlbumJson);
+        return;
+      } catch (e) {}
     }
     try {
       while (token === listenTokenRef.current) {
@@ -11915,8 +11954,31 @@ function App() {
           if (!isNaN(n)) { listenIndexRef.current = n; try { setListenIndex(n); } catch (e) {} }
           return;
         }
+        // v2.65.0：整库音频合成进度（"album_build:N/T"）
+        if (typeof action === 'string' && action.indexOf('album_build:') === 0) {
+          const t = action.slice('album_build:'.length);
+          try { setListenBuildInfo('正在把词库合成为一个音频文件（' + t + '），合成完成后自动连续播放'); } catch (e) {}
+          return;
+        }
+        if (action === 'album_file_ready') {
+          try { setListenBuildInfo(''); } catch (e) {}
+          return;
+        }
+        if (action === 'album_build_fail') {
+          // 合成失败：回退到 v2.64.0 逐词专辑模式（原生连续播放，锁屏同样可控）
+          try { setListenBuildInfo(''); } catch (e) {}
+          try {
+            if (window.NativePlayer && typeof window.NativePlayer.playAlbum === 'function' && window.__lastAlbumJson) {
+              window.NativePlayer.playAlbum(window.__lastAlbumJson);
+              return;
+            }
+          } catch (e) {}
+          try { setListenPlaying(false); setListenNativePlaying(false); } catch (e) {}
+          return;
+        }
         if (action === 'album_end') {
           listenPlayingRef.current = false;
+          try { setListenBuildInfo(''); } catch (e) {}
           try { setListenPlaying(false); setListenNativePlaying(false); setListenPos(0); setListenDur(0); } catch (e) {}
           return;
         }
@@ -14197,6 +14259,7 @@ function App() {
               <div className="listenTip">中文默认用手机自带语音引擎（讯飞 / 百度 / Google 离线引擎），比网络机械音自然且零延迟；若你的设备读不出中文，请切「网络语音」</div>
               <div className="listenTip">暂停 / 继续：应用内按钮、通知栏卡片、锁屏与耳机线控都可控制，暂停后从当前词接着读，不会从头重来</div>
               <div className="listenTip">{listenSystemPlayerOn() ? '已连接系统播放器：退出应用、锁屏、息屏后继续播放，通知栏可暂停 / 上一词 / 下一词' : '当前安装包未内置系统播放器（中文发音已随热更新生效）。后台播放需 v2.60.0 及以上版本，请到「我的 → 检查更新」一键安装'}</div>
+              {listenBuildInfo && <div className="listenTip" style={{ color: '#2563eb', fontWeight: 600 }}>{listenBuildInfo}</div>}
             </div>
           )}
 
@@ -15660,7 +15723,7 @@ function App() {
                   }}>下次再说</button>
                   <button className="updateBtnPrimary" onClick={() => {
                     setShowAnnouncementModal(false);
-                    setSection('settings');
+                    setSection('me'); // v2.65.0 修复：'settings' 不是合法 section，导致跳转空白页；更新入口在「我的」页
                     // 如果静默下载已在进行中，直接跳转到设置页显示进度
                     if (inAppDownloading) return;
                     // 原生应用：调用 NativeApkInstaller 应用内下载安装（不跳转浏览器）

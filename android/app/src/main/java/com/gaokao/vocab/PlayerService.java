@@ -84,6 +84,9 @@ public class PlayerService extends Service {
     public static final String EXTRA_ALBUM_JSON = "album_json";
     public static final String EXTRA_ALBUM_INDEX = "album_index";
     public static final String EXTRA_ALBUM_PATH = "album_path";
+    // v2.65.0：整库合成单一音频文件（File Album 模式）——
+    // 英文 mp3 解码 + 中文 TTS 合成 + 词间静音 → 一个 WAV 文件 → 单 MediaPlayer 播放
+    public static final String ACTION_ALBUM_FILE = "com.gaokao.vocab.player.ALBUM_FILE";
 
 
     private static final String TAG = "GaokaoPlayer";
@@ -166,13 +169,39 @@ public class PlayerService extends Service {
     private boolean mTtsReady = false;
     private File mAlbumCacheDir = null;
 
+    // ===== v2.65.0 File Album：整库合成单一 WAV 文件 =====
+    private boolean mFileMode = false;               // 整库单文件模式（mAlbumMode 同时为 true）
+    private float mFileRate = 1f;                    // 语速（setPlaybackParams 应用到整库文件）
+    private boolean mFileLoop = true;                // 播完是否循环整库
+    private long[] mFileStarts = null;               // 每个词在文件中的起始毫秒
+    private int mFileIndex = -1;                     // 当前词序号（按播放位置推算）
+    private File mFileOut = null;                    // 当前整库 WAV 文件（播放结束后可重播）
+    private volatile int mBuildGen = 0;              // 合成任务代号：新一轮开始使旧构建线程自行退出
+    private volatile boolean mBuildCancel = false;   // 取消合成
+    private Thread mBuildThread = null;
+    private File mAlbumWavDir = null;
+    private java.util.HashMap<String, java.util.concurrent.CountDownLatch> mSynthLatches =
+            new java.util.HashMap<String, java.util.concurrent.CountDownLatch>();
+    private static final int OUT_SR = 16000;         // 输出采样率：16kHz 单声道 16bit（语音足够，控制文件体积）
+    private static final int OUT_BYTES_PER_MS = OUT_SR * 2 / 1000; // 32 字节/毫秒
+
 
     /** 进度上报（每 500ms 一次，供锁屏 / 蓝牙 / JS 进度条使用） */
     private final Runnable mProgressTask = new Runnable() {
         @Override
         public void run() {
             try {
-                if (mAlbumMode) {
+                if (mFileMode) {
+                    // 整库单文件：真实进度 + 按位置推算当前词，序号变化时回传 JS
+                    int pos = 0;
+                    try { if (mPlayer != null && mHasPlayed) pos = mPlayer.getCurrentPosition(); } catch (Throwable ignored) {}
+                    if (mDuration <= 0) { try { if (mPlayer != null) mDuration = mPlayer.getDuration(); } catch (Throwable ignored) {} }
+                    int dur = mDuration > 0 ? mDuration : 0;
+                    sPosition = pos; sDuration = dur;
+                    emit("", "progress:" + pos + ":" + dur);
+                    syncFileWordIndex(pos);
+                    if (!mPaused) updateSessionState(PlaybackState.STATE_PLAYING);
+                } else if (mAlbumMode) {
                     // 整库连续播放：进度 = 当前词起始偏移 + 当前词内部进度（限幅到单词语估算时长）
                     if (!mPaused) {
                         int wordPos = 0;
@@ -220,6 +249,8 @@ public class PlayerService extends Service {
         createChannel();
         mAlbumCacheDir = new File(getCacheDir(), "album_media");
         try { if (mAlbumCacheDir != null && !mAlbumCacheDir.exists()) mAlbumCacheDir.mkdirs(); } catch (Throwable ignored) {}
+        mAlbumWavDir = new File(getCacheDir(), "album_wav");
+        try { if (mAlbumWavDir != null && !mAlbumWavDir.exists()) mAlbumWavDir.mkdirs(); } catch (Throwable ignored) {}
         initTts();
         if (mHandler != null) mHandler.post(mProgressTask);
     }
@@ -317,8 +348,18 @@ public class PlayerService extends Service {
             startAlbum(aj);
             return START_STICKY;
         }
+        // v2.65.0：整库合成单一音频文件后播放（新优先路径）
+        if (ACTION_ALBUM_FILE.equals(action)) {
+            String aj = intent.getStringExtra(EXTRA_ALBUM_PATH);
+            startAlbumFile(aj);
+            return START_STICKY;
+        }
         if (ACTION_ALBUM_SEEK.equals(action)) {
             int ai = intent.getIntExtra(EXTRA_ALBUM_INDEX, -1);
+            if (mFileMode) {
+                seekFileToWord(ai);
+                return START_STICKY;
+            }
             if (mAlbumMode && ai >= 0 && ai < mAlbumWords.size()) {
                 stopAlbumWord();
                 playAlbumWord(ai);
@@ -359,6 +400,8 @@ public class PlayerService extends Service {
     public void onDestroy() {
         sRunning = false;
         mAlbumMode = false;
+        mFileMode = false;
+        mBuildCancel = true; // 中断整库合成线程
         try { if (mTts != null) { mTts.stop(); mTts.shutdown(); mTts = null; } } catch (Throwable ignored) {}
         mTtsReady = false;
         if (mHandler != null) {
@@ -478,6 +521,18 @@ public class PlayerService extends Service {
 
     private void resumeInternal() {
         mPaused = false;
+        if (mFileMode) {
+            // 整库单文件：合成中（播放器未就绪）只需等构建线程播完自动起播
+            if (mPlayer != null && mHasPlayed && !mPlayer.isPlaying()) {
+                try { mPlayer.start(); updateSessionState(PlaybackState.STATE_PLAYING); } catch (Throwable ignored) {}
+            } else if (mPlayer == null && mFileOut != null && mFileOut.exists()) {
+                // 已播完一轮：媒体卡片上的播放键 → 从头重播
+                playBuiltFile(mFileOut);
+                return;
+            }
+            updateNotification();
+            return;
+        }
         if (mAlbumMode) {
             if (mAlbumPendingNext >= 0) {
                 int n = mAlbumPendingNext; mAlbumPendingNext = -1; playAlbumWord(n); return;
@@ -533,6 +588,7 @@ public class PlayerService extends Service {
     }
 
     private void applyRate() {
+        if (mFileMode) mFileRate = Math.max(0.5f, Math.min(2.5f, mRate)); // v2.65.0：整库文件语速同步
         if (mPlayer == null) return;
         if (Build.VERSION.SDK_INT < 23) return; // 变速需 API 23+，低版本直接原速播放
         try {
@@ -632,6 +688,7 @@ public class PlayerService extends Service {
 
                 @Override
                 public void onSkipToNext() {
+                    if (mFileMode) { seekFileToWord(mFileIndex + 1); return; }
                     if (mAlbumMode) {
                         int n = mAlbumIndex + 1;
                         if (n < mAlbumWords.size()) { stopAlbumWord(); playAlbumWord(n); }
@@ -642,6 +699,7 @@ public class PlayerService extends Service {
 
                 @Override
                 public void onSkipToPrevious() {
+                    if (mFileMode) { seekFileToWord(mFileIndex - 1); return; }
                     if (mAlbumMode) {
                         int p = mAlbumIndex - 1;
                         if (p >= 0) { stopAlbumWord(); playAlbumWord(p); }
@@ -657,6 +715,12 @@ public class PlayerService extends Service {
 
                 @Override
                 public void onSeekTo(long pos) {
+                    if (mFileMode) {
+                        // 整库单文件：真实拖动 —— 直接 seek 到文件内位置
+                        seekInternal((int) pos);
+                        syncFileWordIndex((int) pos);
+                        return;
+                    }
                     if (mAlbumMode) {
                         int idx = (int) (pos / mAlbumAvgMs);
                         if (idx < 0) idx = 0;
@@ -682,7 +746,8 @@ public class PlayerService extends Service {
     private void updateSessionState(int state) {
         if (mSession == null) return;
         // v2.64.0：Album 模式用「整库估算进度」上报，锁屏 / 控制中心显示完整时间轴与可拖动进度条
-        if (mAlbumMode) {
+        // （v2.65.0 File 模式除外：它走通用真实进度路径，因为单文件有真实时长）
+        if (mAlbumMode && !mFileMode) {
             int dur = (mAlbumTotal > 0 ? mAlbumTotal : 1) * mAlbumAvgMs;
             int wordPos = 0;
             try { if (mPlayer != null && mHasPlayed) wordPos = mPlayer.getCurrentPosition(); } catch (Throwable ignored) {}
@@ -850,8 +915,15 @@ public class PlayerService extends Service {
                         try {
                             mTts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                                 @Override public void onStart(String id) {}
-                                @Override public void onDone(String id) { onZhSynthesized(id); }
-                                @Override public void onError(String id) { onZhSynthesized(id); }
+                                @Override public void onDone(String id) {
+                                    // v2.65.0：合成到文件的同步等待闩先放行
+                                    releaseSynthLatch(id);
+                                    onZhSynthesized(id);
+                                }
+                                @Override public void onError(String id) {
+                                    releaseSynthLatch(id);
+                                    onZhSynthesized(id);
+                                }
                             });
                         } catch (Throwable ignored) {}
                     }
@@ -1162,5 +1234,569 @@ public class PlayerService extends Service {
             mb.putLong(MediaMetadata.METADATA_KEY_DURATION, dur);
             mSession.setMetadata(mb.build());
         } catch (Throwable ignored) {}
+    }
+
+    // ================= v2.65.0 File Album：整库合成单一 WAV 文件 =================
+
+    /** 读取整库 JSON（传路径则按路径读文件，规避 Binder 事务上限） */
+    private String readAlbumJson(String json) {
+        if (json == null || json.length() == 0) return null;
+        if (json.startsWith("/") && new File(json).exists()) {
+            try {
+                java.io.FileInputStream fis = new java.io.FileInputStream(json);
+                java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+                byte[] bbuf = new byte[4096];
+                int bn;
+                while ((bn = fis.read(bbuf)) > 0) bos.write(bbuf, 0, bn);
+                fis.close();
+                return new String(bos.toByteArray(), "UTF-8");
+            } catch (Throwable e) {
+                Log.e(TAG, "read album file failed", e);
+                return null;
+            }
+        }
+        return json;
+    }
+
+    /** v2.65.0 入口：解析整库 JSON → 命中缓存直接播 → 否则后台合成单一 WAV */
+    private void startAlbumFile(String json) {
+        String parsed = readAlbumJson(json);
+        if (parsed == null) return;
+        try {
+            org.json.JSONObject root = new org.json.JSONObject(parsed);
+            String name = root.optString("album", "\u9ad8\u8003\u8bcd\u6c47");
+            float rate = (float) root.optDouble("rate", 1.0);
+            String loop = root.optString("loop", "list");
+            org.json.JSONArray words = root.optJSONArray("words");
+            if (words == null || words.length() == 0) return;
+            ArrayList<AlbumWord> list = new ArrayList<AlbumWord>();
+            StringBuilder keySrc = new StringBuilder();
+            keySrc.append(name).append('|').append(rate);
+            for (int i = 0; i < words.length(); i++) {
+                org.json.JSONObject o = words.getJSONObject(i);
+                String w = o.optString("word", "");
+                String m = o.optString("meaning", "");
+                String e = o.optString("enUrl", "");
+                String z = o.optString("zhText", m);
+                if (w == null || w.length() == 0) continue;
+                list.add(new AlbumWord(w, m, e, z));
+                keySrc.append('|').append(w).append('/').append(z);
+            }
+            if (list.isEmpty()) return;
+            // 停掉旧播放 / 旧合成（旧构建线程检测到 gen 变化会自行退出）
+            mBuildGen++;
+            stopAlbumWord();
+            releasePlayer();
+            mAlbumMode = true;
+            mFileMode = true;
+            mAlbumWords = list;
+            mAlbumTotal = list.size();
+            mAlbumName = name;
+            mAlbumRate = Math.max(0.5f, Math.min(2.5f, rate));
+            mFileRate = mAlbumRate;
+            mFileLoop = !"off".equals(loop);
+            mAlbumIndex = 0;
+            mFileIndex = -1;
+            mPaused = false;
+            mZhPendingUtt = "";
+            mFileStarts = new long[list.size()];
+            mTitle = name;
+            mArtist = "\u6b63\u5728\u5408\u6210\u6574\u5e93\u97f3\u9891\u2026"; // 正在合成整库音频…
+            ensureSession();
+            updateSessionState(PlaybackState.STATE_PLAYING);
+            updateNotification();
+            final String key = sha1(keySrc.toString());
+            final File fin = new File(mAlbumWavDir, key + ".wav");
+            final File idxF = new File(mAlbumWavDir, key + ".idx");
+            mFileOut = fin;
+            if (fin.exists() && fin.length() > 1000 && idxF.exists() && loadFileStarts(idxF, list.size())) {
+                // 已合成过（同词库同语速）：直接播放缓存文件
+                playBuiltFile(fin);
+                return;
+            }
+            final ArrayList<AlbumWord> fList = list;
+            final int gen = mBuildGen;
+            mBuildCancel = false;
+            mBuildThread = new Thread(new Runnable() {
+                @Override public void run() { buildAlbumWav(gen, fList, fin, idxF); }
+            }, "album-build");
+            mBuildThread.start();
+        } catch (Throwable e) {
+            Log.e(TAG, "startAlbumFile failed", e);
+        }
+    }
+
+    /** 后台合成：英文 mp3 解码 + 中文 TTS + 静音间隔 → 逐段追加到单个 PCM/WAV 文件 */
+    private void buildAlbumWav(final int gen, final ArrayList<AlbumWord> list, final File fin, final File idxF) {
+        File tmp = new File(mAlbumWavDir, fin.getName() + ".tmp");
+        java.io.RandomAccessFile raf = null;
+        try {
+            raf = new java.io.RandomAccessFile(tmp, "rw");
+            raf.setLength(0);
+            raf.seek(44); // 先留 44 字节 WAV 头
+            int n = list.size();
+            for (int i = 0; i < n; i++) {
+                if (mBuildCancel || gen != mBuildGen) {
+                    try { raf.close(); } catch (Throwable ignored) {}
+                    try { tmp.delete(); } catch (Throwable ignored) {}
+                    return;
+                }
+                AlbumWord w = list.get(i);
+                mFileStarts[i] = currentOutMs(raf);
+                // —— 英文发音（本地缓存 mp3 → 下载 → 解码追加；失败留 0.8s 空白占位）——
+                File enF = new File(mAlbumCacheDir, "en_" + w.key + ".mp3");
+                boolean enOk = enF.exists() && enF.length() > 200;
+                if (!enOk && w.enUrl != null && w.enUrl.length() > 0) enOk = downloadToFileSync(w.enUrl, enF);
+                if (enOk) enOk = appendAudioPcm(raf, enF);
+                if (!enOk) appendSilence(raf, 800);
+                appendSilence(raf, 350);
+                // —— 中文释义（TTS 合成 wav → 解码追加；失败回退百度网络语音 mp3）——
+                boolean zhOk = false;
+                if (w.zhText != null && w.zhText.length() > 0) {
+                    File zhWav = new File(mAlbumCacheDir, "zh_" + w.key + ".wav");
+                    if (!(zhWav.exists() && zhWav.length() > 44)) synthZhSync(w.zhText, zhWav);
+                    if (zhWav.exists() && zhWav.length() > 44) zhOk = appendWavPcm(raf, zhWav);
+                    if (!zhOk) {
+                        File zhMp3 = new File(mAlbumCacheDir, "zh_" + w.key + ".mp3");
+                        boolean dl = zhMp3.exists() && zhMp3.length() > 200;
+                        if (!dl) dl = downloadToFileSync("https://fanyi.baidu.com/gettts?lan=zh&text="
+                                + URLEncoder.encode(w.zhText, "UTF-8") + "&spd=3&source=web", zhMp3);
+                        if (dl) zhOk = appendAudioPcm(raf, zhMp3);
+                    }
+                }
+                if (!zhOk) appendSilence(raf, 600);
+                // —— 词间间隔 ——
+                appendSilence(raf, 700);
+                final int done = i + 1;
+                if (mHandler != null) mHandler.post(new Runnable() {
+                    @Override public void run() {
+                        if (gen != mBuildGen || !mFileMode) return;
+                        mArtist = "\u6b63\u5728\u5408\u6210\u6574\u5e93\u97f3\u9891 " + done + "/" + mAlbumTotal;
+                        updateNotification();
+                        emit("", "album_build:" + done + "/" + mAlbumTotal);
+                    }
+                });
+            }
+            writeWavHeader(raf);
+            raf.close();
+            raf = null;
+            if (!fin.exists() || !tmp.renameTo(fin)) {
+                // rename 失败（个别机型跨文件系统）→ 复制兜底
+                java.io.FileInputStream in = new java.io.FileInputStream(tmp);
+                java.io.FileOutputStream out = new java.io.FileOutputStream(fin);
+                byte[] b = new byte[16384];
+                int nn;
+                while ((nn = in.read(b)) > 0) out.write(b, 0, nn);
+                in.close();
+                out.close();
+                tmp.delete();
+            }
+            // 写词起始毫秒索引（重播 / 跳词用）
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < n; i++) {
+                if (i > 0) sb.append(',');
+                sb.append(mFileStarts[i]);
+            }
+            java.io.FileOutputStream fo = new java.io.FileOutputStream(idxF);
+            fo.write(sb.toString().getBytes("UTF-8"));
+            fo.close();
+            if (mHandler != null) mHandler.post(new Runnable() {
+                @Override public void run() {
+                    if (gen != mBuildGen || !mFileMode) return;
+                    mArtist = mAlbumWords.get(0).word;
+                    playBuiltFile(fin);
+                }
+            });
+        } catch (Throwable e) {
+            Log.e(TAG, "buildAlbumWav failed", e);
+            try { if (raf != null) raf.close(); } catch (Throwable ignored) {}
+            try { tmp.delete(); } catch (Throwable ignored) {}
+            if (mHandler != null) mHandler.post(new Runnable() {
+                @Override public void run() {
+                    if (gen != mBuildGen || !mFileMode) return;
+                    mArtist = "\u5408\u6210\u5931\u8d25"; // 合成失败
+                    updateNotification();
+                    emit("", "album_build_fail");
+                }
+            });
+        }
+    }
+
+    /** 用单个 MediaPlayer 播放整库 WAV（MediaSession 拥有真实时长，可拖动进度） */
+    private void playBuiltFile(final File f) {
+        releasePlayer();
+        requestFocus();
+        acquireWakeLock();
+        try {
+            mPlayer = new MediaPlayer();
+            setAudioAttrs(mPlayer);
+            mPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
+            mPlayer.setDataSource(f.getAbsolutePath());
+            mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override public void onPrepared(MediaPlayer mp) {
+                    mHasPlayed = true;
+                    mPaused = false;
+                    mDuration = 0;
+                    applyRate(); // v2.65.0：整库文件也支持变速（API 23+）
+                    try { mDuration = mp.getDuration(); } catch (Throwable ignored) {}
+                    try { mp.start(); } catch (Throwable ignored) {}
+                    mFileIndex = 0;
+                    mAlbumIndex = 0;
+                    try { if (mAlbumWords != null && !mAlbumWords.isEmpty()) mArtist = mAlbumWords.get(0).word; } catch (Throwable ignored) {}
+                    emit("", "album_index:0");
+                    emit("", "album_file_ready");
+                    updateNotification();
+                    updateSessionState(PlaybackState.STATE_PLAYING);
+                }
+            });
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override public void onCompletion(MediaPlayer mp) {
+                    if (mFileLoop && mFileOut != null && mFileOut.exists()) {
+                        try { mp.seekTo(0); mp.start(); } catch (Throwable ignored) {}
+                        updateSessionState(PlaybackState.STATE_PLAYING);
+                    } else {
+                        finishAlbumFile();
+                    }
+                }
+            });
+            mPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override public boolean onError(MediaPlayer mp, int what, int extra) {
+                    Log.e(TAG, "album wav error what=" + what + " extra=" + extra);
+                    emit("", "album_end"); // 通知 JS 复位（可回退逐词模式）
+                    finishAlbumFile();
+                    return true;
+                }
+            });
+            mPlayer.prepareAsync();
+        } catch (Throwable e) {
+            Log.e(TAG, "playBuiltFile failed", e);
+            emit("", "album_end");
+        }
+    }
+
+    private void finishAlbumFile() {
+        mPaused = true;
+        releasePlayer();
+        updateSessionState(PlaybackState.STATE_PAUSED);
+        updateNotification();
+        emit("", "album_end");
+    }
+
+    /** 跳到第 idx 个词（按词起始毫秒真实 seek） */
+    private void seekFileToWord(int idx) {
+        if (!mFileMode || mFileStarts == null || mAlbumWords == null || mAlbumWords.isEmpty()) return;
+        if (idx < 0) idx = 0;
+        if (idx >= mAlbumWords.size()) idx = mAlbumWords.size() - 1;
+        if (mPlayer == null || !mHasPlayed) return;
+        int ms = (int) mFileStarts[idx];
+        seekInternal(ms);
+        syncFileWordIndex(ms);
+    }
+
+    /** 按播放位置推算当前词；序号变化时更新通知并回传 JS */
+    private void syncFileWordIndex(int posMs) {
+        if (!mFileMode || mFileStarts == null || mAlbumWords == null || mAlbumWords.isEmpty()) return;
+        int n = Math.min(mAlbumWords.size(), mFileStarts.length);
+        int idx = 0;
+        for (int i = 0; i < n; i++) {
+            if (posMs >= mFileStarts[i]) idx = i;
+            else break;
+        }
+        if (idx != mFileIndex) {
+            mFileIndex = idx;
+            mAlbumIndex = idx;
+            try { mArtist = mAlbumWords.get(idx).word; } catch (Throwable ignored) {}
+            updateNotification();
+            emit("", "album_index:" + idx);
+        }
+    }
+
+    /** 同步等待 TTS 把中文合成到 wav（6 秒超时兜底，结果由 latch 收口） */
+    private boolean synthZhSync(String text, File wav) {
+        if (!mTtsReady || mTts == null || text == null || text.length() == 0) return false;
+        try { if (wav.exists()) wav.delete(); } catch (Throwable ignored) {}
+        String utt = "fs_" + wav.getName();
+        java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        synchronized (mSynthLatches) { mSynthLatches.put(utt, latch); }
+        boolean ok = false;
+        try {
+            // synthesizeToFile(CharSequence, Bundle, File, String)：API 21+ 重载
+            mTts.synthesizeToFile(text, null, wav, utt);
+            latch.await(6, java.util.concurrent.TimeUnit.SECONDS);
+            ok = wav.exists() && wav.length() > 44;
+        } catch (Throwable e) {
+            ok = false;
+        } finally {
+            synchronized (mSynthLatches) { mSynthLatches.remove(utt); }
+        }
+        return ok;
+    }
+
+    private void releaseSynthLatch(String id) {
+        if (id == null) return;
+        java.util.concurrent.CountDownLatch l;
+        synchronized (mSynthLatches) { l = mSynthLatches.remove(id); }
+        if (l != null) l.countDown();
+    }
+
+    /** 同步下载（构建线程内用） */
+    private boolean downloadToFileSync(String url, File target) {
+        if (url == null || url.length() == 0) return false;
+        try {
+            URL u = new URL(url);
+            HttpURLConnection c = (HttpURLConnection) u.openConnection();
+            c.setConnectTimeout(15000);
+            c.setReadTimeout(20000);
+            c.setRequestProperty("User-Agent", "Mozilla/5.0");
+            c.connect();
+            InputStream in = new BufferedInputStream(c.getInputStream());
+            FileOutputStream out = new FileOutputStream(target);
+            byte[] buf = new byte[8192];
+            int nn;
+            while ((nn = in.read(buf)) > 0) out.write(buf, 0, nn);
+            out.close();
+            in.close();
+            c.disconnect();
+            return target.exists() && target.length() > 200;
+        } catch (Throwable e) {
+            try { if (target != null && target.exists()) target.delete(); } catch (Throwable ignored) {}
+            return false;
+        }
+    }
+
+    /** 任意音频文件（mp3/m4a/aac…）解码为 PCM，按 16kHz 单声道重采样后追加写出 */
+    private boolean appendAudioPcm(java.io.RandomAccessFile out, File src) {
+        android.media.MediaExtractor ex = new android.media.MediaExtractor();
+        android.media.MediaCodec dec = null;
+        try {
+            ex.setDataSource(src.getAbsolutePath());
+            int ti = -1;
+            for (int t = 0; t < ex.getTrackCount(); t++) {
+                android.media.MediaFormat tf = ex.getTrackFormat(t);
+                String mime = tf.getString(android.media.MediaFormat.KEY_MIME);
+                if (mime != null && mime.startsWith("audio/")) { ti = t; break; }
+            }
+            if (ti < 0) return false;
+            ex.selectTrack(ti);
+            android.media.MediaFormat f = ex.getTrackFormat(ti);
+            String mime = f.getString(android.media.MediaFormat.KEY_MIME);
+            int sr = f.containsKey(android.media.MediaFormat.KEY_SAMPLE_RATE)
+                    ? f.getInteger(android.media.MediaFormat.KEY_SAMPLE_RATE) : 44100;
+            int ch = f.containsKey(android.media.MediaFormat.KEY_CHANNEL_COUNT)
+                    ? f.getInteger(android.media.MediaFormat.KEY_CHANNEL_COUNT) : 1;
+            dec = android.media.MediaCodec.createDecoderByType(mime);
+            dec.configure(f, null, null, 0);
+            dec.start();
+            android.media.MediaCodec.BufferInfo info = new android.media.MediaCodec.BufferInfo();
+            boolean eos = false;
+            int guard = 0;
+            while (!eos && guard++ < 20000 && !mBuildCancel) {
+                int ib = dec.dequeueInputBuffer(10000);
+                if (ib >= 0) {
+                    java.nio.ByteBuffer bb = dec.getInputBuffer(ib);
+                    int sz = (bb != null) ? ex.readSampleData(bb, 0) : -1;
+                    if (sz < 0) {
+                        dec.queueInputBuffer(ib, 0, 0, 0, android.media.MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                    } else {
+                        dec.queueInputBuffer(ib, 0, sz, ex.getSampleTime(), 0);
+                        ex.advance();
+                    }
+                }
+                int ob = dec.dequeueOutputBuffer(info, 10000);
+                if (ob >= 0) {
+                    if (info.size > 1) {
+                        java.nio.ByteBuffer pcm = dec.getOutputBuffer(ob);
+                        if (pcm != null) {
+                            byte[] bytes = new byte[info.size];
+                            pcm.position(info.offset);
+                            pcm.limit(Math.min(info.offset + info.size, pcm.capacity()));
+                            pcm.get(bytes);
+                            int cnt = bytes.length / 2;
+                            short[] s = new short[cnt];
+                            for (int k = 0; k < cnt; k++) {
+                                s[k] = (short) ((bytes[2 * k] & 0xff) | (bytes[2 * k + 1] << 8));
+                            }
+                            appendResampled(out, s, sr, ch);
+                        }
+                    }
+                    boolean end = (info.flags & android.media.MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0;
+                    dec.releaseOutputBuffer(ob, false);
+                    if (end) eos = true;
+                } else if (ob == android.media.MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                    android.media.MediaFormat of = dec.getOutputFormat();
+                    if (of.containsKey(android.media.MediaFormat.KEY_SAMPLE_RATE))
+                        sr = of.getInteger(android.media.MediaFormat.KEY_SAMPLE_RATE);
+                    if (of.containsKey(android.media.MediaFormat.KEY_CHANNEL_COUNT))
+                        ch = of.getInteger(android.media.MediaFormat.KEY_CHANNEL_COUNT);
+                }
+            }
+            return true;
+        } catch (Throwable e) {
+            return false;
+        } finally {
+            try { if (dec != null) { dec.stop(); dec.release(); } } catch (Throwable ignored) {}
+            try { ex.release(); } catch (Throwable ignored) {}
+        }
+    }
+
+    /** 解析 TTS 合成的 WAV（PCM）并按 16kHz 单声道追加 */
+    private boolean appendWavPcm(java.io.RandomAccessFile out, File wav) {
+        try {
+            long flen = wav.length();
+            if (flen < 44 || flen > 64L * 1024 * 1024) return false;
+            byte[] all = new byte[(int) flen];
+            java.io.FileInputStream fis = new java.io.FileInputStream(wav);
+            int got = 0, nn;
+            while (got < all.length && (nn = fis.read(all, got, all.length - got)) > 0) got += nn;
+            fis.close();
+            if (got < 44) return false;
+            int sr = 0, ch = 1, bits = 16, dataOff = -1, dataLen = 0;
+            int p = 12; // 跳过 RIFF 头
+            while (p + 8 <= got) {
+                String id = new String(all, p, 4, "ASCII");
+                int sz = (all[p + 4] & 0xff) | ((all[p + 5] & 0xff) << 8)
+                        | ((all[p + 6] & 0xff) << 16) | ((all[p + 7] & 0xff) << 24);
+                if (id.equals("fmt ")) {
+                    int q = p + 8;
+                    ch = (all[q + 2] & 0xff) | ((all[q + 3] & 0xff) << 8);
+                    sr = (all[q + 4] & 0xff) | ((all[q + 5] & 0xff) << 8)
+                            | ((all[q + 6] & 0xff) << 16) | ((all[q + 7] & 0xff) << 24);
+                    bits = (all[q + 14] & 0xff) | ((all[q + 15] & 0xff) << 8);
+                } else if (id.equals("data")) {
+                    dataOff = p + 8;
+                    dataLen = Math.min(sz, got - dataOff);
+                }
+                p += 8 + sz + (sz & 1);
+            }
+            if (dataOff < 0 || sr <= 0 || bits != 16) return false;
+            int cnt = dataLen / 2;
+            if (cnt <= 0) return false;
+            short[] s = new short[cnt];
+            for (int k = 0; k < cnt; k++) {
+                int o = dataOff + 2 * k;
+                s[k] = (short) ((all[o] & 0xff) | ((all[o + 1] & 0xff) << 8));
+            }
+            appendResampled(out, s, sr, ch);
+            return true;
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+
+    /** 立体声折叠 + 线性插值重采样到 OUT_SR，然后追加 */
+    private void appendResampled(java.io.RandomAccessFile out, short[] in, int sr, int ch) {
+        try {
+            short[] mono;
+            if (ch >= 2 && in.length >= 2) {
+                int n = in.length / 2;
+                mono = new short[n];
+                for (int i = 0; i < n; i++) {
+                    mono[i] = (short) (((in[2 * i] & 0xffff) + (in[2 * i + 1] & 0xffff)) >> 1);
+                }
+            } else {
+                mono = in;
+            }
+            if (mono == null || mono.length == 0) return;
+            short[] r;
+            if (sr == OUT_SR) {
+                r = mono;
+            } else {
+                int on = (int) (((long) mono.length * OUT_SR) / sr);
+                if (on < 1) return;
+                r = new short[on];
+                for (int i = 0; i < on; i++) {
+                    double srcPos = (double) i * sr / OUT_SR;
+                    int i0 = (int) srcPos;
+                    if (i0 >= mono.length) i0 = mono.length - 1;
+                    int i1 = Math.min(i0 + 1, mono.length - 1);
+                    double fr = srcPos - i0;
+                    r[i] = (short) Math.round(mono[i0] * (1 - fr) + mono[i1] * fr);
+                }
+            }
+            appendShortsLe(out, r);
+        } catch (Throwable ignored) {}
+    }
+
+    private void appendShortsLe(java.io.RandomAccessFile out, short[] s) {
+        try {
+            byte[] b = new byte[s.length * 2];
+            for (int i = 0; i < s.length; i++) {
+                b[2 * i] = (byte) (s[i] & 0xff);
+                b[2 * i + 1] = (byte) ((s[i] >> 8) & 0xff);
+            }
+            out.write(b);
+        } catch (Throwable ignored) {}
+    }
+
+    private void appendSilence(java.io.RandomAccessFile out, int ms) {
+        int samples = ms * (OUT_SR / 1000);
+        if (samples <= 0) return;
+        appendShortsLe(out, new short[samples]); // 默认全 0
+    }
+
+    private int currentOutMs(java.io.RandomAccessFile raf) {
+        try {
+            return (int) Math.max(0, (raf.length() - 44) / OUT_BYTES_PER_MS);
+        } catch (Throwable e) {
+            return 0;
+        }
+    }
+
+    /** 回写 44 字节标准 WAV 头（PCM 16bit 单声道 OUT_SR） */
+    private void writeWavHeader(java.io.RandomAccessFile raf) throws Throwable {
+        long dataLen = raf.length() - 44;
+        byte[] h = new byte[44];
+        h[0] = 'R'; h[1] = 'I'; h[2] = 'F'; h[3] = 'F';
+        putIntLe(h, 4, (int) (36 + dataLen));
+        h[8] = 'W'; h[9] = 'A'; h[10] = 'V'; h[11] = 'E';
+        h[12] = 'f'; h[13] = 'm'; h[14] = 't'; h[15] = ' ';
+        putIntLe(h, 16, 16);
+        h[20] = 1; h[21] = 0;  // PCM
+        h[22] = 1; h[23] = 0;  // 单声道
+        putIntLe(h, 24, OUT_SR);
+        putIntLe(h, 28, OUT_SR * 2);
+        h[32] = 2; h[33] = 0;  // block align
+        h[34] = 16; h[35] = 0; // 16bit
+        h[36] = 'd'; h[37] = 'a'; h[38] = 't'; h[39] = 'a';
+        putIntLe(h, 40, (int) dataLen);
+        raf.seek(0);
+        raf.write(h);
+    }
+
+    private void putIntLe(byte[] b, int off, int v) {
+        b[off] = (byte) (v & 0xff);
+        b[off + 1] = (byte) ((v >> 8) & 0xff);
+        b[off + 2] = (byte) ((v >> 16) & 0xff);
+        b[off + 3] = (byte) ((v >> 24) & 0xff);
+    }
+
+    private String sha1(String v) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-1");
+            byte[] d = md.digest(v.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : d) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Throwable e) {
+            return "k" + Math.abs(v.hashCode());
+        }
+    }
+
+    private boolean loadFileStarts(File idxF, int n) {
+        try {
+            byte[] b = new byte[(int) idxF.length()];
+            java.io.FileInputStream fis = new java.io.FileInputStream(idxF);
+            int got = 0, nn;
+            while (got < b.length && (nn = fis.read(b, got, b.length - got)) > 0) got += nn;
+            fis.close();
+            String[] parts = new String(b, 0, got, "UTF-8").split(",");
+            if (parts.length < n) return false;
+            long[] st = new long[n];
+            for (int i = 0; i < n; i++) st[i] = Long.parseLong(parts[i].trim());
+            mFileStarts = st;
+            return true;
+        } catch (Throwable e) {
+            return false;
+        }
     }
 }
