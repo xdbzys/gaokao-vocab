@@ -5,5 +5,5 @@
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.65.0】\nv修复点击「立即更新」后跳转空白页的问题\nv听读全新升级：选择词库后自动把整库合成一个音频文件在手机内播放，锁屏/耳机/蓝牙完整控制、可拖动进度\nv听读中文只读高考高频核心释义（前1~2个），整库时长大幅缩短\nv词库清洗：删除混入的非词汇条目（如\"a\"）、修正异常释义与重复词条"
+  "changelog": "🎉 背群英 v2.64.0 已发布！\n\n【听读彻底改为整库连续播放（像音乐专辑）】\n- 选中词库后整库连续播放，不再逐词切换；锁屏/控制中心媒体卡片显示词库名 + 整库进度条\n- 暂停/继续/上一词/下一词/拖动进度全部可用，耳机线控/蓝牙/车机/手表均可控制\n- 英文真人发音离线可播，中文用手机语音引擎合成，彻底解决手机控制不响应\n"
 }

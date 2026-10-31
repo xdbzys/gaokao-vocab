@@ -1437,7 +1437,8 @@ public class PlayerService extends Service {
                     mHasPlayed = true;
                     mPaused = false;
                     mDuration = 0;
-                    applyRate(); // v2.65.0：整库文件也支持变速（API 23+）
+                    mRate = mAlbumRate; // v2.65.0：整库语速同步到通用字段，变速/暂停恢复一致
+                    applyRate(); // 变速需 API 23+，低版本原速播放
                     try { mDuration = mp.getDuration(); } catch (Throwable ignored) {}
                     try { mp.start(); } catch (Throwable ignored) {}
                     mFileIndex = 0;
