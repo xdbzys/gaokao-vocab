@@ -1,9 +1,9 @@
 {
-  "version": "2.67.0",
-  "versionCode": 228,
+  "version": "2.69.0",
+  "versionCode": 230,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.67.0】升级机制重做 + 听读/音效修复落地\nv修复「点了更新却还是旧版本」：更新前先读本机安装包真实版本；下载后自动解析 APK 内版本号，比本机旧的源一律跳过并自动换下一个源；缺少「允许安装未知应用」权限时自动打开授权页引导开启\nv新增「安装包版本」显示：我的 → 版本更新 同时显示 页面 v2.67.0"
+  "changelog": "【v2.69.0】听读参数轮盘化 + 精简界面 + 全面检修\nv听读参数全部改为轮盘调节：语速 0.50~2.00x（0.05 步进）、英文 1~5 遍、中文 0~3 遍、词间间隔 0~10 秒、遍间隔 0~3 秒，上下滑动即改，播放中立即生效；发音语速也换轮盘（0.50~1.50x）\nv移除「我的」页面的词库下载与网"
 }
