@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.65.0';
-const APP_VERSION_CODE = 226;
+const APP_VERSION = '2.66.0';
+const APP_VERSION_CODE = 227;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -10737,10 +10737,11 @@ function loadListenCfg() {
       loop: (s.loop === 'one' || s.loop === 'off') ? s.loop : 'list',
       shuffle: !!s.shuffle,
       systemPlayer: s.systemPlayer !== false,
-      zhSource: s.zhSource === 'net' ? 'net' : 'system'
+      zhSource: s.zhSource === 'net' ? 'net' : 'system',
+      zhVoice: _clampInt(s.zhVoice, 0, 4, 0)
     };
   } catch (e) {
-    return { enRepeat: 2, zhRepeat: 1, order: 'en-zh', innerGap: 0.6, wordGap: 2, rate: 1, loop: 'list', shuffle: false, systemPlayer: true, zhSource: 'system' };
+    return { enRepeat: 2, zhRepeat: 1, order: 'en-zh', innerGap: 0.6, wordGap: 2, rate: 1, loop: 'list', shuffle: false, systemPlayer: true, zhSource: 'net', zhVoice: 0 };
   }
 }
 
@@ -11246,6 +11247,8 @@ function App() {
   const listenQueueRef = useRef([]);         // 当前播放队列快照（播放中不随进度变化跳动）
   const listenIndexRef = useRef(0);
   const listenPlayingRef = useRef(false);
+  const listenPlRef = useRef(null);      // v2.66.0：词列表容器
+  const listenPlCurRef = useRef(null);   // v2.66.0：列表中的当前词节点（用于居中滚动）
   const listenPausedRef = useRef(false);
   const listenSeedRef = useRef(Date.now());
   // 词性筛选（替代原来的type筛选）
@@ -11639,6 +11642,25 @@ function App() {
     }
   }, [listenQueue.length]);
 
+  // v2.66.0：改动下列参数会影响整库音频的内容，必须重新下发到原生重新生成
+  var _REBUILD_KEYS = { enRepeat: 1, zhRepeat: 1, order: 1, innerGap: 1, wordGap: 1, zhSource: 1, zhVoice: 1, shuffle: 1 };
+
+  /** 重新把当前队列整库下发给原生（参数改动后的实时生效） */
+  const restartNativeAlbum = function () {
+    if (!listenPlayingRef.current) return;
+    if (!listenSystemPlayerOn() || !window.NativePlayer) return;
+    if (typeof window.NativePlayer.playAlbumFile !== 'function') return;
+    try {
+      var q = listenQueueRef.current || [];
+      if (!q.length) return;
+      var aCfg = listenCfgRef.current;
+      var aName = (typeof listenActiveBook !== 'undefined' && listenActiveBook && listenActiveBook.name) ? listenActiveBook.name : '背群英 · 听读词库';
+      try { setListenBuildInfo('已应用新设置，正在按新参数播放词库…'); } catch (e) {}
+      window.__lastAlbumJson = buildAlbumJson(q, aCfg, aName);
+      window.NativePlayer.playAlbumFile(window.__lastAlbumJson);
+    } catch (e) {}
+  };
+
   const updateListenCfg = function (patch) {
     setListenCfg(function (prev) {
       const next = { ...prev, ...patch };
@@ -11646,7 +11668,35 @@ function App() {
       listenCfgRef.current = next;
       return next;
     });
+    // v2.66.0：涉及音频内容的参数 → 播放中立即重新下发；语速走 NativePlayer.setRate 实时变速，无需重建
+    try {
+      var need = false;
+      for (var k in patch) { if (_REBUILD_KEYS[k]) need = true; }
+      if (need && listenPlayingRef.current && listenSystemPlayerOn()) {
+        setTimeout(restartNativeAlbum, 80);
+      }
+    } catch (e) {}
   };
+
+  // v2.66.0：词列表自动跟随当前词并居中滚动 —— 修复「播放推进了但列表不动 / 整列乱跳」
+  useEffect(() => {
+    if (!listenShowPL) return;
+    const timer = setTimeout(() => {
+      try {
+        const el = listenPlCurRef.current;
+        const box = listenPlRef.current;
+        if (!el || !box) return;
+        // 优先按容器内的偏移居中滚动（不会带着整页一起滚）
+        const target = el.offsetTop - box.clientHeight / 2 + el.offsetHeight / 2;
+        if (typeof target === 'number' && isFinite(target) && box.scrollTo) {
+          box.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+        } else if (el.scrollIntoView) {
+          el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+      } catch (e) {}
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [listenIndex, listenShowPL]);
 
   const changeListenFilter = function (v) {
     if (listenPlayingRef.current) stopListenPlayback();
@@ -11730,10 +11780,19 @@ function App() {
         zhText: zh
       });
     }
+    // v2.66.0：把影响整库音频的全部参数一起下发（之前只传 rate/loop，其余参数改了完全没反应）
+    var order = (cfg && (cfg.order === 'zh-en' || cfg.order === 'en')) ? cfg.order : 'en-zh';
     return JSON.stringify({
       album: albumName || '背群英 · 听读词库',
       rate: rate,
       loop: (cfg && cfg.loop === 'off') ? 'off' : 'list',
+      enRepeat: Math.max(1, Math.min(5, (cfg && cfg.enRepeat) || 1)),
+      zhRepeat: Math.max(0, Math.min(3, (cfg && cfg.zhRepeat === 0) ? 0 : ((cfg && cfg.zhRepeat) || 1))),
+      order: order,
+      innerGapMs: Math.round((cfg && cfg.innerGap != null ? cfg.innerGap : 0.6) * 1000),
+      wordGapMs: Math.round((cfg && cfg.wordGap != null ? cfg.wordGap : 2) * 1000),
+      zhSource: (cfg && cfg.zhSource === 'system') ? 'system' : 'net',
+      zhVoice: (cfg && cfg.zhVoice != null) ? cfg.zhVoice : 0,
       words: words
     });
   }
@@ -11954,10 +12013,14 @@ function App() {
           if (!isNaN(n)) { listenIndexRef.current = n; try { setListenIndex(n); } catch (e) {} }
           return;
         }
-        // v2.65.0：整库音频合成进度（"album_build:N/T"）
+        // v2.66.0：整库音频在后台生成（播放照常进行，不阻塞出声）
+        if (action === 'album_build_start') {
+          try { setListenBuildInfo('正在后台生成本词库的完整音频（当前播放不受影响），下次播放可精确拖动进度'); } catch (e) {}
+          return;
+        }
         if (typeof action === 'string' && action.indexOf('album_build:') === 0) {
           const t = action.slice('album_build:'.length);
-          try { setListenBuildInfo('正在把词库合成为一个音频文件（' + t + '），合成完成后自动连续播放'); } catch (e) {}
+          try { setListenBuildInfo('后台生成整库音频 ' + t + '（播放照常进行）'); } catch (e) {}
           return;
         }
         if (action === 'album_file_ready') {
@@ -11965,7 +12028,7 @@ function App() {
           return;
         }
         if (action === 'album_build_fail') {
-          // 合成失败：回退到 v2.64.0 逐词专辑模式（原生连续播放，锁屏同样可控）
+          // 合成失败：回退到逐词专辑模式（原生连续播放，锁屏同样可控）
           try { setListenBuildInfo(''); } catch (e) {}
           try {
             if (window.NativePlayer && typeof window.NativePlayer.playAlbum === 'function' && window.__lastAlbumJson) {
@@ -14097,14 +14160,23 @@ function App() {
             {listenFilter === 'hide' ? '已自动跳过标记为掌握的单词' : listenFilter === 'only' ? '只播放已标记掌握的单词，用于巩固复习' : '播放词库内全部单词'}
           </div>
 
-          {/* 播放器主体（v2.62.0：音乐播放器式布局） */}
+          {/* 播放器主体（v2.66.0：状态胶囊 + 当前词动效） */}
           <div className={'listenCard' + (listenPlaying ? ' playing' : '')}>
+            <div className="listenStatusRow">
+              <span className={'listenStatusPill' + (listenPlaying && !listenPaused ? ' live' : '')}>
+                {listenBuildInfo ? '音频生成中' : (listenPlaying && !listenPaused ? '正在播放' : listenPlaying ? '已暂停' : '待播放')}
+              </span>
+              <span className="listenCountPill">
+                {listenDisplayQueue.length ? (listenIndex + 1) : 0} / {listenDisplayQueue.length}
+              </span>
+            </div>
             <div className="listenCoverRow">
               <div className={'listenCoverArt' + (listenPlaying && !listenPaused ? ' spin' : '')}>🎧</div>
               <div className="listenCoverMain">
                 {listenCurrent ? (
                   <React.Fragment>
-                    <div className="listenWord">{listenCurrent.term}</div>
+                    {/* key 随序号变化触发淡入，换词时视觉明显 */}
+                    <div className="listenWord" key={'w_' + listenIndex + '_' + (listenCurrent.term || '')}>{listenCurrent.term}</div>
                     <div className="listenSubRow">
                       {listenCurrent.phonetic ? <span className="listenPhonetic">{listenCurrent.phonetic}</span> : null}
                       {listenCurrent.pos ? <span className="listenPosTag">{listenCurrent.pos}</span> : null}
@@ -14118,6 +14190,7 @@ function App() {
                 )}
               </div>
             </div>
+            {listenBuildInfo ? <div className="listenBuildTip">{listenBuildInfo}</div> : null}
 
             {listenSystemPlayerOn() && listenDur > 0 ? (
               <div className="listenSeekRow">
@@ -14251,34 +14324,55 @@ function App() {
               <div className="listenSettingRow">
                 <span>中文发音</span>
                 <div className="listenSeg">
-                  <button className={listenCfg.zhSource !== 'net' ? 'on' : ''} onClick={() => updateListenCfg({ zhSource: 'system' })}>系统语音</button>
-                  <button className={listenCfg.zhSource === 'net' ? 'on' : ''} onClick={() => updateListenCfg({ zhSource: 'net' })}>网络语音</button>
+                  <button className={listenCfg.zhSource === 'net' ? 'on' : ''} onClick={() => updateListenCfg({ zhSource: 'net' })}>真人配音</button>
+                  <button className={listenCfg.zhSource === 'system' ? 'on' : ''} onClick={() => updateListenCfg({ zhSource: 'system' })}>系统语音</button>
                 </div>
               </div>
+              {listenCfg.zhSource === 'net' && (
+                <div className="listenSettingRow">
+                  <span>配音音色</span>
+                  <div className="listenSeg">
+                    {[[0, '度小娇'], [3, '度逍遥'], [4, '度丫丫']].map(function (v) {
+                      return <button key={v[0]} className={listenCfg.zhVoice === v[0] ? 'on' : ''} onClick={() => updateListenCfg({ zhVoice: v[0] })}>{v[1]}</button>;
+                    })}
+                  </div>
+                </div>
+              )}
               <div className="listenTip">推荐默认：英文 2 遍 → 中文 1 遍，词间 2 秒（参考百词斩 / 墨墨 / 不背单词的听读做法）</div>
-              <div className="listenTip">中文默认用手机自带语音引擎（讯飞 / 百度 / Google 离线引擎），比网络机械音自然且零延迟；若你的设备读不出中文，请切「网络语音」</div>
+              <div className="listenTip">中文默认走真人配音（度小娇等自然女声），比手机自带引擎更像真人；断网时自动降级到系统语音引擎，保证一定有声音</div>
+              <div className="listenTip">改动上述任一参数后，若正在播放会立即按新参数重播；「语速」实时变速，不需要重新生成</div>
               <div className="listenTip">暂停 / 继续：应用内按钮、通知栏卡片、锁屏与耳机线控都可控制，暂停后从当前词接着读，不会从头重来</div>
               <div className="listenTip">{listenSystemPlayerOn() ? '已连接系统播放器：退出应用、锁屏、息屏后继续播放，通知栏可暂停 / 上一词 / 下一词' : '当前安装包未内置系统播放器（中文发音已随热更新生效）。后台播放需 v2.60.0 及以上版本，请到「我的 → 检查更新」一键安装'}</div>
               {listenBuildInfo && <div className="listenTip" style={{ color: '#2563eb', fontWeight: 600 }}>{listenBuildInfo}</div>}
             </div>
           )}
 
-          {/* 播放列表（窗口化渲染，避免大词库卡顿） */}
+          {/* 播放列表（v2.66.0：稳定分块窗口 + 自动滚动跟随当前词） */}
           {listenShowPL && (
-            <div className="listenPlaylist">
+            <div className="listenPlaylist" ref={listenPlRef}>
               {(() => {
                 const total = listenDisplayQueue.length;
                 if (!total) return <div className="listenEmpty">暂无单词</div>;
-                const startAt = Math.max(0, listenIndex - 40);
-                const endAt = Math.min(total, startAt + 120);
+                // 按 30 词一块取窗口：块内序号变化不重建列表（避免整列表跳动），
+                // 再由 useEffect 的 scrollIntoView 把当前词稳稳居中。
+                const BLOCK = 30;
+                const startAt = Math.max(0, Math.floor(listenIndex / BLOCK) * BLOCK - BLOCK);
+                const endAt = Math.min(total, startAt + BLOCK * 4);
                 const rows = [];
                 for (let i2 = startAt; i2 < endAt; i2++) {
                   const it = listenDisplayQueue[i2];
+                  const on = i2 === listenIndex;
                   rows.push(
-                    <button key={(it.term || '') + '_' + i2} className={'listenPLItem' + (i2 === listenIndex ? ' on' : '')} onClick={() => jumpListenTo(i2)}>
+                    <button
+                      key={(it.term || '') + '_' + i2}
+                      ref={on ? listenPlCurRef : null}
+                      className={'listenPLItem' + (on ? ' on' : '')}
+                      onClick={() => jumpListenTo(i2)}
+                    >
                       <span className="listenPLIdx">{i2 + 1}</span>
                       <span className="listenPLTerm">{it.term}</span>
                       <span className="listenPLMeaning">{it.meaning}</span>
+                      {on && listenPlaying && !listenPaused ? <span className="listenPLWave"><i /><i /><i /></span> : null}
                     </button>
                   );
                 }

@@ -2366,3 +2366,136 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   .listenMp3Btn { width: 36px; height: 36px; font-size: 15px; }
   .exportActions { flex-direction: column; }
 }
+
+/* ===== v2.66.0 听读界面美化 ===== */
+.listenStatusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.listenStatusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  background: rgba(127, 127, 127, .14);
+  color: #6b7280;
+}
+
+.listenStatusPill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .7;
+}
+
+.listenStatusPill.live {
+  background: rgba(99, 102, 241, .14);
+  color: #6366f1;
+}
+
+.listenStatusPill.live::before { animation: listenPulse 1.4s ease-in-out infinite; }
+
+@keyframes listenPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .35; transform: scale(.7); }
+}
+
+.listenCountPill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: rgba(34, 211, 238, .14);
+  color: #0891b2;
+}
+
+.listenWord { animation: listenWordIn .34s cubic-bezier(.2, .8, .3, 1); }
+
+@keyframes listenWordIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.listenBuildTip {
+  margin-top: 10px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #0891b2;
+  background: rgba(34, 211, 238, .1);
+  border: 1px dashed rgba(34, 211, 238, .4);
+}
+
+/* 播放列表：容器相对定位，保证按容器内偏移居中滚动准确无误 */
+.listenPlaylist {
+  position: relative;
+  padding: 4px;
+  background: rgba(127, 127, 127, .05);
+}
+
+.listenPLItem {
+  border-radius: 10px;
+  margin-bottom: 2px;
+  border-bottom: 0;
+  transition: background .2s ease;
+}
+
+.listenPLItem.on {
+  background: linear-gradient(90deg, rgba(99, 102, 241, .16), rgba(34, 211, 238, .1));
+  box-shadow: inset 3px 0 0 #6366f1;
+}
+
+.listenPLItem.on .listenPLTerm { color: #4f46e5; }
+
+.listenPLWave {
+  flex: none;
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 13px;
+  margin-left: 6px;
+}
+
+.listenPLWave i {
+  width: 2px;
+  height: 100%;
+  border-radius: 2px;
+  background: #6366f1;
+  animation: listenBar 0.9s ease-in-out infinite;
+}
+
+.listenPLWave i:nth-child(2) { animation-delay: .15s; }
+.listenPLWave i:nth-child(3) { animation-delay: .3s; }
+
+@keyframes listenBar {
+  0%, 100% { transform: scaleY(.35); }
+  50% { transform: scaleY(1); }
+}
+
+.listenPlayBtn { position: relative; }
+
+.listenPlayBtn:not(:disabled)::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(59, 130, 246, .25);
+  animation: listenRing 2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes listenRing {
+  0% { opacity: .8; transform: scale(.9); }
+  100% { opacity: 0; transform: scale(1.15); }
+}

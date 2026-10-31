@@ -165,6 +165,10 @@ public class PlayerService extends Service {
     private int mAlbumTotal = 0;
     private int mAlbumBaseMs = 0;
     private int mAlbumPendingNext = -1;
+    // v2.66.0：逐词模式也按 JS 下发的「朗读顺序 + 遍数」执行（en-zh / zh-en / en）
+    private String[] mAlbumSeq = null;
+    private int mAlbumSeqPos = 0;
+    private int mAlbumRepCur = 0;
     private TextToSpeech mTts = null;
     private boolean mTtsReady = false;
     private File mAlbumCacheDir = null;
@@ -184,6 +188,17 @@ public class PlayerService extends Service {
             new java.util.HashMap<String, java.util.concurrent.CountDownLatch>();
     private static final int OUT_SR = 16000;         // 输出采样率：16kHz 单声道 16bit（语音足够，控制文件体积）
     private static final int OUT_BYTES_PER_MS = OUT_SR * 2 / 1000; // 32 字节/毫秒
+
+    // ===== v2.66.0：听读参数（由 JS 下发，参与整库音频的实际生成） =====
+    private int mCfgEnRepeat = 2;        // 英文朗读遍数（与 JS loadListenCfg 默认值一致）
+    private int mCfgZhRepeat = 1;        // 中文朗读遍数（0 = 不读）
+    private String mCfgOrder = "en-zh";  // en-zh / zh-en / en
+    private int mCfgInnerGapMs = 600;    // 同一遍之间的间隔
+    private int mCfgWordGapMs = 2000;    // 词间间隔
+    private String mCfgZhSource = "net"; // net = 网络真人配音（拟人）；system = 手机自带语音引擎
+    private int mCfgZhVoice = 0;         // 网络配音音色：0 度小娇（女声·推荐）/ 3 度逍遥 / 4 度丫丫
+    private java.util.concurrent.ExecutorService mPrefetchPool = null; // 英文/中文音频并发预取
+    private volatile int mPrefetchedUpto = -1;  // 已预取到第几个词（避免重复提交任务）
 
 
     /** 进度上报（每 500ms 一次，供锁屏 / 蓝牙 / JS 进度条使用） */
@@ -304,7 +319,12 @@ public class PlayerService extends Service {
             return START_STICKY;
         }
         if (ACTION_RATE.equals(action)) {
-            mRate = intent.getFloatExtra(EXTRA_RATE, 1f);
+            float rr = Math.max(0.5f, Math.min(2.5f, intent.getFloatExtra(EXTRA_RATE, 1f)));
+            mRate = rr;
+            // v2.66.0：语速实时生效——选中这里可以确保整库模式（单文件 / 逐词）也跟着变，
+            // 且语速不参与整库音频合成，所以改语速不需要重新合成。
+            if (mAlbumMode) mAlbumRate = rr;
+            if (mFileMode) mFileRate = rr;
             applyRate();
             updateSessionState(mPaused ? PlaybackState.STATE_PAUSED : PlaybackState.STATE_PLAYING);
             return START_STICKY;
@@ -402,6 +422,7 @@ public class PlayerService extends Service {
         mAlbumMode = false;
         mFileMode = false;
         mBuildCancel = true; // 中断整库合成线程
+        try { if (mPrefetchPool != null) { mPrefetchPool.shutdownNow(); mPrefetchPool = null; } } catch (Throwable ignored) {}
         try { if (mTts != null) { mTts.stop(); mTts.shutdown(); mTts = null; } } catch (Throwable ignored) {}
         mTtsReady = false;
         if (mHandler != null) {
@@ -911,7 +932,37 @@ public class PlayerService extends Service {
                     if (status == TextToSpeech.SUCCESS && mTts != null) {
                         int r = mTts.setLanguage(Locale.SIMPLIFIED_CHINESE);
                         mTtsReady = (r != TextToSpeech.LANG_MISSING_DATA && r != TextToSpeech.LANG_NOT_SUPPORTED);
-                        try { mTts.setSpeechRate(1.0f); } catch (Throwable ignored) {}
+                        if (mTtsReady) {
+                            // v2.66.0：TTS 拟人化——略慢语速 + 自然音调 + 优先挑选中文女声嗓音
+                            try { mTts.setSpeechRate(0.92f); } catch (Throwable ignored) {}
+                            try { mTts.setPitch(1.02f); } catch (Throwable ignored) {}
+                            try {
+                                if (android.os.Build.VERSION.SDK_INT >= 21) {
+                                    java.util.Set<android.speech.tts.Voice> vs = mTts.getVoices();
+                                    if (vs != null) {
+                                        android.speech.tts.Voice best = null;
+                                        int bestScore = -1;
+                                        for (android.speech.tts.Voice v : vs) {
+                                            String nm = v.getName() == null ? "" : v.getName().toLowerCase();
+                                            Locale vl = v.getLocale();
+                                            if (vl == null || !"zh".equals(vl.getLanguage())) continue;
+                                            int score = 0;
+                                            if (nm.contains("xiaoxiao") || nm.contains("female") || nm.contains("xiaoyan")
+                                                    || nm.contains("xiaoya")) score += 4;
+                                            if (nm.contains("huawei") || nm.contains("google") || nm.contains("ifly")
+                                                    || nm.contains("xiao") || nm.contains("yun")) score += 2;
+                                            int q = 0;
+                                            try {
+                                                q = v.getQuality();
+                                            } catch (Throwable ignored2) {}
+                                            score += q;
+                                            if (score > bestScore) { bestScore = score; best = v; }
+                                        }
+                                        if (best != null) mTts.setVoice(best);
+                                    }
+                                }
+                            } catch (Throwable ignored) {}
+                        }
                         try {
                             mTts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                                 @Override public void onStart(String id) {}
@@ -982,6 +1033,9 @@ public class PlayerService extends Service {
             ensureSession();
             updateSessionState(PlaybackState.STATE_PLAYING);
             updateNotification();
+            // v2.66.0：向后预取音频（并发 6 线程），让后续词的中文也用上拟人配音、不至于边播边卡下载
+            mPrefetchedUpto = -1;
+            prefetchAhead(list, 0, Math.min(list.size(), 12));
             playAlbumWord(0);
         } catch (Throwable e) {
             Log.e(TAG, "startAlbum failed", e);
@@ -1000,7 +1054,66 @@ public class PlayerService extends Service {
         mTitle = mAlbumName;
         updateNotification();
         updateSessionState(mPaused ? PlaybackState.STATE_PAUSED : PlaybackState.STATE_PLAYING);
-        playAlbumEn(idx);
+        // v2.66.0：按「朗读顺序 + 遍数」生成阶段序列并开始第一阶段
+        if ("en".equals(mCfgOrder)) mAlbumSeq = new String[]{"en"};
+        else if ("zh-en".equals(mCfgOrder)) mAlbumSeq = new String[]{"zh", "en"};
+        else mAlbumSeq = new String[]{"en", "zh"};
+        mAlbumSeqPos = 0;
+        mAlbumRepCur = 0;
+        runAlbumStage(idx);
+    }
+
+    /** 播放当前阶段（en / zh）的一遍 */
+    private void runAlbumStage(final int idx) {
+        if (!mAlbumMode || idx != mAlbumIndex || mAlbumSeq == null) return;
+        if (mAlbumSeqPos >= mAlbumSeq.length) { afterAlbumWord(idx); return; }
+        String st = mAlbumSeq[mAlbumSeqPos];
+        if ("zh".equals(st)) {
+            if (mCfgZhRepeat <= 0) { // 「中文不读」：跳过该阶段
+                mAlbumSeqPos++;
+                mAlbumRepCur = 0;
+                runAlbumStage(idx);
+                return;
+            }
+            playAlbumZh(idx);
+        } else playAlbumEn(idx);
+    }
+
+    /** 一遍播完：未满遍数则再读一遍（含遍间隔），否则进入下一阶段 */
+    private void onStageItemDone(final int idx) {
+        if (!mAlbumMode || mAlbumIndex != idx || mAlbumSeq == null) return;
+        mAlbumRepCur++;
+        int reps = mAlbumRepCur;
+        String st = mAlbumSeqPos < mAlbumSeq.length ? mAlbumSeq[mAlbumSeqPos] : "en";
+        int need = "zh".equals(st) ? Math.max(0, mCfgZhRepeat) : Math.max(1, mCfgEnRepeat);
+        if (reps < need) {
+            gapThen(idx, mCfgInnerGapMs, new Runnable() {
+                @Override public void run() { runAlbumStage(idx); }
+            });
+            return;
+        }
+        mAlbumSeqPos++;
+        mAlbumRepCur = 0;
+        if (mAlbumSeqPos >= mAlbumSeq.length) { afterAlbumWord(idx); return; }
+        gapThen(idx, mCfgInnerGapMs, new Runnable() {
+            @Override public void run() { runAlbumStage(idx); }
+        });
+    }
+
+    /** 间隔 ms 后执行（暂停时不推进，恢复后继续） */
+    private void gapThen(final int idx, int ms, final Runnable r) {
+        final Runnable task = new Runnable() {
+            @Override public void run() {
+                if (!mAlbumMode || mAlbumIndex != idx) return;
+                if (mPaused) { mAlbumPendingNext = idx; return; }
+                r.run();
+            }
+        };
+        if (ms <= 0) {
+            if (mHandler != null) mHandler.post(task); else task.run();
+        } else {
+            mHandler.postDelayed(task, ms);
+        }
     }
 
     private void playAlbumEn(final int idx) {
@@ -1012,14 +1125,14 @@ public class PlayerService extends Service {
                 if (!mAlbumMode || mAlbumIndex != idx) return;
                 if (target.exists() && target.length() > 200) {
                     playAlbumFile(target, new Runnable() {
-                        @Override public void run() { playAlbumZh(idx); }
+                        @Override public void run() { onStageItemDone(idx); }
                     });
                 } else if (w.enUrl != null && w.enUrl.length() > 0) {
                     playAlbumUrl(w.enUrl, new Runnable() {
-                        @Override public void run() { playAlbumZh(idx); }
+                        @Override public void run() { onStageItemDone(idx); }
                     });
                 } else {
-                    playAlbumZh(idx);
+                    onStageItemDone(idx);
                 }
             }
         };
@@ -1027,9 +1140,41 @@ public class PlayerService extends Service {
         else downloadToFile(w.enUrl, target, play);
     }
 
+    /**
+     * v2.66.0 拟人语音：优先真人配音，失败逐级回退，保证「一定有声音」。
+     * 链：本地已缓存的网络配音 → 在线百度配音 → 手机自带语音引擎合成 → 有道网络音。
+     */
     private void playAlbumZh(final int idx) {
         if (!mAlbumMode || idx != mAlbumIndex || idx < 0 || idx >= mAlbumWords.size()) return;
         final AlbumWord w = mAlbumWords.get(idx);
+        final Runnable afterDone = new Runnable() { @Override public void run() { onStageItemDone(idx); } };
+        if (w.zhText == null || w.zhText.length() == 0) { onStageItemDone(idx); return; }
+        boolean wantNet = !"system".equals(mCfgZhSource);
+        // ① 已预取到本地的真人配音（与整库合成线程共用缓存目录）→ 直接播，零延迟
+        if (wantNet) {
+            File netF = new File(mAlbumCacheDir, "zh_" + w.key + "_" + zhSuffix() + ".mp3");
+            if (!(netF.exists() && netF.length() > 200)) netF = new File(mAlbumCacheDir, "zh_" + w.key + "_net0.mp3");
+            if (netF.exists() && netF.length() > 200) { playAlbumFile(netF, afterDone); return; }
+        }
+        // ② 在线真人配音（播放失败会落到 ③）
+        if (wantNet && zhNetUrl(w.zhText) != null) {
+            final String nu = zhNetUrl(w.zhText);
+            playAlbumUrl(nu, afterDone, new Runnable() {
+                @Override public void run() {
+                    if (!mAlbumMode || mAlbumIndex != idx) return;
+                    playAlbumZhSystem(idx);
+                }
+            });
+            return;
+        }
+        playAlbumZhSystem(idx);
+    }
+
+    /** ③ 手机自带语音引擎合成（再失败退回有道网络音） */
+    private void playAlbumZhSystem(final int idx) {
+        if (!mAlbumMode || idx != mAlbumIndex || idx < 0 || idx >= mAlbumWords.size()) return;
+        final AlbumWord w = mAlbumWords.get(idx);
+        final Runnable afterDone = new Runnable() { @Override public void run() { onStageItemDone(idx); } };
         if (mTtsReady && w.zhText != null && w.zhText.length() > 0) {
             final String utt = "zh_" + w.key;
             final File wav = new File(mAlbumCacheDir, utt + ".wav");
@@ -1048,11 +1193,11 @@ public class PlayerService extends Service {
                             mZhPendingUtt = "";
                             if (wav.exists() && wav.length() > 0) {
                                 playAlbumFile(wav, new Runnable() {
-                                    @Override public void run() { afterAlbumWord(idx); }
+                                    @Override public void run() { onStageItemDone(idx); }
                                 });
                             } else {
                                 playAlbumUrl("https://dict.youdao.com/dictvoice?audio=" + uriEncode(w.zhText) + "&le=zh",
-                                        new Runnable() { @Override public void run() { afterAlbumWord(idx); } });
+                                        new Runnable() { @Override public void run() { onStageItemDone(idx); } });
                             }
                         }
                     }
@@ -1063,8 +1208,7 @@ public class PlayerService extends Service {
             }
         }
         // 回退：网络中文语音（有道 le=zh）经 MediaPlayer 播放
-        playAlbumUrl("https://dict.youdao.com/dictvoice?audio=" + uriEncode(w.zhText) + "&le=zh",
-                new Runnable() { @Override public void run() { afterAlbumWord(idx); } });
+        playAlbumUrl("https://dict.youdao.com/dictvoice?audio=" + uriEncode(w.zhText) + "&le=zh", afterDone);
     }
 
     private void onZhSynthesized(final String id) {
@@ -1092,14 +1236,15 @@ public class PlayerService extends Service {
         if (!mAlbumMode || idx != mAlbumIndex) return;
         final int next = idx + 1;
         if (next >= mAlbumWords.size()) { finishAlbum(); return; }
-        long gap = (long) (mAlbumAvgMs * 0.3);
-        if (mHandler != null) mHandler.postDelayed(new Runnable() {
+        // v2.66.0：词间间隔改用 JS 下发的 wordGap（之前写死估算值 → 改词间秒数没反应）
+        mHandler.postDelayed(new Runnable() {
             @Override public void run() {
                 if (!mAlbumMode || mAlbumIndex != idx) return;
                 if (mPaused) { mAlbumPendingNext = next; return; }
                 playAlbumWord(next);
             }
-        }, gap);
+        }, mCfgWordGapMs);
+        prefetchAhead(mAlbumWords, next, next + 8); // 滚动预取后续词音频
     }
 
     private void playAlbumFile(final File fx, final Runnable onDone) {
@@ -1131,6 +1276,11 @@ public class PlayerService extends Service {
     }
 
     private void playAlbumUrl(final String url, final Runnable onDone) {
+        playAlbumUrl(url, onDone, null);
+    }
+
+    /** playAlbumUrl 带失败回调版本（v2.66.0：网络配音失败时用于继续回退，避免整链卡死） */
+    private void playAlbumUrl(final String url, final Runnable onDone, final Runnable onFail) {
         if (url == null || url.length() == 0) { if (onDone != null) onDone.run(); return; }
         releasePlayer();
         requestFocus();
@@ -1144,18 +1294,23 @@ public class PlayerService extends Service {
                 @Override public void onPrepared(MediaPlayer mp) {
                     mHasPlayed = true;
                     applyRateAlbum();
-                    try { if (!mPaused) mp.start(); } catch (Throwable e) { if (onDone != null) onDone.run(); }
+                    try { if (!mPaused) mp.start(); } catch (Throwable e) {
+                        if (onFail != null) onFail.run(); else if (onDone != null) onDone.run();
+                    }
                 }
             });
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override public void onCompletion(MediaPlayer mp) { if (onDone != null) onDone.run(); }
             });
             mPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override public boolean onError(MediaPlayer mp, int what, int extra) { if (onDone != null) onDone.run(); return true; }
+                @Override public boolean onError(MediaPlayer mp, int what, int extra) {
+                    if (onFail != null) onFail.run(); else if (onDone != null) onDone.run();
+                    return true;
+                }
             });
             mPlayer.prepareAsync();
         } catch (Throwable e) {
-            if (onDone != null) onDone.run();
+            if (onFail != null) onFail.run(); else if (onDone != null) onDone.run();
         }
     }
 
@@ -1267,11 +1422,29 @@ public class PlayerService extends Service {
             String name = root.optString("album", "\u9ad8\u8003\u8bcd\u6c47");
             float rate = (float) root.optDouble("rate", 1.0);
             String loop = root.optString("loop", "list");
+            // v2.66.0：听读参数全量下发。—— 这是「参数设置无效」的根因修复：
+            // 之前 buildAlbumJson 只传 rate/loop，其余一律按写死值生成，用户改了毫无变化。
+            mCfgEnRepeat = Math.max(1, Math.min(5, root.optInt("enRepeat", 1)));
+            mCfgZhRepeat = Math.max(0, Math.min(3, root.optInt("zhRepeat", 1)));
+            mCfgOrder = root.optString("order", "en-zh");
+            if (!"zh-en".equals(mCfgOrder) && !"en".equals(mCfgOrder)) mCfgOrder = "en-zh";
+            mCfgInnerGapMs = Math.max(0, Math.min(3000, root.optInt("innerGapMs", 600)));
+            mCfgWordGapMs = Math.max(0, Math.min(9000, root.optInt("wordGapMs", 2000)));
+            mCfgZhSource = "system".equals(root.optString("zhSource", "net")) ? "system" : "net";
+            mCfgZhVoice = Math.max(0, Math.min(9, root.optInt("zhVoice", 0)));
             org.json.JSONArray words = root.optJSONArray("words");
             if (words == null || words.length() == 0) return;
             ArrayList<AlbumWord> list = new ArrayList<AlbumWord>();
             StringBuilder keySrc = new StringBuilder();
-            keySrc.append(name).append('|').append(rate);
+            // 缓存键 = 词库 + 全部朗读参数（但不含 rate：语速由播放器实时变速，改语速无需重新合成）
+            keySrc.append(name)
+                    .append('|').append(mCfgEnRepeat)
+                    .append('|').append(mCfgZhRepeat)
+                    .append('|').append(mCfgOrder)
+                    .append('|').append(mCfgInnerGapMs)
+                    .append('|').append(mCfgWordGapMs)
+                    .append('|').append(mCfgZhSource)
+                    .append('|').append(mCfgZhVoice);
             for (int i = 0; i < words.length(); i++) {
                 org.json.JSONObject o = words.getJSONObject(i);
                 String w = o.optString("word", "");
@@ -1283,58 +1456,145 @@ public class PlayerService extends Service {
                 keySrc.append('|').append(w).append('/').append(z);
             }
             if (list.isEmpty()) return;
+            final String key = sha1(keySrc.toString());
+            final File fin = new File(mAlbumWavDir, key + ".wav");
+            final File idxF = new File(mAlbumWavDir, key + ".idx");
             // 停掉旧播放 / 旧合成（旧构建线程检测到 gen 变化会自行退出）
             mBuildGen++;
             stopAlbumWord();
             releasePlayer();
-            mAlbumMode = true;
-            mFileMode = true;
             mAlbumWords = list;
             mAlbumTotal = list.size();
             mAlbumName = name;
             mAlbumRate = Math.max(0.5f, Math.min(2.5f, rate));
             mFileRate = mAlbumRate;
             mFileLoop = !"off".equals(loop);
-            mAlbumIndex = 0;
-            mFileIndex = -1;
-            mPaused = false;
-            mZhPendingUtt = "";
-            mFileStarts = new long[list.size()];
-            mTitle = name;
-            mArtist = "\u6b63\u5728\u5408\u6210\u6574\u5e93\u97f3\u9891\u2026"; // 正在合成整库音频…
-            ensureSession();
-            updateSessionState(PlaybackState.STATE_PLAYING);
-            updateNotification();
-            final String key = sha1(keySrc.toString());
-            final File fin = new File(mAlbumWavDir, key + ".wav");
-            final File idxF = new File(mAlbumWavDir, key + ".idx");
             mFileOut = fin;
+            ensureSession();
+            // ① 整库音频已存在（同词库 + 同参数）：直接用单个文件播放，真实进度条 / 可拖动 / 可上下首
             if (fin.exists() && fin.length() > 1000 && idxF.exists() && loadFileStarts(idxF, list.size())) {
-                // 已合成过（同词库同语速）：直接播放缓存文件
+                mAlbumMode = true;
+                mFileMode = true;
+                mAlbumIndex = 0;
+                mFileIndex = -1;
+                mPaused = false;
+                mZhPendingUtt = "";
+                mTitle = name;
+                mArtist = list.get(0).word;
                 playBuiltFile(fin);
                 return;
             }
+            // ② 首次播放该参数组合：先用逐词模式【立即出声】（不再让用户干等整库合成），
+            //    同时后台静默合成整库音频，下次进入同一词库即获得单文件播放能力。
+            mAlbumMode = true;
+            mFileMode = false;
+            mAlbumIndex = 0;
+            mPaused = false;
+            mZhPendingUtt = "";
+            mFileStarts = new long[list.size()];
+            mBuildCancel = false;
             final ArrayList<AlbumWord> fList = list;
             final int gen = mBuildGen;
-            mBuildCancel = false;
+            final String jsonToStart = parsed;
+            mPrefetchedUpto = -1;
+            startAlbum(jsonToStart);
             mBuildThread = new Thread(new Runnable() {
                 @Override public void run() { buildAlbumWav(gen, fList, fin, idxF); }
             }, "album-build");
             mBuildThread.start();
+            emit("", "album_build_start");
         } catch (Throwable e) {
             Log.e(TAG, "startAlbumFile failed", e);
         }
     }
 
-    /** 后台合成：英文 mp3 解码 + 中文 TTS + 静音间隔 → 逐段追加到单个 PCM/WAV 文件 */
+    /** 中文音频文件名后缀：区分不同发音源 / 音色，避免切源后复用错预取缓存 */
+    private String zhSuffix() {
+        return ("system".equals(mCfgZhSource) ? "sys" : "net" + mCfgZhVoice);
+    }
+
+    /** 网络真人配音 URL（百度翻译 TTS，per 指定音色：0 度小娇女声 / 3 度逍遥 / 4 度丫丫） */
+    private String zhNetUrl(String text) {
+        try {
+            return "https://fanyi.baidu.com/gettts?lan=zh&text=" + URLEncoder.encode(text, "UTF-8")
+                    + "&spd=3&per=" + mCfgZhVoice + "&source=web";
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    /** 确保英文发音文件就绪（本地已有则秒返回；否则下载） */
+    private boolean ensureEnAudio(AlbumWord w) {
+        File enF = new File(mAlbumCacheDir, "en_" + w.key + ".mp3");
+        if (enF.exists() && enF.length() > 200) return true;
+        if (w.enUrl == null || w.enUrl.length() == 0) return false;
+        return downloadToFileSync(w.enUrl, enF);
+    }
+
+    /** 确保中文发音文件就绪（拟人优先：网络真人配音 → 失败回退本地语音引擎） */
+    private boolean ensureZhAudio(AlbumWord w) {
+        if (w.zhText == null || w.zhText.length() == 0) return false;
+        String suf = zhSuffix();
+        if (!"system".equals(mCfgZhSource)) {
+            File net = new File(mAlbumCacheDir, "zh_" + w.key + "_" + suf + ".mp3");
+            if (net.exists() && net.length() > 200) return true;
+            if (zhNetUrl(w.zhText) != null && downloadToFileSync(zhNetUrl(w.zhText), net)) return true;
+        }
+        File sys = new File(mAlbumCacheDir, "zh_" + w.key + "_sys.wav");
+        if (sys.exists() && sys.length() > 44) return true;
+        return synthZhSync(w.zhText, sys);
+    }
+
+    /** 把已就绪的中文音频追加到输出流：先试当前发音源，再试另一种 */
+    private boolean appendZhAudio(java.io.RandomAccessFile out, AlbumWord w) {
+        String suf = zhSuffix();
+        File net = new File(mAlbumCacheDir, "zh_" + w.key + "_" + suf + ".mp3");
+        if (net.exists() && net.length() > 200 && appendAudioPcm(out, net)) return true;
+        File anyNet = new File(mAlbumCacheDir, "zh_" + w.key + "_net0.mp3");
+        if (anyNet.exists() && anyNet.length() > 200 && appendAudioPcm(out, anyNet)) return true;
+        File sys = new File(mAlbumCacheDir, "zh_" + w.key + "_sys.wav");
+        if (sys.exists() && sys.length() > 44 && appendWavPcm(out, sys)) return true;
+        return false;
+    }
+
+    /** 为后续词并发预取音频（6 线程），把整库合成耗时从「串行下载」降到接近纯解码 */
+    private void prefetchAhead(final ArrayList<AlbumWord> list, int from, int to) {
+        if (list == null || list.isEmpty()) return;
+        if (to > list.size()) to = list.size();
+        if (from < 0) from = 0;
+        if (to <= mPrefetchedUpto) return;           // 这段早就备好了
+        if (from <= mPrefetchedUpto) from = mPrefetchedUpto + 1;
+        if (from >= to) return;
+        mPrefetchedUpto = to - 1;                    // 先占位，避免同一批被重复提交
+        if (mPrefetchPool == null) {
+            try {
+                mPrefetchPool = java.util.concurrent.Executors.newFixedThreadPool(6);
+            } catch (Throwable ignored) { mPrefetchedUpto = from - 1; return; }
+        }
+        for (int i = from; i < to && i < list.size(); i++) {
+            final AlbumWord w = list.get(i);
+            try {
+                mPrefetchPool.submit(new Runnable() {
+                    @Override public void run() {
+                        try { ensureEnAudio(w); } catch (Throwable ignored) {}
+                        try { ensureZhAudio(w); } catch (Throwable ignored) {}
+                    }
+                });
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    /** 后台合成：按听读参数拼接「英文 × N遍 + 中文 × M遍 + 间隔」→ 单个 PCM/WAV 文件 */
     private void buildAlbumWav(final int gen, final ArrayList<AlbumWord> list, final File fin, final File idxF) {
         File tmp = new File(mAlbumWavDir, fin.getName() + ".tmp");
         java.io.RandomAccessFile raf = null;
+        final long[] starts = new long[list.size()];
         try {
             raf = new java.io.RandomAccessFile(tmp, "rw");
             raf.setLength(0);
             raf.seek(44); // 先留 44 字节 WAV 头
             int n = list.size();
+            prefetchAhead(list, 0, Math.min(n, 12)); // 先把前面的备好，第一词几乎立刻出声
             for (int i = 0; i < n; i++) {
                 if (mBuildCancel || gen != mBuildGen) {
                     try { raf.close(); } catch (Throwable ignored) {}
@@ -1342,37 +1602,35 @@ public class PlayerService extends Service {
                     return;
                 }
                 AlbumWord w = list.get(i);
-                mFileStarts[i] = currentOutMs(raf);
-                // —— 英文发音（本地缓存 mp3 → 下载 → 解码追加；失败留 0.8s 空白占位）——
-                File enF = new File(mAlbumCacheDir, "en_" + w.key + ".mp3");
-                boolean enOk = enF.exists() && enF.length() > 200;
-                if (!enOk && w.enUrl != null && w.enUrl.length() > 0) enOk = downloadToFileSync(w.enUrl, enF);
-                if (enOk) enOk = appendAudioPcm(raf, enF);
-                if (!enOk) appendSilence(raf, 800);
-                appendSilence(raf, 350);
-                // —— 中文释义（TTS 合成 wav → 解码追加；失败回退百度网络语音 mp3）——
-                boolean zhOk = false;
-                if (w.zhText != null && w.zhText.length() > 0) {
-                    File zhWav = new File(mAlbumCacheDir, "zh_" + w.key + ".wav");
-                    if (!(zhWav.exists() && zhWav.length() > 44)) synthZhSync(w.zhText, zhWav);
-                    if (zhWav.exists() && zhWav.length() > 44) zhOk = appendWavPcm(raf, zhWav);
-                    if (!zhOk) {
-                        File zhMp3 = new File(mAlbumCacheDir, "zh_" + w.key + ".mp3");
-                        boolean dl = zhMp3.exists() && zhMp3.length() > 200;
-                        if (!dl) dl = downloadToFileSync("https://fanyi.baidu.com/gettts?lan=zh&text="
-                                + URLEncoder.encode(w.zhText, "UTF-8") + "&spd=3&source=web", zhMp3);
-                        if (dl) zhOk = appendAudioPcm(raf, zhMp3);
+                prefetchAhead(list, i + 1, i + 9); // 持续向后预取
+                starts[i] = currentOutMs(raf);
+                // —— 依「朗读顺序」生成本词的音段 ——
+                boolean enSilent = false;
+                boolean zhSilent = false;
+                for (int rep = 0; rep < mCfgEnRepeat; rep++) {
+                    File enF = new File(mAlbumCacheDir, "en_" + w.key + ".mp3");
+                    boolean ok = (enF.exists() && enF.length() > 200) || ensureEnAudio(w);
+                    if (ok) ok = appendAudioPcm(raf, enF);
+                    if (!ok) { enSilent = true; appendSilence(raf, 700); }
+                    if (rep < mCfgEnRepeat - 1 && mCfgInnerGapMs > 0) appendSilence(raf, mCfgInnerGapMs);
+                }
+                if (!"en".equals(mCfgOrder) && mCfgZhRepeat > 0) {
+                    if (mCfgInnerGapMs > 0 && !enSilent) appendSilence(raf, mCfgInnerGapMs);
+                    for (int rep = 0; rep < mCfgZhRepeat; rep++) {
+                        boolean ok = appendZhAudio(raf, w) || (ensureZhAudio(w) && appendZhAudio(raf, w));
+                        if (!ok) { zhSilent = true; appendSilence(raf, 600); }
+                        if (rep < mCfgZhRepeat - 1 && mCfgInnerGapMs > 0) appendSilence(raf, mCfgInnerGapMs);
                     }
                 }
-                if (!zhOk) appendSilence(raf, 600);
+                if (enSilent && zhSilent) {
+                    // 两端都取不到音频：说明该词发音资源缺失，留足答疑空白避免整段错位
+                }
                 // —— 词间间隔 ——
-                appendSilence(raf, 700);
+                appendSilence(raf, mCfgWordGapMs);
                 final int done = i + 1;
-                if (mHandler != null) mHandler.post(new Runnable() {
+                mHandler.post(new Runnable() {
                     @Override public void run() {
-                        if (gen != mBuildGen || !mFileMode) return;
-                        mArtist = "\u6b63\u5728\u5408\u6210\u6574\u5e93\u97f3\u9891 " + done + "/" + mAlbumTotal;
-                        updateNotification();
+                        if (gen != mBuildGen) return;
                         emit("", "album_build:" + done + "/" + mAlbumTotal);
                     }
                 });
@@ -1395,28 +1653,43 @@ public class PlayerService extends Service {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < n; i++) {
                 if (i > 0) sb.append(',');
-                sb.append(mFileStarts[i]);
+                sb.append(starts[i]);
             }
             java.io.FileOutputStream fo = new java.io.FileOutputStream(idxF);
             fo.write(sb.toString().getBytes("UTF-8"));
             fo.close();
-            if (mHandler != null) mHandler.post(new Runnable() {
+            final File fout = fin;
+            final long[] fStarts = starts;
+            final ArrayList<AlbumWord> fWords = list;
+            mHandler.post(new Runnable() {
                 @Override public void run() {
-                    if (gen != mBuildGen || !mFileMode) return;
-                    mArtist = mAlbumWords.get(0).word;
-                    playBuiltFile(fin);
+                    if (gen != mBuildGen) return;
+                    mFileStarts = fStarts;
+                    mFileOut = fout;
+                    if (mAlbumWords == fWords || mAlbumWords == null || mAlbumWords.isEmpty()) mAlbumWords = fWords;
+                    if (!mAlbumMode) { emit("", "album_file_ready"); return; }
+                    if (mFileMode) { playBuiltFile(fout); return; }
+                    // 逐词模式正在响：无缝切到整库文件，从当前词所在偏移接续，听众几乎无感
+                    int resumeIdx = Math.max(0, Math.min(fStarts.length - 1, mAlbumIndex));
+                    stopAlbumWord();
+                    mFileMode = true;
+                    playBuiltFileAt(fout, resumeIdx);
                 }
             });
         } catch (Throwable e) {
             Log.e(TAG, "buildAlbumWav failed", e);
             try { if (raf != null) raf.close(); } catch (Throwable ignored) {}
             try { tmp.delete(); } catch (Throwable ignored) {}
-            if (mHandler != null) mHandler.post(new Runnable() {
+            mHandler.post(new Runnable() {
                 @Override public void run() {
-                    if (gen != mBuildGen || !mFileMode) return;
-                    mArtist = "\u5408\u6210\u5931\u8d25"; // 合成失败
-                    updateNotification();
-                    emit("", "album_build_fail");
+                    if (gen != mBuildGen) return;
+                    if (mFileMode) {
+                        mArtist = "\u5408\u6210\u5931\u8d25"; // 合成失败
+                        updateNotification();
+                        emit("", "album_build_fail");
+                    } else {
+                        emit("", "album_file_ready"); // 逐词模式照常在响，不让用户察觉失败
+                    }
                 }
             });
         }
@@ -1424,6 +1697,11 @@ public class PlayerService extends Service {
 
     /** 用单个 MediaPlayer 播放整库 WAV（MediaSession 拥有真实时长，可拖动进度） */
     private void playBuiltFile(final File f) {
+        playBuiltFileAt(f, 0);
+    }
+
+    /** 从指定毫秒处起播整库 WAV（合成完成后从当前词无缝接续） */
+    private void playBuiltFileAt(final File f, final int startMs) {
         releasePlayer();
         requestFocus();
         acquireWakeLock();
@@ -1432,6 +1710,7 @@ public class PlayerService extends Service {
             setAudioAttrs(mPlayer);
             mPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
             mPlayer.setDataSource(f.getAbsolutePath());
+            final int from = startMs > 0 ? startMs : 0;
             mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override public void onPrepared(MediaPlayer mp) {
                     mHasPlayed = true;
@@ -1440,11 +1719,12 @@ public class PlayerService extends Service {
                     mRate = mAlbumRate; // v2.65.0：整库语速同步到通用字段，变速/暂停恢复一致
                     applyRate(); // 变速需 API 23+，低版本原速播放
                     try { mDuration = mp.getDuration(); } catch (Throwable ignored) {}
+                    try { if (from > 0) mp.seekTo(from); } catch (Throwable ignored) {}
                     try { mp.start(); } catch (Throwable ignored) {}
-                    mFileIndex = 0;
-                    mAlbumIndex = 0;
-                    try { if (mAlbumWords != null && !mAlbumWords.isEmpty()) mArtist = mAlbumWords.get(0).word; } catch (Throwable ignored) {}
-                    emit("", "album_index:0");
+                    mFileIndex = -1;
+                    syncFileWordIndex(from);
+                    try { int k = Math.max(0, mFileIndex); if (mAlbumWords != null && k < mAlbumWords.size()) mArtist = mAlbumWords.get(k).word; } catch (Throwable ignored) {}
+                    emit("", "album_index:" + Math.max(0, mFileIndex));
                     emit("", "album_file_ready");
                     updateNotification();
                     updateSessionState(PlaybackState.STATE_PLAYING);
