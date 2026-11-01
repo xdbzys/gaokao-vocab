@@ -85,14 +85,17 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.72.0';
-const APP_VERSION_CODE = 234;
+const APP_VERSION = '2.72.1';
+const APP_VERSION_CODE = 235;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
+// v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
+// 曾实测返回旧包 4,376,178 字节，而仓库内为 4,381,067 字节），用户会先白下 4MB 旧包；
+// Gitee raw 实测 3 秒返回当前包（4,381,067 字节，与 Release 一致），故置于首位。
 const APK_DOWNLOAD_SOURCES = [
+  { name: 'Gitee 镜像（国内最快、随构建更新）', url: 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk' },
   { name: 'jsDelivr CDN', url: 'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk' },
-  { name: 'GitHub Releases', url: 'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-debug.apk' },
-  { name: 'Gitee', url: 'https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk' },
+  { name: 'GitHub Releases', url: 'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk' },
 ];
 // 内置更新服务器地址
 const GITEE_OWNER = 'xdbzys';
@@ -11489,8 +11492,10 @@ function App() {
           const data = await resp.json();
           if (data.version && data.version !== APP_VERSION && data.webHtmlUrl) {
             console.log('[Web Update] 发现新版本:', data.version, '当前:', APP_VERSION);
-            // v2.71.0：多源兜底拉取正文，避免单点（GitHub Release 国内慢/被墙）导致更新失败
+            // v2.72.1：Gitee 镜像随构建更新且国内直连（实测 3 秒），置首；
+            // 并校验正文里的 APP_VERSION 必须等于清单版本，避免任何 CDN 缓存导致「更新到旧页面」
             const htmlSources = [
+              'https://gitee.com/xdbzys/app/raw/master/web/index.html',
               data.webHtmlUrl,
               'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html',
               'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html'
@@ -11501,7 +11506,11 @@ function App() {
                 const r = await fetch(htmlSources[si], { cache: 'no-store' });
                 if (r.ok) {
                   const t = await r.text();
-                  if (t && (t.includes('<!doctype') || t.includes('<html'))) { newHtml = t; break; }
+                  if (!t || !(t.includes('<!doctype') || t.includes('<html'))) continue;
+                  const vm = /APP_VERSION\s*=\s*['"]([\d.]+)['"]/.exec(t);
+                  if (vm && data.version && vm[1] !== data.version) continue; // 陈旧页面，换下一个源
+                  newHtml = t;
+                  break;
                 }
               } catch (e) { /* 该源失败，尝试下一个 */ }
             }
@@ -13874,17 +13883,19 @@ function App() {
   const apkCandidates = (info) => {
     const list = [];
     const push = (u) => { if (u && typeof u === 'string' && list.indexOf(u) < 0) list.push(u); };
-    // v2.71.0 下载源排序优化：jsDelivr master apk 第一优先——
-    // CI 每次构建都会把最新 app-release.apk 回写 master，jsDelivr 国内最快最稳；
-    // raw 次之，GitHub Release 直链与 ghproxy 作为兜底（国内可能被墙/限速）
-    push(info && info.apkUrlCdn);     // jsDelivr CDN 镜像（CI 回写最新版，国内最快）
+    // v2.72.1 下载源重排（实测依据）：
+    // Gitee 镜像随每次构建更新、国内直连约 3 秒 → 首选；
+    // jsDelivr ≈ CDN 缓存 12 小时，实测曾滞后一版 → 次选（到期后会自愈）；
+    // GitHub Release / ghproxy / raw 国内常被墙或限速 → 末位兜底。
+    // 原生侧仍会解析下载结果的 versionCode，比本机旧就自动换下一个源。
+    push('https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk');
+    push(info && info.apkUrlCdn);     // jsDelivr CDN 镜像
     push('https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk');
-    push('https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/gaokao-vocab.apk');
-    push(info && info.apkUrl);        // GitHub Release 官方直链（兜底）
+    push(info && info.apkUrl);        // GitHub Release 官方直链
     push('https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk');
     push('https://ghproxy.com/https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk');
     push('https://mirror.ghproxy.com/https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk');
-    push('https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk');
+    push('https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/gaokao-vocab.apk');
     return list;
   };
 

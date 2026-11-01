@@ -69,6 +69,9 @@ public class MainActivity extends Activity {
     // 第二步：正文地址（v2.71.0 改为 jsDelivr 优先——CI 每次构建把最新 index.html 回写 master，国内最快最稳；
     //  GitHub Pages / GitHub Release 作为兜底）
     private static final String[] CLOUD_INDEX_URLS = {
+        // v2.72.1：Gitee 镜像随每次构建更新且国内直连实测约 3 秒 → 首选
+        // （jsDelivr 对 @master 有最长 12 小时缓存，实测曾下发上一版页面）
+        "https://gitee.com/xdbzys/app/raw/master/web/index.html",
         "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
         "https://xdbzys.github.io/gaokao-vocab/web/index.html",
         "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html"
