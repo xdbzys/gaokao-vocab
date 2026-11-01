@@ -36,43 +36,66 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      # v2.73.0 版本号单一事实来源：
+      # 旧流程需要人工同时改 build.gradle / app-update.json / main.jsx 三处，
+      # 任何一处漏改都会造成「远端版本号不动 → 客户端永远提示已最新」或
+      # 「APK 内版本号与清单不一致 → 客户端下完判为旧包直接丢弃」。
+      # 现在由流水线生成一次、三处同步，versionCode 严格单调递增（取 run_number 兜底，
+      # 即使提交回写失败也不会倒退）。
+      - name: Bump versionCode & sync versionName
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const upd = JSON.parse(fs.readFileSync('app-update.json', 'utf8'));
+          const runNo = Number(process.env.GITHUB_RUN_NUMBER || 0);
+          const next = Math.max(Number(upd.versionCode || 0) + 1, runNo);
+          if (!(next > 0)) throw new Error('invalid versionCode in app-update.json');
+
+          let versionName = '';
+          for (const f of ['main.jsx', 'src/main.jsx']) {
+            if (!fs.existsSync(f)) continue;
+            let src = fs.readFileSync(f, 'utf8');
+            const m = /const\s+APP_VERSION\s*=\s*['"]([\d.]+)['"]/.exec(src);
+            if (m) versionName = m[1];
+            fs.writeFileSync(f, src.replace(/const\s+APP_VERSION_CODE\s*=\s*\d+/, 'const APP_VERSION_CODE = ' + next));
+          }
+          if (!versionName) versionName = upd.version;
+          if (!versionName) throw new Error('cannot resolve versionName');
+
+          upd.version = versionName;
+          upd.versionCode = next;
+          fs.writeFileSync('app-update.json', JSON.stringify(upd, null, 2) + '\n');
+
+          const gradlePath = 'android/app/build.gradle';
+          let g = fs.readFileSync(gradlePath, 'utf8');
+          g = g.replace(/versionCode\s+\d+/, 'versionCode ' + next);
+          g = g.replace(/versionName\s+"[^"]*"/, 'versionName "' + versionName + '"');
+          fs.writeFileSync(gradlePath, g);
+
+          fs.writeFileSync('.build_version.json', JSON.stringify({ version: versionName, versionCode: next }));
+          console.log('[version] name=' + versionName + ' code=' + next + ' (run ' + runNo + ')');
+          NODE
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build web
         run: npm run build
 
-      - name: Copy app-update.json to dist for GitHub Pages
-        run: cp app-update.json dist/app-update.json
+      # v2.73.0：app-update.json 的最终版（含 apkSha256 / apkSize）在 APK 构建后写入 dist，
+      # 见下方 "Finalize manifests with APK digest"，此处不再提前拷贝。
 
-      # v2.59.0 主流更新方案：生成极小版本清单 + gzip 压缩包
-      # 软件端先拉约 300 字节的 version.json 比对 versionCode，一致则完全不下载正文；
-      # 需要更新时优先拉取 .gz（体积约为原始 1/4），显著提速并节省流量。
-      - name: Generate version manifest + gzip bundle
+      # v2.59.0 主流更新方案：版本清单 + gzip 压缩包
+      # 软件端先拉约 300 字节的 version.json 比对 versionCode，一致则完全不下载正文。
+      # v2.73.0：清单最终内容（含 APK 大小 / SHA-256）改到 APK 构建之后生成，
+      # 这里只做 gzip，避免出现「清单里没有 APK 摘要」的空窗。
+      - name: Generate gzip bundle
         run: |
-          node -e "
-            const fs=require('fs');
-            const u=JSON.parse(fs.readFileSync('app-update.json','utf8'));
-            const base='https://github.com/xdbzys/gaokao-vocab/releases/latest/download';
-            const mf={
-              version:u.version,
-              versionCode:u.versionCode,
-              webUrl:base+'/index.html',
-              webGzUrl:base+'/index.html.gz',
-              apkUrl:base+'/app-release.apk',
-              apkUrlCdn:'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk',
-              changelog:(u.changelog||'').slice(0,160)
-            };
-            const s=JSON.stringify(mf,null,2);
-            fs.writeFileSync('dist/version.json', s);
-            fs.writeFileSync('version.json', s);
-            console.log('version.json ->', s);
-          "
           # 注意：.gz 只生成到仓库根，不能放进 dist（dist 会整体拷入 Android assets，
           # 与 index.html 形成 Duplicate resources 导致 APK 构建失败）
           gzip -9 -c dist/index.html > index.html.gz
           echo "--- 体积对比（原始 vs gzip）---"
-          ls -la dist/index.html index.html.gz dist/version.json
+          ls -la dist/index.html index.html.gz
 
       - name: Copy dist to Android assets
         run: |
@@ -100,6 +123,72 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug assembleRelease --stacktrace
 
+      # v2.73.0 构建后强校验：APK 内的包名 / versionCode / versionName 必须与清单完全一致。
+      # 不一致直接让流水线变红，绝不把「清单说 237、包里还是 236」的产物发出去 ——
+      # 那正是客户端「下完判为旧包、装完还是旧版本」的源头。
+      - name: Verify APK version matches manifest
+        run: |
+          set -e
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          AAPT=$(ls "$SDK"/build-tools/*/aapt2 2>/dev/null | sort -V | tail -1)
+          if [ -z "$AAPT" ]; then AAPT=$(command -v aapt2 || command -v aapt || true); fi
+          if [ -z "$AAPT" ]; then echo "::error::aapt2 未找到，无法校验 APK 版本"; exit 1; fi
+          echo "using $AAPT"
+          "$AAPT" dump badging "$APK" | head -3 > /tmp/badging.txt || true
+          cat /tmp/badging.txt
+          node - <<'NODE'
+          const fs = require('fs');
+          const want = JSON.parse(fs.readFileSync('app-update.json', 'utf8'));
+          const bag = fs.readFileSync('/tmp/badging.txt', 'utf8');
+          const pkg = /package: name='([^']+)'/.exec(bag);
+          const code = /versionCode='(\d+)'/.exec(bag);
+          const name = /versionName='([^']*)'/.exec(bag);
+          if (!pkg || !code || !name) { console.error('cannot parse badging'); process.exit(1); }
+          const fail = [];
+          if (pkg[1] !== 'com.gaokao.vocab') fail.push('packageName=' + pkg[1]);
+          if (Number(code[1]) !== Number(want.versionCode)) fail.push('versionCode ' + code[1] + ' != manifest ' + want.versionCode);
+          if (name[1] !== String(want.version)) fail.push('versionName ' + name[1] + ' != manifest ' + want.version);
+          if (fail.length) { console.error('APK/manifest mismatch: ' + fail.join('; ')); process.exit(1); }
+          console.log('APK ok: ' + pkg[1] + ' v' + name[1] + ' (' + code[1] + ')');
+          NODE
+
+      # 把 APK 的字节级指纹写进清单：客户端下载后可按 SHA-256 拒收任何损坏/被替换的包
+      - name: Finalize manifests with APK digest
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const apk = 'android/app/build/outputs/apk/release/app-release.apk';
+          const buf = fs.readFileSync(apk);
+          const sha256 = crypto.createHash('sha256').update(buf).digest('hex');
+          const size = buf.length;
+
+          const upd = JSON.parse(fs.readFileSync('app-update.json', 'utf8'));
+          upd.apkSize = size;
+          upd.apkSha256 = sha256;
+          fs.writeFileSync('app-update.json', JSON.stringify(upd, null, 2) + '\n');
+
+          const base = 'https://github.com/xdbzys/gaokao-vocab/releases/latest/download';
+          const mf = {
+            version: upd.version,
+            versionCode: upd.versionCode,
+            webUrl: base + '/index.html',
+            webGzUrl: base + '/index.html.gz',
+            apkUrl: base + '/app-release.apk',
+            apkUrlCdn: 'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk',
+            apkSize: size,
+            apkSha256: sha256,
+            changelog: (upd.changelog || '').slice(0, 160)
+          };
+          const s = JSON.stringify(mf, null, 2);
+          fs.writeFileSync('version.json', s);
+          fs.writeFileSync('dist/version.json', s);
+          fs.copyFileSync('app-update.json', 'dist/app-update.json');
+          console.log('APK ' + size + ' bytes, sha256=' + sha256);
+          NODE
+          ls -la android/app/build/outputs/apk/release/app-release.apk version.json dist/version.json dist/app-update.json
+
       - name: Copy release APK for CDN distribution
         run: cp android/app/build/outputs/apk/release/app-release.apk gaokao-vocab.apk
 
@@ -116,9 +205,10 @@ jobs:
           # 用本次构建的 dist（而非仓库 web/），保证云端热更与 APK 内置资源严格同版本
           cp /home/runner/work/gaokao-vocab/gaokao-vocab/dist/index.html web/index.html
           cp /home/runner/work/gaokao-vocab/gaokao-vocab/app-update.json app-update.json
+          cp /home/runner/work/gaokao-vocab/gaokao-vocab/version.json version.json
           git config user.name "ci-bot"
           git config user.email "ci@bot.com"
-          git add gaokao-vocab.apk web/index.html app-update.json
+          git add gaokao-vocab.apk web/index.html app-update.json version.json
           VERSION=$(node -p "require('/home/runner/work/gaokao-vocab/gaokao-vocab/app-update.json').version")
           git commit -m "release v${VERSION}: sync APK + web + app-update.json" || echo "no changes"
           git push origin master 2>&1 | tail -5 || echo "push failed"
@@ -174,11 +264,20 @@ jobs:
         run: |
           git config user.name "ci-bot"
           git config user.email "ci@bot.com"
+          # checkout 会把工作区重置成 origin/master 版本，先备份本次构建的产物与清单
+          mkdir -p /tmp/mirror
+          cp android/app/build/outputs/apk/release/app-release.apk /tmp/mirror/app-release.apk
+          cp dist/index.html /tmp/mirror/index.html
+          cp version.json app-update.json /tmp/mirror/
           git fetch origin master
           git checkout -B mirror-sync origin/master
-          cp android/app/build/outputs/apk/release/app-release.apk gaokao-vocab.apk
-          cp dist/index.html web/index.html
-          git add -f gaokao-vocab.apk web/index.html
+          cp /tmp/mirror/app-release.apk gaokao-vocab.apk
+          cp /tmp/mirror/index.html web/index.html
+          # version.json / app-update.json 必须一起回写：下次构建从 master 读到的 versionCode
+          # 才是本次的值，否则版本号会重复，客户端会认为「没有更新」
+          cp /tmp/mirror/version.json version.json
+          cp /tmp/mirror/app-update.json app-update.json
+          git add -f gaokao-vocab.apk web/index.html version.json app-update.json
           if git diff --cached --quiet; then
             echo "Files unchanged, skip mirror commit"
           else

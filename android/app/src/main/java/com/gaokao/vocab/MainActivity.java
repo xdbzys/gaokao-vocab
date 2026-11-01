@@ -62,6 +62,10 @@ public class MainActivity extends Activity {
     // v2.59.0 主流更新方案：① 先拉约 300 字节的版本清单秒级比对 → ② 仅必要时才下载正文（优先 gzip）
     // 第一步：版本清单地址（多源容灾：jsDelivr → GitHub Pages → raw）
     private static final String[] CLOUD_VERSION_URLS = {
+        // v2.73.0：Gitee 每次构建同步 app-update.json，国内直连最快 → 首选；
+        // 其余为兜底。所有源都会读到「取最大版本号」，单个源滞后不会导致永不更新。
+        "https://gitee.com/xdbzys/app/raw/master/app-update.json",
+        "https://xdbzys.github.io/gaokao-vocab/app-update.json",
         "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/version.json",
         "https://xdbzys.github.io/gaokao-vocab/version.json",
         "https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/version.json"
@@ -79,6 +83,9 @@ public class MainActivity extends Activity {
     private static final String CACHE_FILE = "cloud_index.html";
     private static final String PREF_NAME = "cloud_update";
     private static final String PREF_KEY_VER = "cached_version_code";
+    // v2.73.0：记录「装过的最新 versionCode」，APK 一变就丢弃热更新缓存；同时记住缓存页面对应版本名
+    private static final String PREF_KEY_LAST_INSTALL = "last_installed_code";
+    private static final String PREF_KEY_CACHE_NAME = "cached_version_name";
     // 超时：清单极小用短超时快速切换源；正文较大，读取超时放宽，慢网络也不会被中断
     private static final int MANIFEST_TIMEOUT = 6000;
     private static final int CONNECT_TIMEOUT = 8000;
@@ -527,66 +534,15 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new Object() {
             @JavascriptInterface
             public void downloadAndInstall(final String url) {
-                if (url == null || url.isEmpty()) return;
+                // v2.73.0：旧实现自行下载到固定文件名 update.apk 且不做任何校验，
+                // 与「立即更新」的可靠更新器是两套逻辑，一旦走到这条路径就会出现
+                // 「下载的其实是旧包 / 残片覆盖 / 重复点击互相写坏」。
+                // 现在统一委派给 installUpdateInBackground（单源），共享全部校验与安装结果判定。
+                if (url == null || url.length() < 8) return;
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(0, '开始下载...')");
-                            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-                            conn.setConnectTimeout(15000);
-                            conn.setReadTimeout(30000);
-                            conn.setRequestMethod("GET");
-                            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36");
-                            int code = conn.getResponseCode();
-                            if (code != 200) {
-                                notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(-1, '下载失败 HTTP " + code + "')");
-                                conn.disconnect();
-                                return;
-                            }
-                            int total = conn.getContentLength();
-                            InputStream is = conn.getInputStream();
-                            File dir = new File(getCacheDir(), "apk_updates");
-                            if (!dir.exists()) dir.mkdirs();
-                            File apkFile = new File(dir, "update.apk");
-                            FileOutputStream fos = new FileOutputStream(apkFile);
-                            byte[] buf = new byte[8192];
-                            int n, downloaded = 0;
-                            while ((n = is.read(buf)) != -1) {
-                                fos.write(buf, 0, n);
-                                downloaded += n;
-                                if (total > 0) {
-                                    int pct = downloaded * 100 / total;
-                                    notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(" + pct + ", '下载中 " + pct + "%')");
-                                }
-                            }
-                            fos.flush();
-                            fos.close();
-                            is.close();
-                            conn.disconnect();
-
-                            notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(100, '下载完成，准备安装...')");
-
-                            // 触发安装
-                            Uri apkUri;
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                apkUri = androidx.core.content.FileProvider.getUriForFile(
-                                    MainActivity.this,
-                                    getPackageName() + ".fileprovider",
-                                    apkFile
-                                );
-                            } else {
-                                apkUri = Uri.fromFile(apkFile);
-                            }
-                            Intent installIntent = new Intent(Intent.ACTION_VIEW);
-                            installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
-                            installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                            installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(installIntent);
-                        } catch (Throwable e) {
-                            Log.e("GaokaoVocab", "APK download/install failed", e);
-                            notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(-1, '下载失败: " + e.getMessage() + "')");
-                        }
+                        installUpdateInBackground("[\"" + url.replace("\\", "\\\\").replace("\"", "") + "\"]", 0, "");
                     }
                 }).start();
             }
@@ -620,10 +576,29 @@ public class MainActivity extends Activity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        installUpdateInBackground(urlsJson, minCode);
+                        installUpdateInBackground(urlsJson, minCode, "");
                     }
                 }).start();
             }
+
+            /** v2.73.0：带 SHA-256 的版本（清单里有 apkSha256 时使用，可拦住任何损坏/被篡改的包） */
+            @JavascriptInterface
+            public void installV2(final String urlsJson, final int minCode, final String sha256) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        installUpdateInBackground(urlsJson, minCode, sha256 == null ? "" : sha256);
+                    }
+                }).start();
+            }
+
+            /** 本机真实安装包 versionCode（页面用来交叉核对，避免被热更新版本号误导） */
+            @JavascriptInterface
+            public int installedCode() { return installedVersionCode(); }
+
+            /** 清空已下载的安装包缓存（下载失败/包异常时由页面触发重来） */
+            @JavascriptInterface
+            public void clearCache() { cleanupApkDir(); }
         }, "NativeUpdater");
 
         // 启用 WebView 远程调试（Chrome://inspect 可看控制台/网络）
@@ -720,6 +695,9 @@ public class MainActivity extends Activity {
      * v2.55.7: 缓存内容必须通过 isSafeContent 校验，否则删除缓存回退 APK 内置版本
      */
     private void loadContent() {
+        // v2.73.0：安装包刚被替换过时，先丢弃升级前缓存的热更新页面，
+        // 否则新原生能力会配上旧界面，「装了新版打开还是老样子」。
+        resetWebCacheIfApkChanged();
         File cacheFile = new File(getFilesDir(), CACHE_FILE);
         if (cacheFile.exists() && cacheFile.length() > 1000) {
             String cached = readFileText(cacheFile);
@@ -763,38 +741,53 @@ public class MainActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                // ① 版本清单（多源容灾，取第一个可用）
+                // ① 版本清单（多源容灾，取所有源里的【最大】版本号）
+                int cachedVer = getCachedVersionCode();
+                int installedVer = installedVersionCode();
                 int remoteVer = -1;
+                String remoteName = "";
+                // v2.73.0：不再「第一个连通的源说了算」。旧逻辑一旦首选源（jsDelivr 对 @master
+                // 有最长 12 小时缓存）滞后，就会永久判定「已是最新」，用户点检查更新毫无反应。
+                int stopAt = Math.max(cachedVer, installedVer);
                 for (String u : CLOUD_VERSION_URLS) {
                     String txt = httpGetText(u, MANIFEST_TIMEOUT);
                     if (txt == null) continue;
                     int v = parseVersionCode(txt);
-                    if (v > 0) {
+                    if (v <= 0) continue;
+                    if (v > remoteVer) {
                         remoteVer = v;
-                        Log.i("GaokaoVocab", "Manifest from " + u + " -> v" + v);
-                        break;
+                        remoteName = parseVersionName(txt);
+                        Log.i("GaokaoVocab", "Manifest from " + u + " -> v" + v + " (" + remoteName + ")");
                     }
+                    if (remoteVer > stopAt) break;   // 已确认有更新版本，不必再问其它源
                 }
-                int cachedVer = getCachedVersionCode();
                 if (remoteVer > 0 && cachedVer > 0 && remoteVer <= cachedVer) {
                     Log.i("GaokaoVocab", "Up to date (cached v" + cachedVer + " >= remote v" + remoteVer + "), skip download");
+                    if (remoteName.length() > 0) saveCacheVersionName(remoteName);
                     return;
                 }
                 // ② 需要更新（或首次/未知版本）→ 下载正文
                 byte[] data = null;
                 for (String u : CLOUD_INDEX_URLS) {
-                    byte[] gz = httpGetBytes(u + ".gz", true);
-                    if (gz != null && gz.length > 1000) {
-                        data = gz;
-                        Log.i("GaokaoVocab", "Index downloaded (gzip) from " + u + ".gz, " + gz.length + " bytes");
-                        break;
+                    byte[] cand = httpGetBytes(u + ".gz", true);
+                    if (cand == null || cand.length <= 1000) cand = httpGetBytes(u, false);
+                    if (cand == null || cand.length <= 1000) continue;
+                    String text;
+                    try { text = new String(cand, "UTF-8"); } catch (Throwable e) { continue; }
+                    if (!text.contains("createRoot") || !isSafeContent(text)) {
+                        Log.w("GaokaoVocab", "Index from " + u + " looks invalid, try next");
+                        continue;
                     }
-                    byte[] raw = httpGetBytes(u, false);
-                    if (raw != null && raw.length > 1000) {
-                        data = raw;
-                        Log.i("GaokaoVocab", "Index downloaded from " + u + ", " + raw.length + " bytes");
-                        break;
+                    // v2.73.0 版本一致性闸门：正文必须含有清单声明的版本号。
+                    // 镜像（jsDelivr / Gitee）同步有先后，先连上的源可能还是上一版页面；
+                    // 命中这条就继续试下一个源，避免把旧页面缓存成「最新版」。
+                    if (remoteName.length() > 0 && !text.contains(remoteName)) {
+                        Log.w("GaokaoVocab", "Index from " + u + " is stale (missing " + remoteName + "), try next source");
+                        continue;
                     }
+                    data = cand;
+                    Log.i("GaokaoVocab", "Index downloaded from " + u + ", " + cand.length + " bytes");
+                    break;
                 }
                 if (data == null) {
                     Log.w("GaokaoVocab", "All cloud URLs failed, using local/cached version");
@@ -819,6 +812,7 @@ public class MainActivity extends Activity {
                     fos.write(data);
                     fos.close();
                     saveCachedVersionCode(remoteVer);
+                    saveCacheVersionName(remoteName);
                     Log.i("GaokaoVocab", "Cloud content cached (" + data.length + " bytes), reloading");
                 } catch (Throwable e) {
                     Log.e("GaokaoVocab", "Write cache failed", e);
@@ -929,6 +923,29 @@ public class MainActivity extends Activity {
             if (m.find()) return Integer.parseInt(m.group(1));
         } catch (Throwable ignored) {}
         return -1;
+    }
+
+    /** 从版本清单提取 versionName（如 2.73.0），用于校验下发的页面是否与清单同版本 */
+    private String parseVersionName(String json) {
+        try {
+            Matcher m = Pattern.compile("\"version\"\\s*:\\s*\"([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)\"").matcher(json);
+            if (m.find()) return m.group(1);
+        } catch (Throwable ignored) {}
+        return "";
+    }
+
+    private String getCacheVersionName() {
+        try {
+            return getSharedPreferences(PREF_NAME, MODE_PRIVATE).getString(PREF_KEY_CACHE_NAME, "");
+        } catch (Throwable e) {
+            return "";
+        }
+    }
+
+    private void saveCacheVersionName(String name) {
+        try {
+            getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit().putString(PREF_KEY_CACHE_NAME, name).apply();
+        } catch (Throwable ignored) {}
     }
 
     private int getCachedVersionCode() {
@@ -1239,6 +1256,21 @@ public class MainActivity extends Activity {
     /** 已下载且确认比本机新的安装包（授权后再次点击可直接安装，无需重下） */
     private File sPendingUpdateApk = null;
 
+    /* ---------- v2.73.0 更新链路加固所需状态 ---------- */
+    // 同一时刻只允许一条更新线程：旧版重复点击会让两条线程同时写同一个 apk 文件，
+    // 交叉写入必然产出损坏包（这是「下载失败 / 装完还是旧版本」的高频成因）。
+    private static final java.util.concurrent.atomic.AtomicBoolean sUpdateRunning =
+            new java.util.concurrent.atomic.AtomicBoolean(false);
+    // 安装前后用于判定「这次安装到底有没有生效」的版本基线
+    private static int sInstallBaselineCode = -1;
+    private static int sInstallTargetCode = -1;
+    private static long sInstallStartTs = 0L;
+    private static boolean sInstallResultReported = true;
+    // 安装包下载参数
+    private static final int APK_RETRY = 2;                       // 单源最多尝试次数（源有多个，够了）
+    private static final long APK_MIN_BYTES = 1024 * 1024;         // 真实包约 4.3MB，<1MB 必为错误页或截断
+    private static final long APK_PART_TTL = 30 * 60 * 1000L;      // 残片超过 30 分钟不再续传，直接重下
+
     private int installedVersionCode() {
         try {
             android.content.pm.PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
@@ -1248,20 +1280,166 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** 解析 APK 文件里的 versionCode（无需安装即可判断新旧） */
-    private int archiveVersionCode(File apk) {
+    /** 安装包元信息（下载完成后、安装前用于四重校验） */
+    private static final class ApkMeta {
+        String pkg = "";
+        int code = -1;
+        String name = "";
+        String sig = null;   // 签名证书 SHA-256，用于判断能否覆盖安装
+        boolean valid() { return code > 0 && pkg.length() > 0; }
+    }
+
+    private String sigHash(android.content.pm.Signature[] sigs) {
+        try {
+            if (sigs == null || sigs.length == 0) return null;
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] d = md.digest(sigs[0].toByteArray());
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < d.length; i++) sb.append(String.format("%02x", d[i]));
+            return sb.toString();
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    /** 读取 APK 文件的包名 / versionCode / 签名（无需安装） */
+    private ApkMeta readApkMeta(File apk) {
+        ApkMeta m = new ApkMeta();
         try {
             android.content.pm.PackageInfo pi = getPackageManager()
-                    .getPackageArchiveInfo(apk.getAbsolutePath(), 0);
-            if (pi == null) return -1;
-            return pi.versionCode;
+                    .getPackageArchiveInfo(apk.getAbsolutePath(), PackageManager.GET_SIGNATURES);
+            if (pi == null) return m;
+            m.pkg = pi.packageName == null ? "" : pi.packageName;
+            m.code = pi.versionCode;
+            m.name = pi.versionName == null ? "" : pi.versionName;
+            m.sig = sigHash(pi.signatures);
         } catch (Throwable e) {
-            return -1;
+            Log.w("GaokaoVocab", "readApkMeta failed", e);
+        }
+        return m;
+    }
+
+    /** 本机已安装包的签名指纹 */
+    private String installedSignatureHash() {
+        try {
+            android.content.pm.PackageInfo pi = getPackageManager()
+                    .getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES);
+            return sigHash(pi.signatures);
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    /** 清空安装包缓存目录（下载前清理防污染、安装成功后回收空间） */
+    private void cleanupApkDir() {
+        try {
+            File dir = new File(getCacheDir(), "apk_updates");
+            File[] fs = dir.listFiles();
+            if (fs != null) {
+                for (int i = 0; i < fs.length; i++) {
+                    try { fs[i].delete(); } catch (Throwable ignored) {}
+                }
+            }
+        } catch (Throwable ignored) {}
+        sPendingUpdateApk = null;
+    }
+
+    /**
+     * APK 被替换过（升级成功）时，丢弃云端热更新缓存。
+     *
+     * 这是「装了新版本、打开还是旧界面」的根因：旧版 loadContent() 只要发现缓存文件存在
+     * 就直接加载它，而缓存是升级前从云端拉下来的旧页面 —— 新 APK 的原生能力配上旧页面，
+     * 用户看到的就是"什么都没变"。升级后必须先清缓存，让 APK 内置页面（与原生同一次构建）
+     * 生效，之后的云端热更再从新版本基线往上走。
+     */
+    private boolean resetWebCacheIfApkChanged() {
+        try {
+            int cur = installedVersionCode();
+            if (cur <= 0) return false;
+            int last = getSharedPreferences(PREF_NAME, MODE_PRIVATE).getInt(PREF_KEY_LAST_INSTALL, -1);
+            if (last == cur) return false;
+            getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit()
+                    .putInt(PREF_KEY_LAST_INSTALL, cur).apply();
+            // last 为 -1 有两种可能：真正的首次安装（没有缓存，清了也没影响），
+            // 或从「尚未记录该字段」的旧版本（v2.72.2 及更早）升级而来 —— 后者一定带着
+            // 升级前缓存的热更新页面，必须清掉，否则新原生还是配旧界面。
+            File cf = new File(getFilesDir(), CACHE_FILE);
+            boolean had = cf.exists();
+            if (had) cf.delete();
+            getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit()
+                    .remove(PREF_KEY_VER).remove(PREF_KEY_CACHE_NAME).apply();
+            Log.i("GaokaoVocab", "APK upgraded " + last + " -> " + cur + ", dropped web cache=" + had);
+            return had;
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+
+    /** 记录一次"已拉起系统安装界面"，之后靠 onResume 判定是否真的装上了 */
+    private void onApkInstallLaunched(int targetCode) {
+        sInstallBaselineCode = installedVersionCode();
+        sInstallTargetCode = targetCode;
+        sInstallStartTs = System.currentTimeMillis();
+        sInstallResultReported = false;
+    }
+
+    /** 回到前台时判定安装结果：版本号涨了 = 成功；25 秒后仍没变 = 用户取消或系统拦截 */
+    private void checkPendingInstallResult() {
+        if (sInstallResultReported || sInstallBaselineCode <= 0) return;
+        int now = installedVersionCode();
+        if (now > sInstallBaselineCode) {
+            sInstallResultReported = true;
+            int target = sInstallTargetCode;
+            Log.i("GaokaoVocab", "Install succeeded: " + sInstallBaselineCode + " -> " + now);
+            sInstallBaselineCode = -1;
+            cleanupApkDir();
+            resetWebCacheIfApkChanged();
+            notifyJs("window.__apkInstallResult && window.__apkInstallResult('success'," + now + "," + target + ")");
+            final String path = "file:///android_asset/public/index.html";
+            // 先让页面把「已升级到 vX」的提示渲染出来，1.2 秒后再切到 APK 内置页面
+            // （内置页面与本次原生代码同一次构建，避免继续跑升级前的旧热更页面）
+            runOnUiThread(new Runnable() {
+                @Override public void run() {
+                    try {
+                        if (webView == null) return;
+                        webView.postDelayed(new Runnable() {
+                            @Override public void run() {
+                                try { if (webView != null) webView.loadUrl(path); } catch (Throwable ignored) {}
+                            }
+                        }, 1200);
+                    } catch (Throwable ignored) {}
+                }
+            });
+        } else if (System.currentTimeMillis() - sInstallStartTs > 25000L) {
+            sInstallResultReported = true;
+            Log.w("GaokaoVocab", "Install not effective, still at " + now);
+            notifyJs("window.__apkInstallResult && window.__apkInstallResult('unchanged'," + now + ","
+                    + sInstallTargetCode + ")");
         }
     }
 
     private void apkDetail(String evt, String msg) {
         notifyJs("window.__apkUpdateDetail && window.__apkUpdateDetail('" + evt + "','" + jsEscape(msg) + "')");
+    }
+
+    /** 文件 SHA-256（与构建流水线发布到清单里的 apkSha256 对应） */
+    private String fileSha256(File f) {
+        FileInputStream fis = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            fis = new FileInputStream(f);
+            byte[] buf = new byte[64 * 1024];
+            int n;
+            while ((n = fis.read(buf)) != -1) md.update(buf, 0, n);
+            byte[] d = md.digest();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < d.length; i++) sb.append(String.format("%02x", d[i]));
+            return sb.toString();
+        } catch (Throwable e) {
+            return null;
+        } finally {
+            if (fis != null) { try { fis.close(); } catch (Throwable ignored) {} }
+        }
     }
 
     private boolean canInstallPackages() {
@@ -1287,49 +1465,90 @@ public class MainActivity extends Activity {
         }
     }
 
-    private static final int APK_RETRY = 3;
-
-    /** v2.71.0：APK 下载加重试 + HTTP Range 断点续传。
-     *  单源连接中断只续传剩余部分（不再从头重下），连续失败自动换下一个候选源。 */
+    /** 单源重试：失败后短暂等待再续传（残片保留，不重复下载已完成的字节） */
     private boolean downloadApkFile(String urlStr, File target) {
         for (int attempt = 0; attempt < APK_RETRY; attempt++) {
             if (downloadApkFileOnce(urlStr, target)) return true;
-            try { Thread.sleep(600); } catch (Throwable ignored) {}
+            try { Thread.sleep(500); } catch (Throwable ignored) {}
         }
+        // 两次都没成功：删掉残片，避免下个源把「别的包的残片」当断点续传基线
+        try { if (target.exists()) target.delete(); } catch (Throwable ignored) {}
         return false;
     }
 
-    /** 单次 APK 下载尝试（支持 206 断点续传） */
-    private boolean downloadApkFileOnce(String urlStr, File target) {
+    /**
+     * 单次 APK 下载尝试（v2.73.0 重写）
+     *
+     * 旧实现有三个会造成「下载失败 / 装完还是旧版本」的缺陷：
+     *  ① 只要目标文件非空就发 Range 续传 —— 目标可能是上次残留的【完整旧包】或【别的源的残片】，
+     *     续传等于把新包尾部拼在旧包屁股上，产出既不是旧包也不是新包的垃圾文件；
+     *  ② 完整性判定留了 16KB 容差，CDN 截断的包会被当成功；
+     *  ③ 没请求 identity 编码，服务器回 gzip 时 Content-Length 与落地字节对不上，无法校验。
+     * 现在：只对本次会话产生、30 分钟内的 .part 续传，校验 Content-Range 起点一致，
+     * 逐字节比对总长，小于 1MB 直接判废。
+     */
+    private boolean downloadApkFileOnce(String urlStr, File part) {
         HttpURLConnection conn = null;
+        FileOutputStream fos = null;
         try {
-            URL u = new URL(urlStr);
-            conn = (HttpURLConnection) u.openConnection();
+            long resume = 0;
+            if (part.exists()) {
+                long age = System.currentTimeMillis() - part.lastModified();
+                if (part.length() > 0 && age < APK_PART_TTL) {
+                    resume = part.length();
+                } else {
+                    part.delete();
+                }
+            }
+            conn = (HttpURLConnection) new URL(urlStr).openConnection();
             conn.setInstanceFollowRedirects(true);
-            conn.setConnectTimeout(15000);
-            conn.setReadTimeout(30000);
+            conn.setConnectTimeout(12000);
+            conn.setReadTimeout(25000);
             conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36");
             conn.setRequestProperty("Accept", "application/vnd.android.package-archive,*/*");
-            long resume = (target.exists() ? target.length() : 0);
-            boolean partial = false;
-            if (resume > 0) {
-                // 已下载部分，要求从断点续传；服务器不支持 Range 时回退为整文件下载
-                conn.setRequestProperty("Range", "bytes=" + resume + "-");
-            }
+            conn.setRequestProperty("Accept-Encoding", "identity");
+            conn.setRequestProperty("Connection", "close");
+            conn.setUseCaches(false);
+            if (resume > 0) conn.setRequestProperty("Range", "bytes=" + resume + "-");
+
             int code = conn.getResponseCode();
-            if (code == 206) partial = true;
-            else if (code != 200) return false;
-            long total = conn.getContentLength();
-            if (partial && conn.getHeaderField("Content-Range") != null) {
+            long total;
+            boolean append;
+            if (code == 206 && resume > 0) {
+                String cr = conn.getHeaderField("Content-Range");
+                long start = -1, end = -1, len = -1;
                 try {
-                    String cr = conn.getHeaderField("Content-Range"); // 形如 bytes 1234-9999/10000
-                    int slash = cr.lastIndexOf('/');
-                    if (slash >= 0) total = Long.parseLong(cr.substring(slash + 1).trim());
+                    String s = cr == null ? "" : cr.trim();       // 形如 bytes 1234-9999/10000
+                    int sp = s.indexOf(' ');
+                    String body = sp >= 0 ? s.substring(sp + 1) : s;
+                    int dash = body.indexOf('-');
+                    int slash = body.indexOf('/');
+                    start = Long.parseLong(body.substring(0, dash).trim());
+                    end = Long.parseLong(body.substring(dash + 1, slash).trim());
+                    len = Long.parseLong(body.substring(slash + 1).trim());
                 } catch (Throwable ignored) {}
+                if (start != resume) {
+                    // 服务端给的区间起点与本地残片不匹配 → 残片不是这个包的，整包重下
+                    try { part.delete(); } catch (Throwable ignored) {}
+                    return false;
+                }
+                append = true;
+                total = len > 0 ? len : (end + 1);
+            } else if (code == 200) {
+                append = false;          // 服务端忽略 Range，回整包 → 覆盖写
+                resume = 0;
+                total = conn.getContentLength();
+            } else if (code == 416) {
+                try { part.delete(); } catch (Throwable ignored) {}
+                return false;
+            } else {
+                Log.w("GaokaoVocab", "APK download HTTP " + code + " from " + urlStr);
+                return false;
             }
-            InputStream is = new java.io.BufferedInputStream(conn.getInputStream());
-            FileOutputStream fos = new FileOutputStream(target, partial); // 续传追加，否则覆盖
-            byte[] buf = new byte[16384];
+
+            InputStream is = new java.io.BufferedInputStream(conn.getInputStream(), 32768);
+            fos = new FileOutputStream(part, append);
+            byte[] buf = new byte[32768];
             int n;
             long downloaded = resume;
             int lastPct = -1;
@@ -1338,7 +1557,7 @@ public class MainActivity extends Activity {
                 downloaded += n;
                 if (total > 0) {
                     int pct = (int) (downloaded * 100 / total);
-                    if (pct != lastPct && pct % 5 == 0) {
+                    if (pct >= lastPct + 4) {
                         lastPct = pct;
                         notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(" + pct
                                 + ", '下载中 " + pct + "%')");
@@ -1347,23 +1566,31 @@ public class MainActivity extends Activity {
             }
             fos.flush();
             fos.close();
+            fos = null;
             is.close();
-            // 已知总长时校验完整性：差一帧以内视为完整，否则删除残片交给重试/换源
-            if (total > 0 && downloaded < total - 16384) {
-                try { target.delete(); } catch (Throwable ignored) {}
+
+            if (total > 0 && downloaded != total) {
+                Log.w("GaokaoVocab", "APK incomplete " + downloaded + "/" + total + ", drop part");
+                try { part.delete(); } catch (Throwable ignored) {}
                 return false;
             }
-            return target.exists() && target.length() > 100000;
+            if (part.length() < APK_MIN_BYTES) {
+                Log.w("GaokaoVocab", "APK too small: " + part.length());
+                try { part.delete(); } catch (Throwable ignored) {}
+                return false;
+            }
+            return true;
         } catch (Throwable e) {
+            Log.w("GaokaoVocab", "APK download exception: " + e);
             return false;
         } finally {
-            if (conn != null) {
-                try { conn.disconnect(); } catch (Throwable ignored) {}
-            }
+            if (fos != null) { try { fos.close(); } catch (Throwable ignored) {} }
+            if (conn != null) { try { conn.disconnect(); } catch (Throwable ignored) {} }
         }
     }
 
-    private void launchInstall(File apk) {
+    private void launchInstall(File apk, int targetCode) {
+        onApkInstallLaunched(targetCode);
         try {
             Uri apkUri;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -1377,29 +1604,50 @@ public class MainActivity extends Activity {
             it.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(it);
-            apkDetail("installing", "已打开系统安装界面，请点「安装」。安装完重新打开本应用即为新版本");
+            apkDetail("installing", "已打开系统安装界面，请点「安装」；装完返回本应用会自动确认是否生效");
         } catch (Throwable e) {
             Log.e("GaokaoVocab", "launch install failed", e);
             apkDetail("error", "无法打开安装界面：" + e.getMessage());
         }
     }
 
-    private void installUpdateInBackground(String urlsJson, int minCode) {
+    /**
+     * 统一更新入口（v2.73.0 重写）
+     *
+     * 加固点：
+     *  ① 并发保护：重复点击不会起第二条下载线程（旧版会交叉写同一文件 → 必坏包）；
+     *  ② 每个源使用唯一的 .part 文件，下载完成才改名成 .apk，杜绝旧包/残片被当作续传基线；
+     *  ③ 安装前四重校验：包名、versionCode（必须 > 本机且 ≥ 清单）、签名指纹（必须与本机一致，否则覆盖安装必失败）；
+     *  ④ 拉起安装后记录基线，回前台比对真实 installedVersionCode，把「装了还是旧版本」变成可判定结果。
+     */
+    private void installUpdateInBackground(String urlsJson, int minCode, String expectSha) {
+        if (!sUpdateRunning.compareAndSet(false, true)) {
+            apkDetail("busy", "更新正在下载中，请稍候…");
+            return;
+        }
+        String downloadedSigMismatch = "";
         try {
             int cur = installedVersionCode();
-            // 已存在确认更新的安装包：先检查授权，直接安装，避免重复下载
+            if (cur <= 0) {
+                apkDetail("error", "读取本机安装包版本失败，请重启应用后重试");
+                return;
+            }
+            // 已存在且已校验过的安装包：授权后再次点击直接安装，不重复下载
             if (sPendingUpdateApk != null && sPendingUpdateApk.exists()) {
-                int pc = archiveVersionCode(sPendingUpdateApk);
-                if (pc > cur && (minCode <= 0 || pc >= minCode)) {
+                ApkMeta pm = readApkMeta(sPendingUpdateApk);
+                if (pm.valid() && getPackageName().equals(pm.pkg)
+                        && pm.code > cur && (minCode <= 0 || pm.code >= minCode)) {
                     if (!canInstallPackages()) {
                         apkDetail("permission", "本机尚未允许安装未知应用，已为你打开授权页，请开启后返回再点「立即更新」");
                         requestInstallPermission();
                         return;
                     }
                     notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(100, '下载完成，准备安装...')");
-                    launchInstall(sPendingUpdateApk);
+                    launchInstall(sPendingUpdateApk, pm.code);
                     return;
                 }
+                try { sPendingUpdateApk.delete(); } catch (Throwable ignored) {}
+                sPendingUpdateApk = null;
             }
             java.util.ArrayList<String> urls = new java.util.ArrayList<String>();
             try {
@@ -1419,52 +1667,95 @@ public class MainActivity extends Activity {
                 apkDetail("error", "没有可用的下载地址，请改用浏览器下载安装");
                 return;
             }
+            // 清空历史缓存：每个源都从零开始，杜绝旧包 / 别的源残片混进来
+            cleanupApkDir();
             File dir = new File(getCacheDir(), "apk_updates");
             if (!dir.exists()) dir.mkdirs();
+            String installedSig = installedSignatureHash();
             String lastReason = "";
             for (int i = 0; i < urls.size(); i++) {
                 String u = urls.get(i);
-                File f = new File(dir, "update_" + i + ".apk");
-                try { if (f.exists()) f.delete(); } catch (Throwable ignored) {}
+                String stamp = String.valueOf(System.currentTimeMillis());
+                File part = new File(dir, "update_" + minCode + "_" + i + "_" + stamp + ".part");
+                File apk = new File(dir, "update_" + minCode + "_" + i + "_" + stamp + ".apk");
                 apkDetail("source", "正在尝试下载地址 " + (i + 1) + "/" + urls.size());
                 notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(0, '连接下载地址 "
-                        + (i + 1) + "...')");
-                if (!downloadApkFile(u, f)) {
-                    lastReason = "下载地址 " + (i + 1) + " 无法下载";
+                        + (i + 1) + "/" + urls.size() + "...')");
+                if (!downloadApkFile(u, part)) {
+                    lastReason = "下载地址 " + (i + 1) + "/" + urls.size() + " 无法下载";
                     apkDetail("fail_source", lastReason);
                     continue;
                 }
-                int pc = archiveVersionCode(f);
-                if (pc <= 0) {
+                if (!part.renameTo(apk)) {
+                    try { part.delete(); } catch (Throwable ignored) {}
+                    lastReason = "下载文件落盘失败，请检查手机存储空间";
+                    apkDetail("fail_source", lastReason);
+                    continue;
+                }
+                // 清单带 SHA-256 时按哈希校验：能拦住任何截断/损坏/被替换的包
+                if (expectSha != null && expectSha.length() == 64) {
+                    String got = fileSha256(apk);
+                    if (got == null || !expectSha.equalsIgnoreCase(got)) {
+                        try { apk.delete(); } catch (Throwable ignored) {}
+                        lastReason = "下载地址 " + (i + 1) + " 内容校验不通过（SHA-256 不一致），自动换源";
+                        apkDetail("fail_source", lastReason);
+                        continue;
+                    }
+                }
+                ApkMeta meta = readApkMeta(apk);
+                if (!meta.valid()) {
+                    try { apk.delete(); } catch (Throwable ignored) {}
                     lastReason = "下载地址 " + (i + 1) + " 返回的不是有效安装包";
                     apkDetail("fail_source", lastReason);
                     continue;
                 }
-                if (pc <= cur) {
-                    lastReason = "下载地址 " + (i + 1) + " 还是旧版本（" + pc + "，本机 " + cur + "），自动换源";
+                if (!getPackageName().equals(meta.pkg)) {
+                    try { apk.delete(); } catch (Throwable ignored) {}
+                    lastReason = "下载地址 " + (i + 1) + " 返回的包不属于本应用（" + meta.pkg + "）";
+                    apkDetail("fail_source", lastReason);
+                    continue;
+                }
+                if (meta.code <= cur) {
+                    try { apk.delete(); } catch (Throwable ignored) {}
+                    lastReason = "下载地址 " + (i + 1) + " 仍是旧版本（" + meta.code + " ≤ 本机 " + cur + "），自动换源";
                     apkDetail("old_source", lastReason);
                     continue;
                 }
-                if (minCode > 0 && pc < minCode) {
-                    lastReason = "下载地址 " + (i + 1) + " 版本不足（" + pc + " < " + minCode + "），自动换源";
+                if (minCode > 0 && meta.code < minCode) {
+                    try { apk.delete(); } catch (Throwable ignored) {}
+                    lastReason = "下载地址 " + (i + 1) + " 版本不足（" + meta.code + " < 清单 " + minCode + "），自动换源";
                     apkDetail("old_source", lastReason);
                     continue;
                 }
-                sPendingUpdateApk = f;
-                apkDetail("found", "已获取新安装包（版本号 " + pc + "）");
+                if (installedSig != null && meta.sig != null && !installedSig.equals(meta.sig)) {
+                    try { apk.delete(); } catch (Throwable ignored) {}
+                    downloadedSigMismatch = "镜像下发的安装包与本机签名不一致（本机 "
+                            + installedSig.substring(0, 8) + "，新包 " + meta.sig.substring(0, 8) + "）";
+                    apkDetail("signature", downloadedSigMismatch + "，已跳过该源");
+                    continue;
+                }
+                sPendingUpdateApk = apk;
+                apkDetail("found", "已获取新安装包 v" + meta.name + "（" + meta.code + "）");
                 notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(100, '下载完成，准备安装...')");
                 if (!canInstallPackages()) {
-                    apkDetail("permission", "本机尚未允许安装未知应用，已为你打开授权页；请在系统页面开启后返回，再点一次「立即更新」即可直接安装");
+                    apkDetail("permission", "本机尚未允许安装未知应用，已为你打开授权页；开启后返回再点一次「立即更新」即可直接安装");
                     requestInstallPermission();
                     return;
                 }
-                launchInstall(f);
+                launchInstall(apk, meta.code);
                 return;
             }
-            apkDetail("error", lastReason.length() > 0 ? lastReason : "所有下载地址均失败，请检查网络后重试");
+            if (downloadedSigMismatch.length() > 0) {
+                apkDetail("error", downloadedSigMismatch
+                        + "，无法覆盖安装。请先卸载旧版本再安装新包（卸载前先在「我的 → 备份」导出词库）");
+            } else {
+                apkDetail("error", lastReason.length() > 0 ? lastReason : "所有下载地址均失败，请检查网络后重试");
+            }
         } catch (Throwable e) {
             Log.e("GaokaoVocab", "installUpdate failed", e);
             apkDetail("error", "更新失败：" + e.getMessage());
+        } finally {
+            sUpdateRunning.set(false);
         }
     }
 
@@ -1483,6 +1774,8 @@ public class MainActivity extends Activity {
         if (webView != null) {
             try { webView.onResume(); } catch (Throwable ignored) {}
         }
+        // v2.73.0：从系统安装界面返回时，比对真实安装版本，判定这次更新到底有没有生效
+        checkPendingInstallResult();
     }
 
     @Override

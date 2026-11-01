@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.72.2';
-const APP_VERSION_CODE = 236;
+const APP_VERSION = '2.73.0';
+const APP_VERSION_CODE = 237;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -11347,6 +11347,8 @@ function App() {
     catch { return ''; }
   });
   const updateCheckDone = useRef(false);
+  // v2.73.0：更新动作互斥锁（原生侧另有原子锁，这里先挡一层，避免连点并发下载写坏临时文件）
+  const apkUpdateLockRef = useRef(false);
   const shuffleSeedRef = useRef(Date.now()); // 洗牌种子：仅词库变化时更新，进度变化时保持稳定
   const extendScrollRef = useRef(0); // 拓展页滚动位置记忆
   const prevSectionRef = useRef('learn'); // 记录上一个页面，用于滚动位置恢复
@@ -13720,41 +13722,41 @@ function App() {
 
     try {
       let data;
-      // 第一优先：GitHub Pages（deploy 后立即生效，无 CDN 缓存延迟）
-      try {
-        const ghUrl = `https://xdbzys.github.io/gaokao-vocab/app-update.json?_t=${Date.now()}`;
-        console.log('[Update] Trying GitHub Pages:', ghUrl);
-        const ghResp = await fetch(ghUrl, { cache: 'no-store' });
-        if (ghResp.ok) { data = await ghResp.json(); console.log('[Update] GitHub Pages success:', data); }
-        else throw new Error('GitHub Pages HTTP ' + ghResp.status);
-      } catch (ghErr) {
-        console.warn('[Update] GitHub Pages failed:', ghErr.message);
-        // 第二回退：jsdelivr CDN
+      // v2.73.0：清单同时从三个源取，选 versionCode 最大的那份。
+      // 旧逻辑"第一个成功就用"，一旦该源（jsDelivr 对 @master 缓存最长 12 小时）
+      // 还停在上一版，就会把「有新版本」判成「已是最新」，更新入口永远点不动。
+      const manifestUrls = [
+        `https://xdbzys.github.io/gaokao-vocab/app-update.json?_t=${Date.now()}`,
+        `${UPDATE_SERVER_RAW}?_t=${Date.now()}`,
+        `https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/app-update.json?_t=${Date.now()}`,
+      ];
+      const fetched = await Promise.all(manifestUrls.map(async (u) => {
         try {
-          const cdnUrl = `https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/app-update.json?_t=${Date.now()}`;
-          console.log('[Update] Trying jsdelivr CDN:', cdnUrl);
-          const cdnResp = await fetch(cdnUrl, { cache: 'no-store' });
-          if (cdnResp.ok) { data = await cdnResp.json(); console.log('[Update] jsdelivr CDN success:', data); }
-          else throw new Error('jsdelivr HTTP ' + cdnResp.status);
-        } catch (cdnErr) {
-        console.warn('[Update] jsdelivr CDN failed:', cdnErr.message);
-        // 第三回退：Gitee raw
-        try {
-          data = await fetchFromRaw();
-          console.log('[Update] Raw success:', data);
-        } catch (rawErr) {
-          console.warn('[Update] Raw failed:', rawErr.message);
-          // 第四回退：Gitee API
-          try {
-            data = await fetchFromApi();
-            console.log('[Update] API fallback success:', data);
-          } catch (apiErr) {
-            console.warn('[Update] API failed:', apiErr.message);
-            console.warn('[Update] All fallbacks failed');
-            throw new Error('检查更新失败，请检查网络连接后重试');
-          }
+          console.log('[Update] Trying', u);
+          const r = await fetch(u, { cache: 'no-store', redirect: 'follow' });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          const j = await r.json();
+          if (!j || typeof j.versionCode !== 'number') throw new Error('bad manifest');
+          return j;
+        } catch (e) {
+          console.warn('[Update] source failed:', u, e.message);
+          return null;
         }
-      }
+      }));
+      const good = fetched.filter(Boolean);
+      if (good.length) {
+        good.sort((a, b) => b.versionCode - a.versionCode);
+        data = good[0];
+        console.log('[Update] manifest picked:', data.version, data.versionCode, 'of', good.length, 'sources');
+      } else {
+        // 三源全失败：最后尝试 Gitee API（base64）
+        try {
+          data = await fetchFromApi();
+          console.log('[Update] API fallback success:', data);
+        } catch (apiErr) {
+          console.warn('[Update] API failed:', apiErr.message);
+          throw new Error('检查更新失败，请检查网络连接后重试');
+        }
       }
 
       if (typeof data.versionCode !== 'number') {
@@ -13774,6 +13776,10 @@ function App() {
         hasUpdate = true;
         pkgOutdated = true;
       }
+      // v2.73.0：本机基线取「页面版本」与「安装包真实版本」的较大者。
+      // 只认页面版本会漏掉「页面已热更到新号、APK 还是旧的」；只认安装包版本又会让网页版永远不提示。
+      const localCode = Math.max(APP_VERSION_CODE, nativeCode > 0 ? nativeCode : 0);
+      hasUpdate = data.versionCode > localCode || hasUpdate;
       // v2.60.0：旧安装包没有系统播放器桥接，能力探测兜底
       if (isNativeApp && !(window.NativePlayer && typeof window.NativePlayer.playUrl === 'function')
           && data.versionCode >= 221) {
@@ -13822,6 +13828,8 @@ function App() {
           apkUrl: apkUrl,
           appUrl: apkUrl,
           apkUrlCdn: data.apkUrlCdn || '',
+          apkSha256: data.apkSha256 || '',
+          apkSize: data.apkSize || 0,
           booksData: data.books || null,
           updating: false,
           ...pkgInfo,
@@ -13915,6 +13923,22 @@ function App() {
     const urls = apkCandidates(info || updateInfo);
     const minCode = (info && info.remoteCode) || APP_VERSION_CODE;
 
+    // v2.73.0：更新动作互斥。旧版连点「立即更新」会同时起多条下载线程写同一个 apk 文件，
+    // 交叉写入必然产出损坏包 —— 这是「下载失败」最常见的来源。
+    if (apkUpdateLockRef.current) {
+      setCloudStatus('⏳ 更新正在下载中，请稍候…');
+      return;
+    }
+    apkUpdateLockRef.current = true;
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true;
+      apkUpdateLockRef.current = false;
+    };
+    // 兜底：原生长时间无任何回调（进程被系统杀掉等）时自动解锁，避免按钮永久卡死
+    setTimeout(release, 10 * 60 * 1000);
+
     const wireCallbacks = () => {
       window.__apkUpdateProgress = (pct, msg) => {
         if (pct < 0) return; // 失败原因统一由 __apkUpdateDetail 展示
@@ -13924,11 +13948,35 @@ function App() {
       };
       window.__apkUpdateDetail = (evt, msg) => {
         const tag = ({ source: '🔎 ', found: '✅ ', old_source: '⚠️ ', fail_source: '⚠️ ',
-                       installing: '📲 ', permission: '🔐 ', error: '❌ ' })[evt] || '';
+                       installing: '📲 ', permission: '🔐 ', signature: '🔏 ', busy: '⏳ ',
+                       error: '❌ ' })[evt] || '';
         if (msg) setCloudStatus(tag + msg);
-        if (evt === 'error' || evt === 'installing' || evt === 'permission') {
+        if (evt === 'error' || evt === 'installing' || evt === 'permission' || evt === 'busy') {
           setInAppDownloading(false);
-          setUpdateInfo(prev => ({ ...prev, updating: false }));
+          setUpdateInfo(prev => (prev ? { ...prev, updating: false } : prev));
+          release();
+        }
+      };
+      // v2.73.0：安装结果由原生比对「真实 installedVersionCode」后回调。
+      // 以前装完没有任何回执，用户只能看到版本号没变却不知道为什么 —— 现在有明确结论。
+      window.__apkInstallResult = (result, code, target) => {
+        release();
+        refreshPkgVer();
+        if (result === 'success') {
+          setInAppDownloading(false);
+          setApkDownloadProgress(100);
+          let nm = '';
+          try {
+            nm = (window.NativeVersion && window.NativeVersion.versionName)
+              ? window.NativeVersion.versionName() : '';
+          } catch (e) {}
+          setCloudStatus(`✅ 已升级到 v${nm || target || code}，页面重新加载中…`);
+          setUpdateInfo(null);
+          try { localStorage.removeItem('gaokao_dismissed_version'); } catch (e) {}
+        } else {
+          setInAppDownloading(false);
+          setCloudStatus(`⚠️ 安装未生效（本机仍是版本号 ${code}）。通常是取消了系统安装、或被系统安全策略拦截；请再点一次「立即更新」。若每次都这样，先卸载旧版再装新包`);
+          setUpdateInfo(prev => (prev ? { ...prev, updating: false } : prev));
         }
       };
     };
@@ -13939,40 +13987,35 @@ function App() {
       setInAppDownloading(true);
       setApkDownloadProgress(0);
       setCloudStatus('正在下载更新...');
-      window.NativeUpdater.install(JSON.stringify(urls), minCode);
-      setUpdateInfo(prev => ({ ...prev, updating: false }));
+      try {
+        const sha = (info && info.apkSha256) || (updateInfo && updateInfo.apkSha256) || '';
+        if (typeof window.NativeUpdater.installV2 === 'function') {
+          window.NativeUpdater.installV2(JSON.stringify(urls), minCode, sha);
+        } else {
+          window.NativeUpdater.install(JSON.stringify(urls), minCode);
+        }
+      } catch (e) {
+        release();
+        setInAppDownloading(false);
+        setCloudStatus('❌ 启动更新失败：' + e.message);
+      }
       return;
     }
 
     if (isNativeApp && window.NativeApkInstaller && window.NativeApkInstaller.downloadAndInstall) {
+      // 老安装包（v2.67.0 之前）：只有单地址下载接口，原生侧已统一走同一套校验
       wireCallbacks();
       setUpdateInfo(prev => ({ ...prev, updating: true }));
       setInAppDownloading(true);
       setApkDownloadProgress(0);
-      let idx = 0;
-      const tryNext = () => {
-        if (idx >= urls.length) {
-          setCloudStatus('❌ 所有下载地址均失败，请改用下方「浏览器下载」安装');
-          setInAppDownloading(false);
-          setShowBrowserFallback(true);
-          setUpdateInfo(prev => ({ ...prev, updating: false }));
-          return;
-        }
-        const cur = urls[idx];
-        setCloudStatus(`🔎 正在尝试下载地址 ${idx + 1}/${urls.length}...`);
-        window.__apkUpdateProgress = (pct, msg) => {
-          if (pct < 0) { idx += 1; setApkDownloadProgress(0); setTimeout(tryNext, 400); return; }
-          setApkDownloadProgress(pct);
-          setCloudStatus(msg || `下载中 ${pct}%`);
-          if (pct >= 100) {
-            setInAppDownloading(false);
-            setCloudStatus('✅ 下载完成，请在系统安装界面点「安装」；若安装后版本号没变请告知我');
-          }
-        };
-        window.NativeApkInstaller.downloadAndInstall(cur);
-      };
-      tryNext();
-      setUpdateInfo(prev => ({ ...prev, updating: false }));
+      setCloudStatus('🔎 正在下载更新...');
+      try {
+        window.NativeApkInstaller.downloadAndInstall(urls[0]);
+      } catch (e) {
+        release();
+        setInAppDownloading(false);
+        setCloudStatus('❌ 启动更新失败：' + e.message);
+      }
       return;
     }
 
@@ -13989,6 +14032,7 @@ function App() {
     } catch (e) {
       setCloudStatus(`打开失败：${e.message}`);
     }
+    release();
     setUpdateInfo(prev => ({ ...prev, updating: false }));
   }
 
@@ -13997,7 +14041,11 @@ function App() {
     const lines = [
       '页面版本: v' + APP_VERSION + ' (' + APP_VERSION_CODE + ')',
       '安装包版本: ' + (pkgVer.code > 0 ? ('v' + (pkgVer.name || pkgVer.code) + ' (' + pkgVer.code + ')') : '未知（低于 v2.67.0）'),
+      '更新判定基线: ' + Math.max(APP_VERSION_CODE, pkgVer.code > 0 ? pkgVer.code : 0),
+      '清单版本: ' + (updateInfo ? ('v' + updateInfo.version + ' / code ' + updateInfo.versionCode) : '未检查到'),
+      '清单 APK SHA-256: ' + ((updateInfo && updateInfo.apkSha256) || '无'),
       '可靠更新器 NativeUpdater: ' + (window.NativeUpdater ? '有' : '无'),
+      '带哈希校验 installV2: ' + (window.NativeUpdater && typeof window.NativeUpdater.installV2 === 'function' ? '有' : '无'),
       '应用内下载 NativeApkInstaller: ' + (window.NativeApkInstaller ? '有' : '无'),
       '系统播放器 NativePlayer: ' + (window.NativePlayer ? '有' : '无'),
       '整库合成 playAlbumFile: ' + (window.NativePlayer && typeof window.NativePlayer.playAlbumFile === 'function' ? '有' : '无'),
@@ -15920,6 +15968,17 @@ function App() {
                     <button className="primary" onClick={applyUpdate} disabled={updateInfo.updating || inAppDownloading} style={{ marginTop: 8 }}>
                       {inAppDownloading ? `下载中 ${apkDownloadProgress}%` : (updateInfo.updating ? '更新中...' : (updateInfo.pkgOutdated ? `安装新版安装包 v${updateInfo.version}` : '立即更新'))}
                     </button>
+                    <button className="smallBtn" style={{ marginTop: 8 }}
+                      onClick={() => {
+                        // v2.73.0：下载过但没装上（缓存里躺着可疑包）时，一键清空重来
+                        try {
+                          if (window.NativeUpdater && window.NativeUpdater.clearCache) window.NativeUpdater.clearCache();
+                        } catch (e) {}
+                        setApkDownloadProgress(0);
+                        setInAppDownloading(false);
+                        setCloudStatus('已清除下载缓存，重新开始下载...');
+                        installApk(updateInfo);
+                      }}>🧹 清除缓存重新下载</button>
                     <button className="smallBtn" style={{ marginTop: 8 }}
                       onClick={() => window.open(updateInfo.apkUrl || updateInfo.apkUrlCdn || APK_DOWNLOAD_SOURCES[0].url, '_blank')}>
                       🌐 浏览器下载安装包
