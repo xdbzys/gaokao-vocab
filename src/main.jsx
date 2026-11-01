@@ -11016,7 +11016,12 @@ const ICON_PATHS = {
   bellOff: <><path d="M8.4 17V11a3.6 3.6 0 0 1 5.4-3.1" /><path d="M5.2 17h13.6" /><path d="M10.4 20h3.2" /><path d="m4 4 16 16" /></>,
   search: <><circle cx="11" cy="11" r="6.6" /><path d="m15.8 15.8 4.4 4.4" /></>,
   folder: <><path d="M3.4 6.6A1.8 1.8 0 0 1 5.2 4.8h4l1.8 2.4h7.8a1.8 1.8 0 0 1 1.8 1.8v9.2a1.8 1.8 0 0 1-1.8 1.8H5.2a1.8 1.8 0 0 1-1.8-1.8V6.6Z" /></>,
-  info: <><circle cx="12" cy="12" r="8.6" /><path d="M12 11v5.4" /><circle cx="12" cy="7.8" r=".95" fill="currentColor" stroke="none" /></>
+  info: <><circle cx="12" cy="12" r="8.6" /><path d="M12 11v5.4" /><circle cx="12" cy="7.8" r=".95" fill="currentColor" stroke="none" /></>,
+  prev: <><path d="M18 5.6 8.6 12 18 18.4V5.6Z" /><path d="M5.6 5.6v12.8" /></>,
+  next: <><path d="M6 5.6 15.4 12 6 18.4V5.6Z" /><path d="M18.4 5.6v12.8" /></>,
+  clipboard: <><rect x="6" y="4.6" width="12" height="16" rx="2.2" /><path d="M9.4 4.6V3.3h5.2v1.3" /><path d="M9 10h6M9 14h4" /></>,
+  file: <><path d="M6.6 3.4h6.9L18 8v12.6H6.6V3.4Z" /><path d="M13.2 3.4V8h4.8" /><path d="M9.2 12.6h5M9.2 16h3.4" /></>,
+  image: <><rect x="3.6" y="5" width="16.8" height="14" rx="2.4" /><circle cx="8.5" cy="9.7" r="1.5" /><path d="m4.8 17 4.6-4.4 3.3 3.1 2.8-2.5 3.9 3.8" /></>
 };
 
 function Icon({ name, size, className, style }) {
@@ -14189,7 +14194,7 @@ function App() {
           <div className="learnTop">
             <div className="multiBookSelect" style={{ position: 'relative', flex: 1 }}>
               <button className="multiBookBtn" onClick={() => setShowBookPicker(!showBookPicker)}>
-                {activeBook.name} ▼
+                {activeBook.name}<Icon name="chevronDown" />
               </button>
               {showBookPicker && (
                 <div className="bookPickerDropdown">
@@ -14547,7 +14552,7 @@ function App() {
           <div className="listenTop">
             <div className="multiBookSelect" style={{ position: 'relative', flex: 1 }}>
               <button className="multiBookBtn" onClick={() => setListenShowBooks(!listenShowBooks)}>
-                {listenActiveBook.name} ▼
+                {listenActiveBook.name}<Icon name="chevronDown" />
               </button>
               {listenShowBooks && (
                 <div className="bookPickerDropdown">
@@ -14645,11 +14650,11 @@ function App() {
 
           {/* 播放控制 */}
           <div className="listenControls">
-            <button className="listenSkipBtn" onClick={listenPrev} disabled={!listenDisplayQueue.length} title="上一个">⏮</button>
+            <button className="listenSkipBtn" onClick={listenPrev} disabled={!listenDisplayQueue.length} title="上一个"><Icon name="prev" /></button>
             <button className="listenPlayBtn" onClick={toggleListenPlay} disabled={!listenDisplayQueue.length} title="播放/暂停">
-              {listenPlaying && !listenPaused ? '⏸' : '▶'}
+              {listenPlaying && !listenPaused ? <Icon name="pause" /> : <Icon name="play" />}
             </button>
-            <button className="listenSkipBtn" onClick={listenNext} disabled={!listenDisplayQueue.length} title="下一个">⏭</button>
+            <button className="listenSkipBtn" onClick={listenNext} disabled={!listenDisplayQueue.length} title="下一个"><Icon name="next" /></button>
             <button className="listenMp3Btn" onClick={downloadCurrentMp3} disabled={!listenCurrent} title="下载本词 MP3"><Icon name="download" /></button>
           </div>
 
@@ -14877,7 +14882,7 @@ function App() {
           <div className="libraryHeader">
             <div className="multiBookSelect" style={{ position: 'relative', flex: 1 }}>
               <button className="multiBookBtn" onClick={() => setShowBookPicker2(!showBookPicker2)}>
-                {activeBook.name} ▼
+                {activeBook.name}<Icon name="chevronDown" />
               </button>
               {showBookPicker2 && (
                 <div className="bookPickerDropdown">
@@ -15188,7 +15193,7 @@ function App() {
                     <div className="affixMeaning">中文意义：{meaning}</div>
                     {examPoint && <div className="affixExamPoint"><Icon name="note" />{examPoint}</div>}
                     <button className="affixToggleBtn" onClick={() => setShowAffixWords(prev => ({ ...prev, [name]: !prev[name] }))}>
-                      {showAffixWords[name] ? '隐藏词库单词 ▲' : '显示词库单词 ▼'}
+                      {showAffixWords[name] ? <>隐藏词库单词<Icon name="chevronDown" className="caretUp" /></> : <>显示词库单词<Icon name="chevronDown" /></>}
                     </button>
                     {showAffixWords[name] && (
                       <div className="affixExamples">
@@ -15714,26 +15719,26 @@ function App() {
             {/* 上方4个按钮 */}
             <div className="importBtnRow">
               <button className="fileButton" onClick={() => document.getElementById('paste-btn')?.click()}>
-                📋 粘贴
+                <Icon name="clipboard" />粘贴
                 <textarea id="paste-btn" style={{position:'absolute',opacity:0,width:0,height:0}} autoFocus onChange={e => setImportText(e.target.value)} />
               </button>
               <label className="fileButton">
-                📄 TXT
+                <Icon name="file" />TXT
                 <input type="file" accept=".txt" style={{display:'none'}} onChange={e => handleFile(e.target.files[0])} />
               </label>
               <label className="fileButton">
-                📱 PDF/DOCX
+                <Icon name="file" />PDF/DOCX
                 <input type="file" accept=".pdf,.docx,.pptx" style={{display:'none'}} onChange={e => handleFile(e.target.files[0])} />
               </label>
               <label className="fileButton">
-                🖼 图片
+                <Icon name="image" />图片
                 <input type="file" accept=".png,.jpg,.jpeg,.webp" style={{display:'none'}} onChange={e => handleFile(e.target.files[0])} />
               </label>
             </div>
 
             {/* AI配置区（折叠式） */}
             <button className="aiToggle" onClick={() => setShowAiBox(!showAiBox)}>
-              {showAiBox ? '▼' : '▶'} AI大模型识别（可选）
+              <Icon name="chevronDown" className={showAiBox ? 'caretUp' : ''} />AI大模型识别（可选）
             </button>
             {showAiBox && (
               <div className="aiBox">
@@ -15891,7 +15896,7 @@ function App() {
           <div style={{ marginTop: 12 }}>
             <button className="primary" style={{ width: '100%', padding: '12px 0', fontSize: 15 }}
               onClick={() => { setShowReview(true); }}>
-              📖 温习历史单词
+              <Icon name="book" />温习历史单词
             </button>
             {(() => {
               const studyDates = Object.keys(studyWordsLog).filter(d => studyWordsLog[d] && studyWordsLog[d].length > 0);
@@ -16095,7 +16100,7 @@ function App() {
                       }}><Icon name="trash" />清除缓存重新下载</button>
                     <button className="smallBtn" style={{ marginTop: 8 }}
                       onClick={() => window.open(updateInfo.apkUrl || updateInfo.apkUrlCdn || APK_DOWNLOAD_SOURCES[0].url, '_blank')}>
-                      🌐 浏览器下载安装包
+                      <Icon name="globe" />浏览器下载安装包
                     </button>
                   </>
                 ) : (
@@ -16547,7 +16552,7 @@ function App() {
                   return (
                     <div className="detailSection detailWordFamily">
                       <p className="detailSectionTitle">
-                        🔗 关联词族
+                        <Icon name="link" />关联词族
                         {hasAiTag && <span className="aiBadge">AI联网标注</span>}
                       </p>
                       <div className="detailTagWrap">
@@ -16581,7 +16586,7 @@ function App() {
                   return (
                     <div className="detailSection detailConfusing">
                       <p className="detailSectionTitle">
-                        ⚠️ 易混词辨析
+                        <Icon name="warn" />易混词辨析
                         {hasAiConfusing && <span className="aiBadge">AI联网标注</span>}
                       </p>
                       {note && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 8px' }}>{note}</p>}

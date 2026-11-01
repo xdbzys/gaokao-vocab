@@ -2896,3 +2896,15 @@ button .ic, .smallBtn .ic, .navBtn .ic { pointer-events: none; }
 .mediaDiagRow span { color: #475569; word-break: break-all; }
 .mediaDiagCard.bad .mediaDiagRow span { color: #b45309; font-weight: 600; }
 .mediaDiagBtns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* 图标尺寸：播放控制 / 下拉箭头 / 导入按钮 */
+.listenPlayBtn .ic { width: 26px; height: 26px; margin-right: 0; }
+.listenSkipBtn .ic { width: 20px; height: 20px; margin-right: 0; }
+.listenMp3Btn .ic { width: 18px; height: 18px; margin-right: 0; }
+.multiBookBtn .ic { width: 14px; height: 14px; margin: 0 0 0 4px; }
+.aiToggle .ic, .affixToggleBtn .ic { width: 13px; height: 13px; margin-right: 5px; }
+.fileButton .ic { width: 18px; height: 18px; margin-right: 6px; }
+@media (max-width: 360px) {
+  .listenPlayBtn .ic { width: 22px; height: 22px; }
+  .listenSkipBtn .ic { width: 18px; height: 18px; }
+}
