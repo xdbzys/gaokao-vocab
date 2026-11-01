@@ -79,18 +79,27 @@ aapt2 断言包名/版本号
 ## 4. 本地改完怎么验证（不含真机时的最低要求）
 
 ```bash
-# 1) 语法与打包
-cd /tmp/esb && node syntax_check.js       # esbuild 打包，报错即停
+# 1) 打包（必须过；CI 第一步就是它）
+npm install && npm run build        # 产出 dist/index.html 单文件，语法错会直接报
 
-# 2) 行为断言（jsdom，34 项）
-node test_v276.js                         # 释义清洗 / 语音包兼容 / 路径判定 / 返回键 / 面板互斥
-
-# 3) 官网与网页版真截图（Chromium 390×844）
-python3 shot_v276.py
+# 2) 已有兼容性检查（仓库自带，改完前端务必各跑一次）
+node verify_es5.cjs                 # 产物必须是 ES5，否则老 WebView 白屏
+node verify_chromium37.cjs          # Chromium 37 兜底语法检查
 ```
 
+改动涉及释义清洗 / 朗读文本 / 面板 / 返回键时，除上面两条，还要自查这 5 类断言
+（历史上都是用临时 jsdom + esbuild 脚本跑的，**脚本未入库**，需要时按下面的点重写）：
+
+| 断言 | 期望 |
+|---|---|
+| `cleanMeaning()` 全库扫描 | 6502 条里 0 条残留 `a. / adj. / n.`，0 条孤立 `a` |
+| `_zhAlbumText()` 与语音包命名一致率 | ≥99.8%（低于此值会让部分词回退机械音） |
+| `_isFullWebPath()` | `/xxx/app/`、`/xxx/app/index.html` 为真；`/`、`/apple/` 为假 |
+| `window.__appBack()` | 主页返回空串；我的页 / 面板 / 弹窗返回 `handled` |
+| 听读面板 | 同时只存在 1 个 `.listenSettings`，切换时旧的必须消失 |
+
 **必须自己看截图**再交付：面板是否重叠、按钮是否被挤出屏幕、深色文字是否压在图上看不清。
-没有截图证据就当没做完。
+没有截图证据就当没做完（Chromium 390×844，模拟安卓手机屏宽）。
 
 ---
 
@@ -136,3 +145,26 @@ android/app/src/main/assets/public/   构建时由 dist 覆盖，不要手改
 - [ ] `https://xdbzys.github.io/gaokao-vocab/app/` 打开正常（新网页版，功能与 App 一致）
 - [ ] `https://xdbzys.github.io/gaokao-vocab/site/` 更新日志第一条是本次版本，页头版本号同步
 - [ ] 真机装一次：返回键逐层返回、听读面板互斥、MP3 能选目录并保存、头像为新图
+
+---
+
+## 8. 推不上去怎么办（云端沙箱常见）
+
+在隔离沙箱里 `git push` 经常被代理打断（`Recv failure: Connection reset by peer`、
+`early EOF`），仓库本身没问题。此时改成走 **Git Data API** 推，一次提交原子生效：
+
+```
+1) POST /git/blobs              content + encoding(utf-8 | base64)   → blob sha
+2) POST /git/trees              base_tree=当前 master 提交 + 上面所有 blob → tree sha
+3) POST /git/commits            message + tree + parents=[当前 master]  → commit sha
+4) PATCH /git/refs/heads/master sha=commit（不要 force）
+```
+
+要点：
+
+- 大二进制（`zhvoice.zip` 15.7MB、`gaokao-vocab.apk`）必须用 `encoding: base64`，
+  按 utf-8 传会直接损坏。
+- 每次推送前**重新 GET 一次 `ref/heads/master`**：CI 成功后会自己往 master 写清单，
+  用旧 base 推会 422（not a fast forward）。
+- 只改文档、不想再跑一遍 20 分钟的 APK 构建时，commit message 里加 `[skip ci]`，
+  GitHub 会跳过 workflow（文档改动也不影响 Pages，可以放心跳过）。
