@@ -40,10 +40,7 @@ function main() {
   }
 
   let html = fs.readFileSync(SITE, 'utf8');
-  if (html.indexOf('data-ver="' + ver + '"') >= 0) {
-    console.log('[site-changelog] v' + ver + ' already present, skip');
-    return;
-  }
+  const hasVer = html.indexOf('data-ver="' + ver + '"') >= 0;
 
   const TAG = { 新增: 'tag-new', 优化: 'tag-opt', 修复: 'tag-fix', 调整: 'tag-opt' };
   const lines = log.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
@@ -79,13 +76,29 @@ function main() {
     '',
   ].join('\n');
 
+  // 已存在同版本条目 → 原地替换（保证改了简述后官网跟着变），否则插到列表顶部
+  if (hasVer) {
+    const startMark = '      <div class="changelog-item" data-ver="' + ver + '">';
+    const at = html.indexOf(startMark);
+    const endMark = '\n      </div>\n';
+    const end = html.indexOf(endMark, at);
+    if (at < 0 || end < 0) {
+      console.log('[site-changelog] skip: cannot locate existing block for v' + ver);
+      return;
+    }
+    html = html.slice(0, at) + block + html.slice(end + 1);
+    fs.writeFileSync(SITE, html);
+    console.log('[site-changelog] replaced v' + ver + ' (' + items.length + ' items)');
+    return;
+  }
+
   const anchor = '<div class="changelog-list">';
-  const at = html.indexOf(anchor);
-  if (at < 0) {
+  const at2 = html.indexOf(anchor);
+  if (at2 < 0) {
     console.log('[site-changelog] skip: .changelog-list not found');
     return;
   }
-  const insertAt = at + anchor.length;
+  const insertAt = at2 + anchor.length;
   html = html.slice(0, insertAt) + '\n' + block + html.slice(insertAt);
   fs.writeFileSync(SITE, html);
   console.log('[site-changelog] inserted v' + ver + ' (' + items.length + ' items)');

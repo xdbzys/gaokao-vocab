@@ -1,11 +1,9 @@
 {
   "version": "2.75.0",
-  "versionCode": 292,
+  "versionCode": 287,
   "changelog": "【v2.75.0】中文语音换新：离线高清语音包\n新增 中文释义改用 22.05kHz 神经语音（6337 条离线音频），彻底告别机器腔\n新增 首次听读自动下载语音包（约 15.7MB，仅一次），之后离线秒播、断网也能读\n优化 听读中文统一念核心释义，与整库连播口径一致，同一个词不再出现两种念法",
   "devNotes": "v2.75.0: offline HD Chinese voice pack. 6337 unique zhText entries synthesized offline with Piper zh_CN-huayan VITS (22.05kHz), encoded to Opus 16kbps (15.7MB total; MP3 24k wasted 8MB and lost energy above 4kHz). Shipped as repo-root zhvoice.zip served by three jsDelivr hosts, downloaded on first listen and unpacked to filesDir/zhvoice with a .pack_v1 stamp. Playback chain: pack -> online Baidu -> system TTS, applied to album continuous mode and single-word mode (NativeVoice.localZh + NativePlayer.playFile). APK stays ~4.4MB: a 28MB APK broke the jsDelivr 20MB single-file limit and stalled the Gitee mirror push for 15+ minutes. Changelog format is now 'label text' lines, shown as a list in-app and auto-injected into the official site by scripts/sync-site-changelog.js.",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4390726,
-  "apkSha256": "6b9019eaadb3329b532117bd0c62d837456f665e04737767c74176f8c1be04bc"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
 }
