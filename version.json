@@ -1,11 +1,9 @@
 {
-  "version": "2.76.0",
-  "versionCode": 295,
+  "version": "2.77.0",
+  "versionCode": 296,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4415065,
-  "apkSha256": "3ffe67543ee08ce222e58d8cfabea1c70daa76090189174c10c4723a469c76bc",
-  "changelog": "【v2.76.0】返回键、双网页版、全参数下载\n新增 返回键改为逐层返回：先关弹窗、再退面板、再回背诵页，回到首页后按才退出应用\n新增 第二套网页版：官网「在线使用 → App 同款」，功能与安装包一致；经典网页版继续保留\n新增 MP3 下载支持自定义起始词、条数、语速、音频内容、文件名与保存目录\n新增 自定义保存目录"
+  "changelog": "【v2.77.0】中文更好听、离线包可选、下拉随手关\n优化 中文朗读改走云端配音，语速恢复到正常档，听感更干净\n新增 听读时中文义项之间留出自然停顿，长释义不再一口气念完\n新增 离线语音包改为可选，默认不占空间，需要断网朗读时再开启\n优化 释义里多条中文意思之间拉开间距，不再首尾相连\n优化 设置里的下拉选择点空白处即可关闭，选完自动收起\n优化 听读缓存加上限，长期使用占用不再越滚越大"
 }

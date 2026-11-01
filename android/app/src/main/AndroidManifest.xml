@@ -56,6 +56,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- v2.77.0：中文语音云端优先，断网时要立刻改用离线包，需要读取网络状态 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- 备份到公共 Documents 目录：API 21 安装时授予，API 23+ 运行时申请 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"

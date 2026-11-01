@@ -97,6 +97,9 @@ node verify_chromium37.cjs          # Chromium 37 兜底语法检查
 | `_isFullWebPath()` | `/xxx/app/`、`/xxx/app/index.html` 为真；`/`、`/apple/` 为假 |
 | `window.__appBack()` | 主页返回空串；我的页 / 面板 / 弹窗返回 `handled` |
 | 听读面板 | 同时只存在 1 个 `.listenSettings`，切换时旧的必须消失 |
+| 中文音频源顺序 | 在线时首源必须是云端；本地包只能排最后（断网时才可以排第一） |
+| 下拉交互 | 点遮罩、点选项都必须关闭菜单，且菜单只能存在 1 个 |
+| 释义分段 | 含「；」的释义要渲染成多个 `.mnItem`，分号保留、间距 ≥8px |
 
 **必须自己看截图**再交付：面板是否重叠、按钮是否被挤出屏幕、深色文字是否压在图上看不清。
 没有截图证据就当没做完（Chromium 390×844，模拟安卓手机屏宽）。
@@ -113,6 +116,9 @@ node verify_chromium37.cjs          # Chromium 37 兜底语法检查
 | 中文语音变回机械音 | 语音包文件名是释义文本的哈希，改了朗读文本就对不上 | 改动 `_zhAlbumText` 前先跑「语音包命名一致率」断言（≥99.8%） |
 | 官网内容停留在旧版本 | 软件内链接与部分用户收藏都指向旧站 `gaokao-vocab-website`（停在 v2.37.0） | 软件内入口已改指新站；旧站只放跳转页，不要再往里写内容 |
 | 官网版本号一直「加载中」 | 先请求 `raw.githubusercontent.com`，国内会挂起不报错 | 同源 `../app-update.json` 优先 + 4 秒超时再降级 jsDelivr |
+| 下拉选择点空白关不掉 | 下拉包在 `<label>` 里，点遮罩后 label 会把这次点击转发给内部按钮，等于又 toggle 一次 | 遮罩与选项的 onClick 都要 `preventDefault()` 掐断转发 |
+| 中文明显不如英文好听 | 旧链路把 16kbps 的离线包排第一（音量压缩、频带窄），云端 64kbps 配音永远用不上 | 云端优先、离线包只做断网兜底；语速 spd 用 `rate*5`（1.0x=常速） |
+| 软件占用越用越大 | 听读每个词留 en/zh 两个缓存文件，整库播完 150MB+，且从不清理 | 缓存目录设 40MB 上限，按最后访问时间淘汰，见 `trimAlbumCacheIfNeeded()` |
 | 面板叠在一起、退不出去 | 4 个独立布尔量各自展开 | 只保留一个 `listenPanel` 单值状态 + 面板顶部常驻「完成」 |
 | 版本号发了但客户端不提示更新 | 清单 `versionCode` 没递增，或 APK 与清单不一致 | 只改 `APP_VERSION`，让 CI 生成 code，并看构建末尾的断言 |
 
@@ -130,6 +136,7 @@ src/build.yml                CI 流水线（对应仓库 .github/workflows/build
 src/site/gaokao-vocab-site.html   官网
 src/scripts/sync-site-changelog.js  官网更新日志注入
 app-update.json              版本清单（客户端更新判断的唯一事实来源）
+src/AGENTS.md                本文件（改版前先读）
 version.json                 轻量版本探针（约 300 字节，先比 code 再决定要不要下正文）
 zhvoice.zip                  中文高清语音包（仓库根，走 jsDelivr）
 android/app/src/main/assets/public/   构建时由 dist 覆盖，不要手改

@@ -216,6 +216,8 @@ public class PlayerService extends Service {
     // v2.70.0 中文发音源统计：让用户能在界面上看到本次实际用的是神经语音还是回退音
     private volatile int mZhEdgeOk = 0;   // 成功用 Edge 神经语音合成的中文词数
     private volatile int mZhFallback = 0; // Edge 失败、回退 百度/有道 的中文词数
+    /** v2.77.0 Edge 通道连续失败次数：达到 3 次后本次进程不再尝试（该接口已大面积 403） */
+    private static volatile int sEdgeFails = 0;
 
 
     /** 进度上报（每 500ms 一次，供锁屏 / 蓝牙 / JS 进度条使用） */
@@ -284,14 +286,17 @@ public class PlayerService extends Service {
         try { if (mAlbumCacheDir != null && !mAlbumCacheDir.exists()) mAlbumCacheDir.mkdirs(); } catch (Throwable ignored) {}
         mAlbumWavDir = new File(getCacheDir(), "album_wav");
         try { if (mAlbumWavDir != null && !mAlbumWavDir.exists()) mAlbumWavDir.mkdirs(); } catch (Throwable ignored) {}
-        // v2.75.0 高清中文语音包：内置 assets/zhvoice.zip，解压到 filesDir（不会被系统当缓存清掉）
+        // v2.77.0 高清语音包改为「按需可选」：默认不下载，避免 15.7MB 常驻占用。
+        // 只有用户在设置里主动开启离线语音时才在后台准备，且整段逻辑幂等。
         mZhPackDir = new File(getFilesDir(), "zhvoice");
         initTts();
-        try {
-            new Thread(new Runnable() {
-                @Override public void run() { try { ensureZhPack(); } catch (Throwable ignored) {} }
-            }, "zh-pack").start();
-        } catch (Throwable ignored) {}
+        if (zhOfflineEnabled(this)) {
+            try {
+                new Thread(new Runnable() {
+                    @Override public void run() { try { ensureZhPack(); } catch (Throwable ignored) {} }
+                }, "zh-pack").start();
+            } catch (Throwable ignored) {}
+        }
         if (mHandler != null) mHandler.post(mProgressTask);
     }
 
@@ -1375,17 +1380,27 @@ public class PlayerService extends Service {
         final AlbumWord w = mAlbumWords.get(idx);
         final Runnable afterDone = new Runnable() { @Override public void run() { onStageItemDone(idx, tok); } };
         if (w.zhText == null || w.zhText.length() == 0) { onStageItemDone(idx, tok); return; }
-        // v2.75.0 ① 内置高清语音包（22.05kHz 神经语音，离线零延迟）→ 永远最优先
-        File hdF = zhHdFile(w.zhText);
-        if (hdF != null) { playAlbumFile(hdF, afterDone); return; }
+        final File hdF = zhHdFile(w.zhText);
+        final boolean online = netAvailable();
         final boolean wantNet = !"system".equals(mCfgZhSource);
-        // ① 已预取到本地的 Edge 神经语音（与整库合成线程共用缓存目录）→ 直接播，零延迟
-        if (wantNet) {
-            File edgeF = new File(mAlbumCacheDir, "zh_" + w.key + "_" + zhSuffix() + ".mp3");
-            if (edgeF.exists() && edgeF.length() > 400) { playAlbumFile(edgeF, afterDone); return; }
+
+        // v2.77.0 断网：本地离线包优先，绝不在每个词上等 socket 超时
+        if (!online) {
+            if (hdF != null) { playAlbumFile(hdF, afterDone); return; }
+            playAlbumZhSystem(idx, tok);
+            return;
         }
-        // ② 在线 Edge 神经语音：子线程同步合成（重试一次），失败自动落到 ③ 百度 / ④ 有道 / ⑤ 系统语音
+
+        // ① 已预取的云端音频（百度 64kbps / 有道）→ 直接播，零延迟
         if (wantNet) {
+            File netF = new File(mAlbumCacheDir, "zh_" + w.key + "_net.mp3");
+            if (!(netF.exists() && netF.length() > 200)) netF = new File(mAlbumCacheDir, "zh_" + w.key + "_net0.mp3");
+            if (!(netF.exists() && netF.length() > 200)) netF = new File(mAlbumCacheDir, "zh_" + w.key + "_yd.mp3");
+            if (netF.exists() && netF.length() > 200) { playAlbumFile(netF, afterDone); return; }
+        }
+
+        // ② 在线合成：Edge 神经语音（连续失败 3 次后本轮不再尝试）→ 百度 → 有道 → 本地包 → 手机语音
+        if (wantNet && sEdgeFails < 3) {
             new Thread(new Runnable() {
                 @Override public void run() {
                     File ef = new File(mAlbumCacheDir, "zh_" + w.key + "_" + zhSuffix() + ".mp3");
@@ -1395,60 +1410,53 @@ public class PlayerService extends Service {
                             @Override public void run() {
                                 if (!mAlbumMode || mAlbumIndex != idx) return;
                                 File f2 = new File(mAlbumCacheDir, "zh_" + w.key + "_" + zhSuffix() + ".mp3");
-                                if (f2.exists() && f2.length() > 400) {
-                                    playAlbumFile(f2, afterDone);
-                                    return;
-                                }
-                                playAlbumZhSystem(idx, tok);
+                                if (f2.exists() && f2.length() > 400) { playAlbumFile(f2, afterDone); return; }
+                                playAlbumZhOnline(idx, tok, hdF, afterDone);
                             }
                         });
                         return;
                     }
-                    // Edge 失败 → ③ 旧缓存（百度/有道）→ ④ 在线百度 → ⑤ 有道 → ⑥ 系统引擎
-                    if (mAlbumMode && mAlbumIndex != idx) return;
-                    mHandler.post(new Runnable() {
-                        @Override public void run() {
-                            if (!mAlbumMode || mAlbumIndex != idx) return;
-                            // v2.74.0「自动」模式：Edge 不可用时优先用手机自带语音引擎
-                            // （vivo 上多为讯飞声库，中文韵律明显好于百度翻译的拼读音），
-                            // 而不是直接落到机器味最重的网络配音。
-                            if ("auto".equals(mCfgZhSource) && mTtsReady) {
-                                playAlbumZhSystem(idx, tok);
-                                return;
+                    if (!ok) sEdgeFails++;
+                    if (mAlbumMode && mAlbumIndex == idx) {
+                        mHandler.post(new Runnable() {
+                            @Override public void run() {
+                                if (!mAlbumMode || mAlbumIndex != idx) return;
+                                playAlbumZhOnline(idx, tok, hdF, afterDone);
                             }
-                            File nf = new File(mAlbumCacheDir, "zh_" + w.key + "_net.mp3");
-                            if (!(nf.exists() && nf.length() > 200)) nf = new File(mAlbumCacheDir, "zh_" + w.key + "_net0.mp3");
-                            if (!(nf.exists() && nf.length() > 200)) nf = new File(mAlbumCacheDir, "zh_" + w.key + "_yd.mp3");
-                            if (nf.exists() && nf.length() > 200) { playAlbumFile(nf, afterDone); return; }
-                            Runnable fallToYd = new Runnable() {
-                                @Override public void run() {
-                                    if (!mAlbumMode || mAlbumIndex != idx) return;
-                                    String yu = youdaoZhUrl(w.zhText);
-                                    if (yu != null) {
-                                        playAlbumUrl(yu, afterDone, new Runnable() {
-                                            @Override public void run() {
-                                                if (!mAlbumMode || mAlbumIndex != idx) return;
-                                                playAlbumZhSystem(idx, tok);
-                                            }
-                                        });
-                                    } else {
-                                        playAlbumZhSystem(idx, tok);
-                                    }
-                                }
-                            };
-                            String nu = zhNetUrl(w.zhText);
-                            if (nu != null) {
-                                playAlbumUrl(nu, afterDone, fallToYd);
-                            } else {
-                                fallToYd.run();
-                            }
-                        }
-                    });
+                        });
+                    }
                 }
             }, "edge-tts-play").start();
             return;
         }
+        if (wantNet) { playAlbumZhOnline(idx, tok, hdF, afterDone); return; }
+        if (hdF != null) { playAlbumFile(hdF, afterDone); return; }
         playAlbumZhSystem(idx, tok);
+    }
+
+    /**
+     * v2.77.0 在线中文配音：百度整句（64kbps）→ 有道（24kHz，仅短词）→ 本地离线包 → 手机语音。
+     * 旧版把 16kbps 的离线包放在最前面，导致云端更好的音质永远用不上。
+     */
+    private void playAlbumZhOnline(final int idx, final int tok, final File hdF, final Runnable afterDone) {
+        if (!mAlbumMode || idx != mAlbumIndex || idx < 0 || idx >= mAlbumWords.size()) return;
+        final AlbumWord w = mAlbumWords.get(idx);
+        Runnable fallToHd = new Runnable() {
+            @Override public void run() {
+                if (!mAlbumMode || mAlbumIndex != idx) return;
+                if (hdF != null && hdF.exists()) { playAlbumFile(hdF, afterDone); return; }
+                playAlbumZhSystem(idx, tok);
+            }
+        };
+        Runnable fallToYd = new Runnable() {
+            @Override public void run() {
+                if (!mAlbumMode || mAlbumIndex != idx) return;
+                String yu = youdaoZhUrl(w.zhText);
+                if (yu != null) { playAlbumUrl(yu, afterDone, fallToHd); } else { fallToHd.run(); }
+            }
+        };
+        String nu = zhNetUrl(w.zhText);
+        if (nu != null) { playAlbumUrl(nu, afterDone, fallToYd); } else { fallToYd.run(); }
     }
 
     /** ③ 手机自带语音引擎合成（再失败退回有道网络音） */
@@ -1837,6 +1845,69 @@ public class PlayerService extends Service {
     private static volatile boolean sZhPackTried = false;
     private static volatile PlayerService sInst = null;
 
+    /* ===== v2.77.0 离线语音开关（默认关闭：中文日常走云端，不占手机空间） ===== */
+    private static final String VOICE_PREFS = "gaokao_voice";
+    private static final String PREF_ZH_OFFLINE = "zh_offline_enabled";
+
+    /** 是否允许使用/下载离线语音包（用户主动开启才为 true） */
+    static boolean zhOfflineEnabled(android.content.Context ctx) {
+        try {
+            android.content.SharedPreferences sp =
+                    ctx.getSharedPreferences(VOICE_PREFS, android.content.Context.MODE_PRIVATE);
+            return sp.getBoolean(PREF_ZH_OFFLINE, false);
+        } catch (Throwable e) { return false; }
+    }
+
+    /** 设置离线语音开关；关闭时顺带清掉已解压的包，立刻释放空间 */
+    static void setZhOfflineEnabled(android.content.Context ctx, boolean on) {
+        try {
+            android.content.SharedPreferences sp =
+                    ctx.getSharedPreferences(VOICE_PREFS, android.content.Context.MODE_PRIVATE);
+            sp.edit().putBoolean(PREF_ZH_OFFLINE, on).apply();
+        } catch (Throwable ignored) {}
+        if (!on) clearZhPack(ctx);
+    }
+
+    /** 语音包占用字节数（解压后的目录体积） */
+    static long zhPackBytes(android.content.Context ctx) {
+        long total = 0;
+        try {
+            File dir = new File(ctx.getFilesDir(), "zhvoice");
+            File[] fs = dir.listFiles();
+            if (fs != null) for (File f : fs) { try { total += f.length(); } catch (Throwable ignored) {} }
+            File zip = new File(ctx.getCacheDir(), ZH_PACK_ZIP);
+            if (zip.exists()) total += zip.length();
+        } catch (Throwable ignored) {}
+        return total;
+    }
+
+    /** 删除已下载的语音包与解压目录，释放空间 */
+    static void clearZhPack(android.content.Context ctx) {
+        try {
+            File dir = new File(ctx.getFilesDir(), "zhvoice");
+            File[] fs = dir.listFiles();
+            if (fs != null) for (File f : fs) { try { f.delete(); } catch (Throwable ignored) {} }
+            try { dir.delete(); } catch (Throwable ignored) {}
+            File zip = new File(ctx.getCacheDir(), ZH_PACK_ZIP);
+            if (zip.exists()) { try { zip.delete(); } catch (Throwable ignored) {} }
+        } catch (Throwable ignored) {}
+        sZhPackCount = 0;
+        sZhPackTried = false;
+    }
+
+    /** 用户点了「立即下载」：服务已在运行就马上准备，否则等下次播放时自动准备（避免为下载单起前台服务） */
+    static boolean requestZhPack() {
+        PlayerService s = sInst;
+        if (s == null || s.mZhPackDir == null) return false;
+        if (sZhPackCount > 0) return true;
+        try {
+            new Thread(new Runnable() {
+                @Override public void run() { try { PlayerService p = sInst; if (p != null) p.ensureZhPack(); } catch (Throwable ignored) {} }
+            }, "zh-pack-req").start();
+            return true;
+        } catch (Throwable e) { return false; }
+    }
+
     /** 中文朗读文本 → 语音包文件名。双 FNV-1a 32bit（正序 + 逆序），与前端 zhVoiceHash() 逐字节一致 */
     static String zhPackName(String text) {
         byte[] b;
@@ -2199,42 +2270,92 @@ public class PlayerService extends Service {
 
     /** 确保英文发音文件就绪（本地已有则秒返回；否则下载） */
     private boolean ensureEnAudio(AlbumWord w) {
+        trimAlbumCacheIfNeeded();
         File enF = new File(mAlbumCacheDir, "en_" + w.key + ".mp3");
         if (enF.exists() && enF.length() > 200) return true;
         if (w.enUrl == null || w.enUrl.length() == 0) return false;
         return downloadToFileSync(w.enUrl, enF);
     }
 
-    /** 确保中文发音文件就绪（拟人优先：Edge 神经语音 → 百度配音 → 本地语音引擎） */
+    /** 确保中文发音文件就绪（v2.77.0：云端优先，本地包降级为离线/兜底） */
     private boolean ensureZhAudio(AlbumWord w) {
         if (w.zhText == null || w.zhText.length() == 0) return false;
-        // v2.75.0 内置高清语音包命中即完成，不再走任何网络合成
-        if (zhHdFile(w.zhText) != null) return true;
+        trimAlbumCacheIfNeeded();
+        boolean online = netAvailable();
+        boolean hasHd = zhHdFile(w.zhText) != null;
+        // 断网：本地包直接命中，不做任何网络请求（否则每个词都要等 socket 超时）
+        if (!online && hasHd) return true;
         String suf = zhSuffix();
-        if (!"system".equals(mCfgZhSource)) {
+        if (online && !"system".equals(mCfgZhSource)) {
             File edge = new File(mAlbumCacheDir, "zh_" + w.key + "_" + suf + ".mp3");
             if (edge.exists() && edge.length() > 400) return true;
-            if (edgeTtsToFileRetry(w.zhText, edgeVoiceName(), "+0%", edge)) {
+            // v2.77.0 Edge 通道连续失败就整轮跳过：实测该接口已大量 403，
+            // 每个词都重试会拖慢整库合成（每次一个 WebSocket 往返）
+            if (sEdgeFails < 3 && edgeTtsToFileRetry(w.zhText, edgeVoiceName(), "+0%", edge)) {
                 mZhEdgeOk++;
                 return true;
             }
-            // v2.70.0 Edge 失败才算回退，同时统计回退词数供界面提示
-            mZhFallback++;
+            if (sEdgeFails < 3) { sEdgeFails++; mZhFallback++; }
             File net = new File(mAlbumCacheDir, "zh_" + w.key + "_net.mp3");
             if (net.exists() && net.length() > 200) return true;
             if (zhNetUrl(w.zhText) != null && downloadToFileSync(zhNetUrl(w.zhText), net)) return true;
             File yd = new File(mAlbumCacheDir, "zh_" + w.key + "_yd.mp3");
             if (youdaoZhUrl(w.zhText) != null && downloadToFileSync(youdaoZhUrl(w.zhText), yd)) return true;
         }
+        // 云端都不可用（或用户指定手机语音）→ 本地离线包兜底
+        if (hasHd) return true;
         File sys = new File(mAlbumCacheDir, "zh_" + w.key + "_sys.wav");
         if (sys.exists() && sys.length() > 44) return true;
         return synthZhSync(w.zhText, sys);
     }
 
+    /* ===== v2.77.0 听读缓存上限 =====
+       每个词会在缓存目录留下 en_xx.mp3 / zh_xx.mp3 两个文件，整库播完 3598 词约 150~200MB，
+       这是「软件占用越来越大」的主要原因（比 16MB 语音包严重得多）。
+       这里设 40MB 上限，超出后按最后访问时间淘汰最旧的，播放中的词永远是最新的，不会被删。 */
+    private static final long ALBUM_CACHE_MAX_BYTES = 40L * 1024L * 1024L;
+    private static volatile long sLastTrimAt = 0;
+
+    private void trimAlbumCacheIfNeeded() {
+        long now = System.currentTimeMillis();
+        if (now - sLastTrimAt < 30000L) return;
+        sLastTrimAt = now;
+        try {
+            if (mAlbumCacheDir == null) return;
+            File[] fs = mAlbumCacheDir.listFiles();
+            if (fs == null || fs.length == 0) return;
+            long total = 0;
+            for (File f : fs) { try { total += f.length(); } catch (Throwable ignored) {} }
+            if (total <= ALBUM_CACHE_MAX_BYTES) return;
+            java.util.Arrays.sort(fs, new java.util.Comparator<File>() {
+                @Override public int compare(File a, File b) {
+                    long x = a.lastModified(), y = b.lastModified();
+                    return x < y ? -1 : (x > y ? 1 : 0);
+                }
+            });
+            for (File f : fs) {
+                if (total <= ALBUM_CACHE_MAX_BYTES) break;
+                long len;
+                try { len = f.length(); } catch (Throwable e) { continue; }
+                try { if (f.delete()) total -= len; } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** 当前是否有可用网络（离线时避免每个词都等 socket 超时） */
+    private boolean netAvailable() {
+        try {
+            android.net.ConnectivityManager cm = (android.net.ConnectivityManager)
+                    getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+            android.net.NetworkInfo ni = cm.getActiveNetworkInfo();
+            return ni != null && ni.isConnected();
+        } catch (Throwable e) { return true; }
+    }
+
     /** 把已就绪的中文音频追加到输出流：先试当前发音源，再试另一种 */
     private boolean appendZhAudio(java.io.RandomAccessFile out, AlbumWord w) {
-        File hd = zhHdFile(w.zhText);
-        if (hd != null && appendAudioPcm(out, hd)) return true;
+        // v2.77.0 顺序与 ensureZhAudio 保持一致：云端 64kbps 配音优先，
+        // 16kbps 的离线包只在云端都没产物时才参与拼接，避免导出又回到闷音
         String suf = zhSuffix();
         File edge = new File(mAlbumCacheDir, "zh_" + w.key + "_" + suf + ".mp3");
         if (edge.exists() && edge.length() > 400 && appendAudioPcm(out, edge)) return true;
@@ -2244,6 +2365,8 @@ public class PlayerService extends Service {
         if (anyNet.exists() && anyNet.length() > 200 && appendAudioPcm(out, anyNet)) return true;
         File yd = new File(mAlbumCacheDir, "zh_" + w.key + "_yd.mp3");
         if (yd.exists() && yd.length() > 200 && appendAudioPcm(out, yd)) return true;
+        File hd = zhHdFile(w.zhText);
+        if (hd != null && appendAudioPcm(out, hd)) return true;
         File sys = new File(mAlbumCacheDir, "zh_" + w.key + "_sys.wav");
         if (sys.exists() && sys.length() > 44 && appendWavPcm(out, sys)) return true;
         return false;

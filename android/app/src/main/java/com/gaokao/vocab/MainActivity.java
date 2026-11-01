@@ -275,6 +275,38 @@ public class MainActivity extends Activity {
             public int count() {
                 try { return PlayerService.zhPackCount(); } catch (Throwable e) { return 0; }
             }
+
+            /* ===== v2.77.0 离线语音包改为可选：默认不下载，用户主动开启才占空间 ===== */
+
+            /** 是否已开启离线语音 */
+            @JavascriptInterface
+            public boolean offlineEnabled() {
+                try { return PlayerService.zhOfflineEnabled(MainActivity.this); } catch (Throwable e) { return false; }
+            }
+
+            /** 开启/关闭离线语音；关闭会立即删除已解压的包释放空间。返回最终状态 */
+            @JavascriptInterface
+            public boolean setOffline(boolean on) {
+                try { PlayerService.setZhOfflineEnabled(MainActivity.this, on); return on; } catch (Throwable e) { return false; }
+            }
+
+            /** 语音包当前占用字节数（含未删除的 zip 缓存） */
+            @JavascriptInterface
+            public long offlineBytes() {
+                try { return PlayerService.zhPackBytes(MainActivity.this); } catch (Throwable e) { return 0L; }
+            }
+
+            /** 立即开始准备（服务在跑时马上下载；否则等下次播放自动准备）。返回是否已排队 */
+            @JavascriptInterface
+            public boolean requestOffline() {
+                try { return PlayerService.requestZhPack(); } catch (Throwable e) { return false; }
+            }
+
+            /** 删除已下载的离线语音 */
+            @JavascriptInterface
+            public void clearOffline() {
+                try { PlayerService.clearZhPack(MainActivity.this); } catch (Throwable e) {}
+            }
         }, "NativeVoice");
 
         // v2.62.0 系统播放器桥接：供 JS 侧 window.NativePlayer 调用

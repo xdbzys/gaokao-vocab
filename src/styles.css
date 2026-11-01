@@ -3148,3 +3148,36 @@ button .ic, .smallBtn .ic, .navBtn .ic { pointer-events: none; }
 }
 .saveDirBtns { display: flex; gap: 6px; flex-shrink: 0; }
 .saveDirBtns .ghost { background: #fff; }
+
+/* ===== v2.77.0 ===== */
+/* 释义分段：多义项之间拉开可见间距，避免「放纵；放任」首尾相接看着像漏标点 */
+.mnList { display: inline; }
+.mnItem { display: inline-block; margin-right: 10px; }
+.mnItem:last-child { margin-right: 0; }
+.listenMeaning .mnItem { margin-right: 14px; }
+
+/* 离线语音（原 15.7MB 语音包改为可选） */
+.offlineVoiceBox {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px; border-radius: 12px;
+  background: var(--bg-soft, #f8fafc);
+  border: 1px solid var(--border);
+}
+.offlineVoiceRow { display: flex; align-items: center; gap: 10px; }
+.offlineVoiceRow .ovText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.offlineVoiceRow .ovText b { font-size: 13px; }
+.offlineVoiceRow .ovText span { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.offlineVoiceBtns { display: flex; gap: 8px; flex-wrap: wrap; }
+.offlineVoiceBtns .ghost { background: #fff; }
+.ovSwitch {
+  width: 46px; height: 27px; border-radius: 999px; border: none;
+  background: #cbd5e1; position: relative; flex-shrink: 0; cursor: pointer;
+  transition: background .18s ease;
+}
+.ovSwitch::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 21px; height: 21px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .18s ease;
+}
+.ovSwitch.on { background: var(--primary, #3b82f6); }
+.ovSwitch.on::after { transform: translateX(19px); }

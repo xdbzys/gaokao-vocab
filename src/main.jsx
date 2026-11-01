@@ -86,8 +86,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.76.0';
-const APP_VERSION_CODE = 294;
+const APP_VERSION = '2.77.0';
+const APP_VERSION_CODE = 296;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -10286,31 +10286,87 @@ function _zhAlbumText(text) {
 // v2.75.0 高清中文语音包状态文案（原生回传 zhpack:ready:N / zhpack:downloading:i/n / zhpack:failed）
 function zhPackText(s) {
   var v = String(s || '');
-  if (v.indexOf('ready:') === 0) return '已就绪 · ' + v.slice(6) + ' 条离线语音（22.05kHz 神经语音）';
-  if (v.indexOf('downloading:') === 0) return '下载中（源 ' + v.slice(12) + '，约 15.7MB，仅首次）';
-  if (v === 'failed') return '未下载 · 中文暂用在线配音，重新进入听读会重试';
+  if (v.indexOf('ready:') === 0) return '已就绪 · ' + v.slice(6) + ' 条离线语音';
+  if (v.indexOf('downloading:') === 0) return '下载中（约 16MB，仅首次）';
+  if (v === 'queued') return '已排队 · 开始播放后自动下载';
+  if (v === 'failed') return '下载失败 · 中文继续从云端获取，可稍后重试';
   var c = 0;
   try { if (window.NativeVoice && typeof window.NativeVoice.count === 'function') c = window.NativeVoice.count() | 0; } catch (e) { c = 0; }
-  return c > 0 ? ('已就绪 · ' + c + ' 条离线语音') : '未就绪 · 开始听读后自动下载';
+  return c > 0 ? ('已就绪 · ' + c + ' 条离线语音') : '未开启 · 中文从云端获取（更省空间）';
+}
+
+// 文件大小友好显示（KB / MB）
+function fmtFileSize(bytes) {
+  var n = Number(bytes) || 0;
+  if (n <= 0) return '0 MB';
+  if (n >= 1048576) return (n / 1048576).toFixed(1) + ' MB';
+  return Math.max(1, Math.round(n / 1024)) + ' KB';
+}
+
+// v2.77.0 中文朗读链路重排：云端优先 → 有道高清短词 → 本地包兜底
+// 背景（实测）：英文有道真人音是 48kHz/64kbps，听着清亮；中文旧的离线包只有 16kbps，
+// 频带被压得很窄，这就是「中文明显不如英文好听」的物理原因。云端配音是 64kbps，
+// 先云端、把 15.7MB 的离线包降级成「可选兜底」，既好听又不占空间。
+function _zhOnlineUrls(t, rate) {
+  // 语速映射：百度 spd 1~9，5 为常速。旧实现 rate*3 让 1.0x 只到 3（比正常明显慢），
+  // 慢速 16kHz 合成音会更闷，这里改成 rate*5，1.0x 正好常速。
+  var spd = Math.max(1, Math.min(9, Math.round((rate || 1) * 5)));
+  return ['https://fanyi.baidu.com/gettts?lan=zh&text=' + encodeURIComponent(t) + '&spd=' + spd + '&source=web'];
 }
 
 function zhAudioUrls(text, rate) {
   var t = String(text || '').trim();
   if (!t) return [];
   var urls = [];
-  // v2.75.0 ① 内置高清语音包：22.05kHz 神经语音，离线秒开，音质稳定不随网络波动
+  var localPath = '';
   try {
     if (window.NativeVoice && typeof window.NativeVoice.localZh === 'function') {
-      var lp = window.NativeVoice.localZh(t);
-      if (lp) urls.push(lp);
+      localPath = window.NativeVoice.localZh(t) || '';
     }
-  } catch (e) {}
-  var spd = Math.max(1, Math.min(9, Math.round((rate || 1) * 3)));
-  urls.push('https://fanyi.baidu.com/gettts?lan=zh&text=' + encodeURIComponent(t) + '&spd=' + spd + '&source=web');
+  } catch (e) { localPath = ''; }
+  var offline = false;
+  try { offline = (typeof navigator !== 'undefined' && navigator.onLine === false); } catch (e) { offline = false; }
+
+  // 断网：本地包优先，保证一定有声音
+  if (offline && localPath) urls.push(localPath);
+  // 短词走有道 24kHz 高清音色（只覆盖词典词条，未命中会 500，链式播放自动落到下一源）
   if (t.length <= 6 && !/[\s，,、；;]/.test(t)) {
     urls.push('https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(t) + '&le=zh');
   }
+  // 云端整句配音（主源）
+  urls = urls.concat(_zhOnlineUrls(t, rate));
+  // 在线但云端失败时，本地包垫底（不再作为首选）
+  if (!offline && localPath) urls.push(localPath);
   return urls;
+}
+
+// 把释义拆成 1~3 个义项，逐段朗读：段间有自然停顿，比一口气念完更像词条
+function _zhSegments(text, max) {
+  var t = String(text || '').trim();
+  if (!t) return [];
+  var parts = t.split(/[；;]/).map(function (s) { return s.trim(); }).filter(function (s) { return !!s; });
+  if (!parts.length) parts = [t];
+  var out = [];
+  for (var i = 0; i < parts.length && out.length < (max || 3); i++) out.push(parts[i]);
+  return out;
+}
+
+// 逐段串行朗读（每段先试本地/云端链，段间停 180ms）
+function speakZhSegmentsAsync(text, rate, useNative) {
+  var segs = _zhSegments(text, 3);
+  if (!segs.length) return Promise.resolve();
+  var i = 0;
+  function step() {
+    if (i >= segs.length) return Promise.resolve();
+    var seg = segs[i++];
+    return speakChainAsync(zhAudioUrls(seg, rate), seg, 'zh-CN', rate || 1, useNative)
+      .then(function () {
+        if (i >= segs.length) return null;
+        return new Promise(function (r) { setTimeout(r, 180); });
+      })
+      .then(function () { return step(); });
+  }
+  return step();
 }
 
 // ===== v2.62.0：剪贴板 / 文件保存 / ZIP 打包 / MP3 下载 工具 =====
@@ -10735,7 +10791,7 @@ function speak(text, rate) {
     speakChainAsync(enAudioUrls(normalized), normalized, 'en-US', r, false);
   } else {
     var zh = _zhAlbumText(normalized) || _zhSpeechText(normalized);
-    speakChainAsync(zhAudioUrls(zh, r), zh, 'zh-CN', r, false);
+    speakZhSegmentsAsync(zh, r, false);
   }
 }
 
@@ -11051,7 +11107,8 @@ function speakEnAsync(text, rate) {
 function speakZhAsync(text, rate) {
   var t = _zhAlbumText(text) || _zhSpeechText(text);
   if (!t) return Promise.resolve();
-  var chain = function () { return speakChainAsync(zhAudioUrls(t, rate), t, 'zh-CN', rate || 1, listenSystemPlayerOn()); };
+  // v2.77.0 按义项分段朗读，段间留自然停顿
+  var chain = function () { return speakZhSegmentsAsync(t, rate || 1, listenSystemPlayerOn()); };
   if (_listenZhSourcePref() === 'net') return chain();
   if (!getZhTtsVoice()) return chain();
   // v2.63.0：听读模式中文系统语音 → TTS 伴侣模式，媒体卡片保持可控
@@ -11421,7 +11478,14 @@ function InlineSelect(props) {
       </button>
       {open && (
         <React.Fragment>
-          <div className="inlineSelectMask" onClick={function () { setOpen(false); }} />
+          {/* v2.77.0 修复「点空白处关不掉」：
+              下拉被包在 <label> 里，点遮罩后 label 的默认行为会把这次点击再转发给
+              内部按钮，等于又触发一次 toggle —— 看起来就是关不上。
+              必须在遮罩这一层 preventDefault，掐掉 label 的转发。 */}
+          <div className="inlineSelectMask" onClick={function (e) {
+            if (e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); }
+            setOpen(false);
+          }} />
           <div className="inlineSelectMenu" role="listbox">
             {options.map(function (o) {
               return (
@@ -11429,7 +11493,12 @@ function InlineSelect(props) {
                   type="button"
                   key={String(o.value)}
                   className={'inlineSelectItem' + (o.value === value ? ' on' : '')}
-                  onClick={function () { setOpen(false); if (o.value !== value) onChange(o.value); }}
+                  onClick={function (e) {
+                    // 同上：选项按钮也在 <label> 内，不掐掉 label 的转发会被再次 toggle 回来
+                    if (e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); }
+                    setOpen(false);
+                    if (o.value !== value) onChange(o.value);
+                  }}
                 >
                   <span className="inlineSelectLabel">{o.label}</span>
                   <span className="inlineSelectTick"><span className={'pickDot' + (o.value === value ? ' on' : '')} /></span>
@@ -11439,6 +11508,27 @@ function InlineSelect(props) {
           </div>
         </React.Fragment>
       )}
+    </span>
+  );
+}
+
+// v2.77.0 释义分段显示：多义项之间拉出可见间距
+// 旧实现把「放弃，抛弃；放任，无拘束」整串直接铺开，两个义项首尾相接、
+// 视觉上连成一句，读起来像漏了标点。这里按 '；' 拆成独立片段，
+// 片段之间用 10px 间距，换行时也能自然断开。
+function Meanings(props) {
+  var text = String(props.text || '');
+  if (text.indexOf('；') < 0) return <span className={props.className || ''}>{text}</span>;
+  var parts = text.split('；').filter(function (s) { return String(s).trim(); });
+  return (
+    <span className={'mnList' + (props.className ? ' ' + props.className : '')}>
+      {parts.map(function (p, i) {
+        return (
+          <span className="mnItem" key={i}>
+            {String(p).trim()}{i < parts.length - 1 ? '；' : ''}
+          </span>
+        );
+      })}
     </span>
   );
 }
@@ -11536,6 +11626,10 @@ function App() {
   const [ttsEngine, setTtsEngine] = useState('');
   // v2.75.0 高清中文语音包状态（原生回传 zhpack:xxx）
   const [zhPack, setZhPack] = useState('');
+  // v2.77.0 离线语音改为可选：默认关闭，中文走云端；这里保存开关与占用
+  const [zhOffline, setZhOffline] = useState(false);
+  const [zhBytes, setZhBytes] = useState(0);
+  const [zhCount, setZhCount] = useState(0);
   // v2.62.0：MP3 下载面板
   const [mp3Count, setMp3Count] = useState(50);
   const [mp3WithZh, setMp3WithZh] = useState(true);
@@ -11549,6 +11643,69 @@ function App() {
   const [mp3SaveScope, setMp3SaveScope] = useState('both'); // both | en | zh
   const [mp3Busy, setMp3Busy] = useState(false);
   const [mp3State, setMp3State] = useState(null);
+
+  /* v2.77.0 离线语音：默认关闭，中文朗读走云端；只有用户主动开启才下载离线包。
+     这样既避免 16MB 语音包常驻，又能在断网时兜底。 */
+  const refreshZhOffline = function () {
+    try {
+      var nv = window.NativeVoice;
+      if (!nv) return;
+      if (nv.offlineEnabled) { try { setZhOffline(!!nv.offlineEnabled()); } catch (e) {} }
+      if (nv.offlineBytes) { try { setZhBytes(Number(nv.offlineBytes()) || 0); } catch (e) {} }
+      if (nv.count) { try { setZhCount(Number(nv.count()) || 0); } catch (e) {} }
+    } catch (e) {}
+  };
+  React.useEffect(function () {
+    if (section !== 'me') return;
+    refreshZhOffline();
+  }, [section, zhPack]);
+
+  function toggleZhOffline() {
+    try {
+      var nv = window.NativeVoice;
+      if (!nv || !nv.setOffline) { appTip('离线语音需要安装版才能使用。', '离线语音'); return; }
+      var next = !zhOffline;
+      nv.setOffline(next);
+      setZhOffline(next);
+      if (next) {
+        var started = nv.requestOffline ? nv.requestOffline() : false;
+        setZhPack(started ? 'downloading:1/3' : 'queued');
+        if (!started) appTip('已开启。开始播放后会自动下载离线包（约 16MB，仅首次）。', '离线语音');
+      } else {
+        setZhPack('');
+        setZhBytes(0);
+        setZhCount(0);
+        appTip('已关闭，离线语音已删除，空间已释放。中文改为从云端获取。', '离线语音');
+      }
+      refreshZhOffline();
+    } catch (e) {}
+  }
+
+  function downloadZhOffline() {
+    try {
+      var nv = window.NativeVoice;
+      if (!nv) return;
+      if (!zhOffline && nv.setOffline) { nv.setOffline(true); setZhOffline(true); }
+      var started = nv.requestOffline ? nv.requestOffline() : false;
+      setZhPack(started ? 'downloading:1/3' : 'queued');
+      appTip(started ? '已开始下载，进度显示在这里。' : '已排队，开始播放时会自动下载。', '离线语音');
+      refreshZhOffline();
+    } catch (e) {}
+  }
+
+  function clearZhOfflineFiles() {
+    try {
+      var nv = window.NativeVoice;
+      if (nv && nv.setOffline) nv.setOffline(false);
+      if (nv && nv.clearOffline) nv.clearOffline();
+      setZhOffline(false);
+      setZhPack('');
+      setZhBytes(0);
+      setZhCount(0);
+      appTip('离线语音已删除，空间已释放。', '离线语音');
+      refreshZhOffline();
+    } catch (e) {}
+  }
   // v2.62.0：词库导出（txt，供百词斩等 App 导入）
   const [showExport, setShowExport] = useState(false);
   const [exportScope, setExportScope] = useState('book');
@@ -14682,7 +14839,7 @@ function App() {
                       </div>
                     );
                   })()}
-                  <h3>{displayCurrent.term} &middot; {displayCurrent.meaning}</h3>
+                  <h3>{displayCurrent.term} &middot; <Meanings text={displayCurrent.meaning} /></h3>
                   <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>
                   <div className="points">
                     {/* v2.56.0: 跨词库整合考点——同一单词在所有词库的考点一并展示 */}
@@ -14892,7 +15049,7 @@ function App() {
                       {listenCurrent.phonetic ? <span className="listenPhonetic">{listenCurrent.phonetic}</span> : null}
                       {listenCurrent.pos ? <span className="listenPosTag">{listenCurrent.pos}</span> : null}
                     </div>
-                    <div className="listenMeaning">{listenCurrent.meaning}</div>
+                    <div className="listenMeaning"><Meanings text={listenCurrent.meaning} /></div>
                   </React.Fragment>
                 ) : (
                   <div className="listenEmpty">
@@ -15090,14 +15247,19 @@ function App() {
                 </div>
               </div>
               {(listenCfg.zhSource === 'net' || listenCfg.zhSource === 'auto') && (
-                <div className="listenSettingRow">
-                  <span>配音音色</span>
-                  <div className="listenSeg">
-                    {[[0, '晓晓·女'], [3, '云希·男'], [4, '晓伊·活力']].map(function (v) {
-                      return <button key={v[0]} className={listenCfg.zhVoice === v[0] ? 'on' : ''} onClick={() => updateListenCfg({ zhVoice: v[0] })}>{v[1]}</button>;
-                    })}
+                <React.Fragment>
+                  <div className="listenSettingRow">
+                    <span>配音音色</span>
+                    <div className="listenSeg">
+                      {[[0, '晓晓·女'], [3, '云希·男'], [4, '晓伊·活力']].map(function (v) {
+                        return <button key={v[0]} className={listenCfg.zhVoice === v[0] ? 'on' : ''} onClick={() => updateListenCfg({ zhVoice: v[0] })}>{v[1]}</button>;
+                      })}
+                    </div>
                   </div>
-                </div>
+                  <div className="listenTip" style={{ fontSize: 12, color: '#64748b' }}>
+                    音色切换依赖神经语音通道；该通道不可用时统一使用云端配音（不切换音色）。
+                  </div>
+                </React.Fragment>
               )}
               {listenBuildInfo && <div className="listenTip" style={{ color: '#2563eb', fontWeight: 600 }}>{listenBuildInfo}</div>}
               {mediaBlocked && (
@@ -15145,7 +15307,7 @@ function App() {
                     >
                       <span className="listenPLIdx">{i2 + 1}</span>
                       <span className="listenPLTerm">{it.term}</span>
-                      <span className="listenPLMeaning">{it.meaning}</span>
+                      <span className="listenPLMeaning"><Meanings text={it.meaning} /></span>
                       {on && listenPlaying && !listenPaused ? <span className="listenPLWave"><i /><i /><i /></span> : null}
                     </button>
                   );
@@ -15456,7 +15618,7 @@ function App() {
                       )}
                       {(reviewShowBack || reviewSelected) && (
                         <div className="answerBox">
-                          <h3>{reviewItem.term} &middot; {reviewItem.meaning}</h3>
+                          <h3>{reviewItem.term} &middot; <Meanings text={reviewItem.meaning} /></h3>
                           {reviewItem.pos && <p className="muted">{reviewItem.pos} &middot; {reviewItem.source || ''}</p>}
                           {(() => {
                             const mp = getMergedPoints(reviewItem); // v2.56.0 跨词库考点整合
@@ -15575,7 +15737,7 @@ function App() {
                       );
                     })}
                   </h2>
-                  <p className="compareMeaning">{compareCurrent.meaning}</p>
+                  <p className="compareMeaning"><Meanings text={compareCurrent.meaning} /></p>
                   <div className="points">
                     {compareCurrent.allPoints.map(p => <p key={p}>• {p}</p>)}
                   </div>
@@ -16351,6 +16513,35 @@ function App() {
             </div>
           </div>
 
+          {/* v2.77.0 离线语音：默认关闭。中文日常从云端取，不占手机空间 */}
+          {isNativeApp ? (
+          <div className="cloudUpdateSection">
+            <h3><Icon name="speaker" />离线语音</h3>
+            <p className="muted">中文朗读默认从云端获取，占用更小、音质更稳。只有需要断网朗读时才下载离线包。</p>
+            <div className="offlineVoiceBox">
+              <div className="offlineVoiceRow">
+                <div className="ovText">
+                  <b>{zhOffline ? '已开启' : '未开启（推荐）'}</b>
+                  <span>{zhPackText(zhPack)}{zhBytes > 0 ? ' · 占用 ' + fmtFileSize(zhBytes) : ''}</span>
+                </div>
+                <button
+                  className={'ovSwitch' + (zhOffline ? ' on' : '')}
+                  onClick={toggleZhOffline}
+                  aria-label="离线语音开关"
+                />
+              </div>
+              <div className="offlineVoiceBtns">
+                <button className="smallBtn" onClick={downloadZhOffline}>
+                  <Icon name="download" />{zhCount > 0 ? '重新下载' : '立即下载'}
+                </button>
+                <button className="smallBtn ghost" onClick={clearZhOfflineFiles}>
+                  <Icon name="trash" />清理{zhBytes > 0 ? '（释放 ' + fmtFileSize(zhBytes) + '）' : ''}
+                </button>
+              </div>
+            </div>
+          </div>
+          ) : null}
+
           {/* 版本更新中心 - 仅APP端显示 */}
           {isNativeApp ? (
           <div className="cloudUpdateSection">
@@ -16778,7 +16969,7 @@ function App() {
                   })()}
                   {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag"><Icon name="check" />已掌握</span>}
                 </div>
-                <h3 className="detailMeaning">{detailItem.meaning}</h3>
+                <h3 className="detailMeaning"><Meanings text={detailItem.meaning} /></h3>
 
                 {/* 例句（紧跟释义显示，确保每个单词详情都有例句） */}
                 {detailItem.examples && detailItem.examples.length > 0 && (
