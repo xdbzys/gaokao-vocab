@@ -181,6 +181,8 @@ public class PlayerService extends Service {
     private TextToSpeech mTts = null;
     private boolean mTtsReady = false;
     private File mAlbumCacheDir = null;
+    /** v2.75.0 高清中文语音包解压目录（filesDir/zhvoice），6337 条 22.05kHz 神经语音 */
+    private File mZhPackDir = null;
 
     // ===== v2.65.0 File Album：整库合成单一 WAV 文件 =====
     private boolean mFileMode = false;               // 整库单文件模式（mAlbumMode 同时为 true）
@@ -271,6 +273,7 @@ public class PlayerService extends Service {
     public void onCreate() {
         super.onCreate();
         sRunning = true;
+        sInst = this;
         mHandler = new Handler(Looper.getMainLooper());
         try {
             mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -281,7 +284,14 @@ public class PlayerService extends Service {
         try { if (mAlbumCacheDir != null && !mAlbumCacheDir.exists()) mAlbumCacheDir.mkdirs(); } catch (Throwable ignored) {}
         mAlbumWavDir = new File(getCacheDir(), "album_wav");
         try { if (mAlbumWavDir != null && !mAlbumWavDir.exists()) mAlbumWavDir.mkdirs(); } catch (Throwable ignored) {}
+        // v2.75.0 高清中文语音包：内置 assets/zhvoice.zip，解压到 filesDir（不会被系统当缓存清掉）
+        mZhPackDir = new File(getFilesDir(), "zhvoice");
         initTts();
+        try {
+            new Thread(new Runnable() {
+                @Override public void run() { try { ensureZhPack(); } catch (Throwable ignored) {} }
+            }, "zh-pack").start();
+        } catch (Throwable ignored) {}
         if (mHandler != null) mHandler.post(mProgressTask);
     }
 
@@ -434,6 +444,7 @@ public class PlayerService extends Service {
     @Override
     public void onDestroy() {
         sRunning = false;
+        sInst = null;
         mAlbumMode = false;
         mFileMode = false;
         mBuildCancel = true; // 中断整库合成线程
@@ -1364,6 +1375,9 @@ public class PlayerService extends Service {
         final AlbumWord w = mAlbumWords.get(idx);
         final Runnable afterDone = new Runnable() { @Override public void run() { onStageItemDone(idx, tok); } };
         if (w.zhText == null || w.zhText.length() == 0) { onStageItemDone(idx, tok); return; }
+        // v2.75.0 ① 内置高清语音包（22.05kHz 神经语音，离线零延迟）→ 永远最优先
+        File hdF = zhHdFile(w.zhText);
+        if (hdF != null) { playAlbumFile(hdF, afterDone); return; }
         final boolean wantNet = !"system".equals(mCfgZhSource);
         // ① 已预取到本地的 Edge 神经语音（与整库合成线程共用缓存目录）→ 直接播，零延迟
         if (wantNet) {
@@ -1799,6 +1813,97 @@ public class PlayerService extends Service {
     }
 
     /* ==================================================================
+       v2.75.0 高清中文语音包（彻底解决「中文人机味」）
+       旧链路的中文全部是 16kHz 拼接式合成：百度 gettts 实测采样率 16000、
+       8kHz 以上完全没有能量（听感发闷、齿音缺失），且 per 音色参数实测无效
+       —— 换任何「音色」返回的字节完全相同；微软 Edge 神经语音接口已对全部
+       客户端返回 403（实测 5 种 Sec-MS-GEC / 版本组合均为 403 Forbidden），
+       在线拿不到神经语音。
+       改为构建期用 Piper zh_CN-huayan（22.05kHz VITS 神经模型）离线生成
+       全量词库释义音频（6337 条），随 APK 内置、首次启动解压到 filesDir。
+       播放链路变为：内置高清包 → 在线百度 → 手机语音引擎，音质不再随网络波动。
+       ================================================================== */
+    private static final String ZH_PACK_ASSET = "zhvoice.zip";
+    private static final int ZH_PACK_VERSION = 1;
+    private static volatile int sZhPackCount = 0;
+    private static volatile PlayerService sInst = null;
+
+    /** 中文朗读文本 → 语音包文件名。双 FNV-1a 32bit（正序 + 逆序），与前端 zhVoiceHash() 逐字节一致 */
+    static String zhPackName(String text) {
+        byte[] b;
+        try { b = String.valueOf(text).getBytes("UTF-8"); }
+        catch (Throwable e) { b = String.valueOf(text).getBytes(); }
+        int h1 = 0x811c9dc5;
+        int h2 = 0x01000193;
+        for (int i = 0; i < b.length; i++) {
+            h1 = (h1 ^ (b[i] & 0xff)) * 16777619;
+            h2 = (h2 ^ (b[b.length - 1 - i] & 0xff)) * 16777619;
+        }
+        return "zh_hd_" + String.format("%08x", h1) + String.format("%08x", h2) + ".mp3";
+    }
+
+    /** 解压内置语音包（仅首次 / 版本变化时执行，约 1~3 秒） */
+    private synchronized void ensureZhPack() {
+        if (mZhPackDir == null || sZhPackCount > 0) return;
+        File stamp = new File(mZhPackDir, ".pack_v" + ZH_PACK_VERSION);
+        if (stamp.exists()) {
+            String[] fs = mZhPackDir.list();
+            if (fs != null && fs.length > 100) { sZhPackCount = fs.length; return; }
+        }
+        int n = 0;
+        java.util.zip.ZipInputStream zis = null;
+        try {
+            mZhPackDir.mkdirs();
+            zis = new java.util.zip.ZipInputStream(getAssets().open(ZH_PACK_ASSET));
+            java.util.zip.ZipEntry e;
+            byte[] buf = new byte[16384];
+            while ((e = zis.getNextEntry()) != null) {
+                String name = e.getName();
+                if (name == null || name.length() == 0 || name.endsWith("/")) continue;
+                int slash = name.lastIndexOf('/');
+                if (slash >= 0) name = name.substring(slash + 1);
+                if (name.startsWith(".")) continue;
+                File out = new File(mZhPackDir, name);
+                java.io.FileOutputStream fos = new java.io.FileOutputStream(out);
+                try {
+                    int r;
+                    while ((r = zis.read(buf, 0, buf.length)) > 0) fos.write(buf, 0, r);
+                } finally {
+                    try { fos.close(); } catch (Throwable ignored) {}
+                }
+                n++;
+            }
+            if (n > 100) { try { stamp.createNewFile(); } catch (Throwable ignored) {} }
+        } catch (Throwable e) {
+            n = 0;
+        } finally {
+            try { if (zis != null) zis.close(); } catch (Throwable ignored) {}
+        }
+        sZhPackCount = n;
+    }
+
+    /** 查内置高清中文语音文件；未就绪 / 无对应文本返回 null */
+    private File zhHdFile(String text) {
+        if (text == null || text.length() == 0 || mZhPackDir == null) return null;
+        File f = new File(mZhPackDir, zhPackName(text));
+        return (f.exists() && f.length() > 300) ? f : null;
+    }
+
+    /** 供桥接层：按朗读文本取内置高清音频绝对路径，没有返回空串 */
+    public static String localZhPath(String text) {
+        PlayerService s = sInst;
+        if (s == null || text == null || text.length() == 0) return "";
+        try {
+            File f = s.zhHdFile(text);
+            return f == null ? "" : f.getAbsolutePath();
+        } catch (Throwable e) { return ""; }
+    }
+
+    /** 供桥接层：语音包已解压的文件条数（0 = 尚未就绪） */
+    public static int zhPackCount() { return sZhPackCount; }
+
+
+    /* ==================================================================
        v2.68.0 微软 Edge 神经语音（与 Edge 浏览器朗读同源，番茄小说级音质）
        旧方案 fanyi.baidu.com/gettts 的 per 音色参数实测无效（不同音色返回
        完全相同的音频），这就是「中文听着还是机器味」的根因。
@@ -2070,6 +2175,8 @@ public class PlayerService extends Service {
     /** 确保中文发音文件就绪（拟人优先：Edge 神经语音 → 百度配音 → 本地语音引擎） */
     private boolean ensureZhAudio(AlbumWord w) {
         if (w.zhText == null || w.zhText.length() == 0) return false;
+        // v2.75.0 内置高清语音包命中即完成，不再走任何网络合成
+        if (zhHdFile(w.zhText) != null) return true;
         String suf = zhSuffix();
         if (!"system".equals(mCfgZhSource)) {
             File edge = new File(mAlbumCacheDir, "zh_" + w.key + "_" + suf + ".mp3");
@@ -2093,6 +2200,8 @@ public class PlayerService extends Service {
 
     /** 把已就绪的中文音频追加到输出流：先试当前发音源，再试另一种 */
     private boolean appendZhAudio(java.io.RandomAccessFile out, AlbumWord w) {
+        File hd = zhHdFile(w.zhText);
+        if (hd != null && appendAudioPcm(out, hd)) return true;
         String suf = zhSuffix();
         File edge = new File(mAlbumCacheDir, "zh_" + w.key + "_" + suf + ".mp3");
         if (edge.exists() && edge.length() > 400 && appendAudioPcm(out, edge)) return true;

@@ -103,6 +103,11 @@ jobs:
           mkdir -p android/app/src/main/assets
           cp -r dist android/app/src/main/assets/public
 
+      # v2.75.0 官网与软件同步：把本次构建版本的功能简述自动写进官网「更新日志」。
+      # 约定见 scripts/sync-site-changelog.js 顶部注释；已存在同版本条目则幂等跳过。
+      - name: Sync changelog to official site
+        run: node scripts/sync-site-changelog.js
+
       # 需求：从此往后每次更新同步网页版与官网内容
       # 网页版 = dist/index.html（GitHub Pages 根路径 + 云端热更 web/index.html）
       # 官网   = gaokao-vocab-site/（发布到 Pages 的 /site/ 子路径，含 assets 与隐私政策）

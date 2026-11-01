@@ -247,6 +247,23 @@ public class MainActivity extends Activity {
             }
         }, "NativeAudio");
 
+        // v2.75.0 高清中文语音包桥接：供 JS 侧 window.NativeVoice 调用
+        // 语音包随 APK 内置（assets/zhvoice.zip），首启解压到 filesDir/zhvoice，
+        // 播放优先使用本地 22.05kHz 神经语音，物理上消除网络合成带来的「机器味」。
+        webView.addJavascriptInterface(new Object() {
+            /** 按朗读文本返回本地高清音频的绝对路径，未命中返回空串 */
+            @JavascriptInterface
+            public String localZh(String text) {
+                try { return PlayerService.localZhPath(text); } catch (Throwable e) { return ""; }
+            }
+
+            /** 已解压的语音条数（0 = 尚未就绪） */
+            @JavascriptInterface
+            public int count() {
+                try { return PlayerService.zhPackCount(); } catch (Throwable e) { return 0; }
+            }
+        }, "NativeVoice");
+
         // v2.62.0 系统播放器桥接：供 JS 侧 window.NativePlayer 调用
         // 音频改由原生 MediaPlayer 前台服务输出（系统媒体通道）：
         // 退出应用 / 锁屏 / 息屏后继续播放，通知栏与耳机线控可直接控制

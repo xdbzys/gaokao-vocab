@@ -1409,6 +1409,46 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   word-break: break-all;
   overflow-wrap: break-word;
   margin: 0;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+/* v2.75.0 更新说明结构化展示：功能简述逐条列出，不再是一段等宽文字 */
+.updateLogLine {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.65;
+  padding: 3px 0;
+}
+
+.updateLogLine + .updateLogLine {
+  border-top: 1px dashed var(--border, rgba(148, 163, 184, 0.22));
+}
+
+.updateTag {
+  flex: 0 0 auto;
+  font-size: 11px;
+  line-height: 17px;
+  padding: 0 5px;
+  border-radius: 5px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.updateTag.is-new {
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.14);
+}
+
+.updateTag.is-opt {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.16);
+}
+
+.updateTag.is-fix {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.14);
 }
 
 .updateLatest {

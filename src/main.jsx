@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.74.0';
-const APP_VERSION_CODE = 286;
+const APP_VERSION = '2.75.0';
+const APP_VERSION_CODE = 287;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -10215,8 +10215,16 @@ function _zhAlbumText(text) {
 function zhAudioUrls(text, rate) {
   var t = String(text || '').trim();
   if (!t) return [];
+  var urls = [];
+  // v2.75.0 ① 内置高清语音包：22.05kHz 神经语音，离线秒开，音质稳定不随网络波动
+  try {
+    if (window.NativeVoice && typeof window.NativeVoice.localZh === 'function') {
+      var lp = window.NativeVoice.localZh(t);
+      if (lp) urls.push(lp);
+    }
+  } catch (e) {}
   var spd = Math.max(1, Math.min(9, Math.round((rate || 1) * 3)));
-  var urls = ['https://fanyi.baidu.com/gettts?lan=zh&text=' + encodeURIComponent(t) + '&spd=' + spd + '&source=web'];
+  urls.push('https://fanyi.baidu.com/gettts?lan=zh&text=' + encodeURIComponent(t) + '&spd=' + spd + '&source=web');
   if (t.length <= 6 && !/[\s，,、；;]/.test(t)) {
     urls.push('https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(t) + '&le=zh');
   }
@@ -10546,6 +10554,43 @@ function nativePlayUrlAsync(url, rate) {
   });
 }
 
+function nativePlayFileAsync(path, rate) {
+  return new Promise(function (resolve) {
+    var id = String(++_nativeAudioSeq);
+    var settled = false;
+    var started = false;
+    var timer = null;
+    function clearT() { if (timer) { clearTimeout(timer); timer = null; } }
+    function armTimer(ms) {
+      clearT();
+      timer = setTimeout(function () {
+        if (listenIsPaused()) { armTimer(ms); return; }
+        finish(started);
+      }, ms);
+    }
+    function finish(ok) {
+      if (settled) return;
+      settled = true;
+      clearT();
+      delete _nativeAudioCbs[id];
+      listenPauseGate().then(function () { resolve(!!ok); });
+    }
+    _nativeAudioCbs[id] = function (type) {
+      if (type === 'start') { started = true; armTimer(60000); return; }
+      if (type === 'error') { finish(false); return; }
+      finish(true);
+    };
+    try {
+      if (window.NativePlayer && typeof window.NativePlayer.playFile === 'function') {
+        window.NativePlayer.playFile(path, id, rate || 1);
+      } else {
+        finish(false); return;
+      }
+    } catch (e) { finish(false); return; }
+    armTimer(15000);
+  });
+}
+
 function speak(text, rate) {
   if (!text) return;
   var normalized = String(text).trim();
@@ -10559,7 +10604,7 @@ function speak(text, rate) {
   if (isEnglish) {
     speakChainAsync(enAudioUrls(normalized), normalized, 'en-US', r, false);
   } else {
-    var zh = _zhSpeechText(normalized);
+    var zh = _zhAlbumText(normalized) || _zhSpeechText(normalized);
     speakChainAsync(zhAudioUrls(zh, r), zh, 'zh-CN', r, false);
   }
 }
@@ -10719,6 +10764,14 @@ function speakChainAsync(urls, ttsText, ttsLang, rate, useNative) {
       var url = list[i++];
       var failedAt = _failedAudioUrls[url];
       if (failedAt && (Date.now() - failedAt) < 60000) { next(); return; }
+      // v2.75.0 内置高清语音包返回的是本地绝对路径：原生解码播放，零网络、音质无损
+      if (url.charAt(0) === '/') {
+        var lp = (useNative && nativeAudioAvailable())
+          ? nativePlayFileAsync(url, rate)
+          : playUrlAsync('file://' + url, rate);
+        lp.then(function (ok) { if (ok) { resolve(); return; } next(); });
+        return;
+      }
       var p = (useNative && nativeAudioAvailable()) ? nativePlayUrlAsync(url, rate) : playUrlAsync(url, rate);
       p.then(function (ok) {
         if (ok) { resolve(); return; }
@@ -10862,7 +10915,7 @@ function speakEnAsync(text, rate) {
 //   → 网络整句语音 → 网络短词语音 → 系统语音兜底
 // 旧实现用有道英文接口（type=2）读中文，只返回约 0.1 秒静音，是"中文完全听不到"的根因
 function speakZhAsync(text, rate) {
-  var t = _zhSpeechText(text);
+  var t = _zhAlbumText(text) || _zhSpeechText(text);
   if (!t) return Promise.resolve();
   var chain = function () { return speakChainAsync(zhAudioUrls(t, rate), t, 'zh-CN', rate || 1, listenSystemPlayerOn()); };
   if (_listenZhSourcePref() === 'net') return chain();
@@ -10889,10 +10942,10 @@ function buildListenSteps(cfg, enText, zhText) {
 async function playListenItemAsync(item, cfg, token, tokenRef) {
   var enText = String(item.term || '').trim();
   if (!enText) return;
-  var zhText = _meaningForSpeech(item.meaning);
+  var zhText = item.meaning || '';
   try {
     if (window.NativePlayer && window.NativePlayer.setMeta) {
-      window.NativePlayer.setMeta(enText, _zhSpeechText(zhText) || '高考词汇', '背群英 · 听读');
+      window.NativePlayer.setMeta(enText, (_zhAlbumText(zhText) || _zhSpeechText(zhText)) || '高考词汇', '背群英 · 听读');
     } else if (window.NativePlayer && window.NativePlayer.setTitle) {
       window.NativePlayer.setTitle(enText + ' · ' + (_zhSpeechText(zhText) || ''));
     }
@@ -16063,7 +16116,22 @@ function App() {
                 {updateInfo.hasUpdate ? (
                   <>
                     <p className="updateNewVersion">发现新版本 v{updateInfo.version}</p>
-                    <pre className="updateLog">{updateInfo.changelog || updateInfo.updateLog}</pre>
+                    <div className="updateLog">
+                      {String(updateInfo.changelog || updateInfo.updateLog || '')
+                        .split('\n')
+                        .map(function (l) { return l.trim(); })
+                        .filter(function (l) { return l && !/^【/.test(l); })
+                        .map(function (line, i) {
+                          var m = /^(新增|优化|修复|调整)\s*[:：]?\s*(.+)$/.exec(line);
+                          var cls = !m ? '' : (m[1] === '新增' ? 'is-new' : (m[1] === '修复' ? 'is-fix' : 'is-opt'));
+                          return (
+                            <div className="updateLogLine" key={i}>
+                              {m ? <span className={'updateTag ' + cls}>{m[1]}</span> : null}
+                              <span>{m ? m[2] : line}</span>
+                            </div>
+                          );
+                        })}
+                    </div>
                     {inAppDownloading && (
                       <div style={{ marginTop: 10, marginBottom: 8 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
