@@ -1,9 +1,11 @@
 {
   "version": "2.76.0",
-  "versionCode": 294,
+  "versionCode": 295,
   "changelog": "【v2.76.0】返回键、双网页版、全参数下载\n新增 返回键改为逐层返回：先关弹窗、再退面板、再回背诵页，回到首页后按才退出应用\n新增 第二套网页版：官网「在线使用 → App 同款」，功能与安装包一致；经典网页版继续保留\n新增 MP3 下载支持自定义起始词、条数、语速、音频内容、文件名与保存目录\n新增 自定义保存目录：MP3 压缩包与数据备份都可存到自选文件夹\n优化 听读面板互斥展开，点另一个按钮自动替换前一个，面板顶部常驻「完成」退出\n优化 全部词库释义清除无意义词性字母（如 a.），界面显示与朗读同步生效\n优化 提示改用应用内卡片，不再弹出带网址标题的系统灰框\n优化 软件内「官网 / 隐私政策」入口改指最新官网，旧站地址自动跳转\n优化 官网重构：新增在线使用入口、版本号实时同步、当前版本高亮",
   "devNotes": "v2.76.0: (1) Android back key now delegates to window.__appBack and only exits when the page returns empty — previously SPA canGoBack() was always false so one press quit the app. (2) Second web build at /app/ (same dist/index.html, runtime path check _isFullWebPath); classic web stays at /. (3) MP3 export rebuilt with start/count/rate/scope/filename/custom dir; SAF ACTION_OPEN_DOCUMENT_TREE via NativeSaver writes MP3, zip and backup JSON into the user folder. (4) Listen panels are now a single listenPanel state (mutually exclusive) with a sticky 完成 button. (5) cleanMeaning() strips POS tags at ingest; stripPosPrefix previously missed 'a.' so UI and TTS said a meaningless 'a'. (6) alert() replaced by in-app tip card. (7) Site: version fetched same-origin with 4s timeout (raw.githubusercontent hangs in CN), new 在线使用 section, latest changelog highlighted.",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+  "apkSize": 4415065,
+  "apkSha256": "3ffe67543ee08ce222e58d8cfabea1c70daa76090189174c10c4723a469c76bc"
 }
