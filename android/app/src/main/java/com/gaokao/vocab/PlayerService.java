@@ -1823,9 +1823,18 @@ public class PlayerService extends Service {
        全量词库释义音频（6337 条），随 APK 内置、首次启动解压到 filesDir。
        播放链路变为：内置高清包 → 在线百度 → 手机语音引擎，音质不再随网络波动。
        ================================================================== */
-    private static final String ZH_PACK_ASSET = "zhvoice.zip";
+    private static final String ZH_PACK_ZIP = "zhvoice.zip";
     private static final int ZH_PACK_VERSION = 1;
+    /** 语音包整包体积下限：低于此值视为半截包/错误页，必须重下 */
+    private static final long ZH_PACK_MIN_BYTES = 8L * 1024L * 1024L;
+    /** 下载源：只放仓库根 zhvoice.zip，走 jsDelivr 多节点（国内可达，单文件 <20MB 限制内） */
+    private static final String[] ZH_PACK_URLS = {
+            "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/zhvoice.zip",
+            "https://fastly.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/zhvoice.zip",
+            "https://gcore.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/zhvoice.zip"
+    };
     private static volatile int sZhPackCount = 0;
+    private static volatile boolean sZhPackTried = false;
     private static volatile PlayerService sInst = null;
 
     /** 中文朗读文本 → 语音包文件名。双 FNV-1a 32bit（正序 + 逆序），与前端 zhVoiceHash() 逐字节一致 */
@@ -1839,10 +1848,14 @@ public class PlayerService extends Service {
             h1 = (h1 ^ (b[i] & 0xff)) * 16777619;
             h2 = (h2 ^ (b[b.length - 1 - i] & 0xff)) * 16777619;
         }
-        return "zh_hd_" + String.format("%08x", h1) + String.format("%08x", h2) + ".mp3";
+        return "zh_hd_" + String.format("%08x", h1) + String.format("%08x", h2) + ".ogg";
     }
 
-    /** 解压内置语音包（仅首次 / 版本变化时执行，约 1~3 秒） */
+    /**
+     * 准备高清语音包（后台线程调用，幂等）：
+     * 已解压 → 直接返回；否则从 jsDelivr 多节点下载整包 → 解压到 filesDir/zhvoice。
+     * 体积约 15.7MB，失败只在本次进程内记一次，避免每个词都重试拖慢听读。
+     */
     private synchronized void ensureZhPack() {
         if (mZhPackDir == null || sZhPackCount > 0) return;
         File stamp = new File(mZhPackDir, ".pack_v" + ZH_PACK_VERSION);
@@ -1850,11 +1863,29 @@ public class PlayerService extends Service {
             String[] fs = mZhPackDir.list();
             if (fs != null && fs.length > 100) { sZhPackCount = fs.length; return; }
         }
+        if (sZhPackTried) return;
+        sZhPackTried = true;
+
+        File zip = new File(getCacheDir(), ZH_PACK_ZIP);
+        boolean have = zip.exists() && zip.length() >= ZH_PACK_MIN_BYTES;
+        if (!have) {
+            for (int i = 0; i < ZH_PACK_URLS.length && !have; i++) {
+                try { emit("", "zhpack:downloading:" + (i + 1) + "/" + ZH_PACK_URLS.length); } catch (Throwable ignored) {}
+                try {
+                    if (downloadToFileSync(ZH_PACK_URLS[i], zip) && zip.length() >= ZH_PACK_MIN_BYTES) have = true;
+                } catch (Throwable ignored) {}
+            }
+        }
+        if (!have) {
+            try { emit("", "zhpack:failed"); } catch (Throwable ignored) {}
+            return;
+        }
+
         int n = 0;
         java.util.zip.ZipInputStream zis = null;
         try {
             mZhPackDir.mkdirs();
-            zis = new java.util.zip.ZipInputStream(getAssets().open(ZH_PACK_ASSET));
+            zis = new java.util.zip.ZipInputStream(new java.io.FileInputStream(zip));
             java.util.zip.ZipEntry e;
             byte[] buf = new byte[16384];
             while ((e = zis.getNextEntry()) != null) {
@@ -1880,6 +1911,8 @@ public class PlayerService extends Service {
             try { if (zis != null) zis.close(); } catch (Throwable ignored) {}
         }
         sZhPackCount = n;
+        try { emit("", n > 100 ? ("zhpack:ready:" + n) : "zhpack:failed"); } catch (Throwable ignored) {}
+        if (n > 100) { try { zip.delete(); } catch (Throwable ignored) {} }
     }
 
     /** 查内置高清中文语音文件；未就绪 / 无对应文本返回 null */

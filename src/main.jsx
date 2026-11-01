@@ -10212,6 +10212,17 @@ function _zhAlbumText(text) {
 //  - 百度翻译 gettts：支持整句、标点、长文本，作主源
 //  - 有道 dictvoice le=zh：仅 2~6 字短词可靠，含空格/标点的释义会返回 120 字节空音频
 //  - 旧实现用 dictvoice?type=2 读中文 → 只返回约 0.1 秒静音，这是“听不到中文”的根因
+// v2.75.0 高清中文语音包状态文案（原生回传 zhpack:ready:N / zhpack:downloading:i/n / zhpack:failed）
+function zhPackText(s) {
+  var v = String(s || '');
+  if (v.indexOf('ready:') === 0) return '已就绪 · ' + v.slice(6) + ' 条离线语音（22.05kHz 神经语音）';
+  if (v.indexOf('downloading:') === 0) return '下载中（源 ' + v.slice(12) + '，约 15.7MB，仅首次）';
+  if (v === 'failed') return '未下载 · 中文暂用在线配音，重新进入听读会重试';
+  var c = 0;
+  try { if (window.NativeVoice && typeof window.NativeVoice.count === 'function') c = window.NativeVoice.count() | 0; } catch (e) { c = 0; }
+  return c > 0 ? ('已就绪 · ' + c + ' 条离线语音') : '未就绪 · 开始听读后自动下载';
+}
+
 function zhAudioUrls(text, rate) {
   var t = String(text || '').trim();
   if (!t) return [];
@@ -11390,6 +11401,8 @@ function App() {
   // v2.74.0：系统播放状态诊断（通知被关 / 实际使用的中文语音引擎）
   const [mediaBlocked, setMediaBlocked] = useState('');
   const [ttsEngine, setTtsEngine] = useState('');
+  // v2.75.0 高清中文语音包状态（原生回传 zhpack:xxx）
+  const [zhPack, setZhPack] = useState('');
   // v2.62.0：MP3 下载面板
   const [listenShowMp3, setListenShowMp3] = useState(false);
   const [mp3Count, setMp3Count] = useState(50);
@@ -12247,6 +12260,11 @@ function App() {
         }
         if (typeof action === 'string' && action.indexOf('tts_engine:') === 0) {
           try { setTtsEngine(action.slice('tts_engine:'.length)); } catch (e) {}
+          return;
+        }
+        // v2.75.0：高清中文语音包下载 / 解压进度
+        if (typeof action === 'string' && action.indexOf('zhpack:') === 0) {
+          try { setZhPack(action.slice('zhpack:'.length)); } catch (e) {}
           return;
         }
         if (action === 'album_build_start') {
@@ -16082,6 +16100,11 @@ function App() {
                 <Icon name="music" />
                 <b>中文语音</b>
                 <span>{ttsEngine ? (ttsEngine + (listenCfg.zhSource === 'auto' ? '（自动择优）' : '')) : '尚未初始化'}</span>
+              </div>
+              <div className="mediaDiagRow">
+                <Icon name="speaker" />
+                <b>高清语音包</b>
+                <span>{zhPackText(zhPack)}</span>
               </div>
               <div className="mediaDiagBtns">
                 <button className="smallBtn" onClick={() => { try { window.NativeAudio && window.NativeAudio.openNotificationSettings && window.NativeAudio.openNotificationSettings(); } catch (e) {} }}>通知设置</button>
