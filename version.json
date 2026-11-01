@@ -1,9 +1,9 @@
 {
-  "version": "2.72.1",
-  "versionCode": 235,
+  "version": "2.72.2",
+  "versionCode": 236,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.72.1】更新链路提速（实测修正下载源顺序）\nv安装包下载主源改为 Gitee 镜像：实测 3 秒返回当前构建（4,381,067 字节），而 jsDelivr 对 master 有最长 12 小时缓存、实测曾下发上一版旧包，用户会白下 4MB 后被版本校验拒绝\nv页面热更新同样以 Gitee 正文为首选，并新增版本校验：正文里的版本号与更新清单不一致就自动换源，杜绝「更新到旧页面」\nv修正内置下载列表里误写的 app-debug.apk（应为 app-release.apk）\nv同时保留 jsDelivr / GitHub Release / ghproxy / raw 多级兜底，原生侧继续按包内 versionCode 拒绝旧包\n【v2.72.0 已含】暂停立即生效、媒体卡片音乐 App 级、导出分隔可自定义+百词斩直导、双指缩放、背诵页图标重做"
+  "changelog": "【v2.72.2】热更新版本闸门加固（承接 v2.72.1 下载链路修复）\nv页面热更新在换源时校验正文真实版本：能读到 APP_VERSION 就严格比对，读不到（构建产物会压缩变量名）则要求正文出现清单版本号字面量，不匹配直接换下一个源\nv已用真实构建页面验证：当前页面放行、旧版本页面（2.72.0/2.72.1 之前的包）一律拒绝，杜绝「更新后还是旧页面」\n【v2.72.1】下载主源改 Gitee 镜像（实测 3 秒返回当前包；jsDelivr 对 master 有 12 小时缓存、实测曾下发旧包）\n【v2.72.0】暂停立即生效、媒体卡片音乐 App 级、导出分隔可自定义 + 百词斩直导、双指缩放、背诵页图标重做"
 }

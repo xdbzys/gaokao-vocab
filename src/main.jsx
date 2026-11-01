@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.72.1';
-const APP_VERSION_CODE = 235;
+const APP_VERSION = '2.72.2';
+const APP_VERSION_CODE = 236;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -11507,8 +11507,14 @@ function App() {
                 if (r.ok) {
                   const t = await r.text();
                   if (!t || !(t.includes('<!doctype') || t.includes('<html'))) continue;
+                  // 版本闸门：构建产物会压缩变量名（APP_VERSION → Is），所以两条都试：
+                  // ① 能匹配到 APP_VERSION 赋值就严格比对；② 匹配不到则要求正文出现该版本号字面量。
+                  // 任一不满足即视为陈旧页面，换下一个源，避免「更新到旧页面」。
                   const vm = /APP_VERSION\s*=\s*['"]([\d.]+)['"]/.exec(t);
-                  if (vm && data.version && vm[1] !== data.version) continue; // 陈旧页面，换下一个源
+                  const want = String(data.version || '');
+                  const hasVer = want && (t.indexOf('"' + want + '"') >= 0 || t.indexOf("'" + want + "'") >= 0);
+                  if (vm) { if (vm[1] !== want) continue; }
+                  else if (want && !hasVer) continue;
                   newHtml = t;
                   break;
                 }
