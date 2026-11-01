@@ -14,10 +14,12 @@ import android.media.MediaPlayer;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
@@ -199,6 +201,9 @@ public class PlayerService extends Service {
     private int mCfgZhVoice = 0;         // 网络配音音色：0 度小娇（女声·推荐）/ 3 度逍遥 / 4 度丫丫
     private java.util.concurrent.ExecutorService mPrefetchPool = null; // 英文/中文音频并发预取
     private volatile int mPrefetchedUpto = -1;  // 已预取到第几个词（避免重复提交任务）
+    // v2.70.0 中文发音源统计：让用户能在界面上看到本次实际用的是神经语音还是回退音
+    private volatile int mZhEdgeOk = 0;   // 成功用 Edge 神经语音合成的中文词数
+    private volatile int mZhFallback = 0; // Edge 失败、回退 百度/有道 的中文词数
 
 
     /** 进度上报（每 500ms 一次，供锁屏 / 蓝牙 / JS 进度条使用） */
@@ -1142,29 +1147,27 @@ public class PlayerService extends Service {
 
     /**
      * v2.66.0 拟人语音：优先真人配音，失败逐级回退，保证「一定有声音」。
-     * 链：本地已缓存的网络配音 → 在线百度配音 → 手机自带语音引擎合成 → 有道网络音。
+     * v2.70.0 调整优先级：Edge 神经语音（缓存 → 在线合成）永远优先于旧的百度配音缓存，
+     * 避免升级后仍播放旧版本留下的机器味音频；链路：
+     * Edge缓存 → 在线Edge(重试) → 百度缓存 → 在线百度 → 有道 → 系统引擎。
      */
     private void playAlbumZh(final int idx) {
         if (!mAlbumMode || idx != mAlbumIndex || idx < 0 || idx >= mAlbumWords.size()) return;
         final AlbumWord w = mAlbumWords.get(idx);
         final Runnable afterDone = new Runnable() { @Override public void run() { onStageItemDone(idx); } };
         if (w.zhText == null || w.zhText.length() == 0) { onStageItemDone(idx); return; }
-        boolean wantNet = !"system".equals(mCfgZhSource);
-        // ① 已预取到本地的神经语音（Edge 神经语音 / 百度配音，与整库合成线程共用缓存目录）→ 直接播，零延迟
+        final boolean wantNet = !"system".equals(mCfgZhSource);
+        // ① 已预取到本地的 Edge 神经语音（与整库合成线程共用缓存目录）→ 直接播，零延迟
         if (wantNet) {
             File edgeF = new File(mAlbumCacheDir, "zh_" + w.key + "_" + zhSuffix() + ".mp3");
             if (edgeF.exists() && edgeF.length() > 400) { playAlbumFile(edgeF, afterDone); return; }
-            File netF = new File(mAlbumCacheDir, "zh_" + w.key + "_net.mp3");
-            if (!(netF.exists() && netF.length() > 200)) netF = new File(mAlbumCacheDir, "zh_" + w.key + "_net0.mp3");
-            if (!(netF.exists() && netF.length() > 200)) netF = new File(mAlbumCacheDir, "zh_" + w.key + "_yd.mp3");
-            if (netF.exists() && netF.length() > 200) { playAlbumFile(netF, afterDone); return; }
         }
-        // ② 在线 Edge 神经语音：子线程同步合成（约 1 秒），失败自动落到 ③ 百度 / ④ 系统语音
+        // ② 在线 Edge 神经语音：子线程同步合成（重试一次），失败自动落到 ③ 百度 / ④ 有道 / ⑤ 系统语音
         if (wantNet) {
             new Thread(new Runnable() {
                 @Override public void run() {
                     File ef = new File(mAlbumCacheDir, "zh_" + w.key + "_" + zhSuffix() + ".mp3");
-                    boolean ok = edgeTtsToFile(w.zhText, edgeVoiceName(), edgeRatePct(), ef);
+                    boolean ok = edgeTtsToFileRetry(w.zhText, edgeVoiceName(), edgeRatePct(), ef);
                     if (ok && mAlbumMode && mAlbumIndex == idx) {
                         mHandler.post(new Runnable() {
                             @Override public void run() {
@@ -1179,41 +1182,39 @@ public class PlayerService extends Service {
                         });
                         return;
                     }
-                    // Edge 失败 → 百度在线配音（仍失败则 playAlbumZhSystem）
-                    if (mAlbumMode && mAlbumIndex == idx && zhNetUrl(w.zhText) != null) {
-                        final String nu = zhNetUrl(w.zhText);
-                        mHandler.post(new Runnable() {
-                            @Override public void run() {
-                                if (!mAlbumMode || mAlbumIndex != idx) return;
-                                playAlbumUrl(nu, afterDone, new Runnable() {
-                                    @Override public void run() {
-                                        if (!mAlbumMode || mAlbumIndex != idx) return;
-                                        // 百度也失败 → 有道网络音 → 仍失败才落系统引擎
-                                        String yu = youdaoZhUrl(w.zhText);
-                                        if (yu != null) {
-                                            playAlbumUrl(yu, afterDone, new Runnable() {
-                                                @Override public void run() {
-                                                    if (!mAlbumMode || mAlbumIndex != idx) return;
-                                                    playAlbumZhSystem(idx);
-                                                }
-                                            });
-                                        } else {
-                                            playAlbumZhSystem(idx);
-                                        }
+                    // Edge 失败 → ③ 旧缓存（百度/有道）→ ④ 在线百度 → ⑤ 有道 → ⑥ 系统引擎
+                    if (mAlbumMode && mAlbumIndex != idx) return;
+                    mHandler.post(new Runnable() {
+                        @Override public void run() {
+                            if (!mAlbumMode || mAlbumIndex != idx) return;
+                            File nf = new File(mAlbumCacheDir, "zh_" + w.key + "_net.mp3");
+                            if (!(nf.exists() && nf.length() > 200)) nf = new File(mAlbumCacheDir, "zh_" + w.key + "_net0.mp3");
+                            if (!(nf.exists() && nf.length() > 200)) nf = new File(mAlbumCacheDir, "zh_" + w.key + "_yd.mp3");
+                            if (nf.exists() && nf.length() > 200) { playAlbumFile(nf, afterDone); return; }
+                            Runnable fallToYd = new Runnable() {
+                                @Override public void run() {
+                                    if (!mAlbumMode || mAlbumIndex != idx) return;
+                                    String yu = youdaoZhUrl(w.zhText);
+                                    if (yu != null) {
+                                        playAlbumUrl(yu, afterDone, new Runnable() {
+                                            @Override public void run() {
+                                                if (!mAlbumMode || mAlbumIndex != idx) return;
+                                                playAlbumZhSystem(idx);
+                                            }
+                                        });
+                                    } else {
+                                        playAlbumZhSystem(idx);
                                     }
-                                });
+                                }
+                            };
+                            String nu = zhNetUrl(w.zhText);
+                            if (nu != null) {
+                                playAlbumUrl(nu, afterDone, fallToYd);
+                            } else {
+                                fallToYd.run();
                             }
-                        });
-                        return;
-                    }
-                    if (mAlbumMode && mAlbumIndex == idx) {
-                        mHandler.post(new Runnable() {
-                            @Override public void run() {
-                                if (!mAlbumMode || mAlbumIndex != idx) return;
-                                playAlbumZhSystem(idx);
-                            }
-                        });
-                    }
+                        }
+                    });
                 }
             }, "edge-tts-play").start();
             return;
@@ -1548,6 +1549,8 @@ public class PlayerService extends Service {
             final int gen = mBuildGen;
             final String jsonToStart = parsed;
             mPrefetchedUpto = -1;
+            mZhEdgeOk = 0;
+            mZhFallback = 0;
             startAlbum(jsonToStart);
             mBuildThread = new Thread(new Runnable() {
                 @Override public void run() { buildAlbumWav(gen, fList, fin, idxF); }
@@ -1702,7 +1705,8 @@ public class PlayerService extends Service {
             javax.net.ssl.SSLSocketFactory f =
                     (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
             sock = (javax.net.ssl.SSLSocket) f.createSocket(EDGE_HOST, 443);
-            sock.setSoTimeout(8000);
+            sock.setSoTimeout(15000);
+            try { sock.setTcpNoDelay(true); } catch (Throwable ignored) {}
             sock.startHandshake();
             java.io.OutputStream os = sock.getOutputStream();
             java.io.InputStream is = new java.io.BufferedInputStream(sock.getInputStream());
@@ -1785,8 +1789,18 @@ public class PlayerService extends Service {
         }
     }
 
-    /** 网络真人配音 URL（百度翻译 TTS，per 指定音色：0 度小娇女声 / 3 度逍遥 / 4 度丫丫） */
-    private String zhNetUrl(String text) {
+    /**
+     * v2.70.0 Edge 合成重试：首次失败（GEC 5 分钟窗口临界 / 网络抖动）后立即重试一次，
+     * 显著提高真机上拿到神经语音的概率，仍失败才走 百度 / 有道 兜底。
+     */
+    private boolean edgeTtsToFileRetry(String text, String voice, String ratePct, File out) {
+        if (edgeTtsToFile(text, voice, ratePct, out)) return true;
+        try { Thread.sleep(200); } catch (Throwable ignored) {}
+        try { if (out != null) out.delete(); } catch (Throwable ignored) {}
+        return edgeTtsToFile(text, voice, ratePct, out);
+    }
+
+    /** 网络真人配音 URL（百度翻译 TTS，per 指定音色：0 度小娇女声 / 3 度逍遥 / 4 度丫丫） */    private String zhNetUrl(String text) {
         try {
             return "https://fanyi.baidu.com/gettts?lan=zh&text=" + URLEncoder.encode(text, "UTF-8")
                     + "&spd=3&per=" + mCfgZhVoice + "&source=web";
@@ -1819,7 +1833,12 @@ public class PlayerService extends Service {
         if (!"system".equals(mCfgZhSource)) {
             File edge = new File(mAlbumCacheDir, "zh_" + w.key + "_" + suf + ".mp3");
             if (edge.exists() && edge.length() > 400) return true;
-            if (edgeTtsToFile(w.zhText, edgeVoiceName(), "+0%", edge)) return true;
+            if (edgeTtsToFileRetry(w.zhText, edgeVoiceName(), "+0%", edge)) {
+                mZhEdgeOk++;
+                return true;
+            }
+            // v2.70.0 Edge 失败才算回退，同时统计回退词数供界面提示
+            mZhFallback++;
             File net = new File(mAlbumCacheDir, "zh_" + w.key + "_net.mp3");
             if (net.exists() && net.length() > 200) return true;
             if (zhNetUrl(w.zhText) != null && downloadToFileSync(zhNetUrl(w.zhText), net)) return true;
@@ -1948,6 +1967,13 @@ public class PlayerService extends Service {
             java.io.FileOutputStream fo = new java.io.FileOutputStream(idxF);
             fo.write(sb.toString().getBytes("UTF-8"));
             fo.close();
+            // v2.70.0 中文发音源统计回传（界面提示神经语音占比）
+            final int fEdge = mZhEdgeOk, fFb = mZhFallback;
+            mHandler.post(new Runnable() {
+                @Override public void run() { emit("", "album_zh_stats:" + fEdge + "/" + fFb); }
+            });
+            // v2.70.0 自动同步整库音频到手机音乐库（音乐 App 可见，像音乐软件一样同步）
+            syncAlbumToMusic(fin);
             final File fout = fin;
             final long[] fStarts = starts;
             final ArrayList<AlbumWord> fWords = list;
@@ -1982,6 +2008,76 @@ public class PlayerService extends Service {
                     }
                 }
             });
+        }
+    }
+
+    /**
+     * v2.70.0 整库音频自动同步到手机音乐库（像音乐软件一样，本机音乐 App / 车机 / 手表直接可见）：
+     * API 29+ 走 MediaStore.Audio（Music/背群英，免权限）；低版本写公共 Music 目录后触发媒体扫描。
+     * 同名文件已存在则跳过（避免每次重建都堆副本）；失败只记日志，不影响播放。
+     */
+    private void syncAlbumToMusic(File src) {
+        try {
+            if (src == null || !src.exists() || src.length() < 1000) return;
+            String safeName = (mAlbumName == null ? "词库" : mAlbumName)
+                    .replaceAll("[\\\\/:*?\"<>|\\s]+", "_");
+            if (safeName.length() > 40) safeName = safeName.substring(0, 40);
+            final String displayName = "背群英_" + safeName + "_听读.wav";
+            if (Build.VERSION.SDK_INT >= 29) {
+                android.net.Uri contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                // 查重：音乐库里已有同名文件则不再写
+                android.database.Cursor c = null;
+                try {
+                    c = getContentResolver().query(contentUri, new String[]{MediaStore.Audio.Media._ID},
+                            MediaStore.Audio.Media.DISPLAY_NAME + "=? AND " + MediaStore.Audio.Media.RELATIVE_PATH + "=?",
+                            new String[]{displayName, Environment.DIRECTORY_MUSIC + "/背群英/"}, null);
+                    if (c != null && c.moveToFirst()) return; // 已同步过
+                } catch (Throwable ignored) {
+                } finally {
+                    try { if (c != null) c.close(); } catch (Throwable ignored) {}
+                }
+                android.content.ContentValues cv = new android.content.ContentValues();
+                cv.put(MediaStore.Audio.Media.DISPLAY_NAME, displayName);
+                cv.put(MediaStore.Audio.Media.MIME_TYPE, "audio/wav");
+                cv.put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/背群英");
+                cv.put(MediaStore.Audio.Media.IS_PENDING, 1);
+                android.net.Uri uri = getContentResolver().insert(contentUri, cv);
+                if (uri != null) {
+                    java.io.OutputStream os = getContentResolver().openOutputStream(uri);
+                    java.io.FileInputStream in = new java.io.FileInputStream(src);
+                    byte[] buf = new byte[16384];
+                    int n;
+                    while ((n = in.read(buf)) > 0) os.write(buf, 0, n);
+                    in.close();
+                    os.flush();
+                    os.close();
+                    cv.clear();
+                    cv.put(MediaStore.Audio.Media.IS_PENDING, 0);
+                    getContentResolver().update(uri, cv, null, null);
+                    emit("", "album_music_synced:音乐/背群英/" + displayName);
+                    return;
+                }
+            } else {
+                File dir = new File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_MUSIC), "背群英");
+                dir.mkdirs();
+                File dst = new File(dir, displayName);
+                if (dst.exists() && dst.length() == src.length()) return; // 已同步过
+                java.io.FileInputStream in = new java.io.FileInputStream(src);
+                java.io.FileOutputStream out = new java.io.FileOutputStream(dst);
+                byte[] buf = new byte[16384];
+                int n;
+                while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                in.close();
+                out.close();
+                try {
+                    android.media.MediaScannerConnection.scanFile(this,
+                            new String[]{dst.getAbsolutePath()}, new String[]{"audio/wav"}, null);
+                } catch (Throwable ignored) {}
+                emit("", "album_music_synced:音乐/背群英/" + displayName);
+            }
+        } catch (Throwable e) {
+            Log.w(TAG, "syncAlbumToMusic failed: " + e.getMessage());
         }
     }
 

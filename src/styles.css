@@ -1224,6 +1224,62 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   font-weight: 500;
 }
 
+/* ============ v2.70.0 应用内下拉选择器（替代系统 select 弹窗） ============ */
+.inlineSelect { position: relative; display: inline-block; min-width: 0; }
+.inlineSelect.block { display: block; width: 100%; }
+.inlineSelectBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary, #fff);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+.inlineSelectVal { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inlineSelectCaret { flex: 0 0 auto; font-size: 10px; color: var(--text-tertiary, #9ca3af); }
+.inlineSelectMask { position: fixed; inset: 0; z-index: 998; background: transparent; }
+.inlineSelectMenu {
+  position: absolute;
+  z-index: 999;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  max-height: 300px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  padding: 4px;
+}
+.inlineSelectItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.inlineSelectItem:active { background: var(--primary-bg, #eef4ff); }
+.inlineSelectItem.on { color: var(--primary); font-weight: 700; background: var(--primary-bg, #eef4ff); }
+.inlineSelectLabel { flex: 1 1 auto; min-width: 0; }
+.inlineSelectTick { flex: 0 0 auto; font-size: 12px; color: var(--primary); }
+
 .settingsGroup h3 {
   font-size: 16px;
   color: var(--text);
@@ -2586,44 +2642,65 @@ button.primary {
    v2.69.0 轮盘选择器 + 快捷开关布局加固
    ================================================================== */
 
-/* 轮盘选择器：触摸滚动 + 吸附 */
+/* 轮盘选择器（v2.70.0 横向版）：左右滑动 + 吸附 */
 .wheelPicker {
   position: relative;
-  height: 190px;
+  height: 52px;
   overflow: hidden;
   margin: 0 auto;
-  touch-action: none;
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 15%, #000 85%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 15%, #000 85%, transparent 100%);
 }
-.wheelPicker.compact { height: 150px; }
 .wheelHighlight {
   position: absolute;
-  left: 8%;
-  right: 8%;
-  top: 50%;
-  height: 42px;
-  transform: translateY(-50%);
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 72px;
+  transform: translateX(-50%);
   background: var(--primary-light);
   border: 1px solid rgba(37, 99, 235, 0.25);
   border-radius: 12px;
   pointer-events: none;
 }
-.wheelStrip { will-change: transform; }
+.wheelStrip {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 100%;
+  will-change: transform;
+}
 .wheelItem {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  height: 100%;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
+  white-space: nowrap;
 }
-.wheelItem.on { color: var(--primary); font-weight: 800; font-size: 19px; }
+.wheelItem.on { color: var(--primary); font-weight: 800; font-size: 15.5px; }
 
-/* 轮盘网格：两列布局 */
+/* 轮盘行：标签居左，横向轮盘占满剩余宽度（v2.70.0） */
+.wheelRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+}
+.wheelRowLabel {
+  flex: 0 0 auto;
+  min-width: 64px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-tertiary, #6b7280);
+}
 .wheelGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2648,9 +2725,9 @@ button.primary {
   color: var(--text-tertiary, #6b7280);
   margin-bottom: 2px;
 }
-.wheelCell .wheelPicker { height: 150px; }
-.wheelCell .wheelItem { font-size: 15px; }
-.wheelCell .wheelItem.on { font-size: 17px; }
+.wheelCell .wheelPicker { height: 52px; }
+.wheelCell .wheelItem { font-size: 13.5px; }
+.wheelCell .wheelItem.on { font-size: 15px; }
 
 /* 听读快捷开关：grid 3 列固定网格，杜绝旧 WebView 上 flex 崩坏成全屏白块 */
 .listenChips {

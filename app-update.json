@@ -1,8 +1,8 @@
 {
-  "version": "2.69.1",
-  "versionCode": 231,
-  "changelog": "【v2.69.1】修复「界面出现异常」崩溃（紧急修复版）\nv修复 v2.69.0 轮盘组件的一处变量引用错误：打开「我的」页面 / 听读参数面板会直接崩溃并显示「界面出现异常」，现已在真实设备同款渲染环境下全页验证通过\nv已新增整套页面渲染自检（背诵 / 听读 / 词库 / 错词本 / 扩展 / 导入 / 我的 七个页面 + 听读参数面板逐个渲染），本次崩溃类型以后不会再出现\nv异常兜底页新增「重置听读与设置后重载」按钮：万一本地配置损坏也能一键自救，不必重装",
-  "devNotes": "hotfix: WheelPicker referenced undefined `width` (should be props.width) causing render crash on 我的 page and listen settings panel; verified with jsdom full-page render tests on all 7 sections + listen settings panel; error boundary gained a reset-settings recovery button",
+  "version": "2.70.0",
+  "versionCode": 232,
+  "changelog": "【v2.70.0】听读大改版：横向轮盘 + 神经语音中文 + 音乐库同步\nv轮盘调节改为左右滑动（原上下滑动），参数面板重排为一行一参数，选中项居中放大\nv全部系统下拉弹窗（设置页/导入页）替换为应用内选择器，修复调节界面字体巨大、图标遮挡的 UI 异常\nv中文发音强化：微软 Edge 神经语音（晓晓/云希）优先级提到最高并增加失败重试，旧百度配音缓存不再抢先播放；合成后界面会显示本次神经语音使用统计\nv整库音频生成后自动同步到手机「音乐/背群英」，音乐 App、车机、手表直接可见可播，像音乐软件一样同步\nv「同步到百词斩」并入词库页「导出词库」面板，导出入口合一不再分页面\nv词库检索加防抖优化，边输入边搜索不再卡顿",
+  "devNotes": "v2.70.0: horizontal WheelPicker; InlineSelect replaces all native <select> popups; Edge TTS prioritized over legacy baidu cache + retry + zh source stats; auto-sync album WAV to Music via MediaStore; merged baicizhan batch copy into export panel; 250ms search debounce",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html"

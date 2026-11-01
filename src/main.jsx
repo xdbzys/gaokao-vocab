@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.69.1';
-const APP_VERSION_CODE = 231;
+const APP_VERSION = '2.70.0';
+const APP_VERSION_CODE = 232;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -11039,49 +11039,57 @@ const WHEEL_INNER_GAP = (function () { const a = []; for (let v = 0; v <= 3.001;
 const WHEEL_SPEAK_RATE = (function () { const a = []; for (let v = 0.5; v <= 1.501; v += 0.02) a.push(Math.round(v * 100) / 100); return a; })();
 
 /* ============================
-   v2.69.0 轮盘选择器（WheelPicker）
-   触摸滚动 + 自动吸附，用于听读参数等连续数值的自定义调节。
+   v2.70.0 轮盘选择器（WheelPicker）—— 横向版
+   左右滑动 + 自动吸附，用于听读参数等连续数值的自定义调节。
    纯 React + touch 实现，无第三方依赖，旧 WebView 兼容。
    ============================ */
 function WheelPicker(props) {
-  const ITEM_H = 42;
-  const VIS = 5;
+  const ITEM_W = 64;
   const values = props.values || [];
   const value = props.value;
   const onChange = props.onChange || function () {};
   const fmt = props.format || function (v) { return String(v); };
   const idx = Math.max(0, values.indexOf(value));
-  const [off, setOff] = React.useState(idx * ITEM_H);
+  const [off, setOff] = React.useState(idx * ITEM_W);
   const [dragging, setDragging] = React.useState(false);
   const drag = React.useRef(null);
-  const center = ((VIS - 1) / 2) * ITEM_H;
+  // 容器实测宽度 → 选中项应停留的水平中心
+  const boxRef = React.useRef(null);
+  const [bw, setBw] = React.useState(0);
+  React.useEffect(function () {
+    try { setBw(boxRef.current ? boxRef.current.offsetWidth : 0); } catch (_) { setBw(0); }
+    function onRz() { try { setBw(boxRef.current ? boxRef.current.offsetWidth : 0); } catch (_) {} }
+    window.addEventListener('resize', onRz);
+    return function () { window.removeEventListener('resize', onRz); };
+  }, []);
+  const center = bw > 0 ? (bw - ITEM_W) / 2 : 0;
 
   // 外部值变化（如重置）时同步滚轮位置
   React.useEffect(function () {
     const i = values.indexOf(value);
-    if (i >= 0) setOff(i * ITEM_H);
+    if (i >= 0) setOff(i * ITEM_W);
   }, [value, values]);
 
   function snapTo(px) {
-    const max = (values.length - 1) * ITEM_H;
-    let t = Math.round(px / ITEM_H) * ITEM_H;
+    const max = (values.length - 1) * ITEM_W;
+    let t = Math.round(px / ITEM_W) * ITEM_W;
     t = Math.max(0, Math.min(max, t));
     setOff(t);
-    const ni = Math.round(t / ITEM_H);
+    const ni = Math.round(t / ITEM_W);
     const nv = values[ni];
     if (nv !== undefined && nv !== value) onChange(nv);
   }
 
-  function onStart(y) {
-    drag.current = { y0: y, off0: off, moved: false };
+  function onStart(x) {
+    drag.current = { x0: x, off0: off, moved: false };
     setDragging(true);
   }
-  function onMove(y) {
+  function onMove(x) {
     if (!drag.current) return;
     const d = drag.current;
-    if (Math.abs(y - d.y0) > 4) d.moved = true;
-    const min = -ITEM_H, max = (values.length - 1) * ITEM_H + ITEM_H;
-    setOff(Math.max(min, Math.min(max, d.off0 + (d.y0 - y))));
+    if (Math.abs(x - d.x0) > 4) d.moved = true;
+    const min = -ITEM_W, max = (values.length - 1) * ITEM_W + ITEM_W;
+    setOff(Math.max(min, Math.min(max, d.off0 + (d.x0 - x))));
   }
   function onEnd() {
     if (!drag.current) return;
@@ -11093,14 +11101,15 @@ function WheelPicker(props) {
 
   return (
     <div
+      ref={boxRef}
       className={'wheelPicker' + (props.compact ? ' compact' : '')}
-      style={{ width: (typeof props.width === 'number') ? (props.width + 'px') : (props.width || '100%') }}
-      onTouchStart={function (e) { onStart(e.touches[0].clientY); }}
-      onTouchMove={function (e) { e.preventDefault(); onMove(e.touches[0].clientY); }}
+      style={{ width: (typeof props.width === 'number') ? (props.width + 'px') : (props.width || '100%'), visibility: bw > 0 ? 'visible' : 'hidden' }}
+      onTouchStart={function (e) { onStart(e.touches[0].clientX); }}
+      onTouchMove={function (e) { e.preventDefault(); onMove(e.touches[0].clientX); }}
       onTouchEnd={onEnd}
       onTouchCancel={onEnd}
-      onMouseDown={function (e) { onStart(e.clientY); }}
-      onMouseMove={function (e) { if (drag.current) onMove(e.clientY); }}
+      onMouseDown={function (e) { onStart(e.clientX); }}
+      onMouseMove={function (e) { if (drag.current) onMove(e.clientX); }}
       onMouseUp={onEnd}
       onMouseLeave={onEnd}
     >
@@ -11108,20 +11117,20 @@ function WheelPicker(props) {
       <div
         className="wheelStrip"
         style={{
-          transform: 'translateY(' + (center - off) + 'px)',
+          transform: 'translateX(' + (center - off) + 'px)',
           transition: dragging ? 'none' : 'transform 0.22s ease-out',
         }}
       >
         {values.map(function (v, i) {
-          const dist = Math.abs(off / ITEM_H - i);
+          const dist = Math.abs(off / ITEM_W - i);
           const op = Math.max(0.18, 1 - dist * 0.34);
           const sc = Math.max(0.82, 1 - dist * 0.07);
           return (
             <div
               key={String(v)}
               className={'wheelItem' + (v === value ? ' on' : '')}
-              style={{ height: ITEM_H, opacity: op, transform: 'scale(' + sc + ')' }}
-              onClick={function () { if (!drag.current || !drag.current.moved) { setOff(i * ITEM_H); if (v !== value) onChange(v); } }}
+              style={{ width: ITEM_W, opacity: op, transform: 'scale(' + sc + ')' }}
+              onClick={function () { if (!drag.current || !drag.current.moved) { setOff(i * ITEM_W); if (v !== value) onChange(v); } }}
             >
               {fmt(v)}
             </div>
@@ -11129,6 +11138,45 @@ function WheelPicker(props) {
         })}
       </div>
     </div>
+  );
+}
+
+// v2.70.0 应用内下拉选择器：替代系统 <select> 弹窗（系统弹窗在部分机型上字体巨大、
+// 图标遮挡，无法定制样式）。点击展开应用内浮层列表，点遮罩收起，旧 WebView 兼容。
+function InlineSelect(props) {
+  const [open, setOpen] = React.useState(false);
+  const options = props.options || [];
+  const value = props.value;
+  const onChange = props.onChange || function () {};
+  let cur = null;
+  for (let i = 0; i < options.length; i++) { if (options[i].value === value) { cur = options[i]; break; } }
+  return (
+    <span className={'inlineSelect' + (props.block ? ' block' : '')} style={props.style}>
+      <button type="button" className="inlineSelectBtn" onClick={function () { setOpen(!open); }}>
+        <span className="inlineSelectVal">{cur ? cur.label : (props.placeholder || '请选择')}</span>
+        <span className="inlineSelectCaret">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <React.Fragment>
+          <div className="inlineSelectMask" onClick={function () { setOpen(false); }} />
+          <div className="inlineSelectMenu" role="listbox">
+            {options.map(function (o) {
+              return (
+                <button
+                  type="button"
+                  key={String(o.value)}
+                  className={'inlineSelectItem' + (o.value === value ? ' on' : '')}
+                  onClick={function () { setOpen(false); if (o.value !== value) onChange(o.value); }}
+                >
+                  <span className="inlineSelectLabel">{o.label}</span>
+                  <span className="inlineSelectTick">{o.value === value ? '●' : '○'}</span>
+                </button>
+              );
+            })}
+          </div>
+        </React.Fragment>
+      )}
+    </span>
   );
 }
 
@@ -11269,8 +11317,7 @@ function App() {
   const [autoJumping, setAutoJumping] = useState(false);
   const [cloudStatus, setCloudStatus] = useState('');
   const [updateInfo, setUpdateInfo] = useState(null);
-  // v2.68.0 百词斩同步导出：选词库 → 按 500 词/批复制为「英文逗号分隔单词串」
-  const [bcBookId, setBcBookId] = useState('');
+  // v2.68.0 百词斩同步导出（v2.70.0 并入词库导出面板）：按 500 词/批复制为「英文逗号分隔单词串」
   const [bcBatch, setBcBatch] = useState(0);
   // v2.67.0：本机安装包的真实版本（决定是否真的需要装新 APK）
   const [pkgVer, setPkgVer] = useState(() => ({ code: nativePkgVersionCode(), name: nativePkgVersionName() }));
@@ -11296,6 +11343,12 @@ function App() {
   const extendScrollRef = useRef(0); // 拓展页滚动位置记忆
   const prevSectionRef = useRef('learn'); // 记录上一个页面，用于滚动位置恢复
   const [search, setSearch] = useState('');
+  // v2.70.0 搜索防抖：输入即时回显，检索按防抖值计算，避免每敲一键全树重渲染导致卡顿
+  const [searchDebounced, setSearchDebounced] = useState('');
+  React.useEffect(function () {
+    const t = setTimeout(function () { setSearchDebounced(search); }, 250);
+    return function () { clearTimeout(t); };
+  }, [search]);
   const [libraryLimit, setLibraryLimit] = useState(60); // 词库页懒加载条数
   const [importText, setImportText] = useState('');
   const [importStatus, setImportStatus] = useState('');
@@ -12030,6 +12083,25 @@ function App() {
           try { setListenBuildInfo(''); } catch (e) {}
           return;
         }
+        // v2.70.0 中文发音源统计：让用户知道本次实际用的是神经语音还是回退音
+        if (typeof action === 'string' && action.indexOf('album_zh_stats:') === 0) {
+          const parts = action.slice('album_zh_stats:'.length).split('/');
+          const edgeN = parseInt(parts[0], 10) || 0;
+          const fbN = parseInt(parts[1], 10) || 0;
+          if (edgeN > 0 || fbN > 0) {
+            const msg = fbN === 0
+              ? ('本次整库中文发音 ' + edgeN + ' 词全部使用微软 Edge 神经语音（番茄小说级音质）')
+              : ('中文发音：Edge 神经语音 ' + edgeN + ' 词，' + fbN + ' 词因接口临时不可用回退网络配音');
+            try { setListenBuildInfo(msg); } catch (e) {}
+          }
+          return;
+        }
+        // v2.70.0 整库音频已自动同步到手机音乐库
+        if (typeof action === 'string' && action.indexOf('album_music_synced:') === 0) {
+          const p = action.slice('album_music_synced:'.length);
+          try { setListenBuildInfo('整库音频已同步到手机「' + p + '」，音乐 App / 车机可直接播放'); } catch (e) {}
+          return;
+        }
         if (action === 'album_build_fail') {
           // 合成失败：回退到逐词专辑模式（原生连续播放，锁屏同样可控）
           try { setListenBuildInfo(''); } catch (e) {}
@@ -12146,8 +12218,8 @@ function App() {
     });
   };
 
-  // v2.62.0：构建导出文本（百词斩 / 其他背单词 App 可直接导入的 txt）
-  const buildExportText = function () {
+  // v2.62.0：按导出范围取词条源（去重后），导出 txt 与百词斩分批共用
+  const exportSrcList = function () {
     var src = [];
     if (exportScope === 'wrong') {
       src = (wrongWords || []).map(function (w) {
@@ -12179,10 +12251,8 @@ function App() {
         return { term: it.term || '', meaning: it.meaning || '' };
       });
     }
-    var onlyWord = exportSep === 'word';
-    var sep = exportSep === 'tab' ? '\t' : ' ';
     var seen = {};
-    var lines = [];
+    var out = [];
     src.forEach(function (w) {
       var t = String(w.term || '').trim();
       var m = String(w.meaning || '').replace(/\s+/g, ' ').trim();
@@ -12190,9 +12260,17 @@ function App() {
       var k = t.toLowerCase();
       if (seen[k]) return;
       seen[k] = 1;
-      lines.push((onlyWord || !m) ? t : (t + sep + m));
+      out.push({ term: t, meaning: m });
     });
-    return lines.join('\n');
+    return out;
+  };
+
+  const buildExportText = function () {
+    var onlyWord = exportSep === 'word';
+    var sep = exportSep === 'tab' ? '\t' : ' ';
+    return exportSrcList().map(function (w) {
+      return (onlyWord || !w.meaning) ? w.term : (w.term + sep + w.meaning);
+    }).join('\n');
   };
 
   const doCopyExport = function () {
@@ -12211,6 +12289,29 @@ function App() {
     saveTextFile(text, name).then(function (p) {
       setExportMsg(p ? ('已保存到 ' + p) : ('已下载 ' + name));
     });
+  };
+
+  // v2.70.0 百词斩分批复制（并入导出面板）：英文逗号分隔、每批 ≤500 词
+  const BC_BATCH_SIZE = 500;
+  const getBcBatchText = function (batch) {
+    var terms = exportSrcList().map(function (w) { return w.term; });
+    var totalBatches = Math.max(1, Math.ceil(terms.length / BC_BATCH_SIZE));
+    var b = Math.min(batch, totalBatches - 1);
+    return {
+      total: terms.length,
+      totalBatches: totalBatches,
+      batch: b,
+      text: terms.slice(b * BC_BATCH_SIZE, b * BC_BATCH_SIZE + BC_BATCH_SIZE).join(', '),
+    };
+  };
+  const doCopyBcBatch = function () {
+    var info = getBcBatchText(bcBatch);
+    if (!info.text) { setExportMsg('没有可导出的单词'); return; }
+    var ok = copyTextToClipboard(info.text);
+    setExportMsg(ok
+      ? ('已复制百词斩第 ' + (info.batch + 1) + '/' + info.totalBatches + ' 批（' + info.text.split(', ').length + ' 词）。打开百词斩 → 词本 → 添加单词 → 长按粘贴 → 提交即可。')
+      : '复制失败，请改用「复制到剪贴板」逐批导出');
+    if (ok) setBcBatch(info.batch);
   };
 
   // 全部词汇合并（词根词缀、对比、易错词基于全量词汇）
@@ -12322,9 +12423,9 @@ function App() {
     return items;
   }, [learnActiveBook, posFilter, typeFilter, hideMastered, settings.shuffleMode, progress]);
 
-  // 词库页词汇列表（用于词库浏览，受搜索影响）
+  // 词库页词汇列表（用于词库浏览，受搜索影响；v2.70.0 用防抖后的搜索词计算）
   const filteredItems = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = searchDebounced.trim().toLowerCase();
     let items = libraryActiveBook.items.filter(item => {
       const posOk = posFilter === '全部' || getPosCategory(item.pos) === posFilter;
       const typeOk = typeFilter === '全部' || item.type === typeFilter;
@@ -12385,7 +12486,7 @@ function App() {
       }).sort((a, b) => b.score - a.score).map(x => x.item);
     }
     return items;
-  }, [libraryActiveBook, posFilter, typeFilter, search]);
+  }, [libraryActiveBook, posFilter, typeFilter, searchDebounced]);
 
   // 背诵页当前单词：使用 learnItems 而非 filteredItems
   const current = learnItems[index % Math.max(learnItems.length, 1)];
@@ -14391,32 +14492,26 @@ function App() {
           {/* 朗读参数 */}
           {listenShowCfg && (
             <div className="listenSettings">
-              {/* v2.69.0 数值参数全部改为轮盘调节：上下滑动选择，精度自定义 */}
-              <div className="wheelGrid">
-                <div className="wheelCell">
-                  <span>英文遍数</span>
-                  <WheelPicker values={WHEEL_EN_REPEAT} value={listenCfg.enRepeat} onChange={function (n) { updateListenCfg({ enRepeat: n }); }} format={function (v) { return v + ' 遍'; }} />
-                </div>
-                <div className="wheelCell">
-                  <span>中文遍数</span>
-                  <WheelPicker values={WHEEL_ZH_REPEAT} value={listenCfg.zhRepeat} onChange={function (n) { updateListenCfg({ zhRepeat: n }); }} format={function (v) { return v === 0 ? '不读中文' : v + ' 遍'; }} />
-                </div>
+              {/* v2.70.0 数值参数改为横向轮盘：左右滑动选择，精度自定义 */}
+              <div className="wheelRow">
+                <span className="wheelRowLabel">英文遍数</span>
+                <WheelPicker values={WHEEL_EN_REPEAT} value={listenCfg.enRepeat} onChange={function (n) { updateListenCfg({ enRepeat: n }); }} format={function (v) { return v + ' 遍'; }} />
               </div>
-              <div className="wheelGrid">
-                <div className="wheelCell">
-                  <span>语速</span>
-                  <WheelPicker values={WHEEL_RATE} value={listenCfg.rate} onChange={function (v) { updateListenCfg({ rate: v }); }} format={function (v) { return v.toFixed(2) + 'x'; }} />
-                </div>
+              <div className="wheelRow">
+                <span className="wheelRowLabel">中文遍数</span>
+                <WheelPicker values={WHEEL_ZH_REPEAT} value={listenCfg.zhRepeat} onChange={function (n) { updateListenCfg({ zhRepeat: n }); }} format={function (v) { return v === 0 ? '不读中文' : v + ' 遍'; }} />
               </div>
-              <div className="wheelGrid">
-                <div className="wheelCell">
-                  <span>词间间隔</span>
-                  <WheelPicker values={WHEEL_WORD_GAP} value={listenCfg.wordGap} onChange={function (v) { updateListenCfg({ wordGap: v }); }} format={function (v) { return v + ' 秒'; }} />
-                </div>
-                <div className="wheelCell">
-                  <span>遍间隔</span>
-                  <WheelPicker values={WHEEL_INNER_GAP} value={listenCfg.innerGap} onChange={function (v) { updateListenCfg({ innerGap: v }); }} format={function (v) { return v + ' 秒'; }} />
-                </div>
+              <div className="wheelRow">
+                <span className="wheelRowLabel">语速</span>
+                <WheelPicker values={WHEEL_RATE} value={listenCfg.rate} onChange={function (v) { updateListenCfg({ rate: v }); }} format={function (v) { return v.toFixed(2) + 'x'; }} />
+              </div>
+              <div className="wheelRow">
+                <span className="wheelRowLabel">词间间隔</span>
+                <WheelPicker values={WHEEL_WORD_GAP} value={listenCfg.wordGap} onChange={function (v) { updateListenCfg({ wordGap: v }); }} format={function (v) { return v + ' 秒'; }} />
+              </div>
+              <div className="wheelRow">
+                <span className="wheelRowLabel">遍间隔</span>
+                <WheelPicker values={WHEEL_INNER_GAP} value={listenCfg.innerGap} onChange={function (v) { updateListenCfg({ innerGap: v }); }} format={function (v) { return v + ' 秒'; }} />
               </div>
               <div className="listenSettingRow">
                 <span>朗读顺序</span>
@@ -14605,8 +14700,24 @@ function App() {
                 <button className="primary ghost" onClick={doDownloadExport}>下载 txt</button>
               </div>
               {exportMsg ? <div className="listenTip">{exportMsg}</div> : null}
+              {/* v2.70.0 百词斩分批（由导入页并入）：按当前导出范围取词，500 词/批 */}
+              {(() => {
+                const info = getBcBatchText(bcBatch);
+                if (!info.total) return null;
+                return (
+                  <div className="bcBatchRow">
+                    <div className="listenTip" style={{ margin: '6px 0' }}>
+                      <b>同步到百词斩</b>：共 {info.total} 词 → 分 {info.totalBatches} 批（每批 ≤500 词，英文逗号分隔）。逐批复制，到百词斩「词本 → 添加单词」粘贴提交。
+                    </div>
+                    <div className="exportActions">
+                      {info.batch > 0 && <button onClick={() => setBcBatch(info.batch - 1)}>上一批</button>}
+                      <button className="primary" style={{ flex: 1 }} onClick={doCopyBcBatch}>复制第 {info.batch + 1}/{info.totalBatches} 批</button>
+                      {info.batch + 1 < info.totalBatches && <button onClick={() => setBcBatch(info.batch + 1)}>下一批</button>}
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="listenTip">默认「空格分隔」：每行「单词 释义」，这是百词斩批量导入最稳的格式；Tab 分隔适合粘进 Excel；只想要纯单词列表就选「仅单词」。</div>
-              <div className="listenTip">复制后：百词斩 → 我的词单 → 新建 → 批量导入 → 长按粘贴，即可生成自己的高考词单；墨墨 / 不背单词 / Anki 同样可粘贴导入。</div>
             </div>
           )}
           <input className="searchInput" value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索英文、中文、词性..." />
@@ -15345,38 +15456,7 @@ function App() {
           <div className="importBox">
             <h2>导入词库</h2>
             <p className="muted">支持 TXT、复制粘贴、图片、PDF、PPTX、DOCX。配置AI后可使用大模型智能识别。</p>
-
-            {/* v2.68.0 百词斩同步：导出百词斩「添加单词」可识别的格式 */}
-            <div className="bcSyncBox">
-              <h3 style={{ margin: '0 0 6px', fontSize: 15 }}>📗 同步到百词斩</h3>
-              <p className="muted" style={{ marginTop: 0 }}>百词斩「添加单词」规则：单词间用<b>英文逗号</b>分隔、需区分大小写、单次最多 500 词。选择词库后按 500 词分批复制，到百词斩里粘贴提交即可，可多次分批加满。</p>
-              <select value={bcBookId} onChange={e => { setBcBookId(e.target.value); setBcBatch(0); }}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-primary)', fontSize: 14, marginBottom: 8 }}>
-                {books.map(b => <option key={b.id} value={b.id}>{b.name}（{b.items.length} 词）</option>)}
-              </select>
-              {(() => {
-                const bk = books.find(b => b.id === bcBookId);
-                if (!bk) return null;
-                const terms = bk.items.map(it => (it.term || '').trim()).filter(Boolean);
-                const BATCH = 500;
-                const totalBatches = Math.max(1, Math.ceil(terms.length / BATCH));
-                const batch = Math.min(bcBatch, totalBatches - 1);
-                const slice = terms.slice(batch * BATCH, batch * BATCH + BATCH).join(', ');
-                return (
-                  <>
-                    <p className="muted" style={{ margin: '4px 0 8px' }}>共 {terms.length} 词 → 分 {totalBatches} 批（每批 ≤500 词）</p>
-                    <div className="importBtnRow">
-                      <button className="primary" style={{ flex: 1 }} onClick={() => {
-                        const ok = copyTextToClipboard(slice);
-                        alert(ok ? `已复制第 ${batch + 1}/${totalBatches} 批（${slice.length} 个词）。\n\n打开百词斩 → 词本 → 添加单词 → 长按粘贴 → 提交即可。` : '复制失败，请长按下方文本手动全选复制：\n\n' + slice.slice(0, 200) + '…');
-                      }}>复制第 {batch + 1} 批</button>
-                      {batch > 0 && <button className="smallBtn" onClick={() => setBcBatch(batch - 1)}>上一批</button>}
-                      {batch + 1 < totalBatches && <button className="smallBtn" onClick={() => setBcBatch(batch + 1)}>下一批</button>}
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
+            {/* v2.70.0 百词斩同步已并入「词库 → 导出词库」面板，导出入口唯一 */}
 
             {/* 上方4个按钮 */}
             <div className="importBtnRow">
@@ -15405,8 +15485,7 @@ function App() {
             {showAiBox && (
               <div className="aiBox">
                 <label style={{marginBottom:4,display:'block',fontSize:13,color:'var(--text-secondary)'}}>选择AI服务商
-                  <select value={aiConfig.provider || 'siliconflow'} onChange={e => {
-                    const pid = e.target.value;
+                  <InlineSelect block value={aiConfig.provider || 'siliconflow'} onChange={pid => {
                     const p = AI_PROVIDERS.find(x => x.id === pid);
                     if (p) {
                       if (pid === 'custom') {
@@ -15415,9 +15494,8 @@ function App() {
                         updateAiConfig({ provider: pid, endpoint: p.endpoint, model: p.model });
                       }
                     }
-                  }}>
-                    {AI_PROVIDERS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
+                  }}
+                    options={AI_PROVIDERS.map(p => ({ value: p.id, label: p.name }))} />
                 </label>
                 {aiConfig.provider === 'custom' && (
                   <>
@@ -15442,10 +15520,8 @@ function App() {
 
             <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder="在此粘贴词表文本..." />
             <div className="importActions">
-              <select value={importTargetBookId || ''} onChange={e => setImportTargetBookId(e.target.value || null)} style={{ minWidth: 140, marginRight: 8 }}>
-                <option value="">自动创建新词库</option>
-                {books.filter(b => b.editable).map(b => <option key={b.id} value={b.id}>{b.name} ({b.items.length}条)</option>)}
-              </select>
+              <InlineSelect style={{ flex: 1, marginRight: 8 }} value={importTargetBookId || ''} onChange={v => setImportTargetBookId(v || null)}
+                options={[{ value: '', label: '自动创建新词库' }].concat(books.filter(b => b.editable).map(b => ({ value: b.id, label: b.name + ' (' + b.items.length + '条)' })))} />
               <button className="primary" onClick={() => addImportedItems(parseImportedText(importText, 'word'))}>导入到词库</button>
             </div>
             <p className="status">{importStatus || '粘贴或上传文件后点击导入，未选词库时自动创建新词库'}</p>
@@ -15611,17 +15687,14 @@ function App() {
                 onChange={e => { const v = Number(e.target.value) || 50; setSettings(s => ({ ...s, dailyGoal: v })); saveSettings({ ...settings, dailyGoal: v }); }} />
             </label>
             <label>默认背诵模式
-              <select value={settings.mode} onChange={e => { setSettings(s => ({ ...s, mode: e.target.value })); saveSettings({ ...settings, mode: e.target.value }); }}>
-                {choiceModes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-              </select>
+              <InlineSelect block value={settings.mode} onChange={v => { setSettings(s => ({ ...s, mode: v })); saveSettings({ ...settings, mode: v }); }}
+                options={choiceModes.map(m => ({ value: m.id, label: m.name }))} />
             </label>
             <label>默认难度
-              <select value={settings.difficulty || 'easy'} onChange={e => { const v = e.target.value; setSettings(s => ({ ...s, difficulty: v })); saveSettings({ ...settings, difficulty: v }); }}>
-                <option value="easy">简单（无近义词，差距大）</option>
-                <option value="hard">困难（近义词/易混词/同词性）</option>
-              </select>
+              <InlineSelect block value={settings.difficulty || 'easy'} onChange={v => { setSettings(s => ({ ...s, difficulty: v })); saveSettings({ ...settings, difficulty: v }); }}
+                options={[{ value: 'easy', label: '简单（无近义词，差距大）' }, { value: 'hard', label: '困难（近义词/易混词/同词性）' }]} />
             </label>
-            <label>发音语速（上下滑动调节）
+            <label>发音语速（左右滑动调节）
               <WheelPicker
                 values={WHEEL_SPEAK_RATE}
                 value={WHEEL_SPEAK_RATE.indexOf(settings.speakRate) >= 0 ? settings.speakRate : 0.78}
@@ -15631,40 +15704,23 @@ function App() {
               />
             </label>
             <label>答对后自动标记已掌握
-              <select value={settings.autoMaster ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, autoMaster: v })); saveSettings({ ...settings, autoMaster: v }); }}>
-                <option value="off">关闭（手动标记）</option>
-                <option value="on">开启（答对自动标记，不再出现在背诵页）</option>
-              </select>
+              <InlineSelect block value={settings.autoMaster ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, autoMaster: on })); saveSettings({ ...settings, autoMaster: on }); }}
+                options={[{ value: 'off', label: '关闭（手动标记）' }, { value: 'on', label: '开启（答对自动标记，不再出现在背诵页）' }]} />
             </label>
             <label>答对后自动跳转下一题
-              <select value={settings.autoJump ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, autoJump: v })); saveSettings({ ...settings, autoJump: v }); }}>
-                <option value="off">关闭（手动点下一个）</option>
-                <option value="on">开启</option>
-              </select>
+              <InlineSelect block value={settings.autoJump ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, autoJump: on })); saveSettings({ ...settings, autoJump: on }); }}
+                options={[{ value: 'off', label: '关闭（手动点下一个）' }, { value: 'on', label: '开启' }]} />
             </label>
             {settings.autoJump && <label>自动跳转延迟
-              <select value={settings.autoJumpDelay || 1500} onChange={e => { const v = parseInt(e.target.value); setSettings(s => ({ ...s, autoJumpDelay: v })); saveSettings({ ...settings, autoJumpDelay: v }); }}>
-                <option value="500">0.5秒</option>
-                <option value="800">0.8秒</option>
-                <option value="1000">1.0秒</option>
-                <option value="1200">1.2秒</option>
-                <option value="1500">1.5秒</option>
-                <option value="2000">2.0秒</option>
-                <option value="2500">2.5秒</option>
-                <option value="3000">3.0秒</option>
-                <option value="4000">4.0秒</option>
-                <option value="5000">5.0秒</option>
-                <option value="8000">8.0秒</option>
-              </select>
+              <InlineSelect block value={settings.autoJumpDelay || 1500} onChange={v => { setSettings(s => ({ ...s, autoJumpDelay: v })); saveSettings({ ...settings, autoJumpDelay: v }); }}
+                options={[500, 800, 1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000, 8000].map(n => ({ value: n, label: (n / 1000).toFixed(1) + ' 秒' }))} />
             </label>}
             {/* v2.44.0 切换单词自动朗读已合并到上方自动发音开关 */}
             {/* 跳转单词自动发音开关已合并到上方独立卡片 */}
             {isNativeApp && (
               <label>开屏更新公告
-                <select value={settings.showAnnouncement ? 'on' : 'off'} onChange={e => { const v = e.target.value === 'on'; setSettings(s => ({ ...s, showAnnouncement: v })); saveSettings({ ...settings, showAnnouncement: v }); }}>
-                  <option value="on">开启（启动时显示更新公告）</option>
-                  <option value="off">关闭</option>
-                </select>
+                <InlineSelect block value={settings.showAnnouncement ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, showAnnouncement: on })); saveSettings({ ...settings, showAnnouncement: on }); }}
+                  options={[{ value: 'on', label: '开启（启动时显示更新公告）' }, { value: 'off', label: '关闭' }]} />
               </label>
             )}
             <div className="settingsInfo">
