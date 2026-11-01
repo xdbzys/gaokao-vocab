@@ -1,9 +1,11 @@
 {
   "version": "2.77.0",
-  "versionCode": 296,
+  "versionCode": 297,
   "changelog": "【v2.77.0】中文更好听、离线包可选、下拉随手关\n优化 中文朗读改走云端配音，语速恢复到正常档，听感更干净\n新增 听读时中文义项之间留出自然停顿，长释义不再一口气念完\n新增 离线语音包改为可选，默认不占空间，需要断网朗读时再开启\n优化 释义里多条中文意思之间拉开间距，不再首尾相连\n优化 设置里的下拉选择点空白处即可关闭，选完自动收起\n优化 听读缓存加上限，长期使用占用不再越滚越大",
   "devNotes": "v2.77.0: (1) 中文链路改成云端优先——旧版把 16kbps 的离线包排在最前，用户听到的是重压缩音频；现在百度 64kbps 优先、离线包只在断网或云端失败时兜底，并把 spd 映射从 rate*3 改为 rate*5，1.0x 回到常速。(2) 释义按 '；' 拆段串行朗读，段间 180ms，解决长串连读难听。(3) 离线包改为 opt-in：SharedPreferences 开关，默认关闭；关闭即删除已解压目录，onCreate 不再自动下载，新增 NativeVoice.setOffline/offlineBytes/requestOffline/clearOffline 桥。(4) 听读缓存加 40MB 上限，按最后访问时间淘汰，整库播完不再累积到 150MB+。(5) InlineSelect 的遮罩与选项都在 <label> 内，点击会被 label 默认行为转发给内部按钮，导致「点空白关不掉」；改为 preventDefault 掐断转发。(6) Meanings 组件按 '；' 切分并保留分号 + 10px 间距。(7) Edge 神经语音通道已大面积 403，连续失败 3 次后本进程跳过，避免每词等一次 WebSocket 往返。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+  "apkSize": 4418599,
+  "apkSha256": "cbb76800b7b6d14c71a49eb50b3015a61add14da396eaab281733586e73abe17"
 }

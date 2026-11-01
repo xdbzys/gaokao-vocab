@@ -1,9 +1,11 @@
 {
   "version": "2.77.0",
-  "versionCode": 296,
+  "versionCode": 297,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.77.0】中文更好听、离线包可选、下拉随手关\n优化 中文朗读改走云端配音，语速恢复到正常档，听感更干净\n新增 听读时中文义项之间留出自然停顿，长释义不再一口气念完\n新增 离线语音包改为可选，默认不占空间，需要断网朗读时再开启\n优化 释义里多条中文意思之间拉开间距，不再首尾相连\n优化 设置里的下拉选择点空白处即可关闭，选完自动收起\n优化 听读缓存加上限，长期使用占用不再越滚越大"
+  "apkSize": 4418599,
+  "apkSha256": "cbb76800b7b6d14c71a49eb50b3015a61add14da396eaab281733586e73abe17",
+  "changelog": "【v2.77.0】中文更好听、离线包可选、下拉随手关\n优化 中文朗读改走云端配音，语速恢复到正常档，听感更干净\n新增 听读时中文义项之间留出自然停顿，长释义不再一口气念完\n新增 离线语音包改为可选，默认不占空间，需要断网朗读时再开启\n优化 释义里多条中文意思之间拉开间距，不再首尾相连\n优化 设置里的下拉选择点空白处即可"
 }
