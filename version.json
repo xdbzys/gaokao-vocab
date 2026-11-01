@@ -1,11 +1,11 @@
 {
   "version": "2.74.0",
-  "versionCode": 288,
+  "versionCode": 289,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4388825,
-  "apkSha256": "d9a8c2e8c6c92070285f6a0e01edb208a95cbc0aed87cf6880ee55426c647e5a",
+  "apkSize": 4388832,
+  "apkSha256": "aaf44de20c15a0a8fae0b598c04d7ddeb94d973f8055d43bcfad77428ec70565",
   "changelog": "【v2.73.0】更新链路彻底重做（下载失败 / 装完还是旧版本）\nv修复「装了新版打开还是旧界面」：APK 一旦升级就丢弃升级前缓存的热更新页面，改用同一次构建的内置页面，不再出现新原生配旧界面\nv修复「装完版本号没变」：安装后回到前台自动比对真实安装版本，成功/未生效都有明确回执；未生效会说明下一步怎么做\nv下载器"
 }
