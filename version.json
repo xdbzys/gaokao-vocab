@@ -1,9 +1,11 @@
 {
-  "version": "2.72.2",
-  "versionCode": 236,
+  "version": "2.73.0",
+  "versionCode": 285,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.72.2】热更新版本闸门加固（承接 v2.72.1 下载链路修复）\nv页面热更新在换源时校验正文真实版本：能读到 APP_VERSION 就严格比对，读不到（构建产物会压缩变量名）则要求正文出现清单版本号字面量，不匹配直接换下一个源\nv已用真实构建页面验证：当前页面放行、旧版本页面（2.72.0/2.72.1 "
+  "apkSize": 4382136,
+  "apkSha256": "5d864b9232c421157b4b537c092ba3e83cc374751635c12daf75426870b0d805",
+  "changelog": "【v2.73.0】更新链路彻底重做（下载失败 / 装完还是旧版本）\nv修复「装了新版打开还是旧界面」：APK 一旦升级就丢弃升级前缓存的热更新页面，改用同一次构建的内置页面，不再出现新原生配旧界面\nv修复「装完版本号没变」：安装后回到前台自动比对真实安装版本，成功/未生效都有明确回执；未生效会说明下一步怎么做\nv下载器"
 }
