@@ -92,7 +92,11 @@ public class PlayerService extends Service {
 
 
     private static final String TAG = "GaokaoPlayer";
-    private static final String CHANNEL_ID = "gaokao_listen_playback";
+    // v2.74.0：渠道 ID 升级（gaokao_listen_playback → _v2）。
+    // 旧渠道一旦被系统/用户改成「静音」或「隐藏」，其 importance 无法再被代码提升，
+    // vivo / 小米等定制系统会把这种静音渠道的媒体通知整条折叠，控制中心就看不到播放卡片。
+    private static final String CHANNEL_ID = "gaokao_listen_playback_v2";
+    private static final String CHANNEL_ID_OLD = "gaokao_listen_playback";
     private static final int NOTIFY_ID = 20260101;
 
     /** JS 回调：播放结束 / 出错 / 媒体按键 / 进度 */
@@ -167,6 +171,9 @@ public class PlayerService extends Service {
     private int mAlbumTotal = 0;
     private int mAlbumBaseMs = 0;
     private int mAlbumPendingNext = -1;
+    /** v2.74.0：朗读阶段令牌，用于丢弃重复回调（防止同一个词被连播两遍） */
+    private int mStageToken = 0;
+    private int mStageConsumed = -1;
     // v2.66.0：逐词模式也按 JS 下发的「朗读顺序 + 遍数」执行（en-zh / zh-en / en）
     private String[] mAlbumSeq = null;
     private int mAlbumSeqPos = 0;
@@ -188,8 +195,11 @@ public class PlayerService extends Service {
     private File mAlbumWavDir = null;
     private java.util.HashMap<String, java.util.concurrent.CountDownLatch> mSynthLatches =
             new java.util.HashMap<String, java.util.concurrent.CountDownLatch>();
-    private static final int OUT_SR = 16000;         // 输出采样率：16kHz 单声道 16bit（语音足够，控制文件体积）
-    private static final int OUT_BYTES_PER_MS = OUT_SR * 2 / 1000; // 32 字节/毫秒
+    // v2.74.0：整库输出从 16kHz 提升到 24kHz。
+    // 16k 会把神经语音 24k 的齿音、气声全部抹掉，听感明显发闷、更像机器朗读；
+    // 24k 与 TTS 原始采样率一致，不再二次降采样，代价是文件体积增加约 50%。
+    private static final int OUT_SR = 24000;         // 输出采样率：24kHz 单声道 16bit
+    private static final int OUT_BYTES_PER_MS = OUT_SR * 2 / 1000; // 48 字节/毫秒
 
     // ===== v2.66.0：听读参数（由 JS 下发，参与整库音频的实际生成） =====
     private int mCfgEnRepeat = 2;        // 英文朗读遍数（与 JS loadListenCfg 默认值一致）
@@ -544,7 +554,9 @@ public class PlayerService extends Service {
             if (mHandler != null && mGapPending && mAlbumGapTask != null) {
                 mHandler.removeCallbacks(mAlbumGapTask);
                 mGapPending = false;
-                if (mAlbumMode && !mFileMode) mAlbumPendingNext = mAlbumIndex;
+                // v2.74.0：旧代码在这里把「当前词」记成待播词，恢复时 playAlbumWord(当前词)
+                // 会把整个词从头再读一遍——这就是「暂停后又重复播放同一个单词」的来源。
+                // 现在保留被撤掉的后续动作（下一遍 / 下一阶段），恢复时直接接着走。
             }
         } catch (Throwable ignored) {}
         try {
@@ -570,6 +582,11 @@ public class PlayerService extends Service {
             return;
         }
         if (mAlbumMode) {
+            if (mAlbumGapResume != null) {
+                Runnable r = mAlbumGapResume; mAlbumGapResume = null; mAlbumPendingNext = -1;
+                r.run();
+                return;
+            }
             if (mAlbumPendingNext >= 0) {
                 int n = mAlbumPendingNext; mAlbumPendingNext = -1; playAlbumWord(n); return;
             }
@@ -694,11 +711,19 @@ public class PlayerService extends Service {
         try {
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             if (nm == null) return;
+            // IMPORTANCE_DEFAULT + 无声：媒体卡片必须「不是静默通知」才会被 vivo 控制中心收录，
+            // 但又不能真的响铃打扰，所以用 DEFAULT 级别并把声音/震动全部关掉。
             NotificationChannel ch = new NotificationChannel(CHANNEL_ID, "听读播放",
-                    NotificationManager.IMPORTANCE_LOW);
-            ch.setDescription("听读模式后台播放控制");
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            ch.setDescription("听读模式后台播放控制（锁屏 / 控制中心 / 耳机线控）");
             ch.setSound(null, null);
+            ch.enableVibration(false);
+            ch.enableLights(false);
+            ch.setShowBadge(false);
+            ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             nm.createNotificationChannel(ch);
+            // 旧渠道主动删除，避免系统里残留一个永远不亮的同名分组让用户误判
+            try { nm.deleteNotificationChannel(CHANNEL_ID_OLD); } catch (Throwable ignored) {}
         } catch (Throwable ignored) {
         }
     }
@@ -709,8 +734,7 @@ public class PlayerService extends Service {
             mSession = new MediaSession(this, "GaokaoListen");
             mSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS
                     | MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
-            mSession.setCallback(new MediaSession.Callback() {
-                @Override
+            mSession.setCallback(new MediaSession.Callback() {                @Override
                 public void onPlay() {
                     resumeInternal();
                     emit("", "resumed");
@@ -746,7 +770,17 @@ public class PlayerService extends Service {
 
                 @Override
                 public void onStop() {
-                    emit("", "stop");
+                    // v2.74.0：旧实现只发事件不停播，点卡片上的「停止」没有任何反应
+                    try {
+                        stopAlbumWord();
+                        mAlbumMode = false;
+                        mFileMode = false;
+                        mPaused = true;
+                        releasePlayer();
+                        updateSessionState(PlaybackState.STATE_STOPPED);
+                        updateNotification();
+                    } catch (Throwable ignored) {}
+                    emit("", "album_end");
                 }
 
                 @Override
@@ -768,6 +802,16 @@ public class PlayerService extends Service {
                     seekInternal((int) pos);
                 }
             });
+            // v2.74.0：媒体会话必须绑定「点卡片回到 App」的入口。
+            // 没有 sessionActivity 的会话，vivo / 小米控制中心的媒体卡片点击无反应，
+            // 部分 ROM 会直接不收录这张卡片（这是「手机上看不到正在播放」的常见原因）。
+            try {
+                Intent open = new Intent(this, MainActivity.class);
+                open.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                int f = PendingIntent.FLAG_UPDATE_CURRENT;
+                if (Build.VERSION.SDK_INT >= 23) f |= PendingIntent.FLAG_IMMUTABLE;
+                mSession.setSessionActivity(PendingIntent.getActivity(this, 9, open, f));
+            } catch (Throwable ignored) {}
             mSession.setActive(true);
         } catch (Throwable e) {
             Log.w(TAG, "MediaSession unavailable", e);
@@ -875,9 +919,17 @@ public class PlayerService extends Service {
     }
 
     private int getSmallIcon() {
+        // v2.74.0：通知小图标必须是「纯 alpha 图形」。旧代码直接用应用图标（adaptive icon），
+        // vivo / OPPO 上会被渲染成灰块甚至整条通知不显示。这里优先取随包内置的矢量小图标，
+        // 取不到再退回系统媒体图标，保证任何机型都能正常出通知。
+        try {
+            int id = getResources().getIdentifier("ic_stat_listen", "drawable", getPackageName());
+            if (id != 0) return id;
+        } catch (Throwable ignored) {
+        }
         try {
             int ic = getApplicationInfo().icon;
-            if (ic != 0) return ic;
+            if (ic != 0 && Build.VERSION.SDK_INT < 21) return ic;
         } catch (Throwable ignored) {
         }
         return android.R.drawable.ic_media_play;
@@ -913,7 +965,23 @@ public class PlayerService extends Service {
                 .setSmallIcon(getSmallIcon())
                 .setContentIntent(pi)
                 .setOngoing(true)
-                .setOnlyAlertOnce(true);
+                .setOnlyAlertOnce(true)
+                .setShowWhen(false)
+                .setColor(0xFF2563EB);
+        // v2.74.0：媒体通知的标准属性。缺 category / visibility 时，vivo 控制中心的
+        // 「媒体播控」卡片不会把这条通知认作播放器，只当成普通通知折叠掉。
+        if (Build.VERSION.SDK_INT >= 21) {
+            nb.setCategory(Notification.CATEGORY_TRANSPORT)
+              .setVisibility(Notification.VISIBILITY_PUBLIC);
+        }
+        if (Build.VERSION.SDK_INT >= 26) {
+            try { nb.setSilent(true); } catch (Throwable ignored) {}
+        }
+        if (Build.VERSION.SDK_INT >= 31) {
+            // 前台服务通知默认会延迟约 10 秒才弹出（系统省电策略），
+            // 表现为「已经开始播了但通知栏/控制中心什么都没有」。IMMEDIATE 立即显示。
+            try { nb.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE); } catch (Throwable ignored) {}
+        }
         // v2.72.0：通知栏大图封面（与音乐 App 一致的可视化）
         try {
             android.graphics.Bitmap art = albumArt();
@@ -946,6 +1014,24 @@ public class PlayerService extends Service {
             nm.notify(NOTIFY_ID, buildNotification());
         } catch (Throwable ignored) {
         }
+        reportMediaDiag();
+    }
+
+    /** v2.74.0：把「通知/媒体卡片被系统挡住」的真实原因回传界面，而不是让用户干等 */
+    private void reportMediaDiag() {
+        String reason = "";
+        try {
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null && !nm.areNotificationsEnabled()) {
+                reason = "系统把本应用的通知关掉了";
+            } else if (Build.VERSION.SDK_INT >= 26 && nm != null) {
+                NotificationChannel ch = nm.getNotificationChannel(CHANNEL_ID);
+                if (ch != null && ch.getImportance() == NotificationManager.IMPORTANCE_NONE) {
+                    reason = "「听读播放」通知渠道被关闭";
+                }
+            }
+        } catch (Throwable ignored) {}
+        if (reason.length() > 0) emit("", "media_blocked:" + reason);
     }
 
     private boolean mInForeground = false;
@@ -990,18 +1076,50 @@ public class PlayerService extends Service {
         catch (Throwable e) { return v == null ? "" : v; }
     }
 
+    /** v2.74.0：挑选系统里音质最好的中文语音引擎（讯飞 / vivo / 华为优先，其次系统默认） */
+    private String pickBestTtsEngine() {
+        try {
+            Intent probe = new Intent("android.intent.action.TTS_SERVICE");
+            java.util.List<android.content.pm.ResolveInfo> list =
+                    getPackageManager().queryIntentServices(probe, 0);
+            if (list == null || list.isEmpty()) return null;
+            String[] prefer = {
+                    "com.iflytek.speechcloud",   // 讯飞语音引擎（多数 vivo / 华为机型预装）
+                    "com.iflytek.tts",
+                    "com.vivo.vivoicetts",       // vivo 自带
+                    "com.huawei.tts",
+                    "com.google.android.tts"
+            };
+            for (String p : prefer) {
+                for (android.content.pm.ResolveInfo ri : list) {
+                    if (ri.serviceInfo != null && p.equals(ri.serviceInfo.packageName)) return p;
+                }
+            }
+            // 没有命中的首选引擎：用系统里第一个可用的中文引擎（跳过空的默认）
+            for (android.content.pm.ResolveInfo ri : list) {
+                if (ri.serviceInfo != null && ri.serviceInfo.packageName != null) {
+                    return ri.serviceInfo.packageName;
+                }
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
     private void initTts() {
         try {
-            mTts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            final String enginePkg = pickBestTtsEngine();
+            TextToSpeech.OnInitListener init = new TextToSpeech.OnInitListener() {
                 @Override
                 public void onInit(int status) {
                     if (status == TextToSpeech.SUCCESS && mTts != null) {
                         int r = mTts.setLanguage(Locale.SIMPLIFIED_CHINESE);
                         mTtsReady = (r != TextToSpeech.LANG_MISSING_DATA && r != TextToSpeech.LANG_NOT_SUPPORTED);
                         if (mTtsReady) {
-                            // v2.66.0：TTS 拟人化——略慢语速 + 自然音调 + 优先挑选中文女声嗓音
-                            try { mTts.setSpeechRate(0.92f); } catch (Throwable ignored) {}
-                            try { mTts.setPitch(1.02f); } catch (Throwable ignored) {}
+                            // v2.74.0：语速贴近自然说话（0.94），音调不下压，
+                            // 并把实际使用的引擎回传界面，方便判断「人机感」来自哪个声库
+                            try { mTts.setSpeechRate(0.94f); } catch (Throwable ignored) {}
+                            try { mTts.setPitch(1.0f); } catch (Throwable ignored) {}
+                            try { emit("", "tts_engine:" + (enginePkg == null ? "系统默认" : enginePkg)); } catch (Throwable ignored) {}
                             try {
                                 if (android.os.Build.VERSION.SDK_INT >= 21) {
                                     java.util.Set<android.speech.tts.Voice> vs = mTts.getVoices();
@@ -1045,7 +1163,13 @@ public class PlayerService extends Service {
                         } catch (Throwable ignored) {}
                     }
                 }
-            });
+            };
+            if (enginePkg != null) {
+                try { mTts = new TextToSpeech(this, init, enginePkg); }
+                catch (Throwable e) { mTts = new TextToSpeech(this, init); }
+            } else {
+                mTts = new TextToSpeech(this, init);
+            }
         } catch (Throwable ignored) {}
     }
 
@@ -1115,6 +1239,7 @@ public class PlayerService extends Service {
         emit("", "album_index:" + idx);   // 通知 JS 当前词序号（高亮 / 序号显示）
         mAlbumBaseMs = idx * mAlbumAvgMs;
         mAlbumPendingNext = -1;
+        mAlbumGapResume = null;
         AlbumWord w = mAlbumWords.get(idx);
         // v2.72.0：媒体卡片按音乐软件展示——标题=当前单词，副标题=中文释义，专辑=词库名
         mTitle = w.word != null ? w.word : mAlbumName;
@@ -1135,6 +1260,10 @@ public class PlayerService extends Service {
     private void runAlbumStage(final int idx) {
         if (!mAlbumMode || idx != mAlbumIndex || mAlbumSeq == null) return;
         if (mAlbumSeqPos >= mAlbumSeq.length) { afterAlbumWord(idx); return; }
+        // v2.74.0：每进入一个朗读阶段发一个令牌。MediaPlayer 在个别机型上会
+        // 同时回调 onPrepared 失败与 onError（或 onCompletion 与 onError），
+        // 旧代码把两次回调都当成「这一遍播完了」，于是遍数 +2、同一个词被连播两遍。
+        final int tok = ++mStageToken;
         String st = mAlbumSeq[mAlbumSeqPos];
         if ("zh".equals(st)) {
             if (mCfgZhRepeat <= 0) { // 「中文不读」：跳过该阶段
@@ -1143,13 +1272,16 @@ public class PlayerService extends Service {
                 runAlbumStage(idx);
                 return;
             }
-            playAlbumZh(idx);
-        } else playAlbumEn(idx);
+            playAlbumZh(idx, tok);
+        } else playAlbumEn(idx, tok);
     }
 
     /** 一遍播完：未满遍数则再读一遍（含遍间隔），否则进入下一阶段 */
-    private void onStageItemDone(final int idx) {
+    private void onStageItemDone(final int idx, final int tok) {
         if (!mAlbumMode || mAlbumIndex != idx || mAlbumSeq == null) return;
+        if (tok != mStageToken) return;              // 已被新的阶段取代（跳词/暂停）
+        if (mStageConsumed == tok) return;           // 同一次回调重复到达 → 丢弃
+        mStageConsumed = tok;
         mAlbumRepCur++;
         int reps = mAlbumRepCur;
         String st = mAlbumSeqPos < mAlbumSeq.length ? mAlbumSeq[mAlbumSeqPos] : "en";
@@ -1170,13 +1302,17 @@ public class PlayerService extends Service {
 
     /** 间隔 ms 后执行（暂停时不推进，恢复后继续） */
     private Runnable mAlbumGapTask = null;
+    /** 暂停时被撤掉、但恢复后应当继续执行的动作（下一遍 / 下一阶段），避免重播整个词 */
+    private Runnable mAlbumGapResume = null;
     private boolean mGapPending = false;
     private void gapThen(final int idx, int ms, final Runnable r) {
+        mAlbumGapResume = r;
         final Runnable task = new Runnable() {
             @Override public void run() {
                 mGapPending = false;
                 if (!mAlbumMode || mAlbumIndex != idx) return;
-                if (mPaused) { mAlbumPendingNext = idx; return; }
+                if (mPaused) return;     // 暂停期间不动，等 resumeInternal 执行 mAlbumGapResume
+                mAlbumGapResume = null;
                 r.run();
             }
         };
@@ -1189,23 +1325,23 @@ public class PlayerService extends Service {
         }
     }
 
-    private void playAlbumEn(final int idx) {
+    private void playAlbumEn(final int idx, final int tok) {
         if (!mAlbumMode || idx != mAlbumIndex || idx < 0 || idx >= mAlbumWords.size()) return;
         final AlbumWord w = mAlbumWords.get(idx);
         final File target = new File(mAlbumCacheDir, "en_" + w.key + ".mp3");
         Runnable play = new Runnable() {
             @Override public void run() {
-                if (!mAlbumMode || mAlbumIndex != idx) return;
+                if (!mAlbumMode || mAlbumIndex != idx || tok != mStageToken) return;
                 if (target.exists() && target.length() > 200) {
                     playAlbumFile(target, new Runnable() {
-                        @Override public void run() { onStageItemDone(idx); }
+                        @Override public void run() { onStageItemDone(idx, tok); }
                     });
                 } else if (w.enUrl != null && w.enUrl.length() > 0) {
                     playAlbumUrl(w.enUrl, new Runnable() {
-                        @Override public void run() { onStageItemDone(idx); }
+                        @Override public void run() { onStageItemDone(idx, tok); }
                     });
                 } else {
-                    onStageItemDone(idx);
+                    onStageItemDone(idx, tok);
                 }
             }
         };
@@ -1219,11 +1355,11 @@ public class PlayerService extends Service {
      * 避免升级后仍播放旧版本留下的机器味音频；链路：
      * Edge缓存 → 在线Edge(重试) → 百度缓存 → 在线百度 → 有道 → 系统引擎。
      */
-    private void playAlbumZh(final int idx) {
+    private void playAlbumZh(final int idx, final int tok) {
         if (!mAlbumMode || idx != mAlbumIndex || idx < 0 || idx >= mAlbumWords.size()) return;
         final AlbumWord w = mAlbumWords.get(idx);
-        final Runnable afterDone = new Runnable() { @Override public void run() { onStageItemDone(idx); } };
-        if (w.zhText == null || w.zhText.length() == 0) { onStageItemDone(idx); return; }
+        final Runnable afterDone = new Runnable() { @Override public void run() { onStageItemDone(idx, tok); } };
+        if (w.zhText == null || w.zhText.length() == 0) { onStageItemDone(idx, tok); return; }
         final boolean wantNet = !"system".equals(mCfgZhSource);
         // ① 已预取到本地的 Edge 神经语音（与整库合成线程共用缓存目录）→ 直接播，零延迟
         if (wantNet) {
@@ -1245,7 +1381,7 @@ public class PlayerService extends Service {
                                     playAlbumFile(f2, afterDone);
                                     return;
                                 }
-                                playAlbumZhSystem(idx);
+                                playAlbumZhSystem(idx, tok);
                             }
                         });
                         return;
@@ -1255,6 +1391,13 @@ public class PlayerService extends Service {
                     mHandler.post(new Runnable() {
                         @Override public void run() {
                             if (!mAlbumMode || mAlbumIndex != idx) return;
+                            // v2.74.0「自动」模式：Edge 不可用时优先用手机自带语音引擎
+                            // （vivo 上多为讯飞声库，中文韵律明显好于百度翻译的拼读音），
+                            // 而不是直接落到机器味最重的网络配音。
+                            if ("auto".equals(mCfgZhSource) && mTtsReady) {
+                                playAlbumZhSystem(idx, tok);
+                                return;
+                            }
                             File nf = new File(mAlbumCacheDir, "zh_" + w.key + "_net.mp3");
                             if (!(nf.exists() && nf.length() > 200)) nf = new File(mAlbumCacheDir, "zh_" + w.key + "_net0.mp3");
                             if (!(nf.exists() && nf.length() > 200)) nf = new File(mAlbumCacheDir, "zh_" + w.key + "_yd.mp3");
@@ -1267,11 +1410,11 @@ public class PlayerService extends Service {
                                         playAlbumUrl(yu, afterDone, new Runnable() {
                                             @Override public void run() {
                                                 if (!mAlbumMode || mAlbumIndex != idx) return;
-                                                playAlbumZhSystem(idx);
+                                                playAlbumZhSystem(idx, tok);
                                             }
                                         });
                                     } else {
-                                        playAlbumZhSystem(idx);
+                                        playAlbumZhSystem(idx, tok);
                                     }
                                 }
                             };
@@ -1287,14 +1430,14 @@ public class PlayerService extends Service {
             }, "edge-tts-play").start();
             return;
         }
-        playAlbumZhSystem(idx);
+        playAlbumZhSystem(idx, tok);
     }
 
     /** ③ 手机自带语音引擎合成（再失败退回有道网络音） */
-    private void playAlbumZhSystem(final int idx) {
+    private void playAlbumZhSystem(final int idx, final int tok) {
         if (!mAlbumMode || idx != mAlbumIndex || idx < 0 || idx >= mAlbumWords.size()) return;
         final AlbumWord w = mAlbumWords.get(idx);
-        final Runnable afterDone = new Runnable() { @Override public void run() { onStageItemDone(idx); } };
+        final Runnable afterDone = new Runnable() { @Override public void run() { onStageItemDone(idx, tok); } };
         if (mTtsReady && w.zhText != null && w.zhText.length() > 0) {
             final String utt = "zh_" + w.key;
             final File wav = new File(mAlbumCacheDir, utt + ".wav");
@@ -1313,11 +1456,11 @@ public class PlayerService extends Service {
                             mZhPendingUtt = "";
                             if (wav.exists() && wav.length() > 0) {
                                 playAlbumFile(wav, new Runnable() {
-                                    @Override public void run() { onStageItemDone(idx); }
+                                    @Override public void run() { onStageItemDone(idx, tok); }
                                 });
                             } else {
                                 playAlbumUrl("https://dict.youdao.com/dictvoice?audio=" + uriEncode(w.zhText) + "&le=zh",
-                                        new Runnable() { @Override public void run() { onStageItemDone(idx); } });
+                                        new Runnable() { @Override public void run() { onStageItemDone(idx, tok); } });
                             }
                         }
                     }
@@ -1341,11 +1484,12 @@ public class PlayerService extends Service {
                     File wav = new File(mAlbumCacheDir, id + ".wav");
                     if (wav.exists() && wav.length() > 0) {
                         final int idx = mAlbumIndex;
+                        final int tok = mStageToken;
                         playAlbumFile(wav, new Runnable() {
-                            @Override public void run() { afterAlbumWord(idx); }
+                            @Override public void run() { onStageItemDone(idx, tok); }
                         });
                     } else {
-                        afterAlbumWord(mAlbumIndex);
+                        onStageItemDone(mAlbumIndex, mStageToken);
                     }
                 }
             });
@@ -1475,6 +1619,7 @@ public class PlayerService extends Service {
     private void stopAlbumWord() {
         mAlbumPendingNext = -1;
         mZhPendingUtt = "";
+        mStageToken++;   // 让正在播放的这一遍的所有回调失效，避免停/跳词后又被旧回调推进
         releasePlayer();
         if (mTts != null) { try { mTts.stop(); } catch (Throwable ignored) {} }
     }
@@ -1503,10 +1648,16 @@ public class PlayerService extends Service {
             else b.setState(state, pos, mPaused ? 0f : 1f);
             mSession.setPlaybackState(b.build());
             MediaMetadata.Builder mb = new MediaMetadata.Builder();
-            mb.putString(MediaMetadata.METADATA_KEY_TITLE, mAlbumName);
+            // v2.74.0：逐词模式下卡片主标题必须是「当前单词」，旧代码写死词库名，
+            // 导致控制中心永远像在播同一首「词库」；副标题给中文释义，专辑才是词库名。
+            mb.putString(MediaMetadata.METADATA_KEY_TITLE, mTitle);
             mb.putString(MediaMetadata.METADATA_KEY_ARTIST, mArtist);
-            mb.putString(MediaMetadata.METADATA_KEY_ALBUM, "\u80cc\u7fa4\u82f1 \u00b7 \u542c\u8bfb");
+            mb.putString(MediaMetadata.METADATA_KEY_ALBUM, mAlbum);
             mb.putLong(MediaMetadata.METADATA_KEY_DURATION, dur);
+            try {
+                android.graphics.Bitmap art = albumArt();
+                if (art != null && !art.isRecycled()) mb.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
+            } catch (Throwable ignored) {}
             mSession.setMetadata(mb.build());
         } catch (Throwable ignored) {}
     }
@@ -1550,7 +1701,8 @@ public class PlayerService extends Service {
             if (!"zh-en".equals(mCfgOrder) && !"en".equals(mCfgOrder)) mCfgOrder = "en-zh";
             mCfgInnerGapMs = Math.max(0, Math.min(3000, root.optInt("innerGapMs", 600)));
             mCfgWordGapMs = Math.max(0, Math.min(9000, root.optInt("wordGapMs", 2000)));
-            mCfgZhSource = "system".equals(root.optString("zhSource", "net")) ? "system" : "net";
+            String zs = root.optString("zhSource", "auto");
+            mCfgZhSource = ("system".equals(zs) || "net".equals(zs)) ? zs : "auto";   // auto = Edge 优先，失败交给系统引擎
             mCfgZhVoice = Math.max(0, Math.min(9, root.optInt("zhVoice", 0)));
             org.json.JSONArray words = root.optJSONArray("words");
             if (words == null || words.length() == 0) return;
@@ -1564,7 +1716,10 @@ public class PlayerService extends Service {
                     .append('|').append(mCfgInnerGapMs)
                     .append('|').append(mCfgWordGapMs)
                     .append('|').append(mCfgZhSource)
-                    .append('|').append(mCfgZhVoice);
+                    .append('|').append(mCfgZhVoice)
+                    // v2.74.0：采样率参与缓存键 —— 旧的 16kHz 整库文件音质发闷，
+                    // 不加这一项升级后会继续复用旧文件，等于没改。
+                    .append("|sr").append(OUT_SR);
             for (int i = 0; i < words.length(); i++) {
                 org.json.JSONObject o = words.getJSONObject(i);
                 String w = o.optString("word", "");
@@ -1629,6 +1784,10 @@ public class PlayerService extends Service {
             Log.e(TAG, "startAlbumFile failed", e);
         }
     }
+
+    /** v2.74.0：Edge 连续失败即熔断 10 分钟，避免每个词都先等一次网络超时把听读拖成卡顿 */
+    private static volatile int sEdgeFail = 0;
+    private static volatile long sEdgeBlockUntil = 0;
 
     /** 中文音频文件名后缀：区分不同发音源 / 音色，避免切源后复用错预取缓存 */
     private String zhSuffix() {
@@ -1862,10 +2021,20 @@ public class PlayerService extends Service {
      * 显著提高真机上拿到神经语音的概率，仍失败才走 百度 / 有道 兜底。
      */
     private boolean edgeTtsToFileRetry(String text, String voice, String ratePct, File out) {
-        if (edgeTtsToFile(text, voice, ratePct, out)) return true;
-        try { Thread.sleep(200); } catch (Throwable ignored) {}
-        try { if (out != null) out.delete(); } catch (Throwable ignored) {}
-        return edgeTtsToFile(text, voice, ratePct, out);
+        if (System.currentTimeMillis() < sEdgeBlockUntil) return false;
+        boolean ok = edgeTtsToFile(text, voice, ratePct, out);
+        if (!ok) {
+            try { Thread.sleep(200); } catch (Throwable ignored) {}
+            try { if (out != null) out.delete(); } catch (Throwable ignored) {}
+            ok = edgeTtsToFile(text, voice, ratePct, out);
+        }
+        if (ok) {
+            sEdgeFail = 0;
+        } else {
+            sEdgeFail++;
+            if (sEdgeFail >= 3) sEdgeBlockUntil = System.currentTimeMillis() + 10L * 60 * 1000;
+        }
+        return ok;
     }
 
     /** 网络真人配音 URL（百度翻译 TTS，per 指定音色：0 度小娇女声 / 3 度逍遥 / 4 度丫丫） */    private String zhNetUrl(String text) {
@@ -2054,10 +2223,14 @@ public class PlayerService extends Service {
                     if (!mAlbumMode) { emit("", "album_file_ready"); return; }
                     if (mFileMode) { playBuiltFile(fout); return; }
                     // 逐词模式正在响：无缝切到整库文件，从当前词所在偏移接续，听众几乎无感
+                    // v2.74.0 修复：playBuiltFileAt 第二个参数是「毫秒」，旧代码直接传了词序号，
+                    // 于是 57 号词被当成 57ms —— 整库一合成完就跳回文件开头重播，
+                    // 用户听到「同一个词/同一段反复重播」，列表也永远停在第一个词。
                     int resumeIdx = Math.max(0, Math.min(fStarts.length - 1, mAlbumIndex));
+                    int resumeMs = (int) Math.max(0, fStarts[resumeIdx]);
                     stopAlbumWord();
                     mFileMode = true;
-                    playBuiltFileAt(fout, resumeIdx);
+                    playBuiltFileAt(fout, resumeMs);
                 }
             });
         } catch (Throwable e) {

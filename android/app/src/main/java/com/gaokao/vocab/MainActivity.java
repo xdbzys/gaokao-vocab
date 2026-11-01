@@ -208,6 +208,43 @@ public class MainActivity extends Activity {
                     }
                 });
             }
+
+            /** v2.74.0：直接跳到本应用的通知设置页（vivo 上媒体卡片不显示多半是通知被关） */
+            @JavascriptInterface
+            public void openNotificationSettings() {
+                runOnUiThread(new Runnable() {
+                    @Override public void run() {
+                        try {
+                            android.content.Intent i = new android.content.Intent();
+                            if (Build.VERSION.SDK_INT >= 26) {
+                                i.setAction(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                                i.putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, getPackageName());
+                            } else {
+                                i.setAction(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                i.setData(android.net.Uri.parse("package:" + getPackageName()));
+                            }
+                            i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(i);
+                        } catch (Throwable ignored) {}
+                    }
+                });
+            }
+
+            /** v2.74.0：跳转到本应用详情页，便于设置「自启动 / 后台高耗电 / 锁屏显示」 */
+            @JavascriptInterface
+            public void openAppSettings() {
+                runOnUiThread(new Runnable() {
+                    @Override public void run() {
+                        try {
+                            android.content.Intent i = new android.content.Intent(
+                                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                            i.setData(android.net.Uri.parse("package:" + getPackageName()));
+                            i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(i);
+                        } catch (Throwable ignored) {}
+                    }
+                });
+            }
         }, "NativeAudio");
 
         // v2.62.0 系统播放器桥接：供 JS 侧 window.NativePlayer 调用

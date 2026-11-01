@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.73.0';
-const APP_VERSION_CODE = 237;
+const APP_VERSION = '2.74.0';
+const APP_VERSION_CODE = 286;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -10461,7 +10461,7 @@ function listenPauseGate() {
 function _listenZhSourcePref() {
   try {
     var s = JSON.parse(localStorage.getItem(LISTEN_CFG_KEY) || '{}') || {};
-    return s.zhSource === 'net' ? 'net' : 'system';
+    return (s.zhSource === 'net' || s.zhSource === 'system') ? s.zhSource : 'auto';
   } catch (e) { return 'system'; }
 }
 
@@ -10599,11 +10599,11 @@ function loadListenCfg() {
       loop: (s.loop === 'one' || s.loop === 'off') ? s.loop : 'list',
       shuffle: !!s.shuffle,
       systemPlayer: s.systemPlayer !== false,
-      zhSource: s.zhSource === 'net' ? 'net' : 'system',
+      zhSource: (s.zhSource === 'net' || s.zhSource === 'system') ? s.zhSource : 'auto',
       zhVoice: _clampInt(s.zhVoice, 0, 4, 0)
     };
   } catch (e) {
-    return { enRepeat: 2, zhRepeat: 1, order: 'en-zh', innerGap: 0.6, wordGap: 2, rate: 1, loop: 'list', shuffle: false, systemPlayer: true, zhSource: 'net', zhVoice: 0 };
+    return { enRepeat: 2, zhRepeat: 1, order: 'en-zh', innerGap: 0.6, wordGap: 2, rate: 1, loop: 'list', shuffle: false, systemPlayer: true, zhSource: 'auto', zhVoice: 0 };
   }
 }
 
@@ -10971,6 +10971,68 @@ function wordStatusColor(item, progress, wrongWords) {
    十一、主App组件
    ============================ */
 
+/* v2.74.0：全应用统一图标集
+   旧界面大量使用 emoji（🔊 📚 🎯 …）当图标：不同手机字体不同、颜色不受控、
+   大小基线对不齐，整体看起来像「贴表情包」。这里换成同一套 24×24 线性图标，
+   统一描边宽度、圆角端点、currentColor 跟随文字色。 */
+const ICON_PATHS = {
+  speaker: <><path d="M4 9.5v5h3.6L12 18V6L7.6 9.5H4Z" /><path d="M15.6 9a4.4 4.4 0 0 1 0 6" /></>,
+  headphones: <><path d="M4 15v-3a8 8 0 0 1 16 0v3" /><rect x="2.6" y="13.6" width="4" height="6.4" rx="2" /><rect x="17.4" y="13.6" width="4" height="6.4" rx="2" /></>,
+  download: <><path d="M12 4v11" /><path d="m7.6 11.2 4.4 4.4 4.4-4.4" /><path d="M5 20h14" /></>,
+  upload: <><path d="M12 20V9" /><path d="m7.6 12.8 4.4-4.4 4.4 4.4" /><path d="M5 4h14" /></>,
+  refresh: <><path d="M20 12a8 8 0 1 1-2.4-5.7" /><path d="M20 4.2V8.4h-4.2" /></>,
+  target: <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3.4" /></>,
+  note: <><path d="M6 3.5h8.5L19 8v12.5H6V3.5Z" /><path d="M14 3.5V8h5" /><path d="M9 12.2h6M9 15.8h4" /></>,
+  link: <><path d="m9.6 14.4 4.8-4.8" /><path d="M8.4 11.6 6.6 13.4a3.6 3.6 0 0 0 5.1 5.1l1.8-1.8" /><path d="M15.6 12.4l1.8-1.8a3.6 3.6 0 0 0-5.1-5.1L10.5 7.3" /></>,
+  leaf: <><path d="M20 4c0 9-5 13-11 13a5 5 0 0 1 0-10c4 0 6-3 11-3Z" /><path d="M4 20c2.2-4 5.2-6.2 9-7" /></>,
+  pin: <><path d="M12 21v-6.4" /><path d="M8 3.5h8l-1.5 6 3.5 2.9v1.9H6v-1.9L9.5 9.5 8 3.5Z" /></>,
+  bolt: <><path d="M13 3 5.5 14H11l-1 7 8-11h-5.5l.5-7Z" /></>,
+  warn: <><path d="M12 4 3 20h18L12 4Z" /><path d="M12 10v3.6" /><circle cx="12" cy="16.8" r=".95" fill="currentColor" stroke="none" /></>,
+  book: <><path d="M4 5.6A2.6 2.6 0 0 1 6.6 3H20v15H6.6A2.6 2.6 0 0 0 4 20.6V5.6Z" /><path d="M8 7.2h8M8 10.6h5" /></>,
+  list: <><path d="M9 6.2h11M9 12h11M9 17.8h11" /><circle cx="4.6" cy="6.2" r="1.3" fill="currentColor" stroke="none" /><circle cx="4.6" cy="12" r="1.3" fill="currentColor" stroke="none" /><circle cx="4.6" cy="17.8" r="1.3" fill="currentColor" stroke="none" /></>,
+  phone: <><rect x="7" y="2.6" width="10" height="18.8" rx="2.6" /><path d="M10.8 18.4h2.4" /></>,
+  chat: <><path d="M4 6.6A2.6 2.6 0 0 1 6.6 4h10.8A2.6 2.6 0 0 1 20 6.6v6.8a2.6 2.6 0 0 1-2.6 2.6H9.4L4 20V6.6Z" /></>,
+  shield: <><path d="M12 3 5 6.2V12c0 4.2 3 7.2 7 9 4-1.8 7-4.8 7-9V6.2L12 3Z" /><path d="m9.2 12.1 2 2 3.6-3.8" /></>,
+  globe: <><circle cx="12" cy="12" r="8.6" /><path d="M3.4 12h17.2" /><path d="M12 3.4c2.5 2.5 3.6 5.4 3.6 8.6S14.5 18.1 12 20.6C9.5 18.1 8.4 15.2 8.4 12S9.5 5.9 12 3.4Z" /></>,
+  rocket: <><path d="M14.2 4.2c3 1 5.6 3.8 5.6 8.6l-3.6 2.8-5.4-5.4 3.4-6Z" /><path d="M9.6 11.2 5.6 15l3.4 3.4 3.8-4" /><path d="M6.2 18.2c-1 1-1.2 3.2-1.2 3.2s2.2-.2 3.2-1.2" /></>,
+  grad: <><path d="M3 9.6 12 5l9 4.6-9 4.6L3 9.6Z" /><path d="M7.2 11.6V17c0 1.4 2.2 2.6 4.8 2.6s4.8-1.2 4.8-2.6v-5.4" /></>,
+  fire: <><path d="M12 3s4.5 3.6 4.5 7.6c0 2-1.1 3.6-2.4 4.4.2-1.6-.6-2.8-1.6-3.5.4 1.9-.7 3-1.6 3.9-.6.6-1 1.4-1 2.2 0 .9.4 1.6 1 2-2.6-.5-4.5-2.8-4.5-5.6C6.4 6.6 12 3 12 3Z" /></>,
+  quote: <><path d="M4.5 5.5h5.5v5.2H6.6c0 2.2 1 3.4 3 4.3" /><path d="M14 5.5h5.5v5.2h-3.4c0 2.2 1 3.4 3 4.3" /></>,
+  bulb: <><path d="M9.4 18.2h5.2" /><path d="M10.4 21h3.2" /><path d="M12 3a5.9 5.9 0 0 0-3.5 10.7c.6.5.9 1.2.9 2h5.2c0-.8.3-1.5.9-2A5.9 5.9 0 0 0 12 3Z" /></>,
+  check: <><path d="m5.2 12.4 4.6 4.6L18.8 8" /></>,
+  chevronLeft: <><path d="m14.4 6.2-5.8 5.8 5.8 5.8" /></>,
+  chevronRight: <><path d="m9.6 6.2 5.8 5.8-5.8 5.8" /></>,
+  chevronDown: <><path d="m6.2 9.6 5.8 5.8 5.8-5.8" /></>,
+  play: <><path d="M8.4 5.4 18.4 12 8.4 18.6V5.4Z" /></>,
+  pause: <><rect x="7" y="5" width="3.6" height="14" rx="1.3" /><rect x="13.4" y="5" width="3.6" height="14" rx="1.3" /></>,
+  sparkle: <><path d="M12 3.4 13.8 9l5.6 1.8-5.6 1.8L12 18.4l-1.8-5.8L4.6 10.8 10.2 9 12 3.4Z" /><path d="M18.6 15.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z" /></>,
+  trash: <><path d="M5 7.2h14" /><path d="M9.4 7.2V5.2h5.2v2" /><path d="M6.8 7.2 8 20h8l1.2-12.8" /></>,
+  close: <><path d="m6.4 6.4 11.2 11.2M17.6 6.4 6.4 17.6" /></>,
+  sliders: <><path d="M4 7.4h8.6M18 7.4h2M4 16.6h3.4M12.6 16.6H20" /><circle cx="15.2" cy="7.4" r="2.2" /><circle cx="10" cy="16.6" r="2.2" /></>,
+  clock: <><circle cx="12" cy="12" r="8.6" /><path d="M12 7v5.4l3.4 2" /></>,
+  music: <><path d="M9 17.4V6l10-2v11.4" /><circle cx="6.6" cy="17.8" r="2.4" /><circle cx="16.6" cy="15.8" r="2.4" /></>,
+  shuffle: <><path d="M4 7h3.4l8 10H19" /><path d="m16.6 14 2.6 3-2.6 3" /><path d="M4 17h3.4l2.2-2.8" /><path d="m16.6 4 2.6 3-2.6 3" /></>,
+  bell: <><path d="M8.4 17V11a3.6 3.6 0 0 1 7.2 0v6" /><path d="M5.2 17h13.6" /><path d="M10.4 20h3.2" /></>,
+  bellOff: <><path d="M8.4 17V11a3.6 3.6 0 0 1 5.4-3.1" /><path d="M5.2 17h13.6" /><path d="M10.4 20h3.2" /><path d="m4 4 16 16" /></>,
+  search: <><circle cx="11" cy="11" r="6.6" /><path d="m15.8 15.8 4.4 4.4" /></>,
+  folder: <><path d="M3.4 6.6A1.8 1.8 0 0 1 5.2 4.8h4l1.8 2.4h7.8a1.8 1.8 0 0 1 1.8 1.8v9.2a1.8 1.8 0 0 1-1.8 1.8H5.2a1.8 1.8 0 0 1-1.8-1.8V6.6Z" /></>,
+  info: <><circle cx="12" cy="12" r="8.6" /><path d="M12 11v5.4" /><circle cx="12" cy="7.8" r=".95" fill="currentColor" stroke="none" /></>
+};
+
+function Icon({ name, size, className, style }) {
+  const p = ICON_PATHS[name];
+  if (!p) return null;
+  const s = size ? { width: size, height: size } : null;
+  return (
+    <svg viewBox="0 0 24 24" className={'ic' + (className ? ' ' + className : '')}
+      style={s ? { ...(style || {}), ...s } : style}
+      fill="none" stroke="currentColor" strokeWidth="1.8"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      {p}
+    </svg>
+  );
+}
+
 const LearnIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
@@ -11160,7 +11222,7 @@ function InlineSelect(props) {
     <span className={'inlineSelect' + (props.block ? ' block' : '')} style={props.style}>
       <button type="button" className="inlineSelectBtn" onClick={function () { setOpen(!open); }}>
         <span className="inlineSelectVal">{cur ? cur.label : (props.placeholder || '请选择')}</span>
-        <span className="inlineSelectCaret">{open ? '▲' : '▼'}</span>
+        <span className="inlineSelectCaret"><Icon name="chevronDown" className={open ? 'caretUp' : ''} /></span>
       </button>
       {open && (
         <React.Fragment>
@@ -11175,7 +11237,7 @@ function InlineSelect(props) {
                   onClick={function () { setOpen(false); if (o.value !== value) onChange(o.value); }}
                 >
                   <span className="inlineSelectLabel">{o.label}</span>
-                  <span className="inlineSelectTick">{o.value === value ? '●' : '○'}</span>
+                  <span className="inlineSelectTick"><span className={'pickDot' + (o.value === value ? ' on' : '')} /></span>
                 </button>
               );
             })}
@@ -11201,7 +11263,7 @@ class AppErrorBoundary extends React.Component {
       const msg = (this.state.err && (this.state.err.message || String(this.state.err))) || '未知错误';
       return (
         <div style={{ padding: '48px 24px', textAlign: 'center', fontFamily: 'sans-serif' }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
+          <div style={{ fontSize: 40, marginBottom: 12 }}><Icon name="warn" size={40} /></div>
           <h2 style={{ fontSize: 18, margin: '0 0 8px' }}>界面出现异常</h2>
           <p style={{ fontSize: 13, color: '#6b7280', wordBreak: 'break-all', margin: '0 0 20px' }}>{msg}</p>
           <button className="primary" style={{ padding: '10px 32px' }} onClick={function () { try { localStorage.setItem('gaokao_last_error', msg); } catch (_) {} location.reload(); }}>重载应用</button>
@@ -11267,6 +11329,9 @@ function App() {
   const [listenDur, setListenDur] = useState(0);
   // v2.65.0：整库音频合成进度提示（"合成中 x/y"，完成后清空）
   const [listenBuildInfo, setListenBuildInfo] = useState('');
+  // v2.74.0：系统播放状态诊断（通知被关 / 实际使用的中文语音引擎）
+  const [mediaBlocked, setMediaBlocked] = useState('');
+  const [ttsEngine, setTtsEngine] = useState('');
   // v2.62.0：MP3 下载面板
   const [listenShowMp3, setListenShowMp3] = useState(false);
   const [mp3Count, setMp3Count] = useState(50);
@@ -11887,7 +11952,7 @@ function App() {
       order: order,
       innerGapMs: Math.round((cfg && cfg.innerGap != null ? cfg.innerGap : 0.6) * 1000),
       wordGapMs: Math.round((cfg && cfg.wordGap != null ? cfg.wordGap : 2) * 1000),
-      zhSource: (cfg && cfg.zhSource === 'system') ? 'system' : 'net',
+      zhSource: (cfg && (cfg.zhSource === 'net' || cfg.zhSource === 'system')) ? cfg.zhSource : 'auto',
       zhVoice: (cfg && cfg.zhVoice != null) ? cfg.zhVoice : 0,
       words: words
     });
@@ -12080,8 +12145,13 @@ function App() {
 
   // 锁屏/通知栏媒体信息（现代浏览器渐进增强，旧 WebView 自动忽略）
   useEffect(() => {
-    if (!listenCurrent || !('mediaSession' in navigator)) return;
-    try {
+    // v2.74.0 关键修复：原生事件回调必须【无条件】注册。
+    // 旧代码把所有逻辑放在「有当前词 + 浏览器支持 mediaSession」的早退之后，
+    // 一旦 WebView 不支持 mediaSession（部分国产 ROM）或还没开始播放，
+    // window.__nativeMediaAction 就不存在 —— 原生回传的 album_index / paused /
+    // resumed / album_end 全部被丢弃，表现就是「播到哪都只显示第一个词」、
+    // 「通知栏按暂停，App 界面没反应」、「播完不复位」。
+    if (listenCurrent && ('mediaSession' in navigator)) try {
       if (window.MediaMetadata) {
         navigator.mediaSession.metadata = new window.MediaMetadata({
           title: listenCurrent.term || '背群英 · 听读',
@@ -12112,6 +12182,15 @@ function App() {
           return;
         }
         // v2.66.0：整库音频在后台生成（播放照常进行，不阻塞出声）
+        // v2.74.0：通知/媒体卡片被系统挡住时给出可执行原因（vivo 常见：通知被关、渠道被禁）
+        if (typeof action === 'string' && action.indexOf('media_blocked:') === 0) {
+          try { setMediaBlocked(action.slice('media_blocked:'.length)); } catch (e) {}
+          return;
+        }
+        if (typeof action === 'string' && action.indexOf('tts_engine:') === 0) {
+          try { setTtsEngine(action.slice('tts_engine:'.length)); } catch (e) {}
+          return;
+        }
         if (action === 'album_build_start') {
           try { setListenBuildInfo('正在后台生成本词库的完整音频（当前播放不受影响），下次播放可精确拖动进度'); } catch (e) {}
           return;
@@ -14103,7 +14182,7 @@ function App() {
           {/* 专属标识（仅网页版） */}
           {!isNativeApp && (
             <div style={{ textAlign: 'center', padding: '8px 0 4px', }}>
-              <span style={{ color: '#2563eb', fontWeight: 800, fontSize: 20, letterSpacing: 2, textShadow: '0 1px 4px rgba(37,99,235,0.25)' }}>✦ 李群雁专属 ✦</span>
+              <span style={{ color: '#2563eb', fontWeight: 800, fontSize: 20, letterSpacing: 2, textShadow: '0 1px 4px rgba(37,99,235,0.25)' }}><Icon name="sparkle" />李群雁专属<Icon name="sparkle" /></span>
             </div>
           )}
           {/* 顶部栏 */}
@@ -14226,7 +14305,7 @@ function App() {
                   // v2.49.0: 单词只属于一个词库 → 黄底；属于多个词库 → 蓝底
                   const bg = isMulti ? '#dbeafe' : '#fef9c3';
                   const clr = isMulti ? '#1e40af' : '#a16207';
-                  return <span style={{ fontSize: 11, background: bg, color: clr, padding: '1px 6px', borderRadius: 6, fontWeight: 500 }}>📚 {books.join('/')}</span>;
+                  return <span style={{ fontSize: 11, background: bg, color: clr, padding: '1px 6px', borderRadius: 6, fontWeight: 500 }}><Icon name="book" />{books.join('/')}</span>;
                 })()}
                 {progress[termKey(displayCurrent.term)] === 'mastered' && <span className="masteredTag">已掌握</span>}
               </div>
@@ -14235,7 +14314,7 @@ function App() {
                 <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? getShortMeaning(displayCurrent.meaning) : practiceMode === 'flashcard' ? displayCurrent.term : displayCurrent.term}</h2>
                 {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1.1em', margin: '4px 0' }}>{displayCurrent.pos}</p>}
                 {practiceMode !== 'cn-to-en' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
-                <button className="sound" onClick={() => speak(displayCurrent.term, settings.speakRate)}>🔊 发音</button>
+                <button className="sound" onClick={() => speak(displayCurrent.term, settings.speakRate)}><Icon name="speaker" />发音</button>
               </div>
 
               {/* 问题1：4选项答题 - 未回答时显示选项，回答后隐藏 */}
@@ -14274,7 +14353,7 @@ function App() {
                     const right = practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning;
                     return (
                       <div className="points" style={{ marginTop: 8, marginBottom: 10 }}>
-                        <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 6 }}>🎯 选项词汇 · 点击查看考点</p>
+                        <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 6 }}><Icon name="target" />选项词汇 · 点击查看考点</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {options.map(opt => {
                             const w = optionItemMap.get(opt);
@@ -14327,19 +14406,19 @@ function App() {
                     <>
                       {enrichment.examPoints.length > 0 && (
                         <div className="points" style={{ marginTop: 8 }}>
-                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>📝 常考要点</p>
+                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}><Icon name="note" />常考要点</p>
                           {enrichment.examPoints.map((p, i) => <p key={i}>• {p}</p>)}
                         </div>
                       )}
                       {enrichment.collocations.length > 0 && (
                         <div className="points" style={{ marginTop: 8 }}>
-                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>🔗 词组搭配</p>
+                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}><Icon name="link" />词组搭配</p>
                           {enrichment.collocations.map((p, i) => <p key={i} style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(p), settings.speakRate)}>• {p}</p>)}
                         </div>
                       )}
                       {enrichment.derivatives.length > 0 && (
                         <div className="points" style={{ marginTop: 8 }}>
-                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>🌿 派生词</p>
+                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}><Icon name="leaf" />派生词</p>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                             {enrichment.derivatives.map((d, i) => {
                               const derivWord = d.split(' ')[0];
@@ -14352,7 +14431,7 @@ function App() {
                       )}
                       {enrichment.synonyms.length > 0 && (
                         <div className="points" style={{ marginTop: 8 }}>
-                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>📌 近义词</p>
+                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}><Icon name="pin" />近义词</p>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                             {enrichment.synonyms.map((s, i) => {
                               const synWord = extractEnglish(s).split(/\s+/)[0];
@@ -14365,7 +14444,7 @@ function App() {
                       )}
                       {enrichment.antonyms.length > 0 && (
                         <div className="points" style={{ marginTop: 8 }}>
-                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>⚡ 反义词</p>
+                          <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}><Icon name="bolt" />反义词</p>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                             {enrichment.antonyms.map((a, i) => {
                               const antWord = extractEnglish(a).split(/\s+/)[0];
@@ -14394,7 +14473,7 @@ function App() {
                       <>
                         {allFamily.length > 0 && (
                           <div className="points" style={{ marginTop: 8 }}>
-                            <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>🔗 关联词族</p>
+                            <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}><Icon name="link" />关联词族</p>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                               {allFamily.map(item => {
                                 const inBank = !!findWordInBank(item.term);
@@ -14411,7 +14490,7 @@ function App() {
                         )}
                         {confusing.length > 0 && (
                           <div className="points" style={{ marginTop: 8 }}>
-                            <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}>⚠️ 易混词</p>
+                            <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}><Icon name="warn" />易混词</p>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                               {confusing.map(item => {
                                 const inBank = !!findWordInBank(item.term);
@@ -14451,8 +14530,8 @@ function App() {
 
               {/* 底部导航按钮 */}
               <div className="navButtons">
-                <button className="navBtn" onClick={prevCard}>◀ 上一个</button>
-                <button className={`navBtn ${autoJumping ? 'autoJumpBtn' : ''}`} onClick={nextCard}>{autoJumping ? '即将自动跳转...' : '下一个 ▶'}</button>
+                <button className="navBtn" onClick={prevCard}><Icon name="chevronLeft" />上一个</button>
+                <button className={`navBtn ${autoJumping ? 'autoJumpBtn' : ''}`} onClick={nextCard}>{autoJumping ? '即将自动跳转...' : <>下一个<Icon name="chevronRight" /></>}</button>
                 <button className="navBtn skipBtn" onClick={nextCard}>跳过</button>
               </div>
             </div>
@@ -14516,7 +14595,7 @@ function App() {
               </span>
             </div>
             <div className="listenCoverRow">
-              <div className={'listenCoverArt' + (listenPlaying && !listenPaused ? ' spin' : '')}>🎧</div>
+              <div className={'listenCoverArt' + (listenPlaying && !listenPaused ? ' spin' : '')}><Icon name="headphones" size={46} /></div>
               <div className="listenCoverMain">
                 {listenCurrent ? (
                   <React.Fragment>
@@ -14571,7 +14650,7 @@ function App() {
               {listenPlaying && !listenPaused ? '⏸' : '▶'}
             </button>
             <button className="listenSkipBtn" onClick={listenNext} disabled={!listenDisplayQueue.length} title="下一个">⏭</button>
-            <button className="listenMp3Btn" onClick={downloadCurrentMp3} disabled={!listenCurrent} title="下载本词 MP3">⬇</button>
+            <button className="listenMp3Btn" onClick={downloadCurrentMp3} disabled={!listenCurrent} title="下载本词 MP3"><Icon name="download" /></button>
           </div>
 
           {/* 快捷开关（v2.68.0：去 emoji 分段控件风格） */}
@@ -14666,11 +14745,12 @@ function App() {
               <div className="listenSettingRow">
                 <span>中文发音</span>
                 <div className="listenSeg">
-                  <button className={listenCfg.zhSource === 'net' ? 'on' : ''} onClick={() => updateListenCfg({ zhSource: 'net' })}>真人配音</button>
-                  <button className={listenCfg.zhSource === 'system' ? 'on' : ''} onClick={() => updateListenCfg({ zhSource: 'system' })}>系统语音</button>
+                  <button className={listenCfg.zhSource === 'auto' ? 'on' : ''} onClick={() => updateListenCfg({ zhSource: 'auto' })}>自动·推荐</button>
+                  <button className={listenCfg.zhSource === 'net' ? 'on' : ''} onClick={() => updateListenCfg({ zhSource: 'net' })}>网络配音</button>
+                  <button className={listenCfg.zhSource === 'system' ? 'on' : ''} onClick={() => updateListenCfg({ zhSource: 'system' })}>手机语音</button>
                 </div>
               </div>
-              {listenCfg.zhSource === 'net' && (
+              {(listenCfg.zhSource === 'net' || listenCfg.zhSource === 'auto') && (
                 <div className="listenSettingRow">
                   <span>配音音色</span>
                   <div className="listenSeg">
@@ -14681,6 +14761,20 @@ function App() {
                 </div>
               )}
               {listenBuildInfo && <div className="listenTip" style={{ color: '#2563eb', fontWeight: 600 }}>{listenBuildInfo}</div>}
+              {mediaBlocked && (
+                <div className="listenTip mediaWarn" onClick={() => {
+                  try { window.NativeAudio && window.NativeAudio.openNotificationSettings && window.NativeAudio.openNotificationSettings(); } catch (e) {}
+                }}>
+                  <Icon name="bellOff" />
+                  <span>控制中心看不到播放卡片：{mediaBlocked}。点此处去开启通知</span>
+                </div>
+              )}
+              {ttsEngine && (
+                <div className="listenTip" style={{ color: '#64748b' }}>
+                  <Icon name="music" />
+                  <span>中文语音引擎：{ttsEngine}</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -14765,7 +14859,7 @@ function App() {
                     </small>
                   </div>
                   <div className="listActions" onClick={e => e.stopPropagation()}>
-                    <button className="smallBtn" onClick={() => speak(item.term, settings.speakRate)}>🔊</button>
+                    <button className="smallBtn" onClick={() => speak(item.term, settings.speakRate)}><Icon name="speaker" /></button>
                     <button className="smallBtn masterBtn" onClick={() => { toggleProgress(item); removeWrongWord(item.id); }}>已掌握</button>
                     <button className="smallBtn dangerGhost" onClick={() => removeWrongWord(item.id)}>移除</button>
                   </div>
@@ -14900,7 +14994,7 @@ function App() {
                   <p>{getShortMeaning(item.meaning)}</p>
                 </div>
                 <div className="listActions" onClick={e => e.stopPropagation()}>
-                  <button className="smallBtn" onClick={() => speak(item.term, settings.speakRate)}>🔊</button>
+                  <button className="smallBtn" onClick={() => speak(item.term, settings.speakRate)}><Icon name="speaker" /></button>
                   <button className={`smallBtn ${progress[termKey(item.term)] === 'mastered' ? 'masterBtn' : ''}`} onClick={() => toggleProgress(item)}>
                     {progress[termKey(item.term)] === 'mastered' ? '已掌握' : '未掌握'}
                   </button>
@@ -14926,7 +15020,7 @@ function App() {
         }}>
           <div style={{ maxWidth: 600, margin: '0 auto', padding: '16px 16px 80px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <button className="closeBtn" onClick={() => setShowReview(false)} title="返回" style={{ flexShrink: 0 }}>◀</button>
+              <button className="closeBtn" onClick={() => setShowReview(false)} title="返回" style={{ flexShrink: 0 }}><Icon name="chevronLeft" /></button>
               <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>温习</h2>
             </div>
             <div style={{ textAlign: 'center', margin: '0 0 8px', padding: '10px 16px', background: 'linear-gradient(135deg, #f0f7ff 0%, #fff8f0 100%)', borderRadius: 10, border: '1px solid var(--border)' }}>
@@ -14966,8 +15060,8 @@ function App() {
 
                 {/* 模式切换 */}
                 <div className="segmented" style={{ marginTop: 12 }}>
-                  <button className={reviewMode === 'list' ? 'active' : ''} onClick={() => setReviewMode('list')}>📋 列表模式</button>
-                  <button className={reviewMode === 'practice' ? 'active' : ''} onClick={() => { setReviewMode('practice'); setReviewIndex(0); setReviewShowBack(false); setReviewSelected(''); }}>📖 背诵模式</button>
+                  <button className={reviewMode === 'list' ? 'active' : ''} onClick={() => setReviewMode('list')}><Icon name="list" />列表模式</button>
+                  <button className={reviewMode === 'practice' ? 'active' : ''} onClick={() => { setReviewMode('practice'); setReviewIndex(0); setReviewShowBack(false); setReviewSelected(''); }}><Icon name="note" />背诵模式</button>
                 </div>
 
                 {/* 列表模式 */}
@@ -14988,7 +15082,7 @@ function App() {
                             <p>{getShortMeaning(item.meaning)}</p>
                           </div>
                           <div className="listActions" onClick={e => e.stopPropagation()}>
-                            <button className="smallBtn" onClick={() => speak(item.term, settings.speakRate)}>🔊</button>
+                            <button className="smallBtn" onClick={() => speak(item.term, settings.speakRate)}><Icon name="speaker" /></button>
                           </div>
                         </article>
                       ))}
@@ -15012,7 +15106,7 @@ function App() {
                       <div className="questionArea">
                         <h2>{reviewItem.term}</h2>
                         {reviewItem.phonetic && <p className="phoneticText">{reviewItem.phonetic}</p>}
-                        <button className="sound" onClick={() => speak(reviewItem.term, settings.speakRate)}>🔊 发音</button>
+                        <button className="sound" onClick={() => speak(reviewItem.term, settings.speakRate)}><Icon name="speaker" />发音</button>
                       </div>
                       {!reviewShowBack && !reviewSelected && (
                         <button className="primary" onClick={() => setReviewShowBack(true)}>显示释义</button>
@@ -15048,8 +15142,8 @@ function App() {
                             </button>
                           </div>
                           <div className="navButtons">
-                            <button className="navBtn" onClick={() => { setReviewIndex(i => (i - 1 + words.length) % words.length); setReviewShowBack(false); setReviewSelected(''); }}>◀ 上一个</button>
-                            <button className="navBtn" onClick={() => { setReviewIndex(i => (i + 1) % words.length); setReviewShowBack(false); setReviewSelected(''); }}>下一个 ▶</button>
+                            <button className="navBtn" onClick={() => { setReviewIndex(i => (i - 1 + words.length) % words.length); setReviewShowBack(false); setReviewSelected(''); }}><Icon name="chevronLeft" />上一个</button>
+                            <button className="navBtn" onClick={() => { setReviewIndex(i => (i + 1) % words.length); setReviewShowBack(false); setReviewSelected(''); }}>下一个<Icon name="chevronRight" /></button>
                           </div>
                         </div>
                       )}
@@ -15092,7 +15186,7 @@ function App() {
                       <span className="affixProperty">{property}</span>
                     </div>
                     <div className="affixMeaning">中文意义：{meaning}</div>
-                    {examPoint && <div className="affixExamPoint">📝 {examPoint}</div>}
+                    {examPoint && <div className="affixExamPoint"><Icon name="note" />{examPoint}</div>}
                     <button className="affixToggleBtn" onClick={() => setShowAffixWords(prev => ({ ...prev, [name]: !prev[name] }))}>
                       {showAffixWords[name] ? '隐藏词库单词 ▲' : '显示词库单词 ▼'}
                     </button>
@@ -15156,8 +15250,8 @@ function App() {
                     </div>
                   )}
                   <div className="compareNav">
-                    <button className="primary" onClick={() => setCompareIndex(i => (i - 1 + compareItems.length) % compareItems.length)}>◀ 上一个</button>
-                    <button className="primary" onClick={() => setCompareIndex(i => (i + 1) % compareItems.length)}>下一个 ▶</button>
+                    <button className="primary" onClick={() => setCompareIndex(i => (i - 1 + compareItems.length) % compareItems.length)}><Icon name="chevronLeft" />上一个</button>
+                    <button className="primary" onClick={() => setCompareIndex(i => (i + 1) % compareItems.length)}>下一个<Icon name="chevronRight" /></button>
                   </div>
                 </div>
               )}
@@ -15183,7 +15277,7 @@ function App() {
                             <p>{getShortMeaning(item.meaning)}</p>
                           </div>
                           <div className="listActions">
-                            <button className="smallBtn" onClick={(e) => { e.stopPropagation(); speak(item.term, settings.speakRate); }}>🔊</button>
+                            <button className="smallBtn" onClick={(e) => { e.stopPropagation(); speak(item.term, settings.speakRate); }}><Icon name="speaker" /></button>
                           </div>
                         </article>
                       ))}
@@ -15246,7 +15340,7 @@ function App() {
                     className="scenePageBtn"
                     disabled={safePage === 0}
                     onClick={() => setScenePage(p => Math.max(0, p - 1))}
-                  >◀ 上一页</button>
+                  ><Icon name="chevronLeft" />上一页</button>
                   <div className="scenePageDots">
                     {Array.from({ length: totalScenePages }).map((_, i) => (
                       <span
@@ -15260,7 +15354,7 @@ function App() {
                     className="scenePageBtn"
                     disabled={safePage >= totalScenePages - 1}
                     onClick={() => setScenePage(p => Math.min(totalScenePages - 1, p + 1))}
-                  >下一页 ▶</button>
+                  >下一页<Icon name="chevronRight" /></button>
                 </div>
               )}
             </div>
@@ -15688,7 +15782,7 @@ function App() {
             {/* 联网关联词检查 */}
             <div className="familyCheckBox">
               <div className="familyCheckHeader">
-                <span className="familyCheckTitle">🔗 联网关联词检查</span>
+                <span className="familyCheckTitle"><Icon name="link" />联网关联词检查</span>
                 <button
                   className={`familyCheckBtn${familyChecking ? ' checking' : ''}`}
                   onClick={runManualFamilyCheck}
@@ -15701,7 +15795,7 @@ function App() {
                 导入新单词时自动联网检查词族关系。配置AI大模型可获得更精准的关联词标注。
                 {' '}
                 {aiConfig.endpoint && aiConfig.apiKey
-                  ? <span style={{color: 'var(--primary)'}}>✓ AI已配置</span>
+                  ? <span style={{color: 'var(--primary)'}}><Icon name="check" />AI已配置</span>
                   : <span style={{color: 'var(--text-tertiary)'}}>未配置AI，使用本地算法</span>}
               </p>
               {familyCheckStatus && (
@@ -15719,13 +15813,13 @@ function App() {
           <div className="meHeader">
             <div className="meAvatar" style={isNativeApp ? {} : { cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
               {...(!isNativeApp ? { onClick: () => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = ev => { const url = ev.target.result; setAvatarUrl(url); try { localStorage.setItem('gaokao_avatar', url); } catch {} }; reader.readAsDataURL(file); }; input.click(); }} : {})}>
-              {!isNativeApp && avatarUrl ? <img src={avatarUrl} alt="头像" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} /> : '🎓'}
+              {!isNativeApp && avatarUrl ? <img src={avatarUrl} alt="头像" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} /> : <Icon name="grad" size={28} />}
             </div>
             <div className="meInfo">
               <h2>高考词汇学习</h2>
               <div className="meStats">
                 <span>累计学习 {totalStudyDays} 天</span>
-                <span className="streakBadge">🔥 连续 {streakDays} 天</span>
+                <span className="streakBadge"><Icon name="fire" />连续 {streakDays} 天</span>
               </div>
             </div>
           </div>
@@ -15811,7 +15905,7 @@ function App() {
           {/* v2.55.9: 显示状态改由 autoSpeak 驱动（与 useEffect 实际判断的字段一致，避免显示开实际关） */}
           <div className="toggleCard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', marginTop: 12, borderRadius: 12, background: 'var(--primary-light)', border: '1px solid var(--border-light)' }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600 }}>🔊 自动发音（背诵新词 + 跳转）</div>
+              <div style={{ fontSize: 15, fontWeight: 600 }}><Icon name="speaker" />自动发音（背诵新词 + 跳转）</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>背诵页出现新单词时自动发音，点击单词跳转详情时也自动发音</div>
             </div>
             <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0 }}>
@@ -15826,7 +15920,7 @@ function App() {
           {isNativeApp && (
           <div className="toggleCard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', marginTop: 12, borderRadius: 12, background: 'var(--primary-light)', border: '1px solid var(--border-light)' }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600 }}>📱 音量键翻页</div>
+              <div style={{ fontSize: 15, fontWeight: 600 }}><Icon name="phone" />音量键翻页</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>背诵页：音量上/下键翻页；闪卡模式：先按音量键显示释义，再按翻页</div>
             </div>
             <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0 }}>
@@ -15895,8 +15989,8 @@ function App() {
             <h3>数据备份</h3>
             <p className="muted" style={{ marginBottom: 12 }}>{isNativeApp ? '备份保存到 Documents/高考词汇备份/ 目录，恢复时自动读取。' : '备份学习进度、错词本、设置等数据，更新或换设备后可恢复。'}</p>
             <div className="importActions">
-              <button className="smallBtn" onClick={exportData}>📤 备份数据</button>
-              <button className="smallBtn" onClick={importData}>📥 恢复数据</button>
+              <button className="smallBtn" onClick={exportData}><Icon name="upload" />备份数据</button>
+              <button className="smallBtn" onClick={importData}><Icon name="download" />恢复数据</button>
             </div>
           </div>
 
@@ -15904,7 +15998,7 @@ function App() {
           {isNativeApp ? (
           <div className="cloudUpdateSection">
             <div className="updateHeader">
-              <h3>🔄 版本更新</h3>
+              <h3><Icon name="refresh" />版本更新</h3>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                 <span className="versionBadge">页面 v{APP_VERSION}</span>
                 <span
@@ -15919,6 +16013,26 @@ function App() {
               </div>
             </div>
             <p className="muted">点击检查更新，获取最新功能和词库。更新不会丢失任何个人数据。</p>
+            {/* v2.74.0：系统播放卡片自检（vivo 控制中心不出卡片时，这里能直接看到原因并跳去开启） */}
+            <div className={'mediaDiagCard' + (mediaBlocked ? ' bad' : ' ok')}>
+              <div className="mediaDiagRow">
+                <Icon name={mediaBlocked ? 'bellOff' : 'bell'} />
+                <b>系统播放卡片</b>
+                <span>{mediaBlocked ? mediaBlocked : '正常（锁屏 / 控制中心可见）'}</span>
+              </div>
+              <div className="mediaDiagRow">
+                <Icon name="music" />
+                <b>中文语音</b>
+                <span>{ttsEngine ? (ttsEngine + (listenCfg.zhSource === 'auto' ? '（自动择优）' : '')) : '尚未初始化'}</span>
+              </div>
+              <div className="mediaDiagBtns">
+                <button className="smallBtn" onClick={() => { try { window.NativeAudio && window.NativeAudio.openNotificationSettings && window.NativeAudio.openNotificationSettings(); } catch (e) {} }}>通知设置</button>
+                <button className="smallBtn" onClick={() => { try { window.NativeAudio && window.NativeAudio.openAppSettings && window.NativeAudio.openAppSettings(); } catch (e) {} }}>后台运行设置</button>
+              </div>
+              <p className="muted" style={{ marginTop: 6, fontSize: 12, lineHeight: 1.6 }}>
+                vivo 手机请在「i 管家 → 应用管理 → 权限管理 → 自启动 / 后台高耗电」里允许本应用，控制中心的媒体卡片才会常驻。
+              </p>
+            </div>
             {pkgVer.code > 0 && pkgVer.code < APP_VERSION_CODE && (
               <div style={{
                 margin: '10px 0 0 0', padding: '10px 12px', borderRadius: 10,
@@ -15934,7 +16048,7 @@ function App() {
               <button className="primary" onClick={() => { refreshPkgVer(); checkCloudUpdate(false); }} disabled={checkingUpdate}>
                 {checkingUpdate ? '检查中...' : '检查更新'}
               </button>
-              <button className="smallBtn" onClick={copyUpdateDiag}>🩺 诊断信息</button>
+              <button className="smallBtn" onClick={copyUpdateDiag}><Icon name="shield" />诊断信息</button>
             </div>
             <p className="muted" style={{ marginTop: 8, fontSize: 12, lineHeight: 1.6 }}>
               若点更新后没有弹出安装界面：请在手机「设置 → 搜索「安装未知应用」→ 允许本应用安装」，然后回到这里再点一次。
@@ -15978,7 +16092,7 @@ function App() {
                         setInAppDownloading(false);
                         setCloudStatus('已清除下载缓存，重新开始下载...');
                         installApk(updateInfo);
-                      }}>🧹 清除缓存重新下载</button>
+                      }}><Icon name="trash" />清除缓存重新下载</button>
                     <button className="smallBtn" style={{ marginTop: 8 }}
                       onClick={() => window.open(updateInfo.apkUrl || updateInfo.apkUrlCdn || APK_DOWNLOAD_SOURCES[0].url, '_blank')}>
                       🌐 浏览器下载安装包
@@ -15996,7 +16110,7 @@ function App() {
           {/* 浏览器下载回退（更新检查所有线路失败时显示） */}
           {showBrowserFallback && (
             <div className="cloudUpdateSection" style={{ background: '#fef3c7', borderColor: '#fde68a', marginTop: 12 }}>
-              <h3 style={{ color: '#92400e' }}>📱 网络修复更新</h3>
+              <h3 style={{ color: '#92400e' }}><Icon name="phone" />网络修复更新</h3>
               <p className="muted">APP内网络检测失败，点击下方按钮将在浏览器中打开更新页面，下载后安装即可。安装后更新将自动恢复。</p>
               <button className="primary" onClick={() => {
                 window.open('https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/update.html', '_blank');
@@ -16007,7 +16121,7 @@ function App() {
           {/* 反馈入口（仅APP） */}
           {isNativeApp && (
             <div className="cloudUpdateSection" style={{ background: '#fef3c7', borderColor: '#fde68a' }}>
-              <h3 style={{ color: '#92400e' }}>💬 反馈建议</h3>
+              <h3 style={{ color: '#92400e' }}><Icon name="chat" />反馈建议</h3>
               <p className="muted">有什么建议或遇到问题？欢迎添加QQ好友直接反馈，沟通更高效。</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 18, fontWeight: 700, color: '#92400e' }}>QQ: 3219858871</span>
@@ -16027,7 +16141,7 @@ function App() {
 
           {/* 隐私政策 */}
           <div className="cloudUpdateSection" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
-            <h3 style={{ color: '#166534' }}>📋 隐私政策</h3>
+            <h3 style={{ color: '#166534' }}><Icon name="shield" />隐私政策</h3>
             <p className="muted">本应用不收集任何用户个人信息，所有数据保存在设备本地。</p>
             <button className="smallBtn" onClick={() => {
               window.open('https://xdbzys.github.io/gaokao-vocab-website/privacy.html', '_blank');
@@ -16036,7 +16150,7 @@ function App() {
 
           {/* 官网 */}
           <div className="cloudUpdateSection" style={{ background: '#eff6ff', borderColor: '#bfdbfe', marginTop: 12 }}>
-            <h3 style={{ color: '#1d4ed8' }}>🌐 官网</h3>
+            <h3 style={{ color: '#1d4ed8' }}><Icon name="globe" />官网</h3>
             <p className="muted">
               <a href="https://xdbzys.github.io/gaokao-vocab-website/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>
                 xdbzys.github.io/gaokao-vocab-website
@@ -16121,7 +16235,7 @@ function App() {
             <div className="updateOverlay" onClick={e => { if (e.target === e.currentTarget) setShowAnnouncementModal(false); }}>
               <div className="updateModal">
                 <div className="updateModalHeader">
-                  <div className="updateModalIcon">🚀</div>
+                  <div className="updateModalIcon"><Icon name="rocket" size={34} /></div>
                   <p className="updateModalTitle">发现新版本</p>
                   <p className="updateModalSub">快来体验最新功能吧</p>
                   <div className="updateModalVersion">
@@ -16268,7 +16382,7 @@ function App() {
                 <div className="modalHeader">
                   <h2>{detailItem.term}</h2>
                   {detailItem.phonetic && <p className="phoneticText">{detailItem.phonetic}</p>}
-                  <button className="closeBtn" onClick={() => closeDetailItem()} title={detailHistory.length > 0 ? '返回上一个（' + detailHistory.length + '层）' : '关闭'}>{detailHistory.length > 0 ? '◀' : '✕'}</button>
+                  <button className="closeBtn" onClick={() => closeDetailItem()} title={detailHistory.length > 0 ? '返回上一个（' + detailHistory.length + '层）' : '关闭'}>{detailHistory.length > 0 ? <Icon name="chevronLeft" /> : <Icon name="close" />}</button>
                 </div>
                 <div className="detailMetaRow">
                   {detailItem.pos && <span className="detailPosTag" style={{ color: posColor(detailItem.pos), background: posColor(detailItem.pos) + '18' }}>{detailItem.pos}</span>}
@@ -16283,16 +16397,16 @@ function App() {
                     // v2.49.0: 单词只属于一个词库 → 黄底；属于多个词库 → 蓝底
                     const bg = isMulti ? '#dbeafe' : '#fef9c3';
                     const clr = isMulti ? '#1e40af' : '#a16207';
-                    return <span className="detailSourceTag" style={{ fontSize: 12, background: bg, color: clr, padding: '2px 8px', borderRadius: 8, fontWeight: 500 }}>📚 {books.join(' / ')}</span>;
+                    return <span className="detailSourceTag" style={{ fontSize: 12, background: bg, color: clr, padding: '2px 8px', borderRadius: 8, fontWeight: 500 }}><Icon name="book" />{books.join(' / ')}</span>;
                   })()}
-                  {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag">✓ 已掌握</span>}
+                  {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag"><Icon name="check" />已掌握</span>}
                 </div>
                 <h3 className="detailMeaning">{detailItem.meaning}</h3>
 
                 {/* 例句（紧跟释义显示，确保每个单词详情都有例句） */}
                 {detailItem.examples && detailItem.examples.length > 0 && (
                   <div className="detailSection">
-                    <p className="detailSectionTitle">💬 例句</p>
+                    <p className="detailSectionTitle"><Icon name="quote" />例句</p>
                     <div className="examples">{detailItem.examples.map((e, i) => {
                       const [en, zh] = e.split('|||');
                       return (
@@ -16309,7 +16423,7 @@ function App() {
                 {/* v2.56.0: 跨词库整合——无论从哪个词库点开，都展示该单词在所有词库的考点 */}
                 {mergedPoints.corePoints.length > 0 && (
                   <div className="detailSection detailExamPoints">
-                    <p className="detailSectionTitle">🎯 核心考点{mergedPoints.corePoints.length > (detailItem.corePoints || []).length ? '（含其他词库）' : ''}</p>
+                    <p className="detailSectionTitle"><Icon name="target" />核心考点{mergedPoints.corePoints.length > (detailItem.corePoints || []).length ? '（含其他词库）' : ''}</p>
                     {mergedPoints.corePoints.map((p, i) => <p key={i} className="detailPointItem">{p}</p>)}
                   </div>
                 )}
@@ -16317,7 +16431,7 @@ function App() {
                 {/* 增强数据：考点 */}
                 {enrichment && enrichment.examPoints.length > 0 && (
                   <div className="detailSection detailExamPoints">
-                    <p className="detailSectionTitle">📝 常考要点</p>
+                    <p className="detailSectionTitle"><Icon name="note" />常考要点</p>
                     {enrichment.examPoints.map((p, i) => <p key={i} className="detailPointItem">{p}</p>)}
                   </div>
                 )}
@@ -16326,7 +16440,7 @@ function App() {
                 {/* v2.56.0: 跨词库整合知识点 */}
                 {mergedPoints.allPoints.length > 0 && (
                   <div className="detailSection">
-                    <p className="detailSectionTitle">💡 知识点</p>
+                    <p className="detailSectionTitle"><Icon name="bulb" />知识点</p>
                     <div className="points">
                       {mergedPoints.allPoints.map((p, i) => <p key={i}>• {p}</p>)}
                     </div>
@@ -16336,7 +16450,7 @@ function App() {
                 {/* 词组搭配 */}
                 {enrichment && enrichment.collocations.length > 0 && (
                   <div className="detailSection detailCollocations">
-                    <p className="detailSectionTitle">🔗 词组搭配</p>
+                    <p className="detailSectionTitle"><Icon name="link" />词组搭配</p>
                     {enrichment.collocations.map((c, i) => <p key={i} className="detailCollocationItem" style={{ cursor: 'pointer' }} onClick={() => speak(extractEnglish(c), settings.speakRate)}>{c}</p>)}
                   </div>
                 )}
@@ -16344,7 +16458,7 @@ function App() {
                 {/* 单词变形 */}
                 {enrichment && Object.keys(enrichment.wordForms).length > 0 && (
                   <div className="detailSection detailWordForms">
-                    <p className="detailSectionTitle">🔄 单词变形</p>
+                    <p className="detailSectionTitle"><Icon name="refresh" />单词变形</p>
                     <div className="detailFormGrid">
                       {(() => {
                         function formStyle(word) {
@@ -16372,7 +16486,7 @@ function App() {
                 {/* 派生词 */}
                 {enrichment && enrichment.derivatives.length > 0 && (
                   <div className="detailSection detailDerivatives">
-                    <p className="detailSectionTitle">🌿 派生词</p>
+                    <p className="detailSectionTitle"><Icon name="leaf" />派生词</p>
                     <div className="detailTagWrap">
                       {enrichment.derivatives.map((d, i) => {
                         const derivWord = d.split(' ')[0];
@@ -16388,7 +16502,7 @@ function App() {
                 {/* 近义词 / 同义词 */}
                 {enrichment && enrichment.synonyms.length > 0 && (
                   <div className="detailSection detailSynonyms">
-                    <p className="detailSectionTitle">📌 近义词</p>
+                    <p className="detailSectionTitle"><Icon name="pin" />近义词</p>
                     <div className="detailTagWrap">
                       {enrichment.synonyms.map((s, i) => {
                         const synWord = extractEnglish(s).split(/\s+/)[0];
@@ -16404,7 +16518,7 @@ function App() {
                 {/* 反义词 */}
                 {enrichment && enrichment.antonyms.length > 0 && (
                   <div className="detailSection detailAntonyms">
-                    <p className="detailSectionTitle">⚡ 反义词</p>
+                    <p className="detailSectionTitle"><Icon name="bolt" />反义词</p>
                     <div className="detailTagWrap">
                       {enrichment.antonyms.map((a, i) => {
                         const antWord = extractEnglish(a).split(/\s+/)[0];
@@ -16490,7 +16604,7 @@ function App() {
                   );
                 })()}
                 <div className="modalActions">
-                  <button onClick={() => speak(detailItem.term, settings.speakRate)}>🔊 发音</button>
+                  <button onClick={() => speak(detailItem.term, settings.speakRate)}><Icon name="speaker" />发音</button>
                   <button className="masterBtn" onClick={() => { toggleProgress(detailItem); setDetailItem({...detailItem}); }}>
                     {progress[termKey(detailItem.term)] === 'mastered' ? '取消掌握' : '标记掌握'}
                   </button>
