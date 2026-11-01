@@ -974,13 +974,17 @@ public class PlayerService extends Service {
             nb.setCategory(Notification.CATEGORY_TRANSPORT)
               .setVisibility(Notification.VISIBILITY_PUBLIC);
         }
-        if (Build.VERSION.SDK_INT >= 26) {
-            try { nb.setSilent(true); } catch (Throwable ignored) {}
-        }
+        // 静音由通知渠道（setSound(null) + 关震动）保证；
+        // Notification.Builder 没有 setSilent（那是 NotificationCompat 的扩展方法）。
         if (Build.VERSION.SDK_INT >= 31) {
             // 前台服务通知默认会延迟约 10 秒才弹出（系统省电策略），
-            // 表现为「已经开始播了但通知栏/控制中心什么都没有」。IMMEDIATE 立即显示。
-            try { nb.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE); } catch (Throwable ignored) {}
+            // 表现为「已经开始播了但通知栏/控制中心什么都没有」。IMMEDIATE = 1，立即显示。
+            // 用反射调用：不依赖 compileSdk 是否包含 API 31 的常量，构建更稳。
+            try {
+                java.lang.reflect.Method m = Notification.Builder.class
+                        .getMethod("setForegroundServiceBehavior", int.class);
+                m.invoke(nb, Integer.valueOf(1));
+            } catch (Throwable ignored) {}
         }
         // v2.72.0：通知栏大图封面（与音乐 App 一致的可视化）
         try {
