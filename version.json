@@ -1,9 +1,9 @@
 {
-  "version": "2.72.0",
-  "versionCode": 234,
+  "version": "2.72.1",
+  "versionCode": 235,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.72.0】听读暂停、媒体卡片、导出格式、双指缩放全面修复\nv暂停立即生效：修复安卓 WebView 上「暂停后声音继续」——改为硬停系统语音并重播被打断的当前词；词间间隔的定时任务在暂停时一并撤销\nv媒体卡片升级到音乐 App 水准：锁屏 / 通知栏 / 控制中心 / 车机显示当前单词 + 中文释义 + 词库名"
+  "changelog": "【v2.72.1】更新链路提速（实测修正下载源顺序）\nv安装包下载主源改为 Gitee 镜像：实测 3 秒返回当前构建（4,381,067 字节），而 jsDelivr 对 master 有最长 12 小时缓存、实测曾下发上一版旧包，用户会白下 4MB 后被版本校验拒绝\nv页面热更新同样以 Gitee 正文为首选，并新"
 }
