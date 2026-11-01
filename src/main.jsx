@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.71.0';
-const APP_VERSION_CODE = 233;
+const APP_VERSION = '2.72.0';
+const APP_VERSION_CODE = 234;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -10434,6 +10434,9 @@ function enAudioUrls(text) {
 // 而不是一点暂停就把整条播放链取消（旧行为会导致继续时从头重读当前词）
 var _listenPausedFlag = false;
 var _listenResumeWaiters = [];
+// v2.72.0：Android WebView 的 speechSynthesis.pause() 是空操作（声音不会停），
+// 暂停时必须用 cancel() 立即打断；被打断的当前词在恢复后整词重播
+var _listenTtsCutByPause = false;
 function listenIsPaused() { return _listenPausedFlag; }
 function listenSetPaused(v) {
   _listenPausedFlag = !!v;
@@ -11270,7 +11273,9 @@ function App() {
   // v2.62.0：词库导出（txt，供百词斩等 App 导入）
   const [showExport, setShowExport] = useState(false);
   const [exportScope, setExportScope] = useState('book');
+  // v2.72.0：分隔方式可选空格 / Tab / 逗号 / 分号 / 自定义 / 仅单词
   const [exportSep, setExportSep] = useState('space');
+  const [exportSepCustom, setExportSepCustom] = useState(' | ');
   const [exportMsg, setExportMsg] = useState('');
   // all=全部 hide=隐藏已掌握 only=仅已掌握
   const [listenFilter, setListenFilter] = useState(() => {
@@ -11801,7 +11806,8 @@ function App() {
     try { setListenPos(0); setListenDur(0); } catch (e) {}
   };
 
-  // v2.61.0：真正的暂停——挂起播放链并暂停当前声音，可从通知栏 / 锁屏 / 线控 / App 内按钮恢复
+  // v2.72.0：暂停必须「立即无声」——WebView 的 speechSynthesis.pause() 在安卓上是
+  // 空操作（声音继续播），改为 cancel() 硬停，并在恢复后重播被切断的当前词
   const pauseListen = function (skipNative) {
     if (!listenPlayingRef.current || listenPausedRef.current) return;
     listenPausedRef.current = true;
@@ -11809,7 +11815,12 @@ function App() {
     setListenPaused(true);
     if (!skipNative) { try { if (window.NativePlayer && window.NativePlayer.pause) window.NativePlayer.pause(); } catch (e) {} }
     try { if (_listenAudio && _listenAudio.pause) _listenAudio.pause(); } catch (e) {}
-    try { if ('speechSynthesis' in window && window.speechSynthesis.pause) window.speechSynthesis.pause(); } catch (e) {}
+    try {
+      if ('speechSynthesis' in window) {
+        if (window.speechSynthesis.speaking || window.speechSynthesis.pending) _listenTtsCutByPause = true;
+        window.speechSynthesis.cancel();
+      }
+    } catch (e) {}
     try { if (navigator.mediaSession) navigator.mediaSession.playbackState = 'paused'; } catch (e) {}
   };
 
@@ -11917,6 +11928,8 @@ function App() {
         setListenIndex(i);
         await playListenItemAsync(queue[i], cfg, token, listenTokenRef);
         if (token !== listenTokenRef.current) return;
+        // v2.72.0：暂停时语音被 cancel() 切断 → 恢复后重播当前词（不推进）
+        if (_listenTtsCutByPause) { _listenTtsCutByPause = false; continue; }
         if (cfg.loop !== 'one') i += 1;
         if (cfg.loop === 'off' && i >= queue.length) break;
         await listenSleep(cfg.wordGap * 1000, token, listenTokenRef);
@@ -12277,11 +12290,32 @@ function App() {
     return out;
   };
 
+  // v2.72.0：分隔符解析为真实字符（自定义可输入任意内容，\t / \n 会被转义）
+  const resolveExportSep = function () {
+    if (exportSep === 'tab') return '\t';
+    if (exportSep === 'comma') return ', ';
+    if (exportSep === 'semi') return '; ';
+    if (exportSep === 'custom') {
+      var c = String(exportSepCustom || '');
+      c = c.replace(/\\t/g, '\t').replace(/\\n/g, '\n');
+      return c;
+    }
+    return ' ';
+  };
+
   const buildExportText = function () {
     var onlyWord = exportSep === 'word';
-    var sep = exportSep === 'tab' ? '\t' : ' ';
+    var sep = resolveExportSep();
     return exportSrcList().map(function (w) {
       return (onlyWord || !w.meaning) ? w.term : (w.term + sep + w.meaning);
+    }).join('\n');
+  };
+
+  // 前 2 行的可读预览：切换分隔方式后立刻能看到效果（Tab 显示为 ⇥，避免与空格混淆）
+  const exportPreview = function () {
+    var lines = buildExportText().split('\n').slice(0, 2);
+    return lines.map(function (l) {
+      return String(l).replace(/\t/g, '⇥').replace(/ /g, '·');
     }).join('\n');
   };
 
@@ -12290,8 +12324,10 @@ function App() {
     if (!text) { setExportMsg('没有可导出的单词'); return; }
     var ok = copyTextToClipboard(text);
     var n = text.split('\n').length;
-    setExportMsg(ok ? ('已复制 ' + n + ' 个单词到剪贴板，去百词斩「自制词单 → 导入」粘贴即可')
-                    : ('复制失败，请改用「下载 txt」'));
+    var sepName = exportSep === 'word' ? '仅单词' : (exportSep === 'tab' ? 'Tab' : (exportSep === 'comma' ? '逗号' : (exportSep === 'semi' ? '分号' : (exportSep === 'custom' ? '自定义' : '空格'))));
+    setExportMsg(ok
+      ? ('已复制 ' + n + ' 个单词（' + sepName + '分隔）。\n格式预览：\n' + exportPreview())
+      : ('复制失败，请改用「下载 txt」'));
   };
 
   const doDownloadExport = function () {
@@ -14038,30 +14074,47 @@ function App() {
             <span className="progressTag">{index + 1}/{learnItems.length}</span>
           </div>
 
-          {/* 背诵模式快捷开关 */}
+          {/* 背诵模式快捷开关（v2.72.0：去 emoji，统一线性图标 + 状态色） */}
           <div className="quickToggleRow">
             <button
               className="quickToggleBtn modeBtn"
               onClick={() => { const modes = choiceModes.map(m => m.id); const cur = modes.indexOf(practiceMode); const next = modes[(cur + 1) % modes.length]; setPracticeMode(next); setSettings(s => ({ ...s, mode: next })); saveSettings({ ...settings, mode: next }); setSelected(''); setShowBack(false); }}
-            >📖 {choiceModes.find(m => m.id === practiceMode)?.name || '英文选中文'}</button>
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.2A2.2 2.2 0 0 1 6.2 4H19v14.5H6.2A2.2 2.2 0 0 0 4 20.7V6.2Z"/><path d="M8 8h7M8 11.2h5"/></svg>
+              <span>{choiceModes.find(m => m.id === practiceMode)?.name || '英文选中文'}</span>
+            </button>
             {practiceMode !== 'flashcard' && (
               <button
                 className={`quickToggleBtn ${settings.difficulty === 'hard' ? 'hardOn' : 'easyOn'}`}
                 onClick={() => { const v = settings.difficulty === 'hard' ? 'easy' : 'hard'; setSettings(s => ({ ...s, difficulty: v })); saveSettings({ ...settings, difficulty: v }); setSelected(''); }}
-              >{settings.difficulty === 'hard' ? '🔥 困难' : '💡 简单'}</button>
+              >
+                {settings.difficulty === 'hard'
+                  ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s4.6 3.3 4.6 7.4c0 2-1.1 3.6-2.4 4.6.2-1.6-.6-2.9-1.7-3.6.4 1.9-.7 3-1.6 3.9-.6.6-1 1.4-1 2.3 0 .9.4 1.6 1 2-2.6-.5-4.6-2.8-4.6-5.6C6.3 6.6 12 3 12 3Z"/></svg>
+                  : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18"/><circle cx="12" cy="12" r="3.6"/></svg>}
+                <span>{settings.difficulty === 'hard' ? '困难模式' : '简单模式'}</span>
+              </button>
             )}
             <button
               className={`quickToggleBtn ${settings.shuffleMode ? 'shuffleOn' : 'shuffleOff'}`}
               onClick={() => { setSettings(s => ({ ...s, shuffleMode: !s.shuffleMode })); saveSettings({ ...settings, shuffleMode: !settings.shuffleMode }); }}
-            >{settings.shuffleMode ? '🔀 乱序' : '📋 顺序'}</button>
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3.2c1.4 0 2.3.7 3.1 1.9l3.4 5.2c.8 1.2 1.7 1.9 3.1 1.9H20"/><path d="M17.4 4.6 20 7l-2.6 2.4M17.4 14.2 20 16.6l-2.6 2.4M4 17h3.2c1.4 0 2.3-.7 3.1-1.9"/></svg>
+              <span>{settings.shuffleMode ? '乱序' : '顺序'}</span>
+            </button>
             <button
               className={`quickToggleBtn ${settings.autoMaster ? 'masterOn' : 'masterOff'}`}
               onClick={() => { const v = !settings.autoMaster; setSettings(s => ({ ...s, autoMaster: v })); saveSettings({ ...settings, autoMaster: v }); }}
-            >{settings.autoMaster ? '✅ 自动掌握' : '📝 自动掌握'}</button>
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.2"/><path d="m8.4 12.2 2.5 2.5 4.7-5"/></svg>
+              <span>自动掌握</span>
+            </button>
             <button
               className={`quickToggleBtn ${settings.autoJump ? 'jumpOn' : 'jumpOff'}`}
               onClick={() => { const v = !settings.autoJump; setSettings(s => ({ ...s, autoJump: v })); saveSettings({ ...settings, autoJump: v }); }}
-            >{settings.autoJump ? '⏭ 自动跳转' : '⏸ 自动跳转'}</button>
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5v11l7-5.5-7-5.5Z"/><path d="M17 6.5v11"/></svg>
+              <span>自动跳转</span>
+            </button>
           </div>
 
           {/* 单词/短语分类 */}
@@ -14706,26 +14759,50 @@ function App() {
               </div>
               <div className="listenSettingRow">
                 <span>分隔方式</span>
-                <div className="listenSeg">
-                  <button className={exportSep === 'space' ? 'on' : ''} onClick={() => setExportSep('space')}>空格分隔</button>
-                  <button className={exportSep === 'tab' ? 'on' : ''} onClick={() => setExportSep('tab')}>Tab 分隔</button>
-                  <button className={exportSep === 'word' ? 'on' : ''} onClick={() => setExportSep('word')}>仅单词</button>
+                <InlineSelect
+                  value={exportSep}
+                  onChange={v => { setExportSep(v); setExportMsg(''); }}
+                  options={[
+                    { value: 'space', label: '空格（单词 释义）' },
+                    { value: 'tab', label: 'Tab（粘进 Excel）' },
+                    { value: 'comma', label: '逗号（单词, 释义）' },
+                    { value: 'semi', label: '分号（单词; 释义）' },
+                    { value: 'word', label: '仅单词（不带释义）' },
+                    { value: 'custom', label: '自定义分隔符…' },
+                  ]}
+                />
+              </div>
+              {exportSep === 'custom' && (
+                <div className="listenSettingRow">
+                  <span>自定义</span>
+                  <input
+                    className="exportSepInput"
+                    value={exportSepCustom}
+                    placeholder="输入分隔符，如 | 或 —— （可用 \t 表示制表符）"
+                    onChange={e => { setExportSepCustom(e.target.value); setExportMsg(''); }}
+                  />
                 </div>
+              )}
+              <div className="exportPreview">
+                <div className="exportPreviewTitle">格式预览（前 2 行；· = 空格，⇥ = Tab）</div>
+                <pre className="exportPreviewBody">{exportPreview()}</pre>
               </div>
               <div className="exportActions">
                 <button className="primary" onClick={doCopyExport}>复制到剪贴板</button>
                 <button className="primary ghost" onClick={doDownloadExport}>下载 txt</button>
               </div>
-              {exportMsg ? <div className="listenTip">{exportMsg}</div> : null}
-              {/* v2.70.0 百词斩分批（由导入页并入）：按当前导出范围取词，500 词/批 */}
+              {exportMsg ? <div className="listenTip exportMsgBox">{exportMsg}</div> : null}
+              {/* v2.72.0 百词斩直导：固定英文逗号 + 纯单词，粘贴即导入 */}
               {(() => {
                 const info = getBcBatchText(bcBatch);
                 if (!info.total) return null;
                 return (
-                  <div className="bcBatchRow">
-                    <div className="listenTip" style={{ margin: '6px 0' }}>
-                      <b>同步到百词斩</b>：共 {info.total} 词 → 分 {info.totalBatches} 批（每批 ≤500 词，英文逗号分隔）。逐批复制，到百词斩「词本 → 添加单词」粘贴提交。
+                  <div className="bcDirectBox">
+                    <div className="bcDirectHead">
+                      <b>百词斩直导</b>
+                      <span>共 {info.total} 词 · {info.totalBatches} 批（每批 ≤500）</span>
                     </div>
+                    <p className="bcDirectTip">格式为英文逗号分隔的纯单词，百词斩「词本 → 添加单词」长按粘贴即可直接导入，不需要再改格式。</p>
                     <div className="exportActions">
                       {info.batch > 0 && <button onClick={() => setBcBatch(info.batch - 1)}>上一批</button>}
                       <button className="primary" style={{ flex: 1 }} onClick={doCopyBcBatch}>复制第 {info.batch + 1}/{info.totalBatches} 批</button>
@@ -14734,7 +14811,7 @@ function App() {
                   </div>
                 );
               })()}
-              <div className="listenTip">默认「空格分隔」：每行「单词 释义」，这是百词斩批量导入最稳的格式；Tab 分隔适合粘进 Excel；只想要纯单词列表就选「仅单词」。</div>
+              <div className="listenTip">「复制到剪贴板」按上面选的分隔方式输出「单词 + 释义」，适合 Excel / 墨墨 / Anki；「百词斩直导」固定英文逗号 + 纯单词，是百词斩能直接吃下的格式。</div>
             </div>
           )}
           <input className="searchInput" value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索英文、中文、词性..." />

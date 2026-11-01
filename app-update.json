@@ -1,8 +1,8 @@
 {
-  "version": "2.71.0",
-  "versionCode": 233,
-  "changelog": "【v2.71.0】下载全面提速与稳定性修复（永久解决下载慢 / 下载失败）\nv修复 CI 镜像步骤：每次构建把最新安装包与网页回写 master，jsDelivr / raw 从此服务最新版——国内最快最稳的 CDN 真正生效\nv原生下载器增加 3 次重试 + HTTP Range 断点续传：单次连接中断只续传剩余部分，不再从头重下，慢网络也能稳定完成\nv下载源重排：jsDelivr 优先、raw 次之、GitHub Release / ghproxy 兜底；页面热更新改多源容灾，不再单点失败\nvapkUrlCdn 与 webHtmlUrl 均指向 jsDelivr 最新版，安装包与热更新默认走最快通道",
-  "devNotes": "v2.71.0: fix CI mirror step (push latest apk+web to master so jsDelivr/raw serve current build); native downloader retry(3)+HTTP Range resume; apkCandidates/jsDelivr-first + ghproxy fallback; web hot-update multi-source; webHtmlUrl->jsDelivr",
+  "version": "2.72.0",
+  "versionCode": 234,
+  "changelog": "【v2.72.0】听读暂停、媒体卡片、导出格式、双指缩放全面修复\nv暂停立即生效：修复安卓 WebView 上「暂停后声音继续」——改为硬停系统语音并重播被打断的当前词；词间间隔的定时任务在暂停时一并撤销\nv媒体卡片升级到音乐 App 水准：锁屏 / 通知栏 / 控制中心 / 车机显示当前单词 + 中文释义 + 词库名 + 专辑封面，逐词实时刷新\nv导出分隔方式真正生效：可选空格 / Tab / 逗号 / 分号 / 自定义分隔符，面板内实时显示格式预览，复制内容与预览完全一致\nv新增「百词斩直导」：固定英文逗号 + 纯单词，500 词/批，复制后在百词斩「词本 → 添加单词」直接粘贴导入\nv修复双指缩放：页面加载后强制放开 viewport 缩放限制（0.5x~4x），配合 WebView 缩放设置，双指即可放大整页\nv背诵页快捷开关去 emoji，统一线性图标与状态配色，与听读页控件风格一致",
+  "devNotes": "v2.72.0: pause now hard-stops (speechSynthesis.cancel + cancel gap task, replay cut word); media card = title word / subtitle meaning / album book + cover art, refreshed per word; export separator space|tab|comma|semi|custom with live preview; baicizhan direct export (comma + words); force pinch zoom via viewport rewrite on page finished; practice chips use SVG icons",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"

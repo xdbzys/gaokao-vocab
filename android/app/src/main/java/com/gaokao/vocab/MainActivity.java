@@ -650,6 +650,22 @@ public class MainActivity extends Activity {
                 super.onReceivedError(view, errorCode, description, failingUrl);
                 Log.e("GaokaoVocab", "WebView error: " + errorCode + " " + description + " url=" + failingUrl);
             }
+
+            // v2.72.0：双指缩放修复 —— 页面 viewport 若被锁死（部分 ROM / 旧 WebView 默认
+            // 不允许缩放），这里在页面加载完成后强制改写为可缩放，配合 WebSettings 的
+            // setSupportZoom / setBuiltInZoomControls，双指即可 0.5x~4x 缩放整页
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                try {
+                    view.evaluateJavascript(
+                        "(function(){try{" +
+                        "var c='width=device-width, initial-scale=1, minimum-scale=0.5, maximum-scale=4, user-scalable=yes, viewport-fit=cover';" +
+                        "var m=document.querySelector('meta[name=viewport]');" +
+                        "if(m){m.setAttribute('content',c);}else{m=document.createElement('meta');m.setAttribute('name','viewport');m.setAttribute('content',c);document.head.appendChild(m);}" +
+                        "}catch(e){}})()", null);
+                } catch (Throwable ignored) {}
+            }
         });
 
         // 收集 console 输出到 Logcat，便于排查 JS 错误

@@ -907,64 +907,90 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   padding: 0 0 8px;
 }
 .quickToggleBtn {
-  padding: 8px 6px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
+  padding: 9px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
   font-size: 0.78em;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: .2px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background .18s ease, color .18s ease, border-color .18s ease, transform .12s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   white-space: nowrap;
   text-align: center;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
 }
+/* v2.72.0：统一线性图标（去 emoji，跨机型字形一致） */
+.quickToggleBtn svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.quickToggleBtn :where(span) { overflow: hidden; text-overflow: ellipsis; }
+.quickToggleBtn:active { transform: scale(.975); }
 .quickToggleBtn.active {
   font-weight: 600;
 }
 .quickToggleBtn.modeBtn {
-  background: #7c3aed12;
+  background: rgba(124, 58, 237, .10);
   color: #7c3aed;
-  font-weight: 600;
+  border-color: rgba(124, 58, 237, .22);
+  font-weight: 700;
 }
 .quickToggleBtn.shuffleOn {
-  background: #2563eb15;
+  background: rgba(37, 99, 235, .10);
   color: #2563eb;
-  font-weight: 600;
+  border-color: rgba(37, 99, 235, .22);
+  font-weight: 700;
 }
 .quickToggleBtn.shuffleOff {
   background: var(--bg-secondary);
   color: var(--text-tertiary);
+  border-color: transparent;
 }
 .quickToggleBtn.masterOn {
-  background: #16a34a15;
+  background: rgba(22, 163, 74, .10);
   color: #16a34a;
-  font-weight: 600;
+  border-color: rgba(22, 163, 74, .22);
+  font-weight: 700;
 }
 .quickToggleBtn.masterOff {
   background: var(--bg-secondary);
   color: var(--text-tertiary);
+  border-color: transparent;
 }
 .quickToggleBtn.jumpOn {
-  background: #2563eb15;
+  background: rgba(37, 99, 235, .10);
   color: #2563eb;
-  font-weight: 600;
+  border-color: rgba(37, 99, 235, .22);
+  font-weight: 700;
 }
 .quickToggleBtn.jumpOff {
   background: var(--bg-secondary);
   color: var(--text-tertiary);
+  border-color: transparent;
 }
 .quickToggleBtn.hardOn {
-  background: #dc262615;
+  background: rgba(220, 38, 38, .10);
   color: #dc2626;
-  font-weight: 600;
+  border-color: rgba(220, 38, 38, .22);
+  font-weight: 700;
 }
 .quickToggleBtn.easyOn {
-  background: #0891b215;
+  background: rgba(8, 145, 178, .10);
   color: #0891b2;
-  font-weight: 600;
+  border-color: rgba(8, 145, 178, .22);
+  font-weight: 700;
 }
 
 /* ===== 词根词缀 ===== */
@@ -2415,6 +2441,47 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 .exportActions { display: flex; gap: 8px; margin-top: 10px; }
 .exportActions .primary { flex: 1; margin: 0; }
 .primary.ghost { background: transparent; border: 1px solid currentColor; }
+
+/* ===== v2.72.0 导出面板：自定义分隔符 / 格式预览 / 百词斩直导 ===== */
+.exportSepInput {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  color: var(--text);
+  font-size: 14px;
+}
+.exportPreview {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-primary);
+  border: 1px dashed var(--border);
+}
+.exportPreviewTitle { font-size: 11.5px; color: var(--text-tertiary); margin-bottom: 6px; letter-spacing: .3px; }
+.exportPreviewBody {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.exportMsgBox { white-space: pre-wrap; }
+.bcDirectBox {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(22, 163, 74, .10), rgba(37, 99, 235, .10));
+  border: 1px solid rgba(22, 163, 74, .22);
+}
+.bcDirectHead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.bcDirectHead b { font-size: 14px; color: var(--text); }
+.bcDirectHead span { font-size: 11.5px; color: var(--text-tertiary); }
+.bcDirectTip { margin: 6px 0 0; font-size: 12px; line-height: 1.55; color: var(--text-secondary); }
 
 @media (max-width: 420px) {
   .listenCoverArt { width: 54px; height: 54px; font-size: 24px; border-radius: 15px; }

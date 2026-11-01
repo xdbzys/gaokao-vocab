@@ -536,7 +536,17 @@ public class PlayerService extends Service {
 
     private void pauseInternal() {
         mPaused = true;
+        // v2.72.0：暂停必须一声即停——停掉系统 TTS、暂停当前播放器，
+        // 并撤销尚未触发的「词间间隔」任务，避免暂停后冒出下一个词的第一个音
         if (mTts != null) { try { mTts.stop(); } catch (Throwable ignored) {} }
+        // 词间间隔待触发时暂停：撤掉定时任务并记下待播词，恢复时从这里继续
+        try {
+            if (mHandler != null && mGapPending && mAlbumGapTask != null) {
+                mHandler.removeCallbacks(mAlbumGapTask);
+                mGapPending = false;
+                if (mAlbumMode && !mFileMode) mAlbumPendingNext = mAlbumIndex;
+            }
+        } catch (Throwable ignored) {}
         try {
             if (mPlayer != null && mPlayer.isPlaying()) mPlayer.pause();
         } catch (Throwable ignored) {
@@ -813,9 +823,55 @@ public class PlayerService extends Service {
             if (mDuration > 0) {
                 mb.putLong(MediaMetadata.METADATA_KEY_DURATION, mDuration);
             }
+            // v2.72.0：专辑封面 → 锁屏 / 控制中心 / 车机像音乐软件一样显示图标
+            try {
+                android.graphics.Bitmap art = albumArt();
+                if (art != null && !art.isRecycled()) mb.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
+            } catch (Throwable ignored) {}
             mSession.setMetadata(mb.build());
         } catch (Throwable ignored) {
         }
+    }
+
+    /** v2.72.0：媒体卡片副标题用的精简释义（取前 24 字，去掉换行/多余空格） */
+    private String shortMeaning(String m) {
+        if (m == null) return "";
+        String s = m.replace('\n', ' ').replace('\r', ' ').trim();
+        if (s.length() > 24) s = s.substring(0, 24) + "…";
+        return s;
+    }
+
+    /** v2.72.0：媒体卡片封面（锁屏 / 控制中心 / 车机显示，像音乐软件一样有专辑图） */
+    private android.graphics.Bitmap mArtBmp = null;
+    private android.graphics.Bitmap albumArt() {
+        if (mArtBmp != null && !mArtBmp.isRecycled()) return mArtBmp;
+        try {
+            int size = 512;
+            android.graphics.Bitmap bmp = android.graphics.Bitmap.createBitmap(size, size,
+                    android.graphics.Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas c = new android.graphics.Canvas(bmp);
+            android.graphics.Paint bg = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            bg.setShader(new android.graphics.LinearGradient(0, 0, size, size,
+                    0xFF2563EB, 0xFF7C3AED, android.graphics.Shader.TileMode.CLAMP));
+            c.drawRect(0, 0, size, size, bg);
+            android.graphics.Paint ring = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            ring.setStyle(android.graphics.Paint.Style.STROKE);
+            ring.setStrokeWidth(size * 0.035f);
+            ring.setColor(0x33FFFFFF);
+            c.drawCircle(size / 2f, size / 2f, size * 0.34f, ring);
+            android.graphics.Paint tp = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            tp.setColor(0xFFFFFFFF);
+            tp.setTextSize(size * 0.40f);
+            tp.setTextAlign(android.graphics.Paint.Align.CENTER);
+            tp.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+            android.graphics.Paint.FontMetrics fm = tp.getFontMetrics();
+            float baseline = size / 2f - (fm.ascent + fm.descent) / 2f;
+            c.drawText("背", size / 2f, baseline, tp);
+            mArtBmp = bmp;
+        } catch (Throwable e) {
+            Log.w(TAG, "albumArt failed: " + e.getMessage());
+        }
+        return mArtBmp;
     }
 
     private int getSmallIcon() {
@@ -858,6 +914,11 @@ public class PlayerService extends Service {
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true);
+        // v2.72.0：通知栏大图封面（与音乐 App 一致的可视化）
+        try {
+            android.graphics.Bitmap art = albumArt();
+            if (art != null && !art.isRecycled()) nb.setLargeIcon(art);
+        } catch (Throwable ignored) {}
 
         try {
             nb.addAction(new Notification.Action(android.R.drawable.ic_media_previous, "上一词",
@@ -1055,8 +1116,10 @@ public class PlayerService extends Service {
         mAlbumBaseMs = idx * mAlbumAvgMs;
         mAlbumPendingNext = -1;
         AlbumWord w = mAlbumWords.get(idx);
-        mArtist = w.word;
-        mTitle = mAlbumName;
+        // v2.72.0：媒体卡片按音乐软件展示——标题=当前单词，副标题=中文释义，专辑=词库名
+        mTitle = w.word != null ? w.word : mAlbumName;
+        mArtist = shortMeaning(w.meaning);
+        mAlbum = mAlbumName;
         updateNotification();
         updateSessionState(mPaused ? PlaybackState.STATE_PAUSED : PlaybackState.STATE_PLAYING);
         // v2.66.0：按「朗读顺序 + 遍数」生成阶段序列并开始第一阶段
@@ -1106,14 +1169,19 @@ public class PlayerService extends Service {
     }
 
     /** 间隔 ms 后执行（暂停时不推进，恢复后继续） */
+    private Runnable mAlbumGapTask = null;
+    private boolean mGapPending = false;
     private void gapThen(final int idx, int ms, final Runnable r) {
         final Runnable task = new Runnable() {
             @Override public void run() {
+                mGapPending = false;
                 if (!mAlbumMode || mAlbumIndex != idx) return;
                 if (mPaused) { mAlbumPendingNext = idx; return; }
                 r.run();
             }
         };
+        mAlbumGapTask = task;
+        mGapPending = true;
         if (ms <= 0) {
             if (mHandler != null) mHandler.post(task); else task.run();
         } else {
@@ -2109,7 +2177,7 @@ public class PlayerService extends Service {
                     try { mp.start(); } catch (Throwable ignored) {}
                     mFileIndex = -1;
                     syncFileWordIndex(from);
-                    try { int k = Math.max(0, mFileIndex); if (mAlbumWords != null && k < mAlbumWords.size()) mArtist = mAlbumWords.get(k).word; } catch (Throwable ignored) {}
+                    try { int k = Math.max(0, mFileIndex); if (mAlbumWords != null && k < mAlbumWords.size()) { AlbumWord aw = mAlbumWords.get(k); mTitle = aw.word; mArtist = shortMeaning(aw.meaning); } } catch (Throwable ignored) {}
                     emit("", "album_index:" + Math.max(0, mFileIndex));
                     emit("", "album_file_ready");
                     updateNotification();
@@ -2172,8 +2240,9 @@ public class PlayerService extends Service {
         if (idx != mFileIndex) {
             mFileIndex = idx;
             mAlbumIndex = idx;
-            try { mArtist = mAlbumWords.get(idx).word; } catch (Throwable ignored) {}
+            try { AlbumWord aw = mAlbumWords.get(idx); mTitle = aw.word; mArtist = shortMeaning(aw.meaning); } catch (Throwable ignored) {}
             updateNotification();
+            updateSessionState(mPaused ? PlaybackState.STATE_PAUSED : PlaybackState.STATE_PLAYING);
             emit("", "album_index:" + idx);
         }
     }
