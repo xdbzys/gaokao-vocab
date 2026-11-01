@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.DocumentsContract;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.webkit.JavascriptInterface;
@@ -52,6 +54,16 @@ public class MainActivity extends Activity {
     private static boolean volumeKeyNavEnabled = false;
     // 听读模式后台播放开关：开启时 onPause 不暂停 WebView，让 JS 音频继续播放
     private static boolean backgroundPlaybackEnabled = false;
+
+    /* v2.76.0 自定义保存目录：SAF（存储访问框架）授权的一个文件夹。
+       一旦选中，MP3 / 压缩包 / 备份 JSON 优先写到该目录，用户可自己指定到内存卡或任意文件夹；
+       未选择时保持原行为（下载/背群英、音乐/背群英）。 */
+    private static final int REQ_SAVE_DIR = 1003;
+    private static final String PREF_SAVE_DIR_URI = "save_dir_uri";
+    private static final String PREF_SAVE_DIR_LABEL = "save_dir_label";
+    private static final String SAVE_PREFS = "gaokao_save";
+    private static String sSaveDirUri = "";
+    private static String sSaveDirLabel = "";
 
     // v2.63.0：最近一次 setMeta 的媒体信息（服务未运行时也记住，启动播放时随 ACTION_PLAY 带给服务）
     private static volatile String sLastTitle = null;
@@ -118,6 +130,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        loadSaveDir();   // v2.76.0：恢复上次选定的保存目录
 
         // API 23+ 动态申请存储权限（备份到公共 Documents 需要）
         // API 21（翻译笔）为安装时授予，无需运行时请求
@@ -510,6 +523,57 @@ public class MainActivity extends Activity {
                 }).start();
             }
         }, "NativeMp3");
+
+        /* v2.76.0 保存位置：让用户自己选目录（SAF），选完后 MP3 / 压缩包 / 备份都写到这里。
+           label() 返回当前目录显示名，pickDir() 唤起系统目录选择器，clearDir() 恢复默认。 */
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public String label() {
+                return sSaveDirLabel == null ? "" : sSaveDirLabel;
+            }
+
+            @JavascriptInterface
+            public void pickDir() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                    | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                            startActivityForResult(i, REQ_SAVE_DIR);
+                        } catch (Throwable e) {
+                            Log.w("GaokaoVocab", "pickDir failed: " + e.getMessage());
+                            notifyJs("window.__saveDirChanged && window.__saveDirChanged('')");
+                        }
+                    }
+                });
+            }
+
+            @JavascriptInterface
+            public void clearDir() {
+                sSaveDirUri = "";
+                sSaveDirLabel = "";
+                try { savePrefs().edit().remove(PREF_SAVE_DIR_URI).remove(PREF_SAVE_DIR_LABEL).apply(); } catch (Throwable ignored) {}
+                notifyJs("window.__saveDirChanged && window.__saveDirChanged('')");
+            }
+
+            /** 保存一段文本（备份 JSON）；成功返回保存位置描述，失败返回空 */
+            @JavascriptInterface
+            public String saveText(final String text, final String fileName) {
+                if (text == null || text.length() == 0) return "";
+                String name = (fileName == null || fileName.length() == 0) ? "backup.json" : fileName;
+                String p = saveToCustomDirText(text, name);
+                return p == null ? "" : p;
+            }
+
+            /** 当前是否有自定义目录（false 时页面按原逻辑保存） */
+            @JavascriptInterface
+            public boolean hasDir() {
+                return sSaveDirUri != null && sSaveDirUri.length() > 0;
+            }
+        }, "NativeSaver");
 
         // 剪贴板桥接：导出词库时一键复制（file:// 下 navigator.clipboard 常不可用）
         webView.addJavascriptInterface(new Object() {
@@ -1044,6 +1108,42 @@ public class MainActivity extends Activity {
             webView.goBack();
             return;
         }
+        // v2.76.0：单页应用（SPA）没有任何浏览器历史，canGoBack() 恒为 false，
+        // 旧逻辑直接 super.onBackPressed() → 用户按一下返回就退出整个应用。
+        // 现在先把返回键交给页面：页面按「提示卡 → 弹窗 → 听读面板 → 子页面」的层级自行处理，
+        // 只有它明确回 "handled" 时才拦截；返回空表示已在主页面，才继续走退出逻辑。
+        if (webView != null) {
+            final boolean[] settled = new boolean[]{false};
+            final Runnable forceExit = new Runnable() {
+                @Override
+                public void run() {
+                    if (settled[0]) return;
+                    settled[0] = true;
+                    fallbackBack();
+                }
+            };
+            try {
+                // 页面若因主线程繁忙没能及时回调，300ms 后按「未处理」收尾，避免返回键毫无反应
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(forceExit, 300);
+                webView.evaluateJavascript(
+                    "(function(){try{return window.__appBack?String(window.__appBack()||''):''}catch(e){return ''}})()",
+                    new android.webkit.ValueCallback<String>() {
+                        @Override
+                        public void onReceiveValue(String value) {
+                            if (settled[0]) return;
+                            settled[0] = true;
+                            boolean handled = value != null && value.indexOf("handled") >= 0;
+                            if (!handled) fallbackBack();
+                        }
+                    });
+                return;
+            } catch (Throwable ignored) {}
+        }
+        fallbackBack();
+    }
+
+    /** 页面不再消费返回键时的最终行为（保持旧版语义：播放中退到后台，否则退出） */
+    private void fallbackBack() {
         // v2.60.0：听读播放中按返回键 → 退到桌面但保留进程与播放（等同音乐 App 行为）。
         // 音频由 PlayerService 前台服务托管，通知栏仍可暂停 / 上一词 / 下一词；
         // 非播放状态维持原退出逻辑
@@ -1053,7 +1153,106 @@ public class MainActivity extends Activity {
                 return;
             } catch (Throwable ignored) {}
         }
-        super.onBackPressed();
+        try { super.onBackPressed(); } catch (Throwable ignored) {}
+    }
+
+    // ===== v2.76.0 自定义保存目录（SAF） =====
+
+    private SharedPreferences savePrefs() {
+        return getSharedPreferences(SAVE_PREFS, MODE_PRIVATE);
+    }
+
+    private void loadSaveDir() {
+        try {
+            SharedPreferences sp = savePrefs();
+            sSaveDirUri = sp.getString(PREF_SAVE_DIR_URI, "");
+            sSaveDirLabel = sp.getString(PREF_SAVE_DIR_LABEL, "");
+        } catch (Throwable ignored) {}
+    }
+
+    /** 从 tree URI 推导一个可读目录名（如「下载/背群英」），取不到时给「已选目录」 */
+    private String labelOfTree(Uri tree) {
+        try {
+            String id = DocumentsContract.getTreeDocumentId(tree);
+            if (id != null && id.length() > 0) {
+                int c = id.indexOf(':');
+                String path = c >= 0 ? id.substring(c + 1) : id;
+                if (path == null || path.length() == 0) return "内部存储";
+                return path;
+            }
+        } catch (Throwable ignored) {}
+        try {
+            String seg = tree.getLastPathSegment();
+            if (seg != null && seg.length() > 0) return seg;
+        } catch (Throwable ignored) {}
+        return "已选目录";
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQ_SAVE_DIR) {
+            if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+                Uri tree = data.getData();
+                try {
+                    // 持久化授权：重启后仍然可写，否则下次启动会因权限失效退回默认目录
+                    getContentResolver().takePersistableUriPermission(tree,
+                            Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } catch (Throwable ignored) {}
+                sSaveDirUri = tree.toString();
+                sSaveDirLabel = labelOfTree(tree);
+                try {
+                    savePrefs().edit()
+                            .putString(PREF_SAVE_DIR_URI, sSaveDirUri)
+                            .putString(PREF_SAVE_DIR_LABEL, sSaveDirLabel)
+                            .apply();
+                } catch (Throwable ignored) {}
+                notifyJs("window.__saveDirChanged && window.__saveDirChanged('" + jsEscape(sSaveDirLabel) + "')");
+            }
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    /**
+     * 写入用户选定目录。成功返回「目录名/文件名」，未选目录或失败返回 null。
+     * 用 DocumentsContract.createDocument 直接建文件，不依赖 androidx.documentfile。
+     */
+    private String saveToCustomDir(File src, String displayName, String mime) {
+        if (sSaveDirUri == null || sSaveDirUri.length() == 0) return null;
+        OutputStream os = null;
+        try {
+            Uri tree = Uri.parse(sSaveDirUri);
+            Uri doc = DocumentsContract.createDocument(getContentResolver(), tree, mime, displayName);
+            if (doc == null) return null;
+            os = getContentResolver().openOutputStream(doc);
+            if (os == null) return null;
+            copyTo(src, os);
+            return (sSaveDirLabel.length() > 0 ? sSaveDirLabel : "已选目录") + "/" + displayName;
+        } catch (Throwable e) {
+            Log.w("GaokaoVocab", "saveToCustomDir failed: " + e.getMessage());
+            return null;
+        } finally {
+            try { if (os != null) os.close(); } catch (Throwable ignored) {}
+        }
+    }
+
+    private String saveToCustomDirText(String text, String displayName) {
+        if (sSaveDirUri == null || sSaveDirUri.length() == 0) return null;
+        OutputStream os = null;
+        try {
+            Uri tree = Uri.parse(sSaveDirUri);
+            Uri doc = DocumentsContract.createDocument(getContentResolver(), tree, "application/json", displayName);
+            if (doc == null) return null;
+            os = getContentResolver().openOutputStream(doc);
+            if (os == null) return null;
+            os.write(text.getBytes("UTF-8"));
+            return (sSaveDirLabel.length() > 0 ? sSaveDirLabel : "已选目录") + "/" + displayName;
+        } catch (Throwable e) {
+            Log.w("GaokaoVocab", "saveToCustomDirText failed: " + e.getMessage());
+            return null;
+        } finally {
+            try { if (os != null) os.close(); } catch (Throwable ignored) {}
+        }
     }
 
     /** 启动播放服务（API 26+ 需 startForegroundService，失败回退普通 startService） */
@@ -1199,6 +1398,9 @@ public class MainActivity extends Activity {
 
     /** 保存文件到手机「下载」目录：API 29+ 用 MediaStore（免权限），低版本用公共目录，失败回退应用专属目录 */
     private String saveToDownloads(File src, String displayName, String mime) {
+        // v2.76.0：用户选过保存目录就按他的来，失败再走默认路径
+        String custom = saveToCustomDir(src, displayName, mime);
+        if (custom != null && custom.length() > 0) return custom;
         try {
             if (Build.VERSION.SDK_INT >= 29) {
                 ContentValues cv = new ContentValues();
@@ -1251,6 +1453,8 @@ public class MainActivity extends Activity {
      * 失败自动回退到 saveToDownloads（下载/背群英）。
      */
     private String saveAudioToMusic(File src, String displayName) {
+        String custom = saveToCustomDir(src, displayName, "audio/mpeg");
+        if (custom != null && custom.length() > 0) return custom;
         try {
             if (Build.VERSION.SDK_INT >= 29) {
                 ContentValues cv = new ContentValues();

@@ -1580,7 +1580,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 }
 
 /* ===== 听读页（音乐播放器式） ===== */
-.listenPage { padding-bottom: 12px; }
+.listenPage { padding-bottom: 96px; }  /* v2.76.0：固定底栏 64px + 面板留白，避免下载按钮被遮住 */
 
 .listenTop {
   display: flex;
@@ -2948,3 +2948,203 @@ button .ic, .smallBtn .ic, .navBtn .ic { pointer-events: none; }
   .listenPlayBtn .ic { width: 22px; height: 22px; }
   .listenSkipBtn .ic { width: 18px; height: 18px; }
 }
+
+/* ===== v2.76.0 新增：应用内提示卡 / 面板关闭栏 / MP3 参数 / 头像 ===== */
+
+/* 应用内提示卡：替代 window.alert（WebView 会给 alert 加「网址为 file://」原生标题） */
+.tipMask {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(17, 24, 39, 0.42);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 18px;
+  animation: tipFade 0.16s ease-out;
+}
+@keyframes tipFade { from { opacity: 0; } to { opacity: 1; } }
+.tipCard {
+  width: 100%;
+  max-width: 340px;
+  max-height: 72vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.28);
+  padding: 16px 16px 14px;
+  animation: tipPop 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+@keyframes tipPop { from { transform: translateY(10px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
+.tipHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.tipHead .ic { color: var(--primary); }
+.tipBody {
+  flex: 1;
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.tipOk {
+  margin-top: 12px;
+  height: 42px;
+  border: none;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tipOk:active { background: var(--primary-dark); }
+
+/* 听读面板通用标题栏：始终吸顶，滚到哪都能一眼看到「完成」退出 */
+.sheetHead {
+  position: sticky;
+  top: -1px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 2px 10px;
+  margin: -2px 0 8px;
+  background: linear-gradient(var(--primary-bg) 82%, rgba(239, 246, 255, 0));
+}
+.sheetHead b {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text);
+}
+.sheetHead .ic { color: var(--primary); }
+.sheetClose {
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  background: #fff;
+  color: var(--primary-dark);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.sheetClose:active { background: var(--primary-light); }
+
+/* MP3 参数：数字输入 / 文件名 / 目录 */
+.mp3NumRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.mp3NumRow label { display: inline-flex; align-items: center; gap: 4px; }
+.mp3NumRow input {
+  width: 58px;
+  height: 32px;
+  padding: 0 6px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  font-size: 13px;
+  color: var(--text);
+}
+.mp3NameInput {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  margin-left: 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  font-size: 13px;
+  color: var(--text);
+}
+.mp3DirRow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.mp3DirLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 168px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+.mp3Go { width: 100%; margin-top: 10px; }
+.mp3Result {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #15803d;
+  font-size: 12.5px;
+  line-height: 1.6;
+  word-break: break-all;
+}
+.mp3Result .ic { flex-shrink: 0; margin-top: 2px; }
+
+/* 我的页头像 */
+.meAvatarImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+/* v2.76.0：MP3 参数行在 390px 宽度下不挤压 */
+.listenSettings .listenSeg button { padding: 5px 9px; font-size: 11.5px; }
+.mp3NumRow { flex: 1; justify-content: flex-end; }
+.mp3NumRow .muted { font-size: 11.5px; }
+.listenSettings .listenSettingRow > span { flex-shrink: 0; }
+@media (max-width: 360px) {
+  .mp3NumRow input { width: 48px; }
+  .mp3DirLabel { max-width: 120px; }
+}
+
+/* v2.76.0 我的页：保存位置行 */
+.saveDirRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--primary-bg);
+  border: 1px solid rgba(59, 130, 246, 0.14);
+}
+.saveDirInfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.saveDirInfo b { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.saveDirInfo span {
+  font-size: 12px; color: var(--text-secondary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px;
+}
+.saveDirBtns { display: flex; gap: 6px; flex-shrink: 0; }
+.saveDirBtns .ghost { background: #fff; }

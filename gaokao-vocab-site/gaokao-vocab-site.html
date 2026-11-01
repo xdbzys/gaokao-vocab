@@ -703,6 +703,96 @@
       .compare-table { font-size: 0.78rem; }
       .compare-table th, .compare-table td { padding: 0.6rem 0.5rem; }
     }
+
+    /* ===== v2.76.0 视觉升级 ===== */
+    .hero::before {
+      content: ''; position: absolute; inset: -20% -10% auto -10%; height: 120%;
+      background:
+        radial-gradient(38% 42% at 18% 28%, rgba(59,130,246,0.18), transparent 70%),
+        radial-gradient(34% 38% at 78% 18%, rgba(6,182,212,0.16), transparent 68%),
+        radial-gradient(40% 40% at 62% 82%, rgba(139,92,246,0.12), transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; }
+    .hero-version {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.34rem 0.8rem 0.34rem 0.4rem;
+      border-radius: 999px; background: #fff;
+      border: 1px solid rgba(37,99,235,0.16);
+      box-shadow: 0 6px 18px rgba(37,99,235,0.10);
+      font-size: 0.82rem; font-weight: 600; color: var(--accent-dark);
+      margin-bottom: 1rem;
+    }
+    .hero-version .dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--success);
+      box-shadow: 0 0 0 4px rgba(34,197,94,0.16);
+    }
+    .hero-version em { font-style: normal; color: var(--muted); font-weight: 500; }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.9rem 1.6rem; border-radius: 12px;
+      background: rgba(255,255,255,0.86); color: var(--accent-dark);
+      border: 1px solid rgba(37,99,235,0.22);
+      font-weight: 600; text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .btn-ghost:hover { transform: translateY(-2px); background: #fff; box-shadow: 0 6px 20px rgba(37,99,235,0.16); }
+
+    /* 在线使用 */
+    .online-grid {
+      max-width: 1000px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem;
+      padding: 0 1.5rem;
+    }
+    .online-card {
+      background: #fff; border-radius: 18px; padding: 1.6rem;
+      border: 1px solid var(--rule);
+      box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+      display: flex; flex-direction: column; gap: 0.7rem;
+      transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+      position: relative; overflow: hidden;
+    }
+    .online-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(15,23,42,0.10); border-color: rgba(37,99,235,0.28); }
+    .online-card.featured { border-color: rgba(37,99,235,0.35); background: linear-gradient(180deg, #f8fbff, #fff); }
+    .online-card h3 { font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .online-card p { color: var(--muted); font-size: 0.92rem; line-height: 1.65; flex: 1; }
+    .online-card .tag {
+      position: absolute; top: 0; right: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff; font-size: 0.72rem; font-weight: 700;
+      padding: 0.28rem 0.7rem; border-bottom-left-radius: 12px;
+    }
+    .online-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .online-actions a {
+      flex: 1; min-width: 130px; text-align: center;
+      padding: 0.66rem 1rem; border-radius: 10px; text-decoration: none;
+      font-weight: 600; font-size: 0.9rem;
+      background: var(--accent); color: #fff;
+      transition: background 0.2s;
+    }
+    .online-actions a:hover { background: var(--accent-dark); }
+    .online-actions a.alt { background: #fff; color: var(--accent-dark); border: 1px solid rgba(37,99,235,0.25); }
+    .online-actions a.alt:hover { background: #eff6ff; }
+
+    /* 更新日志：最新一条高亮 */
+    .changelog-item[data-ver] { position: relative; }
+    .changelog-list .changelog-item:first-child {
+      border-color: rgba(37,99,235,0.35);
+      box-shadow: 0 10px 30px rgba(37,99,235,0.10);
+      background: linear-gradient(180deg, #f8fbff, #fff);
+    }
+    .changelog-list .changelog-item:first-child .changelog-version::after {
+      content: '最新'; margin-left: 0.5rem;
+      font-size: 0.68rem; font-weight: 700; color: #fff;
+      background: var(--accent); border-radius: 999px; padding: 0.1rem 0.5rem;
+      vertical-align: 2px;
+    }
+    @media (max-width: 720px) {
+      .online-grid { grid-template-columns: 1fr; }
+      .hero-text h1 { font-size: 2.2rem; }
+      .hero-buttons { flex-direction: column; align-items: stretch; }
+      .hero-buttons a { justify-content: center; }
+    }
   </style>
 </head>
 <body>
@@ -727,6 +817,7 @@
         <li><a href="#roots">词根词缀</a></li>
         <li><a href="#path">学习路径</a></li>
         <li><a href="#features">功能</a></li>
+        <li><a href="#online">在线使用</a></li>
         <li><a href="#changelog">更新日志</a></li>
         <li><a href="#faq">常见问题</a></li>
         <li><a href="#download" class="nav-download">立即下载</a></li>
@@ -737,6 +828,7 @@
   <section class="hero">
     <div class="hero-inner">
       <div class="hero-text">
+        <div class="hero-version"><span class="dot"></span><span id="heroVersion">最新版本 v2.76.0</span><em>· 已同步更新</em></div>
         <h1>背群英</h1>
         <p class="subtitle">专为高考英语备考打造的高效词汇学习工具。覆盖3500大纲词汇、985核心词、真题高频词等12+词库，助你轻松突破词汇瓶颈。</p>
         <div class="hero-badges">
@@ -750,7 +842,10 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span id="downloadText">下载 APK</span>
           </a>
-          <a href="#features" class="btn-secondary">了解更多</a>
+          <a href="app/" class="btn-ghost" target="_blank">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18z"/></svg>
+            网页版直接使用
+          </a>
         </div>
       </div>
       <div class="hero-img">
@@ -787,6 +882,32 @@
       </div>
     </div>
   </div>
+
+  <!-- 在线使用（v2.76.0 新增：两套网页版都在线可用） -->
+  <section class="section" id="online">
+    <div class="section-title">
+      <h2>在线使用</h2>
+      <p>不想装应用？两个网页版都能直接用，数据各自保存在浏览器本地</p>
+    </div>
+    <div class="online-grid">
+      <div class="online-card featured">
+        <span class="tag">推荐</span>
+        <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3Z"/></svg>App 同款网页版</h3>
+        <p>与安装包功能完全一致：听读连播、参数调节、MP3 打包下载、词库详情、错词本全都在。界面、交互、版本号跟手机 App 同步。</p>
+        <div class="online-actions">
+          <a href="app/" target="_blank">打开 App 同款版</a>
+        </div>
+      </div>
+      <div class="online-card">
+        <h3>经典网页版</h3>
+        <p>最早的一版网页版，轻量、打开快，适合只想背单词、不需要音频下载的场景。内容会继续维护，不会下线。</p>
+        <div class="online-actions">
+          <a class="alt" href="../" target="_blank">打开经典版</a>
+          <a class="alt" href="app/" target="_blank">试试新版</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Scientific Memory Method -->
   <section class="section" id="method" style="background:#f1f5f9;">
@@ -1536,19 +1657,38 @@
       if (!ver) return;
       const el = document.getElementById('latestVersion');
       if (el) el.textContent = '当前版本 v' + ver + ' | Android 5.0+ | 约 5 MB';
+      const hero = document.getElementById('heroVersion');
+      if (hero) hero.textContent = '最新版本 v' + ver;
       const txt1 = document.getElementById('downloadText');
       const txt2 = document.getElementById('downloadText2');
       if (txt1) txt1.textContent = '下载 APK（v' + ver + '）';
       if (txt2) txt2.textContent = '立即下载 APK（v' + ver + '）';
     }
-    fetch('https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/app-update.json')
-      .then(r => r.json())
-      .then(d => { if (d.version) updateVersion(d.version); })
-      .catch(() => {});
-    fetch('https://xdbzys.github.io/gaokao-vocab/app-update.json')
-      .then(r => r.json())
-      .then(d => { if (d.version) updateVersion(d.version); })
-      .catch(() => {});
+
+    /* v2.76.0：旧版先请求 raw.githubusercontent（国内被墙，会挂起十几秒不报错），
+       用户看到的就是「一直加载中 / 版本没更新」。现在改为：
+       1) 同源相对路径 app-update.json（与官网同一个 Pages 仓库，必然可用）
+       2) 4 秒超时兜底，失败再试 jsDelivr
+       任一成功即渲染版本号，永不阻塞页面。 */
+    function loadVersion(url) {
+      return new Promise(function (resolve, reject) {
+        var done = false;
+        var timer = setTimeout(function () { if (!done) { done = true; reject(new Error('timeout')); } }, 4000);
+        fetch(url, { cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (done) return;
+            done = true; clearTimeout(timer);
+            if (d && d.version) { updateVersion(d.version); resolve(d.version); }
+            else reject(new Error('no version'));
+          })
+          .catch(function (e) { if (!done) { done = true; clearTimeout(timer); reject(e); } });
+      });
+    }
+    loadVersion('../app-update.json')
+      .catch(function () { return loadVersion('./app-update.json'); })
+      .catch(function () { return loadVersion('https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/app-update.json'); })
+      .catch(function () {});
 
     // Generate streak calendar demo
     (function() {

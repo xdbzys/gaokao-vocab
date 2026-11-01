@@ -122,6 +122,16 @@ jobs:
           echo "Synced official site -> dist/site/index.html"
           ls -la dist/site
 
+      # v2.76.0 第二套网页版：/app/ 与 App 完全一致（同一份构建产物，用访问路径区分能力集合）。
+      # 旧的网页版继续留在 Pages 根路径，不删除、不覆盖。
+      # 这一步必须放在「拷贝 dist 到 Android assets」之后，否则会把 2MB 的 HTML 再打一份进 APK。
+      - name: Build second web app (/app/)
+        run: |
+          mkdir -p dist/app
+          cp dist/index.html dist/app/index.html
+          ls -la dist/app
+          echo "Second web app ready at /app/"
+
       - name: Build APK with debug-key.jks (matches distributed versions)
         run: |
           cd android

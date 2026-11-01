@@ -6,6 +6,7 @@ import './styles.css';
 import { getWordEnrichment } from './wordEnrichment';
 import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, presentParticipleRules, nounPluralRules } from './wordTransformations';
 import { masterVocabSeed, masterVocabLookup } from './gaokaoMasterVocab';
+import { DEFAULT_AVATAR } from './avatarData';
 
 /* ============================
    低版本 / 多设备兼容加固（Android 10 / MP5 / 翻译扫描笔等老 WebView）
@@ -85,8 +86,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.75.0';
-const APP_VERSION_CODE = 287;
+const APP_VERSION = '2.76.0';
+const APP_VERSION_CODE = 294;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -114,6 +115,44 @@ const UPDATE_SERVER_URL_CACHE = () => `${UPDATE_SERVER_RAW}?_t=${Date.now()}`;
 const isNativeApp = !!(window.NativeFS)
   || (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform ? Capacitor.isNativePlatform() : false)
   || !!(window.cordova);
+
+/* v2.76.0 第二套网页版（/app/ 子路径）：
+   需求是「新网页版跟 App 一样，没有特殊的内容」，同时旧的网页版（根路径）保留不消失。
+   两套页面共用同一份构建产物，用访问路径区分能力集合，避免维护两套源码：
+   - 根路径 /            → 旧网页版：只保留浏览器可用的部分（历史行为不变）
+   - /app/ 子路径        → 新网页版：与 App 一致，展示全部功能入口并给出网页端实现
+   - file:// 或 assets   → 原生 App：isNativeApp 为真，与以前完全一致
+   判定写成纯函数，便于单测（见 _isFullWebPath）。 */
+function _isFullWebPath(pathname) {
+  var p = String(pathname || '');
+  return /(^|\/)app(\/(index\.html)?)?\/?$/.test(p);
+}
+const isFullWeb = !isNativeApp && (function () {
+  try { return _isFullWebPath(window.location.pathname); } catch (e) { return false; }
+})();
+// 「功能完整版」= 原生 App 或新网页版；原生专属能力（装 APK、系统通知）仍只用 isNativeApp 判定
+const isFullApp = isNativeApp || isFullWeb;
+
+/* 词性标记表（v2.76.0）：内置词库大量释义形如「a. 能干的, 能够的」「n. 能力；[经] 才能」，
+   旧白名单漏了 a. 等标记，界面与朗读里就留下无意义的字母 "a"。
+   这里集中一份词表，显示清洗、朗读清洗、选项抽取共用；边界锚定到空白或标点，
+   不误伤 U.S.A. / e.g. 这类含点缩写。常量必须在词库初始化之前声明（builtInBooks 在模块加载期就会用到）。 */
+/* v2.76.0 应用内提示（替代 alert）：
+   旧实现用 window.alert，WebView 会给它套一个原生标题「网址为"file:///"的网页显示：」，
+   既难看又暴露实现细节，长文本还会被截断（用户截图里的 MP3 保存提示就是这样）。
+   这里改成 React 渲染的卡片：标题 + 等宽换行正文 + 关闭按钮，全部走应用主题样式。
+   调用方不需要关心是否已挂载：未挂载时退化为控制台输出，不会阻塞流程。 */
+let _appTipSink = null;
+function appTip(message, title) {
+  var text = String(message == null ? '' : message);
+  try {
+    if (_appTipSink) { _appTipSink(text, title || '提示'); return; }
+  } catch (e) {}
+  try { console.log('[tip] ' + text); } catch (e) {}
+}
+
+const POS_TAG_WORDS = 'vt|vi|v|n|adj|adv|prep|pron|conj|interj|det|art|num|int|aux|modal|abbr|pl|sing|a';
+const POS_TAG_RE = new RegExp('(^|[\\s，,；;、。！？：:（(“\"【】])(' + POS_TAG_WORDS + ')\\.\\s*', 'gi');
 
 // v2.67.0：本机「安装包」真实版本（PackageManager 读取）。
 // 页面会被云端热更新抬高版本号，但原生功能只随 APK 更新 —— 两者不一致时
@@ -3909,7 +3948,10 @@ function makeItem(row, type, index, source) {
   const [term, pos, meaning, frequency, corePoints, allPoints, examples] = row;
   return {
     id: `${type}-${index}-${term}`,
-    type, term, pos, meaning,
+    type, term, pos,
+    // v2.76.0：入库即清洗词性标记（"a. 能干的" → "能干的"），
+    // 显示 / 搜索 / 朗读三处共用同一份文本，避免同一条释义在不同页面表现不一致
+    meaning: cleanMeaning(meaning),
     // v2.43.0 修复闪退：4元素精简词条（总汇词库）解构后 corePoints 等为 undefined，
     // 详情页 .map() 直接崩溃；此处统一兜底为空数组
     frequency: frequency || '拓展',
@@ -7603,7 +7645,7 @@ for (const [head, list] of Object.entries(WORD_FAMILY_SUPPLEMENT_RAW)) {
   for (const [t, p, m] of list) {
     const k = t.toLowerCase();
     if (!WORD_FAMILY_SUPPLEMENT[h]) WORD_FAMILY_SUPPLEMENT[h] = [];
-    WORD_FAMILY_SUPPLEMENT[h].push({ term: t, pos: p, meaning: m });
+    WORD_FAMILY_SUPPLEMENT[h].push({ term: t, pos: p, meaning: cleanMeaning(m) });
     if (!WORD_FAMILY_SUPPLEMENT[k]) WORD_FAMILY_SUPPLEMENT[k] = [];
     WORD_FAMILY_SUPPLEMENT[k].push({ term: head, pos: '', meaning: '', headOf: h });
   }
@@ -7627,7 +7669,7 @@ const MASTER_SUPPLEMENT_TERMS = (() => {
   }
   for (const [t, pp, mm] of out) {
     const k = String(t).toLowerCase();
-    if (!masterVocabLookup[k]) masterVocabLookup[k] = { pos: pp, meaning: mm };
+    if (!masterVocabLookup[k]) masterVocabLookup[k] = { pos: pp, meaning: cleanMeaning(mm) };
   }
   return out;
 })();
@@ -9843,21 +9885,50 @@ function extractPoints(text, meaning) {
   return points;
 }
 
-/* 从释义中去除词性标记前缀，只保留中文释义部分（用于选项显示） */
+/* 从释义中去除词性标记前缀，只保留中文释义部分（用于选项显示）
+   v2.76.0 修复：旧版词性白名单漏了 a. / num. / aux. / modal. / abbr. 等，
+   导致「a. 能干的, 能够的」这类释义把 a. 原样留在界面上并被 TTS 念成字母 "a"。
+   现改为统一词表 + 边界锚定（前一个字符必须是空白或中英文标点），
+   避免误伤 U.S.A.、e.g. 这类含点的缩写。 */
 function stripPosPrefix(text) {
   if (!text) return '';
-  // 去除开头和中间的所有词性标记（如 n. adj. vt. 等）及后续的标点/空格
-  // 格式：词性.+中文（包括多词性如 n.塑料；adj.可塑的 → 塑料；可塑的）
-  return text
-    .replace(/(?:n\.|vt\.|vi\.|v\.|adj\.|adv\.|prep\.|pron\.|conj\.|interj\.|det\.|art\.)[\s.，；;]*/g, '')
-    .replace(/^[,，；;\s]+|[,，；;\s]+$/g, '')
+  return String(text)
+    .replace(POS_TAG_RE, '$1')
+    .replace(/^[,，；;\s.]+|[,，；;\s.]+$/g, '')
+    .replace(/\s{2,}/g, ' ')
     .trim();
+}
+
+/* 释义规范化（v2.76.0）：在内置词库入库前统一清洗，界面显示 / 搜索 / 朗读共用同一份文本。
+   规则（确定性纯函数，无网络、无随机）：
+   1) 全角分号统一为 ；，按 ； 切成义项组
+   2) 每组去掉词性标记（a. adj. n. vt. …）与领域标签（[经] [医] [计] …）
+   3) 丢掉清洗后为空的组；与前面完全相同的组去重（如「删除；[计] 删除」→「删除」）
+   4) 全部丢失时回退为原文本，保证不出现空释义 */
+function cleanMeaning(text) {
+  var raw = String(text || '').trim();
+  if (!raw) return '';
+  var groups = raw.replace(/[;；]/g, '；').split('；');
+  var out = [];
+  for (var i = 0; i < groups.length; i++) {
+    var g = groups[i]
+      .replace(/\[[^\]]{1,8}\]/g, ' ')
+      .replace(POS_TAG_RE, '$1')
+      .replace(/^[\s,，、.．]+|[\s,，、.．]+$/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    if (!g) continue;
+    if (/^[.\-—…]+$/.test(g)) continue;
+    if (out.indexOf(g) >= 0) continue;
+    out.push(g);
+  }
+  return out.length ? out.join('；') : stripPosPrefix(raw);
 }
 
 // 提取词性标记前缀（如 "n." "vt." "adj." 等）
 function extractPosPrefix(text) {
   if (!text) return '';
-  const m = String(text).match(/^(n\.|vt\.|vi\.|v\.|adj\.|adv\.|prep\.|pron\.|conj\.|interj\.|det\.|art\.)/);
+  const m = String(text).match(/^(n\.|vt\.|vi\.|v\.|a\.|adj\.|adv\.|prep\.|pron\.|conj\.|interj\.|det\.|art\.|num\.|aux\.|modal\.|abbr\.)/);
   return m ? m[1] : '';
 }
 
@@ -10441,13 +10512,61 @@ try {
 } catch (e) {}
 
 // 英文发音候选源：有道美音 → 有道英音 → 百度英文 → 系统 TTS
-function enAudioUrls(text) {
+/* v2.76.0：把「听读队列 + 下载参数」折算成待下载任务列表（确定性纯函数，无副作用）。
+   入参：
+     queue      当前听读队列（[{term, meaning}]）
+     opts.start 起始序号（1 基，越界自动夹到 1..n）
+     opts.count 自定义条数（优先于预设档位）
+     opts.preset 预设档位（20/50/100/300，0 表示全部）
+     opts.rate  导出语速（null 时取 listenRate）
+     opts.scope both | en | zh
+   出参：{ tasks:[{url,name}], start, end, rate }
+   规则：end 不超过队列长度；命名 = 三位序号 + 词 + _英/_中，便于按播放顺序排序。 */
+function buildMp3Tasks(queue, opts) {
+  var q = queue || [];
+  var n = q.length;
+  var o = opts || {};
+  var rate = Number(o.rate || o.listenRate || 1);
+  if (!(rate > 0.3)) rate = 1;
+  if (!n) return { tasks: [], start: 0, end: 0, rate: rate };
+  var start = parseInt(o.start, 10);
+  if (!(start > 0)) start = 1;
+  if (start > n) start = n;
+  var count = parseInt(o.count, 10);
+  if (!(count > 0)) count = Number(o.preset) > 0 ? Number(o.preset) : (n - start + 1);
+  var end = Math.min(n, start - 1 + count);
+  if (end < start) end = start;
+  var scope = o.scope === 'en' ? 'en' : (o.scope === 'zh' ? 'zh' : 'both');
+  var tasks = [];
+  for (var i = start - 1; i < end; i++) {
+    var item = q[i] || {};
+    var num = ('000' + (i + 1)).slice(-3);
+    var term = String(item.term || '');
+    var base = num + '_' + (term.replace(/[^0-9a-zA-Z\-]/g, '_') || 'word');
+    if (scope !== 'zh') {
+      var enUrl = (enAudioUrls(term, rate) || [])[0];
+      if (enUrl) tasks.push({ url: enUrl, name: base + '_英.mp3' });
+    }
+    if (scope !== 'en') {
+      var zh = _zhAlbumText(item.meaning) || _zhSpeechText(item.meaning);
+      if (zh) {
+        var zhUrl = (zhAudioUrls(zh, rate) || [])[0];
+        if (zhUrl) tasks.push({ url: zhUrl, name: base + '_中.mp3' });
+      }
+    }
+  }
+  return { tasks: tasks, start: start, end: end, rate: rate };
+}
+
+function enAudioUrls(text, rate) {
   var t = String(text || '').trim();
   if (!t) return [];
+  // v2.76.0：语速参数只对能变速的源生效（百度 gettts 的 spd 为 1~9，3 ≈ 1.0x）
+  var spd = Math.max(1, Math.min(9, Math.round((Number(rate) || 1) * 3)));
   return [
     'https://dict.youdao.com/dictvoice?type=2&audio=' + encodeURIComponent(t),
     'https://dict.youdao.com/dictvoice?type=1&audio=' + encodeURIComponent(t),
-    'https://fanyi.baidu.com/gettts?lan=en&text=' + encodeURIComponent(t) + '&spd=3&source=web'
+    'https://fanyi.baidu.com/gettts?lan=en&text=' + encodeURIComponent(t) + '&spd=' + spd + '&source=web'
   ];
 }
 
@@ -10665,13 +10784,17 @@ function loadListenCfg() {
 
 // 释义转朗读文本：去掉词性前缀（避免把 "v." 读成字母），分号转逗号
 function _meaningForSpeech(meaning) {
+  // v2.76.0：旧实现只剥段首词性，段中「…；a. 往国外的」里的 a. 会被念成字母 "a"。
+  // 改为全量剥离（POS_TAG_RE 做过边界锚定），并把残留的孤立字母标记一并清掉。
   return String(meaning || '')
-    .replace(/\[[^\]]{1,6}\]/g, ' ')  // [计] [医] 等领域标签念出来是噪音，全部剥掉
-    .replace(/^(vt\.|vi\.|n\.|v\.|a\.|adj\.|adv\.|prep\.|conj\.|pron\.|art\.|num\.|int\.|aux\.|modal\.|abbr\.)\s*/gi, '')
+    .replace(/\[[^\]]{1,8}\]/g, ' ')  // [计] [医] 等领域标签念出来是噪音，全部剥掉
+    .replace(POS_TAG_RE, '$1')
     .replace(/[;；]/g, '，')
     .replace(/[·、]/g, '，')
     .replace(/[<>《》「」【】]/g, ' ')
-    .replace(/\s+/g, ' ')
+    .replace(/(^|[，,\s])([a-z]{1,3})\.(?=[，,\s]|$)/gi, '$1') // 兜底：残余的 xx. 词性残片
+    .replace(/\s{2,}/g, ' ')
+    .replace(/^[，,\s]+|[，,\s]+$/g, '')
     .trim();
 }
 
@@ -11074,6 +11197,9 @@ const ICON_PATHS = {
   close: <><path d="m6.4 6.4 11.2 11.2M17.6 6.4 6.4 17.6" /></>,
   sliders: <><path d="M4 7.4h8.6M18 7.4h2M4 16.6h3.4M12.6 16.6H20" /><circle cx="15.2" cy="7.4" r="2.2" /><circle cx="10" cy="16.6" r="2.2" /></>,
   clock: <><circle cx="12" cy="12" r="8.6" /><path d="M12 7v5.4l3.4 2" /></>,
+  info: <><circle cx="12" cy="12" r="8.6" /><path d="M12 11v5.6" /><circle cx="12" cy="7.9" r=".95" fill="currentColor" stroke="none" /></>,
+  folder: <><path d="M3.4 6.8A1.9 1.9 0 0 1 5.3 4.9h3.8l2 2.4h7.6a1.9 1.9 0 0 1 1.9 1.9v7.9a1.9 1.9 0 0 1-1.9 1.9H5.3a1.9 1.9 0 0 1-1.9-1.9V6.8Z" /></>,
+  scissors: <><circle cx="6.4" cy="6.4" r="2.3" /><circle cx="6.4" cy="17.6" r="2.3" /><path d="M8.4 7.9 19 17.6M8.4 16.1 19 6.4" /></>,
   music: <><path d="M9 17.4V6l10-2v11.4" /><circle cx="6.6" cy="17.8" r="2.4" /><circle cx="16.6" cy="15.8" r="2.4" /></>,
   shuffle: <><path d="M4 7h3.4l8 10H19" /><path d="m16.6 14 2.6 3-2.6 3" /><path d="M4 17h3.4l2.2-2.8" /><path d="m16.6 4 2.6 3-2.6 3" /></>,
   bell: <><path d="M8.4 17V11a3.6 3.6 0 0 1 7.2 0v6" /><path d="M5.2 17h13.6" /><path d="M10.4 20h3.2" /></>,
@@ -11385,6 +11511,13 @@ function App() {
   useEffect(() => {
     try { window.__listenBusy = function () { return !!listenPlayingRef.current; }; } catch (e) {}
   }, []);
+  // v2.76.0 应用内提示卡片（替代 alert，避免 WebView 的「网址为 file://」原生标题）
+  const [tipMsg, setTipMsg] = useState(null);
+  useEffect(() => {
+    _appTipSink = function (text, title) { setTipMsg({ text: text, title: title }); };
+    return function () { _appTipSink = null; };
+  }, []);
+
   const [showBookPicker, setShowBookPicker] = useState(false);
   const [showBookPicker2, setShowBookPicker2] = useState(false);
 
@@ -11404,9 +11537,16 @@ function App() {
   // v2.75.0 高清中文语音包状态（原生回传 zhpack:xxx）
   const [zhPack, setZhPack] = useState('');
   // v2.62.0：MP3 下载面板
-  const [listenShowMp3, setListenShowMp3] = useState(false);
   const [mp3Count, setMp3Count] = useState(50);
   const [mp3WithZh, setMp3WithZh] = useState(true);
+  /* v2.76.0 MP3 下载自定义参数：起始序号 / 条数 / 语速 / 文件名 / 保存目录
+     旧版只给「20/50/100/300/全部」五档，用户无法只导出第 200~260 词，也无法命名与选目录。 */
+  const [mp3Start, setMp3Start] = useState(1);
+  const [mp3CustomCount, setMp3CustomCount] = useState('');
+  const [mp3Rate, setMp3Rate] = useState(null);          // null = 跟随听读语速
+  const [mp3Name, setMp3Name] = useState('');
+  const [mp3Dir, setMp3Dir] = useState('');              // 自定义保存目录显示名（空 = 默认）
+  const [mp3SaveScope, setMp3SaveScope] = useState('both'); // both | en | zh
   const [mp3Busy, setMp3Busy] = useState(false);
   const [mp3State, setMp3State] = useState(null);
   // v2.62.0：词库导出（txt，供百词斩等 App 导入）
@@ -11428,10 +11568,17 @@ function App() {
   const [listenPlaying, setListenPlaying] = useState(false);
   // v2.61.0：真正的「暂停」状态（与 listenPlaying 独立，暂停时仍视为一次播放会话）
   const [listenPaused, setListenPaused] = useState(false);
-  const [listenShowCfg, setListenShowCfg] = useState(false);
-  const [listenShowSpeed, setListenShowSpeed] = useState(false);
-  const [listenShowPL, setListenShowPL] = useState(false);
-  const [listenShowBooks, setListenShowBooks] = useState(false);
+  /* v2.76.0 听读面板改为互斥单值状态：
+     旧实现是 4 个独立布尔，点「参数」再点「列表」会两张面板同时展开、列表被挤到参数下面，
+     用户看到的是「列表在参数下面」而不是替换。现在同一时刻只允许一个面板展开，
+     点另一个按钮自动关闭前一个，再点同一按钮关闭自己（同时作为退出入口）。 */
+  const [listenPanel, setListenPanel] = useState(null); // 'cfg' | 'speed' | 'pl' | 'mp3' | 'books' | null
+  const listenShowCfg = listenPanel === 'cfg';
+  const listenShowSpeed = listenPanel === 'speed';
+  const listenShowPL = listenPanel === 'pl';
+  const listenShowMp3 = listenPanel === 'mp3';
+  const listenShowBooks = listenPanel === 'books';
+  function toggleListenPanel(name) { setListenPanel(function (p) { return p === name ? null : name; }); }
   const listenTokenRef = useRef(0);          // 播放代次：自增即取消旧循环
   const listenCfgRef = useRef(listenCfg);
   const listenQueueRef = useRef([]);         // 当前播放队列快照（播放中不随进度变化跳动）
@@ -11575,6 +11722,45 @@ function App() {
   // 确保首次使用日期被记录
   useMemo(() => {
     try { if (!localStorage.getItem('gaokao_first_use')) localStorage.setItem('gaokao_first_use', getToday()); } catch {}
+  }, []);
+
+  /* v2.76.0 返回键：原生把返回键交给本函数，返回 'handled' 表示「已处理，别退出」。
+     顺序按可视层级从高到低：提示卡 → 弹窗 → 听读面板 → 子页面 → 主页面。
+     旧版本没有任何处理，SPA 单页 canGoBack() 恒为 false，于是按一下返回就直接退出应用。 */
+  useEffect(() => {
+    window.__appBack = function () {
+      try {
+        if (tipMsg) { setTipMsg(null); return 'handled'; }
+        if (showFeedback) { setShowFeedback(false); return 'handled'; }
+        if (showExport) { setShowExport(false); return 'handled'; }
+        if (showInstallPrompt) { setShowInstallPrompt(false); return 'handled'; }
+        if (showBrowserFallback) { setShowBrowserFallback(false); return 'handled'; }
+        if (showAnnouncementModal) { setShowAnnouncementModal(false); return 'handled'; }
+        if (updateInfo) { setUpdateInfo(null); return 'handled'; }
+        if (detailItem) { closeDetailItem(); return 'handled'; }
+        if (showBookPicker) { setShowBookPicker(false); return 'handled'; }
+        if (showBookPicker2) { setShowBookPicker2(false); return 'handled'; }
+        if (showReview) { setShowReview(false); return 'handled'; }
+        if (listenPanel) { setListenPanel(null); return 'handled'; }
+        if (section !== 'learn') { setSection('learn'); return 'handled'; }
+      } catch (e) {}
+      return '';
+    };
+    return function () { window.__appBack = null; };
+  }, [tipMsg, showFeedback, showExport, showInstallPrompt, showBrowserFallback,
+      showAnnouncementModal, updateInfo, detailItem, showBookPicker, showBookPicker2,
+      showReview, listenPanel, section]);
+
+  // v2.76.0 自定义保存目录：原生选择完成后回传显示名
+  useEffect(() => {
+    try {
+      if (window.NativeSaver && typeof window.NativeSaver.label === 'function') {
+        var lb = String(window.NativeSaver.label() || '');
+        if (lb) setMp3Dir(lb);
+      }
+    } catch (e) {}
+    window.__saveDirChanged = function (label) { try { setMp3Dir(String(label || '')); } catch (e) {} };
+    return function () { window.__saveDirChanged = null; };
   }, []);
 
   // 启动时清理过期的温习记录（保留最近90天）
@@ -12380,38 +12566,53 @@ function App() {
     setMp3State({ done: 0, total: 1, msg: '已开始下载「' + term + '」' });
   };
 
-  // v2.62.0：批量下载听读 MP3 并打包
+  const mp3BuildTasks = function () {
+    return buildMp3Tasks(listenDisplayQueue, {
+      start: mp3Start,
+      count: mp3CustomCount,
+      preset: mp3Count,
+      rate: mp3Rate,
+      listenRate: listenCfg.rate,
+      scope: mp3SaveScope
+    });
+  };
+
+  // 选择 / 查看自定义保存目录（原生走 SAF 目录选择器，网页提示浏览器下载设置）
+  const mp3PickDir = function () {
+    try {
+      if (window.NativeSaver && typeof window.NativeSaver.pickDir === 'function') {
+        window.NativeSaver.pickDir();
+        return;
+      }
+    } catch (e) {}
+    appTip('网页版由浏览器决定保存位置：可在浏览器「设置 → 下载内容」里修改默认目录。', '保存目录');
+  };
+
   const doDownloadMp3 = function () {
     if (mp3Busy) return;
-    var list = mp3Count > 0 ? listenDisplayQueue.slice(0, mp3Count) : listenDisplayQueue.slice();
-    if (!list.length) { alert('当前没有可下载的单词'); return; }
-    var tasks = [];
-    list.forEach(function (item, i) {
-      var num = ('00' + (i + 1)).slice(-3);
-      var term = String(item.term || '');
-      var base = num + '_' + term.replace(/[^0-9a-zA-Z\-]/g, '_');
-      var enUrl = (enAudioUrls(term) || [])[0];
-      if (enUrl) tasks.push({ url: enUrl, name: base + '_英.mp3' });
-      if (mp3WithZh) {
-        var zh = _zhSpeechText(item.meaning);
-        var zhUrl = (zhAudioUrls(zh, listenCfg.rate) || [])[0];
-        if (zhUrl) tasks.push({ url: zhUrl, name: base + '_中.mp3' });
-      }
-    });
-    if (!tasks.length) { alert('没有可下载的音频'); return; }
+    var built = mp3BuildTasks();
+    var tasks = built.tasks;
+    if (!tasks.length) { appTip('当前没有可下载的单词'); return; }
+    var zipName = String(mp3Name || '').trim() || '背群英听读MP3';
+    zipName = zipName.replace(/[\\/:*?"<>|]/g, '_') + '_' + (built.end - built.start + 1) + '词.zip';
     setMp3Busy(true);
     setMp3State({ done: 0, total: tasks.length, msg: '准备中' });
-    downloadMp3Zip(tasks, '背群英听读MP3_' + list.length + '词.zip', function (done, total, path) {
+    downloadMp3Zip(tasks, zipName, function (done, total, path) {
       if (done < 0) {
         setMp3Busy(false);
-        setMp3State({ done: total, total: total, msg: path ? ('已保存：' + path) : '已打包下载' });
+        setMp3State({ done: total, total: total, msg: path ? ('已保存：' + path) : '已打包下载', path: path || '', zipName: zipName });
         try {
-          if (path) alert('MP3 压缩包已保存：\n' + path + '\n\n用「文件管理 → 下载 → 背群英」查看，解压后可拷进 MP3 播放器 / 点读笔离线听。');
-          else alert('MP3 压缩包已生成，请在下载列表中查看。');
+          if (path) {
+            appTip('压缩包已保存：\n' + path + '\n\n来源：第 ' + built.start + '~' + built.end + ' 词（共 ' + total + ' 个音频）\n'
+              + '语速 ' + built.rate.toFixed(2) + 'x · ' + (mp3SaveScope === 'en' ? '仅英文' : mp3SaveScope === 'zh' ? '仅中文' : '英+中')
+              + '\n\n解压后可拷进 MP3 播放器 / 点读笔离线听。', 'MP3 已保存');
+          } else {
+            appTip('压缩包已生成，请在浏览器下载列表中查看。', 'MP3 已生成');
+          }
         } catch (e) {}
         return;
       }
-      setMp3State({ done: done, total: total, msg: '下载中' });
+      setMp3State({ done: done, total: total, msg: '下载中 ' + done + '/' + total });
     });
   };
 
@@ -13377,6 +13578,16 @@ function App() {
 
     // APP端：保存到 Documents/高考词汇备份/ 目录，方便查找
     if (isNativeApp) {
+      // v2.76.0：用户选过自定义保存目录时优先写那里（目录由「听读 → MP3 → 保存目录」设置）
+      try {
+        if (window.NativeSaver && window.NativeSaver.hasDir && window.NativeSaver.hasDir()) {
+          var sp = window.NativeSaver.saveText ? String(window.NativeSaver.saveText(jsonStr, fileName) || '') : '';
+          if (sp) {
+            appTip('数据已备份（共 ' + totalKeys + ' 项）！\n\n保存位置：' + sp + '\n\n该文件可用来在换设备或重装后恢复全部学习数据。', '备份完成');
+            return;
+          }
+        }
+      } catch (e) {}
       try {
         // 先确保目录存在（已存在则忽略错误）
         try { await Filesystem.mkdir({ path: dirName, directory: Directory.Documents }); } catch {}
@@ -13388,7 +13599,7 @@ function App() {
         });
         const uri = result.uri || '';
         const msg = `数据已备份（共 ${totalKeys} 项）！\n\n保存位置：Documents/${dirName}/${fileName}\n${uri ? '\n完整路径：' + uri : ''}\n\n打开手机"文件管理器" → "Documents" → "高考词汇备份" 即可找到。`;
-        alert(msg);
+        appTip(msg);
         return;
       } catch (e) {
         // Filesystem 失败时回退到浏览器下载
@@ -13398,7 +13609,7 @@ function App() {
         const a = document.createElement('a');
         a.href = url; a.download = fileName; a.click();
         URL.revokeObjectURL(url);
-        alert(`数据已备份（文件名：${fileName}）\n\n保存到下载目录。如需指定位置，请授予存储权限后重试。\n失败原因：${e.message}`);
+        appTip(`数据已备份（文件名：${fileName}）\n\n保存到下载目录。如需指定位置，请授予存储权限后重试。\n失败原因：${e.message}`);
         return;
       }
     }
@@ -13408,7 +13619,7 @@ function App() {
     const a = document.createElement('a');
     a.href = url; a.download = fileName; a.click();
     URL.revokeObjectURL(url);
-    alert(`数据已备份（共 ${totalKeys} 项）！文件名为 ${fileName}\n\n保存位置：浏览器"下载"文件夹\n请将此文件保存到安全位置，换设备或更新时可恢复。`);
+    appTip(`数据已备份（共 ${totalKeys} 项）！文件名为 ${fileName}\n\n保存位置：浏览器"下载"文件夹\n请将此文件保存到安全位置，换设备或更新时可恢复。`);
   }
 
   // v2.51.0 统一数据恢复函数：恢复所有 localStorage 键，并统计实际数据条数
@@ -13516,7 +13727,7 @@ function App() {
           // 继续往下走，用文件选择器
         } else {
           const idx = parseInt(choiceStr) - 1;
-          if (isNaN(idx) || idx < 0 || idx >= uniqueFiles.length) { alert('序号无效'); return; }
+          if (isNaN(idx) || idx < 0 || idx >= uniqueFiles.length) { appTip('序号无效'); return; }
           try {
             const fileContent = await Filesystem.readFile({
               path: uniqueFiles[idx].path,
@@ -13527,11 +13738,11 @@ function App() {
             if (!data || typeof data !== 'object') throw new Error('文件格式错误');
             const result = restoreAllData(data);
             const skipMsg = result.skipped.length > 0 ? `\n\n已跳过 ${result.skipped.length} 项（版本标记/无效数据）：${result.skipped.join('、')}` : '';
-            alert(`✅ 成功从 ${uniqueFiles[idx].name} 恢复 ${result.count} 个存储项，共 ${result.totalItems} 条数据！\n\n数据明细：\n${result.breakdown.join('\n')}${skipMsg}\n\n页面即将刷新。`);
+            appTip(`✅ 成功从 ${uniqueFiles[idx].name} 恢复 ${result.count} 个存储项，共 ${result.totalItems} 条数据！\n\n数据明细：\n${result.breakdown.join('\n')}${skipMsg}\n\n页面即将刷新。`);
             window.location.reload();
             return;
           } catch (err) {
-            alert('读取文件失败：' + err.message + '\n\n将切换到手动选择模式。');
+            appTip('读取文件失败：' + err.message + '\n\n将切换到手动选择模式。');
             // 失败则回退到手动选择
           }
         }
@@ -13561,10 +13772,10 @@ function App() {
           if (!data || typeof data !== 'object') throw new Error('文件格式错误');
           const result = restoreAllData(data);
           const skipMsg = result.skipped.length > 0 ? `\n\n已跳过 ${result.skipped.length} 项（版本标记/无效数据）：${result.skipped.join('、')}` : '';
-          alert(`✅ 成功从「${file.name}」恢复 ${result.count} 个存储项，共 ${result.totalItems} 条数据！\n\n数据明细：\n${result.breakdown.join('\n')}${skipMsg}\n\n页面即将刷新。`);
+          appTip(`✅ 成功从「${file.name}」恢复 ${result.count} 个存储项，共 ${result.totalItems} 条数据！\n\n数据明细：\n${result.breakdown.join('\n')}${skipMsg}\n\n页面即将刷新。`);
           window.location.reload();
         } catch (err) {
-          alert('恢复失败：' + err.message + '\n\n请确认选择的是背群英备份文件（.json 格式）。');
+          appTip('恢复失败：' + err.message + '\n\n请确认选择的是背群英备份文件（.json 格式）。');
         }
       };
       reader.readAsText(file);
@@ -13614,14 +13825,14 @@ function App() {
   }
 
   function renameBook() {
-    if (!activeBook.editable) return alert('内置词库不可改名');
+    if (!activeBook.editable) return appTip('内置词库不可改名');
     const name = prompt('请输入新名称', activeBook.name);
     if (!name) return;
     updateBooks(books.map(b => b.id === activeBook.id ? { ...b, name } : b));
   }
 
   function deleteBook() {
-    if (!activeBook.editable) return alert('内置词库不能删除');
+    if (!activeBook.editable) return appTip('内置词库不能删除');
     if (!confirm(`确定删除词库「${activeBook.name}」？`)) return;
     const next = books.filter(b => b.id !== activeBook.id);
     updateBooks(next);
@@ -14211,7 +14422,7 @@ function App() {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt);
     } catch (e) {}
-    alert(txt);
+    appTip(txt);
   };
 
   // 执行APP更新
@@ -14255,8 +14466,8 @@ function App() {
       {/* ====== 背诵页 ====== */}
       {section === 'learn' && (
         <section>
-          {/* 专属标识（仅网页版） */}
-          {!isNativeApp && (
+          {/* 专属标识（仅旧网页版；新网页版 /app/ 与 App 保持一致，不显示） */}
+          {!isFullApp && (
             <div style={{ textAlign: 'center', padding: '8px 0 4px', }}>
               <span style={{ color: '#2563eb', fontWeight: 800, fontSize: 20, letterSpacing: 2, textShadow: '0 1px 4px rgba(37,99,235,0.25)' }}><Icon name="sparkle" />李群雁专属<Icon name="sparkle" /></span>
             </div>
@@ -14622,7 +14833,7 @@ function App() {
         <section className="panel listenPage">
           <div className="listenTop">
             <div className="multiBookSelect" style={{ position: 'relative', flex: 1 }}>
-              <button className="multiBookBtn" onClick={() => setListenShowBooks(!listenShowBooks)}>
+              <button className="multiBookBtn" onClick={() => toggleListenPanel('books')}>
                 {listenActiveBook.name}<Icon name="chevronDown" />
               </button>
               {listenShowBooks && (
@@ -14734,46 +14945,94 @@ function App() {
             <button onClick={() => updateListenCfg({ loop: listenCfg.loop === 'list' ? 'one' : (listenCfg.loop === 'one' ? 'off' : 'list') })}>
               {listenCfg.loop === 'list' ? '循环 列表' : listenCfg.loop === 'one' ? '循环 单曲' : '循环 关'}
             </button>
-            <button className={listenShowSpeed ? 'on' : ''} onClick={() => setListenShowSpeed(!listenShowSpeed)}>
+            <button className={listenShowSpeed ? 'on' : ''} onClick={() => toggleListenPanel('speed')}>
               {listenCfg.rate.toFixed(2)}x
             </button>
             <button className={listenCfg.shuffle ? 'on' : ''} onClick={() => updateListenCfg({ shuffle: !listenCfg.shuffle })}>随机</button>
-            <button className={listenShowCfg ? 'on' : ''} onClick={() => setListenShowCfg(!listenShowCfg)}>参数</button>
-            <button className={listenShowMp3 ? 'on' : ''} onClick={() => setListenShowMp3(!listenShowMp3)}>MP3</button>
-            <button className={listenShowPL ? 'on' : ''} onClick={() => setListenShowPL(!listenShowPL)}>列表</button>
+            <button className={listenShowCfg ? 'on' : ''} onClick={() => toggleListenPanel('cfg')}>参数</button>
+            <button className={listenShowMp3 ? 'on' : ''} onClick={() => toggleListenPanel('mp3')}>MP3</button>
+            <button className={listenShowPL ? 'on' : ''} onClick={() => toggleListenPanel('pl')}>列表</button>
           </div>
 
-          {/* v2.62.0：MP3 下载面板 */}
+          {/* v2.76.0：MP3 下载面板（全参数自定义 + 自定义保存目录 + 面板内关闭） */}
           {listenShowMp3 && (
             <div className="listenSettings">
+              <div className="sheetHead">
+                <b><Icon name="download" />MP3 下载</b>
+                <button className="sheetClose" onClick={() => setListenPanel(null)}>完成</button>
+              </div>
               <div className="listenSettingRow">
-                <span>下载范围</span>
+                <span>范围</span>
                 <div className="listenSeg">
                   {[20, 50, 100, 300].map(n => (
-                    <button key={n} className={mp3Count === n ? 'on' : ''} onClick={() => setMp3Count(n)}>{n} 词</button>
+                    <button key={n} className={mp3Count === n && !mp3CustomCount ? 'on' : ''} onClick={() => { setMp3Count(n); setMp3CustomCount(''); }}>{n} 词</button>
                   ))}
-                  <button className={mp3Count === 0 ? 'on' : ''} onClick={() => setMp3Count(0)}>全部</button>
+                  <button className={mp3Count === 0 && !mp3CustomCount ? 'on' : ''} onClick={() => { setMp3Count(0); setMp3CustomCount(''); }}>全部</button>
+                </div>
+              </div>
+              <div className="listenSettingRow">
+                <span>自定义</span>
+                <div className="mp3NumRow">
+                  <label>从第
+                    <input type="number" min="1" inputMode="numeric" value={mp3Start}
+                      onChange={(e) => setMp3Start(e.target.value.replace(/[^0-9]/g, ''))} />词
+                  </label>
+                  <label>取
+                    <input type="number" min="1" inputMode="numeric" placeholder={String(mp3Count > 0 ? mp3Count : listenDisplayQueue.length)} value={mp3CustomCount}
+                      onChange={(e) => setMp3CustomCount(e.target.value.replace(/[^0-9]/g, ''))} />词
+                  </label>
+                  <span className="muted">共 {listenDisplayQueue.length} 词</span>
                 </div>
               </div>
               <div className="listenSettingRow">
                 <span>音频内容</span>
                 <div className="listenSeg">
-                  <button className={mp3WithZh ? 'on' : ''} onClick={() => setMp3WithZh(true)}>英+中</button>
-                  <button className={!mp3WithZh ? 'on' : ''} onClick={() => setMp3WithZh(false)}>仅英文</button>
+                  <button className={mp3SaveScope === 'both' ? 'on' : ''} onClick={() => setMp3SaveScope('both')}>英+中</button>
+                  <button className={mp3SaveScope === 'en' ? 'on' : ''} onClick={() => setMp3SaveScope('en')}>仅英文</button>
+                  <button className={mp3SaveScope === 'zh' ? 'on' : ''} onClick={() => setMp3SaveScope('zh')}>仅中文</button>
                 </div>
               </div>
-              <button className="primary" style={{ width: '100%', marginTop: 10 }} onClick={doDownloadMp3} disabled={mp3Busy}>
+              <div className="listenSettingRow">
+                <span>导出语速</span>
+                <div className="listenSeg">
+                  {[0.75, 1, 1.25, 1.5].map(r => (
+                    <button key={r} className={(mp3Rate || listenCfg.rate) === r ? 'on' : ''} onClick={() => setMp3Rate(r)}>{r.toFixed(2)}x</button>
+                  ))}
+                  <button className={mp3Rate === null ? 'on' : ''} onClick={() => setMp3Rate(null)}>跟随听读</button>
+                </div>
+              </div>
+              <div className="listenSettingRow">
+                <span>文件名</span>
+                <input className="mp3NameInput" value={mp3Name} placeholder="背群英听读MP3"
+                  onChange={(e) => setMp3Name(e.target.value.slice(0, 40))} />
+              </div>
+              <div className="listenSettingRow">
+                <span>保存目录</span>
+                <div className="mp3DirRow">
+                  <span className="mp3DirLabel" title={mp3Dir || '下载/背群英'}>
+                    <Icon name="folder" />{mp3Dir || '默认：下载/背群英'}
+                  </span>
+                  <button className="smallBtn" onClick={mp3PickDir}>选择</button>
+                </div>
+              </div>
+              <button className="primary mp3Go" onClick={doDownloadMp3} disabled={mp3Busy}>
                 {mp3Busy ? `打包中 ${mp3State ? mp3State.done : 0}/${mp3State ? mp3State.total : 0}` : '开始下载 MP3 压缩包'}
               </button>
-              {mp3State && !mp3Busy && <div className="listenTip">{mp3State.msg}</div>}
+              {mp3State && !mp3Busy && (
+                <div className="mp3Result">
+                  <Icon name="check" />
+                  <span>{mp3State.msg}</span>
+                </div>
+              )}
             </div>
           )}
 
           {/* v2.69.0 语速快捷轮盘 */}
           {listenShowSpeed && (
             <div className="listenSettings listenSpeedSheet">
-              <div className="listenSettingRow" style={{ justifyContent: 'center' }}>
-                <span style={{ fontWeight: 700 }}>语速</span>
+              <div className="sheetHead">
+                <b><Icon name="bolt" />语速</b>
+                <button className="sheetClose" onClick={() => setListenPanel(null)}>完成</button>
               </div>
               <WheelPicker values={WHEEL_RATE} value={listenCfg.rate} onChange={function (v) { updateListenCfg({ rate: v }); }} format={function (v) { return v.toFixed(2) + 'x'; }} width={180} />
             </div>
@@ -14782,6 +15041,10 @@ function App() {
           {/* 朗读参数 */}
           {listenShowCfg && (
             <div className="listenSettings">
+              <div className="sheetHead">
+                <b><Icon name="sliders" />朗读参数</b>
+                <button className="sheetClose" onClick={() => setListenPanel(null)}>完成</button>
+              </div>
               {/* v2.70.0 数值参数改为横向轮盘：左右滑动选择，精度自定义 */}
               <div className="wheelRow">
                 <span className="wheelRowLabel">英文遍数</span>
@@ -14857,6 +15120,10 @@ function App() {
           {/* 播放列表（v2.66.0：稳定分块窗口 + 自动滚动跟随当前词） */}
           {listenShowPL && (
             <div className="listenPlaylist" ref={listenPlRef}>
+              <div className="sheetHead">
+                <b><Icon name="list" />播放列表</b>
+                <button className="sheetClose" onClick={() => setListenPanel(null)}>完成</button>
+              </div>
               {(() => {
                 const total = listenDisplayQueue.length;
                 if (!total) return <div className="listenEmpty">暂无单词</div>;
@@ -15889,7 +16156,8 @@ function App() {
           <div className="meHeader">
             <div className="meAvatar" style={isNativeApp ? {} : { cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
               {...(!isNativeApp ? { onClick: () => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = ev => { const url = ev.target.result; setAvatarUrl(url); try { localStorage.setItem('gaokao_avatar', url); } catch {} }; reader.readAsDataURL(file); }; input.click(); }} : {})}>
-              {!isNativeApp && avatarUrl ? <img src={avatarUrl} alt="头像" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} /> : <Icon name="grad" size={28} />}
+              {/* v2.76.0：内置默认头像（用户指定图片），网页端仍可点按更换自己的图 */}
+              <img src={avatarUrl || DEFAULT_AVATAR} alt="头像" className="meAvatarImg" />
             </div>
             <div className="meInfo">
               <h2>高考词汇学习</h2>
@@ -16046,7 +16314,7 @@ function App() {
             </label>}
             {/* v2.44.0 切换单词自动朗读已合并到上方自动发音开关 */}
             {/* 跳转单词自动发音开关已合并到上方独立卡片 */}
-            {isNativeApp && (
+            {isFullApp && (
               <label>开屏更新公告
                 <InlineSelect block value={settings.showAnnouncement ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, showAnnouncement: on })); saveSettings({ ...settings, showAnnouncement: on }); }}
                   options={[{ value: 'on', label: '开启（启动时显示更新公告）' }, { value: 'off', label: '关闭' }]} />
@@ -16067,6 +16335,19 @@ function App() {
             <div className="importActions">
               <button className="smallBtn" onClick={exportData}><Icon name="upload" />备份数据</button>
               <button className="smallBtn" onClick={importData}><Icon name="download" />恢复数据</button>
+            </div>
+            {/* v2.76.0 自定义保存目录：MP3 压缩包与备份文件都落到这里 */}
+            <div className="saveDirRow">
+              <div className="saveDirInfo">
+                <b><Icon name="folder" />保存位置</b>
+                <span title={mp3Dir || '下载/背群英'}>{mp3Dir ? mp3Dir : (isNativeApp ? '下载/背群英' : '浏览器下载目录')}</span>
+              </div>
+              {isNativeApp ? (
+                <div className="saveDirBtns">
+                  <button className="smallBtn" onClick={mp3PickDir}>更改</button>
+                  {mp3Dir ? <button className="smallBtn ghost" onClick={() => { try { window.NativeSaver && window.NativeSaver.clearDir && window.NativeSaver.clearDir(); } catch (e) {} }}>恢复默认</button> : null}
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -16214,8 +16495,8 @@ function App() {
             </div>
           )}
 
-          {/* 反馈入口（仅APP） */}
-          {isNativeApp && (
+          {/* 反馈入口（App 与新网页版） */}
+          {isFullApp && (
             <div className="cloudUpdateSection" style={{ background: '#fef3c7', borderColor: '#fde68a' }}>
               <h3 style={{ color: '#92400e' }}><Icon name="chat" />反馈建议</h3>
               <p className="muted">有什么建议或遇到问题？欢迎添加QQ好友直接反馈，沟通更高效。</p>
@@ -16229,7 +16510,7 @@ function App() {
                   try { navigator.clipboard?.writeText('3219858871'); } catch {}
                 }} style={{ background: '#f59e0b' }}>添加QQ好友</button>
                 <button className="smallBtn" onClick={() => {
-                  try { navigator.clipboard?.writeText('3219858871'); alert('QQ号已复制：3219858871'); } catch { alert('QQ号：3219858871'); }
+                  try { navigator.clipboard?.writeText('3219858871'); appTip('QQ号已复制：3219858871'); } catch { appTip('QQ号：3219858871'); }
                 }}>复制QQ号</button>
               </div>
             </div>
@@ -16240,7 +16521,7 @@ function App() {
             <h3 style={{ color: '#166534' }}><Icon name="shield" />隐私政策</h3>
             <p className="muted">本应用不收集任何用户个人信息，所有数据保存在设备本地。</p>
             <button className="smallBtn" onClick={() => {
-              window.open('https://xdbzys.github.io/gaokao-vocab-website/privacy.html', '_blank');
+              window.open('https://xdbzys.github.io/gaokao-vocab/site/privacy.html', '_blank');
             }}>查看隐私政策</button>
           </div>
 
@@ -16248,15 +16529,15 @@ function App() {
           <div className="cloudUpdateSection" style={{ background: '#eff6ff', borderColor: '#bfdbfe', marginTop: 12 }}>
             <h3 style={{ color: '#1d4ed8' }}><Icon name="globe" />官网</h3>
             <p className="muted">
-              <a href="https://xdbzys.github.io/gaokao-vocab-website/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>
-                xdbzys.github.io/gaokao-vocab-website
+              <a href="https://xdbzys.github.io/gaokao-vocab/site/" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>
+                xdbzys.github.io/gaokao-vocab/site
               </a>
             </p>
             <button className="smallBtn" onClick={() => {
               if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-                Capacitor.Plugins.Browser.open({ url: 'https://xdbzys.github.io/gaokao-vocab-website/' });
+                Capacitor.Plugins.Browser.open({ url: 'https://xdbzys.github.io/gaokao-vocab/site/' });
               } else {
-                window.open('https://xdbzys.github.io/gaokao-vocab-website/', '_blank');
+                window.open('https://xdbzys.github.io/gaokao-vocab/site/', '_blank');
               }
             }}>访问官网</button>
           </div>
@@ -16271,7 +16552,7 @@ function App() {
               const msgs = [];
               if (result.study > 0) msgs.push(`背诵页清理 ${result.study} 个`);
               if (result.library > 0) msgs.push(`词库页清理 ${result.library} 个`);
-              alert(msgs.length > 0 ? `已清理不存在的词库引用：\n${msgs.join('\n')}` : '没有发现不存在的词库引用');
+              appTip(msgs.length > 0 ? `已清理不存在的词库引用：\n${msgs.join('\n')}` : '没有发现不存在的词库引用');
             }}>清理不存在的词库</button>
             <div className="list">
               {books.filter(b => b.id !== 'mastered-words' && b.id !== 'wrong-words' && !hiddenBookIds.includes(b.id)).map(b => {
@@ -16389,7 +16670,7 @@ function App() {
               if (confirm('确定清除所有自定义词库吗？此操作不可撤销。')) {
                 localStorage.removeItem('customBooks');
                 setBooks([...builtInBooks]);
-                alert('已清除所有自定义词库');
+                appTip('已清除所有自定义词库');
               }
             }}>清除所有自定义词库</button>
           </div>
@@ -16709,6 +16990,20 @@ function App() {
             </div>
             );
           })()}
+
+      {/* v2.76.0 应用内提示卡片 */}
+      {tipMsg && (
+        <div className="tipMask" onClick={() => setTipMsg(null)}>
+          <div className="tipCard" onClick={(e) => e.stopPropagation()}>
+            <div className="tipHead">
+              <Icon name="info" />
+              <b>{tipMsg.title}</b>
+            </div>
+            <pre className="tipBody">{tipMsg.text}</pre>
+            <button className="tipOk" onClick={() => setTipMsg(null)}>知道了</button>
+          </div>
+        </div>
+      )}
 
       {/* 底部Tab栏（5个） */}
       <nav className="tabbar">
