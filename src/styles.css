@@ -2842,13 +2842,13 @@ button.primary {
 /* ================= v2.74.0 统一图标系统 =================
    全应用改用同一套 24×24 线性 SVG，替代此前大小不一、颜色不受控的 emoji。 */
 .ic {
-  width: 1.05em;
-  height: 1.05em;
+  width: 1.15em;
+  height: 1.15em;
   display: inline-block;
   vertical-align: -0.145em;
   flex: none;
   margin-right: 0.34em;
-  stroke-width: 1.8;
+  stroke-width: 1.7;
   overflow: visible;
 }
 .ic:last-child { margin-right: 0; }
