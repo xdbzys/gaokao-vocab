@@ -1,9 +1,9 @@
 {
-  "version": "2.69.1",
-  "versionCode": 231,
+  "version": "2.70.0",
+  "versionCode": 232,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.69.1】修复「界面出现异常」崩溃（紧急修复版）\nv修复 v2.69.0 轮盘组件的一处变量引用错误：打开「我的」页面 / 听读参数面板会直接崩溃并显示「界面出现异常」，现已在真实设备同款渲染环境下全页验证通过\nv已新增整套页面渲染自检（背诵 / 听读 / 词库 / 错词本 / 扩展 / 导入 / 我的 七个页"
+  "changelog": "【v2.70.0】听读大改版：横向轮盘 + 神经语音中文 + 音乐库同步\nv轮盘调节改为左右滑动（原上下滑动），参数面板重排为一行一参数，选中项居中放大\nv全部系统下拉弹窗（设置页/导入页）替换为应用内选择器，修复调节界面字体巨大、图标遮挡的 UI 异常\nv中文发音强化：微软 Edge 神经语音（晓晓/云希）优先级提到"
 }
