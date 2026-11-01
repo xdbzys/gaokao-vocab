@@ -164,18 +164,26 @@ jobs:
             android/app/build/outputs/apk/release/app-release.apk
 
       # v2.55.6: Mirror APK + web/index.html into repo for jsDelivr CDN
+      # v2.71.0 修复：actions/checkout 默认是分离 HEAD（detached HEAD），
+      # 旧步骤直接 `git push` 不带 ref 会静默失败，导致 master 上 jsDelivr 的 APK
+      # 一直是陈旧缓存、web/index.html 缺失（301），国内用户只能走被墙/限速的 GitHub Release。
+      # 改为从 origin/master 检出独立分支再 push <branch>:master（快进提交），
+      # 保证最新 APK + index.html 真正落到 master，jsDelivr/raw 从此服务最新版。
       - name: Mirror APK + web into repo (jsDelivr download source)
         continue-on-error: true
         run: |
           git config user.name "ci-bot"
           git config user.email "ci@bot.com"
+          git fetch origin master
+          git checkout -B mirror-sync origin/master
+          cp android/app/build/outputs/apk/release/app-release.apk gaokao-vocab.apk
           cp dist/index.html web/index.html
-          git add -f gaokao-vocab.apk web/index.html version.json
+          git add -f gaokao-vocab.apk web/index.html
           if git diff --cached --quiet; then
             echo "Files unchanged, skip mirror commit"
           else
             git commit -m "chore: mirror APK + web for jsDelivr [skip ci]"
-            git push
+            git push origin mirror-sync:master
           fi
 
       # 刷新 jsDelivr CDN 缓存

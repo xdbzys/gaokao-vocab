@@ -85,8 +85,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.70.0';
-const APP_VERSION_CODE = 232;
+const APP_VERSION = '2.71.0';
+const APP_VERSION_CODE = 233;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 const APK_DOWNLOAD_SOURCES = [
@@ -11484,15 +11484,27 @@ function App() {
           const data = await resp.json();
           if (data.version && data.version !== APP_VERSION && data.webHtmlUrl) {
             console.log('[Web Update] 发现新版本:', data.version, '当前:', APP_VERSION);
-            const htmlResp = await fetch(data.webHtmlUrl);
-            if (htmlResp.ok) {
-              const newHtml = await htmlResp.text();
-              if (newHtml && (newHtml.includes('<!doctype') || newHtml.includes('<html'))) {
-                console.log('[Web Update] 更新成功，替换页面内容');
-                document.open();
-                document.write(newHtml);
-                document.close();
-              }
+            // v2.71.0：多源兜底拉取正文，避免单点（GitHub Release 国内慢/被墙）导致更新失败
+            const htmlSources = [
+              data.webHtmlUrl,
+              'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html',
+              'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html'
+            ].filter(Boolean);
+            let newHtml = null;
+            for (let si = 0; si < htmlSources.length; si++) {
+              try {
+                const r = await fetch(htmlSources[si], { cache: 'no-store' });
+                if (r.ok) {
+                  const t = await r.text();
+                  if (t && (t.includes('<!doctype') || t.includes('<html'))) { newHtml = t; break; }
+                }
+              } catch (e) { /* 该源失败，尝试下一个 */ }
+            }
+            if (newHtml) {
+              console.log('[Web Update] 更新成功，替换页面内容');
+              document.open();
+              document.write(newHtml);
+              document.close();
             }
           }
         } catch (e) {
@@ -13826,11 +13838,16 @@ function App() {
   const apkCandidates = (info) => {
     const list = [];
     const push = (u) => { if (u && typeof u === 'string' && list.indexOf(u) < 0) list.push(u); };
-    push(info && info.apkUrlCdn);     // jsDelivr CDN 镜像（国内速度最快）
-    push(info && info.apkUrl);        // GitHub Release 官方直链（无 CDN 缓存延迟）
-    push('https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk');
-    push(APK_DOWNLOAD_SOURCES[0].url);
+    // v2.71.0 下载源排序优化：jsDelivr master apk 第一优先——
+    // CI 每次构建都会把最新 app-release.apk 回写 master，jsDelivr 国内最快最稳；
+    // raw 次之，GitHub Release 直链与 ghproxy 作为兜底（国内可能被墙/限速）
+    push(info && info.apkUrlCdn);     // jsDelivr CDN 镜像（CI 回写最新版，国内最快）
     push('https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk');
+    push('https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/gaokao-vocab.apk');
+    push(info && info.apkUrl);        // GitHub Release 官方直链（兜底）
+    push('https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk');
+    push('https://ghproxy.com/https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk');
+    push('https://mirror.ghproxy.com/https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk');
     push('https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk');
     return list;
   };

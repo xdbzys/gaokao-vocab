@@ -66,11 +66,12 @@ public class MainActivity extends Activity {
         "https://xdbzys.github.io/gaokao-vocab/version.json",
         "https://raw.githubusercontent.com/xdbzys/gaokao-vocab/master/version.json"
     };
-    // 第二步：正文地址（优先 GitHub Release CDN，稳定且加速；jsDelivr / Pages 兜底）
+    // 第二步：正文地址（v2.71.0 改为 jsDelivr 优先——CI 每次构建把最新 index.html 回写 master，国内最快最稳；
+    //  GitHub Pages / GitHub Release 作为兜底）
     private static final String[] CLOUD_INDEX_URLS = {
-        "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
         "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-        "https://xdbzys.github.io/gaokao-vocab/web/index.html"
+        "https://xdbzys.github.io/gaokao-vocab/web/index.html",
+        "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html"
     };
     private static final String CACHE_FILE = "cloud_index.html";
     private static final String PREF_NAME = "cloud_update";
@@ -1046,22 +1047,48 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** 下载到指定文件，成功返回 true */
+    /** 下载到指定文件（小文件：版本清单 / 热更新正文），成功返回 true。
+     *  v2.71.0：原生层加重试 + HTTP Range 断点续传，单源连接中断只续传剩余部分，不再从头重下。 */
     private boolean downloadToFile(String urlStr, File dst, int timeoutMs) {
+        for (int attempt = 0; attempt < 3; attempt++) {
+            if (downloadToFileOnce(urlStr, dst, timeoutMs)) return true;
+            try { Thread.sleep(400); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    /** 单次下载尝试（带 Range 续传）：已存在 dst 时请求续传，服务器不支持 Range 则整文件覆盖 */
+    private boolean downloadToFileOnce(String urlStr, File dst, int timeoutMs) {
         HttpURLConnection conn = null;
         InputStream is = null;
         FileOutputStream fos = null;
         File tmp = null;
         try {
             tmp = new File(dst.getAbsolutePath() + ".tmp");
+            if (tmp.exists()) tmp.delete();
             conn = (HttpURLConnection) new URL(urlStr).openConnection();
             conn.setConnectTimeout(10000);
             conn.setReadTimeout(timeoutMs);
             conn.setRequestMethod("GET");
             conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36");
-            if (conn.getResponseCode() != 200) return false;
+            long resume = dst.exists() ? dst.length() : 0;
+            boolean append = false;
+            if (resume > 0) {
+                conn.setRequestProperty("Range", "bytes=" + resume + "-");
+                append = true;
+            }
+            int code = conn.getResponseCode();
+            if (code == 200) { append = false; }
+            else if (code != 206) return false;
             is = conn.getInputStream();
-            fos = new FileOutputStream(tmp);
+            fos = new FileOutputStream(tmp, append && dst.exists());
+            if (append && dst.exists()) { // 把已下载部分先搬到 tmp
+                java.io.FileInputStream fin = new java.io.FileInputStream(dst);
+                byte[] bb = new byte[8192];
+                int rn;
+                while ((rn = fin.read(bb)) != -1) fos.write(bb, 0, rn);
+                fin.close();
+            }
             byte[] buf = new byte[8192];
             int n;
             while ((n = is.read(buf)) != -1) fos.write(buf, 0, n);
@@ -1241,7 +1268,20 @@ public class MainActivity extends Activity {
         }
     }
 
+    private static final int APK_RETRY = 3;
+
+    /** v2.71.0：APK 下载加重试 + HTTP Range 断点续传。
+     *  单源连接中断只续传剩余部分（不再从头重下），连续失败自动换下一个候选源。 */
     private boolean downloadApkFile(String urlStr, File target) {
+        for (int attempt = 0; attempt < APK_RETRY; attempt++) {
+            if (downloadApkFileOnce(urlStr, target)) return true;
+            try { Thread.sleep(600); } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    /** 单次 APK 下载尝试（支持 206 断点续传） */
+    private boolean downloadApkFileOnce(String urlStr, File target) {
         HttpURLConnection conn = null;
         try {
             URL u = new URL(urlStr);
@@ -1251,18 +1291,35 @@ public class MainActivity extends Activity {
             conn.setReadTimeout(30000);
             conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36");
             conn.setRequestProperty("Accept", "application/vnd.android.package-archive,*/*");
-            if (conn.getResponseCode() != 200) return false;
-            int total = conn.getContentLength();
+            long resume = (target.exists() ? target.length() : 0);
+            boolean partial = false;
+            if (resume > 0) {
+                // 已下载部分，要求从断点续传；服务器不支持 Range 时回退为整文件下载
+                conn.setRequestProperty("Range", "bytes=" + resume + "-");
+            }
+            int code = conn.getResponseCode();
+            if (code == 206) partial = true;
+            else if (code != 200) return false;
+            long total = conn.getContentLength();
+            if (partial && conn.getHeaderField("Content-Range") != null) {
+                try {
+                    String cr = conn.getHeaderField("Content-Range"); // 形如 bytes 1234-9999/10000
+                    int slash = cr.lastIndexOf('/');
+                    if (slash >= 0) total = Long.parseLong(cr.substring(slash + 1).trim());
+                } catch (Throwable ignored) {}
+            }
             InputStream is = new java.io.BufferedInputStream(conn.getInputStream());
-            FileOutputStream fos = new FileOutputStream(target);
+            FileOutputStream fos = new FileOutputStream(target, partial); // 续传追加，否则覆盖
             byte[] buf = new byte[16384];
-            int n, downloaded = 0, lastPct = -1;
+            int n;
+            long downloaded = resume;
+            int lastPct = -1;
             while ((n = is.read(buf)) != -1) {
                 fos.write(buf, 0, n);
                 downloaded += n;
                 if (total > 0) {
-                    int pct = downloaded * 100 / total;
-                    if (pct != lastPct && pct % 10 == 0) {
+                    int pct = (int) (downloaded * 100 / total);
+                    if (pct != lastPct && pct % 5 == 0) {
                         lastPct = pct;
                         notifyJs("window.__apkUpdateProgress && window.__apkUpdateProgress(" + pct
                                 + ", '下载中 " + pct + "%')");
@@ -1272,6 +1329,11 @@ public class MainActivity extends Activity {
             fos.flush();
             fos.close();
             is.close();
+            // 已知总长时校验完整性：差一帧以内视为完整，否则删除残片交给重试/换源
+            if (total > 0 && downloaded < total - 16384) {
+                try { target.delete(); } catch (Throwable ignored) {}
+                return false;
+            }
             return target.exists() && target.length() > 100000;
         } catch (Throwable e) {
             return false;
