@@ -1,9 +1,11 @@
 {
-  "version": "2.73.0",
-  "versionCode": 237,
+  "version": "2.74.0",
+  "versionCode": 287,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.73.0】更新链路彻底重做（下载失败 / 装完还是旧版本）\nv修复「装了新版打开还是旧界面」：APK 一旦升级就丢弃升级前缓存的热更新页面，改用同一次构建的内置页面，不再出现新原生配旧界面\nv修复「装完版本号没变」：安装后回到前台自动比对真实安装版本，成功/未生效都有明确回执；未生效会说明下一步怎么做\nv下载器重写：每个源用独立临时文件、只在确认同源残片时续传、逐字节校验总长、小于 1MB 直接判废；重复点击不再并发写同一个包（旧版并发写坏是下载失败主因）\nv安装前四重校验：包名 / versionCode 必须大于本机且不低于清单 / 签名指纹必须与本机一致 / 清单带 apkSha256 时按哈希校验，异常自动换源\nv版本号不再靠手改：构建流水线自动递增 versionCode，并强校验 APK 内版本号与清单一致，避免「远端版本号不动 → 永远提示已最新」\nv热更新改为读取全部源取最大版本号，并校验页面正文含清单版本号，镜像滞后不再导致更新失灵"
+  "apkSize": 4388462,
+  "apkSha256": "58b5cd03468f12e3da7fc3d12fe3711d1a1834151aac7a8dbe54e975608cc32c",
+  "changelog": "【v2.73.0】更新链路彻底重做（下载失败 / 装完还是旧版本）\nv修复「装了新版打开还是旧界面」：APK 一旦升级就丢弃升级前缓存的热更新页面，改用同一次构建的内置页面，不再出现新原生配旧界面\nv修复「装完版本号没变」：安装后回到前台自动比对真实安装版本，成功/未生效都有明确回执；未生效会说明下一步怎么做\nv下载器"
 }
