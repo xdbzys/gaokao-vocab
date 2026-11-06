@@ -316,6 +316,43 @@ jobs:
           mkdir -p dist/web
           cp dist/index.html dist/web/index.html
 
+      # v2.79.0 网页版首屏瘦身（用户反馈"网页版打不开"的根因修复）
+      #   旧：dist/index.html 是 3.37MB 单文件（gzip 1.02MB），github.io 上首屏 42s。
+      #   新：多文件 + 内容哈希 + 动态 import 分片，首屏 = 骨架 HTML(17KB gzip)
+      #       + 入口 JS(197KB gzip) ≈ 214KB，词库数据首屏后再按需下载。
+      #   必须放在这里（最后）：前面的 APK assets 拷贝、GitHub Release 资产、
+      #   jsDelivr 镜像用的都还是"单文件 dist/index.html"，提前覆盖会破坏 App 热更。
+      #   发布后的 Pages 结构：
+      #     dist/                → 新的多文件网页版（根路径）
+      #     dist/app/            → 同一份多文件产物（/app/ 与 App 功能一致）
+      #     dist/legacy/         → 旧单文件版（用户要求"旧版不要消失"，也是老 WebView 兜底）
+      #     dist/web/index.html  → 单文件（CDN/兜底入口，内容不变）
+      - name: Build multi-file web app (fast first screen)
+        run: |
+          node scripts/build-web.cjs
+          # 旧单文件留档：/legacy/index.html
+          mkdir -p dist/legacy
+          cp dist/index.html dist/legacy/index.html
+          # 根路径与 /app/ 都换成多文件版。
+          # 注意：只能搬 index.html 与 assets，不能整体 cp -r dist-web/. dist/，
+          # 否则会用构建期副本覆盖上一步刚写入 APK 摘要的 dist/app-update.json，
+          # 导致 App 更新清单丢失 apkSha256 / apkSize。
+          rm -rf dist/app dist/assets
+          mkdir -p dist/app
+          cp -r dist-web/assets/. dist/assets/
+          cp -r dist-web/assets/. dist/app/assets/
+          cp dist-web/index.html dist/index.html
+          cp dist-web/index.html dist/app/index.html
+          # 确认清单没被覆盖（缺 apkSha256 直接失败）
+          node -e "const u=require('./dist/app-update.json');if(!u.apkSha256||!u.apkSize){console.error('app-update.json 丢失 APK 摘要');process.exit(1)}console.log('app-update.json ok', u.version, u.apkSize, u.apkSha256.slice(0,12))"
+          # 上一步覆盖了 dist/index.html，单文件产物放回 /web/ 与 /legacy/ 供兜底使用
+          cp dist/legacy/index.html dist/web/index.html
+          echo "--- Pages 产物结构 ---"
+          ls -la dist dist/app dist/legacy dist/web | head -40
+          du -sh dist dist/app dist/legacy
+          # 首屏预算红线：gzip 250KB（build-web.cjs 已内建同一检查，这里再兜一层）
+          node -e "const m=require('./dist-web/build-manifest.json');const kb=(m.firstScreenGzip/1024).toFixed(1);console.log('首屏 gzip '+kb+'KB');if(m.firstScreenGzip>250*1024){console.error('首屏超出 250KB 预算');process.exit(1)}"
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

@@ -10,13 +10,26 @@
 | 组成 | 源码位置 | 构建产物 | 发布位置 |
 |---|---|---|---|
 | 安卓安装包（APK） | `src/main.jsx` + `src/*.java` + `android/` | `app-release.apk` | GitHub Release / jsDelivr / Gitee / 官网下载按钮 |
-| 经典网页版（旧） | 与 APK 同一份 `src/main.jsx` | `dist/index.html` | `https://xdbzys.github.io/gaokao-vocab/`（Pages 根路径） |
-| App 同款网页版（新） | 同一份产物，运行期按路径识别 | `dist/app/index.html` | `https://xdbzys.github.io/gaokao-vocab/app/` |
+| 经典网页版 | 与 APK 同一份 `src/main.jsx` | `dist/index.html`（多文件，v2.79 起） | `https://xdbzys.github.io/gaokao-vocab/`（Pages 根路径） |
+| App 同款网页版 | 同一份产物，运行期按路径识别 | `dist/app/`（多文件） | `https://xdbzys.github.io/gaokao-vocab/app/` |
+| 旧单文件网页版 | 同上 | `dist/legacy/index.html` | `https://xdbzys.github.io/gaokao-vocab/legacy/`（老 WebView 兜底，别删） |
+| App 云端热更包 | 同上 | `dist/web/index.html`（单文件） | gitee / jsDelivr 的 `web/index.html` |
 | 官网 | `gaokao-vocab-site/gaokao-vocab-site.html` | `dist/site/index.html` | `https://xdbzys.github.io/gaokao-vocab/site/` |
 | 旧站（仅跳转） | 仓库 `xdbzys/gaokao-vocab-website` | 无 | 自动跳转到上面的新官网 |
 | 中文高清语音包 | 仓库根 `zhvoice.zip`（6337 条 .ogg） | 运行时下载解压到 `filesDir/zhvoice` | jsDelivr 多节点 |
 
 **三者共用同一份前端代码**：不要为网页版另建一份 `main.jsx`，否则版本会分叉。
+
+### 两套产物形态（v2.79.0 起，别搞混）
+
+| | 形态 | 由谁构建 | 用途 |
+|---|---|---|---|
+| 单文件 | 一个 HTML 全内联，ES5 | `npm run build`（vite + Babel） | App 本地 assets、云端热更 `web/index.html`、`/legacy/` |
+| 多文件 | `index.html` + `assets/main.<hash>.js` + `assets/chunk-*.js` | `node scripts/build-web.cjs`（esbuild，ESM） | 网页版 `/` 与 `/app/` |
+
+**为什么要两套**：单文件版本 3.4MB / gzip 1MB，github.io 上弱网首屏 40s，
+用户反馈「网页版打不开」。多文件版首屏只 216KB gzip，词库按需下载。
+单文件不能取消——App 热更与老 WebView 都依赖它。
 
 两套网页版的差别**只有能力开关**，没有第二套界面：
 
@@ -70,19 +83,28 @@ node src/scripts/build-core-meanings.js   # 重新生成 coreMeanings.js（人�
 `.github/workflows/build.yml` 关键步骤顺序：
 
 ```
-npm run build                     → dist/index.html（单文件，全内联）
+npm run build                     → dist/index.html（单文件，全内联，ES5）
 gzip -9 dist/index.html           → index.html.gz（云端热更用）
 cp -r dist android/app/src/main/assets/public   ← 注意：这一步之后才生成网页版副本
 node scripts/sync-site-changelog.js             ← 官网更新日志注入
 cp -r gaokao-vocab-site/. dist/site/            ← 官网
-mkdir dist/app && cp dist/index.html dist/app/index.html  ← 新网页版
 ./gradlew assembleRelease                       ← 打 APK
 aapt2 断言包名/版本号
 写入 apkSize / apkSha256 → version.json / app-update.json
+node scripts/build-web.cjs                      ← 多文件网页版（v2.79 新增）
+cp dist/index.html dist/legacy/index.html       ← 旧单文件留档
+cp dist-web/index.html dist/index.html          ← 根路径换多文件
+cp -r dist-web/assets/. dist/assets/
+cp -r dist-web/assets/. dist/app/assets/ + cp dist-web/index.html dist/app/index.html
+cp dist/legacy/index.html dist/web/index.html   ← 热更包保持单文件
 ```
 
 **为什么 `dist/app` 必须在「拷贝到 assets」之后**：否则同一份 2MB HTML 会再被打进 APK，
 包体翻倍，还会拖慢 Gitee 镜像推送。
+
+**为什么多文件步骤里不能 `cp -r dist-web/. dist/`**：`dist-web/` 里有构建期的
+`app-update.json`（不含 APK 摘要），整体拷贝会覆盖上一步刚写入 `apkSha256` 的清单，
+App 更新链路会直接断。只搬 `index.html` 与 `assets/`，CI 里有断言兜底。
 
 ---
 
@@ -95,6 +117,10 @@ npm install && npm run build        # 产出 dist/index.html 单文件，语法�
 # 2) 已有兼容性检查（仓库自带，改完前端务必各跑一次）
 node verify_es5.cjs                 # 产物必须是 ES5，否则老 WebView 白屏
 node verify_chromium37.cjs          # Chromium 37 兜底语法检查
+
+# 3) 网页版多文件产物（v2.79 起；改了 main.jsx / 词库数据都要跑）
+node scripts/build-web.cjs          # 产出 dist-web/，脚本内建「首屏 gzip ≤250KB」红线
+                                    # 超预算会 WARN 并列出超出的分片，需要继续拆分
 ```
 
 改动涉及释义清洗 / 朗读文本 / 面板 / 返回键时，除上面两条，还要自查这 5 类断言
@@ -133,6 +159,12 @@ node verify_chromium37.cjs          # Chromium 37 兜底语法检查
 | 中文明显不如英文好听 | 旧链路把 16kbps 的离线包排第一（音量压缩、频带窄），云端 64kbps 配音永远用不上 | 云端优先、离线包只做断网兜底；语速 spd 用 `rate*5`（1.0x=常速） |
 | 软件占用越用越大 | 听读每个词留 en/zh 两个缓存文件，整库播完 150MB+，且从不清理 | 缓存目录设 40MB 上限，按最后访问时间淘汰，见 `trimAlbumCacheIfNeeded()` |
 | 面板叠在一起、退不出去 | 4 个独立布尔量各自展开 | 只保留一个 `listenPanel` 单值状态 + 面板顶部常驻「完成」 |
+| 网页版一直白屏、像打不开 | 单文件 3.37MB（gzip 1MB），github.io 握手就要 4s，弱网首屏 40s | 网页版走多文件 + 词库分片（首屏 216KB gzip），单文件只留给 App/老内核 |
+| CI 报 `require is not defined` | 仓库 `package.json` 是 `"type": "module"`，`.js` 一律按 ESM 解析 | 构建脚本用 `.cjs` 后缀（`build-web.cjs` / `build-single-html.cjs`），别用 `.js` |
+| 单文件版里词库加载不出来 | 担心动态 `import()` 会去找 `chunk-*.js` | 不会：esbuild `iife` 与 vite `singlefile` 都会把 `import()` 内联成 `Promise.resolve`，无需外部 chunk |
+| App 更新清单丢了 APK 摘要 | 多文件步骤 `cp -r dist-web/. dist/` 覆盖了 `Finalize manifests` 刚写的 `app-update.json` | 只拷 `index.html` 与 `assets/`，CI 有 `apkSha256` 断言兜底 |
+| 分片下载失败后一直「请稍等」 | UI 只判断 `items.length === 0`，没读错误态 | `bookDataLoad` 三态（ready/loading/error）+ 重试按钮；重试要带 `?r=N` 绕开 module map 缓存 |
+| 老用户的掌握记录被清空 | 词库异步化后，启动时 `cleanDeletedBookRefs()` 在数据未到时会判定「词书已删除」 | 数据未齐时跳过清理，`bookDataVersion` 变化后再补跑 |
 | 版本号发了但客户端不提示更新 | 清单 `versionCode` 没递增，或 APK 与清单不一致 | 只改 `APP_VERSION`，让 CI 生成 code，并看构建末尾的断言 |
 | 选项里两个中文几乎一样 | 去重只比了「字符串完全相同」，`放弃` 与 `放弃，遗弃` 被当成不同项 | 一律用 `meaningsTooClose()`：包含关系、汉字 Jaccard≥0.6、短词编辑距离≤1 都算重复 |
 | 精选词表反而给出错释义 | 开源词表也有错条：`sacred→害怕`、`statue→法令`、`war→警告` | 生成核心释义时必须校验「与现有释义有汉字交集」，否则宁可回退 |

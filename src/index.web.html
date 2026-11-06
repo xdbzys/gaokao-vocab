@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#2563eb">
+<title>背群英</title>
+<!-- 内联 data-URI 图标：浏览器不再自动请求 /favicon.ico，避免 404；不新增二进制文件 -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTYiIGZpbGw9IiMyNTYzZWIiLz48dGV4dCB4PSIzMiIgeT0iNDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJQaW5nRmFuZyBTQyxNaWNyb3NvZnQgWWFIZWksc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzNiIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZiI+6IuxPC90ZXh0Pjwvc3ZnPg==">
+<!--APP_CSS-->
+<style>
+  /* ============================================================
+     v2.79.0 首屏骨架（纯 CSS，零 JS 依赖）
+     背景：网页版原来是 3.37MB 单文件，github.io 上要 40s 才出画面，
+     用户看到的就是「打不开」。现在页面先出这块静态骨架，
+     React 挂载后由 __removeSkeleton() 移除；即使 JS 挂了也有明确反馈。
+     三段文案互斥显示，切换靠 animation-delay，不需要定时器脚本：
+       0~3s   → 「正在加载词库…」
+       3~12s  → 「网络较慢，正在加载…」
+       12s 起 → 「加载失败」+ 重试按钮
+     隐藏用 visibility 而不只是 opacity，保证 innerText 里也只剩当前这一段。
+     ============================================================ */
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: #f5f7fb;
+  }
+  #appSkeleton {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: #f5f7fb;
+    color: #1f2937;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #appSkeleton .skLogo {
+    width: 68px;
+    height: 68px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #2563eb, #60a5fa);
+    color: #fff;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 24px rgba(37, 99, 235, .28);
+  }
+  #appSkeleton .skName {
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: .5px;
+  }
+  #appSkeleton .skSub {
+    font-size: 12.5px;
+    color: #6b7280;
+  }
+  #appSkeleton .skBar {
+    width: 132px;
+    height: 4px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+  }
+  #appSkeleton .skBar i {
+    display: block;
+    width: 42%;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #93c5fd, #2563eb);
+    /* 起点可见（0% 时停在滑轨左侧），避免动画尚未开始时进度条"消失" */
+    animation: skSlide 1.15s ease-in-out infinite;
+  }
+  @keyframes skSlide {
+    0%   { transform: translateX(0); }
+    50%  { transform: translateX(140%); }
+    100% { transform: translateX(0); }
+  }
+  /* 三段状态互斥：同一时刻只有一段可见（visibility:hidden 会同时从 innerText 里消失）。
+     同属性上后声明的 animation 在结束后优先，因此 12s 起 skStageOut 会覆盖 3s 的 skStageIn。 */
+  #skLoading, #skSlow, #skFail { visibility: hidden; opacity: 0; }
+  #skLoading { visibility: visible; opacity: 1; animation: skStageOut 0s linear 3s forwards; }
+  #skSlow { animation: skStageIn 0s linear 3s forwards, skStageOut 0s linear 12s forwards; }
+  #skFail { animation: skStageIn 0s linear 12s forwards; }
+  @keyframes skStageIn { to { visibility: visible; opacity: 1; } }
+  @keyframes skStageOut { to { visibility: hidden; opacity: 0; } }
+  #skFail { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  /* 极老 WebView / 浏览器不支持 ES module 时，用单文件旧版兜底 */
+  #skFail .skLegacy {
+    font-size: 12px;
+    color: #2563eb;
+    text-decoration: underline;
+    pointer-events: none;
+    animation: skEnable 0s linear 12s forwards;
+  }
+  #skFail button {
+    pointer-events: none;
+    animation: skEnable 0s linear 12s forwards;
+    padding: 9px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: #2563eb;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  @keyframes skEnable { to { pointer-events: auto; } }
+  #skError {
+    display: none;
+    max-width: 86vw;
+    max-height: 34vh;
+    overflow: auto;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-all;
+    text-align: left;
+  }
+  /* 骨架退场：React 挂载后由脚本加 .skGone */
+  #appSkeleton.skGone {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .22s ease;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<div id="appSkeleton">
+  <div class="skLogo">英</div>
+  <div class="skName">背群英 · 高考词汇</div>
+  <div class="skSub" id="skLoading">正在加载词库…</div>
+  <div class="skBar"><i></i></div>
+  <div class="skSub" id="skSlow">网络较慢，正在加载…</div>
+  <div id="skFail">
+    <div class="skSub">加载失败，请检查网络后重试</div>
+    <button type="button" onclick="location.reload()">重新加载</button>
+    <a class="skLegacy" href="../legacy/index.html">打不开？试试旧版单文件</a>
+  </div>
+  <div id="skError"></div>
+</div>
+
+<script nomodule>
+  /* 0) 老浏览器兜底：不支持 ES module 的 WebView（部分 Android 7/8 定制机、
+        翻译扫描笔）拿不到 type=module 的入口包，直接跳单文件旧版，避免白屏。 */
+  (function () { try { location.replace('../legacy/index.html'); } catch (e) {} })();
+</script>
+<script>
+/* 1) 骨架退场（main.jsx 在 createRoot().render() 之后调用） */
+window.__removeSkeleton = function () {
+  var el = document.getElementById('appSkeleton');
+  if (!el) return;
+  el.className = 'skGone';
+  setTimeout(function () { if (el && el.parentNode) el.parentNode.removeChild(el); }, 260);
+};
+
+/* 2) 兜底：真出错误时把摘要显示出来，而不是留一片白屏 */
+(function () {
+  var shown = false;
+  function report(kind, msg, extra) {
+    try {
+      var box = document.getElementById('skError');
+      var sk = document.getElementById('appSkeleton');
+      if (!box) return;
+      if (sk && sk.className !== 'skGone') sk.style.background = '#f5f7fb';
+      var text = '[' + kind + '] ' + msg + (extra ? '\n' + extra : '');
+      box.style.display = 'block';
+      box.textContent = shown ? (box.textContent + '\n' + text) : text;
+      shown = true;
+      // 出错了就只留「加载失败」这一段，前两段彻底移除，避免「加载中」和「失败」同屏
+      ['skLoading', 'skSlow'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) { el.style.animation = 'none'; el.style.display = 'none'; }
+      });
+      var fail = document.getElementById('skFail');
+      if (fail) {
+        fail.style.animation = 'none';
+        fail.style.visibility = 'visible';
+        fail.style.opacity = 1;
+        var btn = fail.querySelector('button');
+        if (btn) btn.style.pointerEvents = 'auto';
+      }
+    } catch (e) { /* 兜底函数自己不能再抛错 */ }
+  }
+  window.addEventListener('error', function (e) {
+    var msg = (e && (e.message || (e.error && e.error.message))) || '未知错误';
+    var where = e && e.filename ? (e.filename + ':' + e.lineno) : '';
+    report('脚本错误', msg, where);
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e && e.reason;
+    report('未处理的 Promise', (r && (r.message || r)) || '未知原因', '');
+  });
+  window.__reportBootError = report;
+})();
+
+/* 3) 12s 兜底：CSS 动画在旧 WebView 上不一定生效，这里再用 JS 兜一层，
+      保证「加载失败」出现时前两段一定不在，三段文案永远互斥。 */
+setTimeout(function () {
+  var sk = document.getElementById('appSkeleton');
+  if (!sk || sk.className === 'skGone') return;
+  ['skLoading', 'skSlow'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) { el.style.animation = 'none'; el.style.display = 'none'; }
+  });
+  var fail = document.getElementById('skFail');
+  if (fail) {
+    fail.style.animation = 'none';
+    fail.style.visibility = 'visible';
+    fail.style.opacity = 1;
+    var btn = fail.querySelector('button');
+    if (btn) btn.style.pointerEvents = 'auto';
+    var legacy = fail.querySelector('.skLegacy');
+    if (legacy) legacy.style.pointerEvents = 'auto';
+  }
+}, 12000);
+</script>
+
+<!--APP_SCRIPT-->
+</body>
+</html>
