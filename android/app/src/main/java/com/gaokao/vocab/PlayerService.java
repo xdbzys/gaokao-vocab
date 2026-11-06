@@ -284,6 +284,9 @@ public class PlayerService extends Service {
         createChannel();
         mAlbumCacheDir = new File(getCacheDir(), "album_media");
         try { if (mAlbumCacheDir != null && !mAlbumCacheDir.exists()) mAlbumCacheDir.mkdirs(); } catch (Throwable ignored) {}
+        // v2.78.0 听读改为在线流式播放，不再把每个词的音频存到本地。
+        // 老版本升级上来时缓存目录里可能已经堆了几百 MB，这里做一次一次性清理（用一个标记位保证只跑一次）。
+        purgeLegacyAlbumCacheOnce();
         mAlbumWavDir = new File(getCacheDir(), "album_wav");
         try { if (mAlbumWavDir != null && !mAlbumWavDir.exists()) mAlbumWavDir.mkdirs(); } catch (Throwable ignored) {}
         // v2.77.0 高清语音包改为「按需可选」：默认不下载，避免 15.7MB 常驻占用。
@@ -1365,8 +1368,16 @@ public class PlayerService extends Service {
                 }
             }
         };
-        if (target.exists() && target.length() > 200) play.run();
-        else downloadToFile(w.enUrl, target, play);
+        if (target.exists() && target.length() > 200) {
+            play.run();
+        } else if (streamMode() && w.enUrl != null && w.enUrl.length() > 0) {
+            // 联网：直接播 URL，不写盘
+            playAlbumUrl(w.enUrl, new Runnable() {
+                @Override public void run() { onStageItemDone(idx, tok); }
+            });
+        } else {
+            downloadToFile(w.enUrl, target, play);
+        }
     }
 
     /**
@@ -1390,6 +1401,9 @@ public class PlayerService extends Service {
             playAlbumZhSystem(idx, tok);
             return;
         }
+
+        // v2.78.0 联网流式：不再依赖本地缓存文件，直接在线合成播放
+        if (wantNet) { playAlbumZhOnline(idx, tok, hdF, afterDone); return; }
 
         // ① 已预取的云端音频（百度 64kbps / 有道）→ 直接播，零延迟
         if (wantNet) {
@@ -2268,6 +2282,30 @@ public class PlayerService extends Service {
         }
     }
 
+    /* ===== v2.78.0 在线流式播放 =====
+       旧版每播一个词就把 en_xx.mp3 / zh_xx.mp3 落到 cacheDir，整库 3598 词 ≈ 150~200MB。
+       现在联网时直接用 MediaPlayer 播 URL，本地不落任何文件；离线时才读本地离线包。
+       只有「导出 MP3」这种用户显式要文件的动作才继续写盘。 */
+    private static final String PREF_MISC = "gaokao_misc";
+    private static final String KEY_CACHE_PURGED = "album_cache_purged_v278";
+
+    private void purgeLegacyAlbumCacheOnce() {
+        try {
+            android.content.SharedPreferences sp = getSharedPreferences(PREF_MISC, MODE_PRIVATE);
+            if (sp.getBoolean(KEY_CACHE_PURGED, false)) return;
+            if (mAlbumCacheDir != null) {
+                File[] fs = mAlbumCacheDir.listFiles();
+                if (fs != null) for (File f : fs) { try { f.delete(); } catch (Throwable ignored) {} }
+            }
+            sp.edit().putBoolean(KEY_CACHE_PURGED, true).apply();
+        } catch (Throwable ignored) {}
+    }
+
+    /** 联网且用户没强制「手机语音」时才走流式 */
+    private boolean streamMode() {
+        try { return netAvailable() && !"system".equals(mCfgZhSource); } catch (Throwable e) { return false; }
+    }
+
     /** 确保英文发音文件就绪（本地已有则秒返回；否则下载） */
     private boolean ensureEnAudio(AlbumWord w) {
         trimAlbumCacheIfNeeded();
@@ -2389,6 +2427,7 @@ public class PlayerService extends Service {
         for (int i = from; i < to && i < list.size(); i++) {
             final AlbumWord w = list.get(i);
             try {
+                if (streamMode()) continue;   // v2.78.0 联网流式，无需预取落盘
                 mPrefetchPool.submit(new Runnable() {
                     @Override public void run() {
                         try { ensureEnAudio(w); } catch (Throwable ignored) {}

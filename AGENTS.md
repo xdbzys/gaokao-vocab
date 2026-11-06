@@ -33,6 +33,16 @@ const isFullApp   = isNativeApp || isFullWeb   // 功能完整版（App / 新网
 
 ---
 
+## 2.0 如果这版动了释义
+
+```bash
+node src/scripts/build-core-meanings.js   # 重新生成 coreMeanings.js（人工表在脚本顶部 MANUAL）
+```
+生成脚本会读 `src/data/curated/*.json`，不联网。**改完必须提交 `coreMeanings.js`**，
+否则 CI 构建用的是旧表。
+
+---
+
 ## 2. 每次发版必须做的四件事（顺序不能乱）
 
 1. **改版本号**：`src/main.jsx` 里的 `APP_VERSION`（如 `2.76.0`）。
@@ -100,6 +110,9 @@ node verify_chromium37.cjs          # Chromium 37 兜底语法检查
 | 中文音频源顺序 | 在线时首源必须是云端；本地包只能排最后（断网时才可以排第一） |
 | 下拉交互 | 点遮罩、点选项都必须关闭菜单，且菜单只能存在 1 个 |
 | 释义分段 | 含「；」的释义要渲染成多个 `.mnItem`，分号保留、间距 ≥8px |
+| 核心释义 | 全库 12867 条都非空、≤18 字、不含英文单词；同一词跨词库必须一致 |
+| 选项去重 | 任一题四选项两两 `meaningsTooClose()` 为假（困难模式重点抽查） |
+| 释义脏数据 | 全库 0 条含 `DOS命令 / 计算机辅助 / BASIC语言 / 的过去分词` |
 
 **必须自己看截图**再交付：面板是否重叠、按钮是否被挤出屏幕、深色文字是否压在图上看不清。
 没有截图证据就当没做完（Chromium 390×844，模拟安卓手机屏宽）。
@@ -121,6 +134,11 @@ node verify_chromium37.cjs          # Chromium 37 兜底语法检查
 | 软件占用越用越大 | 听读每个词留 en/zh 两个缓存文件，整库播完 150MB+，且从不清理 | 缓存目录设 40MB 上限，按最后访问时间淘汰，见 `trimAlbumCacheIfNeeded()` |
 | 面板叠在一起、退不出去 | 4 个独立布尔量各自展开 | 只保留一个 `listenPanel` 单值状态 + 面板顶部常驻「完成」 |
 | 版本号发了但客户端不提示更新 | 清单 `versionCode` 没递增，或 APK 与清单不一致 | 只改 `APP_VERSION`，让 CI 生成 code，并看构建末尾的断言 |
+| 选项里两个中文几乎一样 | 去重只比了「字符串完全相同」，`放弃` 与 `放弃，遗弃` 被当成不同项 | 一律用 `meaningsTooClose()`：包含关系、汉字 Jaccard≥0.6、短词编辑距离≤1 都算重复 |
+| 精选词表反而给出错释义 | 开源词表也有错条：`sacred→害怕`、`statue→法令`、`war→警告` | 生成核心释义时必须校验「与现有释义有汉字交集」，否则宁可回退 |
+| 释义里出现「DOS内部命令」 | 3500 词库来自一部 DOS 时代的老词典，末尾挂着工具说明 | `cleanMeaning()` 的三条规则（`MEANING_JUNK_RE / GRAMMAR_RE / TOOL_TAIL_RE`），常量必须在 `builtInBooks` 之前声明 |
+| 核心释义被截断成半个词 | 把整串按 18 字 `slice`，会切出「媒」这种残字 | 按义项切分后再取整条，超长只保留第一个义项 |
+| 听读还是有文件落盘 | `playAlbumEn` 先 `downloadToFile` 再播 | 联网走 `playAlbumUrl`（流式）；`prefetchAhead` 在 `streamMode()` 时直接跳过 |
 
 ---
 
@@ -135,6 +153,9 @@ src/PlayerService.java       前台播放服务 / MediaSession / TTS / 语音包
 src/build.yml                CI 流水线（对应仓库 .github/workflows/build.yml）
 src/site/gaokao-vocab-site.html   官网
 src/scripts/sync-site-changelog.js  官网更新日志注入
+src/coreMeanings.js          核心释义表（3857 词，自动生成，勿手改）
+src/data/curated/*.json      精选词库源数据（高考3500 / 真题高频 / 牛津3000）
+src/scripts/build-core-meanings.js  重新生成 coreMeanings.js（改了精选表或人工表后跑一次）
 app-update.json              版本清单（客户端更新判断的唯一事实来源）
 src/AGENTS.md                本文件（改版前先读）
 version.json                 轻量版本探针（约 300 字节，先比 code 再决定要不要下正文）

@@ -7,6 +7,7 @@ import { getWordEnrichment } from './wordEnrichment';
 import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, presentParticipleRules, nounPluralRules } from './wordTransformations';
 import { masterVocabSeed, masterVocabLookup } from './gaokaoMasterVocab';
 import { DEFAULT_AVATAR } from './avatarData';
+import { CORE_MEANINGS } from './coreMeanings';
 
 /* ============================
    低版本 / 多设备兼容加固（Android 10 / MP5 / 翻译扫描笔等老 WebView）
@@ -86,8 +87,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.77.0';
-const APP_VERSION_CODE = 296;
+const APP_VERSION = '2.78.0';
+const APP_VERSION_CODE = 298;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -143,16 +144,30 @@ const isFullApp = isNativeApp || isFullWeb;
    这里改成 React 渲染的卡片：标题 + 等宽换行正文 + 关闭按钮，全部走应用主题样式。
    调用方不需要关心是否已挂载：未挂载时退化为控制台输出，不会阻塞流程。 */
 let _appTipSink = null;
-function appTip(message, title) {
+let _appTipTimer = null;
+/* autoCloseMs > 0 时自动消失（用于「音量键开关」这类轻提示，避免挡住背诵页的按钮） */
+function appTip(message, title, autoCloseMs) {
   var text = String(message == null ? '' : message);
   try {
-    if (_appTipSink) { _appTipSink(text, title || '提示'); return; }
+    if (_appTipSink) { _appTipSink(text, title || '提示', autoCloseMs || 0); return; }
   } catch (e) {}
   try { console.log('[tip] ' + text); } catch (e) {}
 }
 
-const POS_TAG_WORDS = 'vt|vi|v|n|adj|adv|prep|pron|conj|interj|det|art|num|int|aux|modal|abbr|pl|sing|a';
+const POS_TAG_WORDS = 'vt|vi|v|n|adj|adv|ad|prep|pron|conj|interj|det|art|num|int|aux|modal|abbr|pl|sing|a';
 const POS_TAG_RE = new RegExp('(^|[\\s，,；;、。！？：:（(“\"【】])(' + POS_TAG_WORDS + ')\\.\\s*', 'gi');
+
+/* v2.78.0：释义里的三类历史脏数据（来自一部老词典），必须在入库时清掉。
+   ① DOS 命令说明：「DOS内部命令:复制文件」  ② 缩略语展开：「计算机辅助教育」「BASIC语言」
+   ③ 语法注释：「be 的现在分词」「bite 的过去式和过去分词」
+   同样必须在词库初始化（builtInBooks）之前声明，否则 makeItem 取到 undefined。 */
+const MEANING_JUNK_RE = /(DOS\s*(内部|外部)命令|计算机(辅助|工艺|生产|印刷|教学|排版|翻译|测试)?|BASIC语言|Internet网|局域网|载波检测|二进制数位|机内测试)/;
+const MEANING_GRAMMAR_RE = /^[（(]?\s*[A-Za-z\u4e00-\u9fa5]{0,10}的(过去式|过去分词|现在分词|复数|第三人称单数|比较级|最高级)/;
+// 同一部老词典还会把 DOS 时代的工具说明塞进释义末尾（"查看内存实用程序""串行线接口协议"）。
+// 判定：以「程序 / 系统 / 协议」结尾的义项一律视为工具描述，只保留下面这几个真正常用的词。
+const MEANING_TOOL_TAIL_RE = /(程序|系统|协议)$/;
+const MEANING_TECH_RE = /(索引|机构|模块|接口|组件|程序|系统|协议|算法|编码|存储器|处理器|数据库)/;
+const MEANING_TOOL_KEEP = { '程序': 1, '系统': 1, '编程序': 1, '应用程序': 1, '驱动程序': 1, '达成协议': 1, '生态系统': 1 };
 
 // v2.67.0：本机「安装包」真实版本（PackageManager 读取）。
 // 页面会被云端热更新抬高版本号，但原生功能只随 APK 更新 —— 两者不一致时
@@ -3944,14 +3959,75 @@ function generatePhonetic(term) {
    三、内置词库结构
    ============================ */
 
+/* v2.78.0 核心释义：背诵选项、卡片主释义统一用这一份
+   来源优先级：① 人工校对的精选词表（src/coreMeanings.js，3852 词）
+              ② 从完整释义里取第一个义项
+   为什么要单独一份：完整释义常常是「放弃, 抛弃, 遗弃, 使屈从, 沉溺, 放纵」，
+   选项里四条都这么长，既看不出重点，也容易和干扰项撞车。 */
+function splitTopLevel(text, seps) {
+  var out = [], buf = '', depth = 0;
+  for (var i = 0; i < text.length; i++) {
+    var ch = text[i];
+    if (ch === '（' || ch === '(') depth++;
+    else if (ch === '）' || ch === ')') depth = Math.max(0, depth - 1);
+    if (depth === 0 && seps.indexOf(ch) >= 0) { out.push(buf); buf = ''; continue; }
+    buf += ch;
+  }
+  out.push(buf);
+  return out;
+}
+
+function sanitizeCore(text) {
+  var t = String(text || '');
+  // 括号里带英文/数字的整段注释（"美分（100cent=1dollar）"）先去掉
+  t = t.replace(/[（(][^）)]*[A-Za-z0-9][^）)]*[）)]/g, '');
+  t = t.replace(/【[^】]*】/g, '').replace(/…+/g, '');
+  t = t.replace(POS_TAG_RE, '$1');   // 「更坏的，ad.更坏」这种词性残留
+  // 只在括号外按逗号/分号切义项：「（涂有番茄酱、乳酪等的）意大利馅饼」不能从中间切开
+  var parts = splitTopLevel(t, '，,；;、').map(function (x) {
+    return x.replace(/^[\s,，、.．]+|[\s,，、.．]+$/g, '').trim();
+  }).filter(function (x) {
+    if (!x) return false;
+    var o = (x.match(/[（(]/g) || []).length;
+    var c = (x.match(/[）)]/g) || []).length;
+    return o === c;
+  });
+  t = parts.slice(0, 2).join('，');
+  if (t.length > 18) {
+    var first = t.split('，')[0];
+    t = first.length <= 18 ? first : first.slice(0, 18);
+  }
+  return t.replace(/^[，,、]+|[，,、]+$/g, '').trim();
+}
+
+// 每词只算一次：同一个词在不同词库里 meaning 可能不同，核心释义必须一致
+var _coreCache = {};
+function coreOf(term, meaning) {
+  var key = String(term == null ? '' : term).toLowerCase().trim();
+  if (Object.prototype.hasOwnProperty.call(_coreCache, key)) return _coreCache[key];
+  var c = key ? CORE_MEANINGS[key] : '';
+  var out = c
+    ? sanitizeCore(String(c))
+    : sanitizeCore(stripPosPrefix(getShortMeaning(cleanMeaning(meaning))));
+  if (!out) out = sanitizeCore(cleanMeaning(meaning));
+  _coreCache[key] = out;
+  return out;
+}
+
 function makeItem(row, type, index, source) {
   const [term, pos, meaning, frequency, corePoints, allPoints, examples] = row;
+  const core = coreOf(term, meaning);
+  // v2.78.0：含 DOS 命令 / 缩略语展开 / 语法注释的释义，清洗后仍是断句残片，
+  // 直接用核心释义替换，避免详情页还在显示「计算机辅助教育」这类内容
+  const dirty = MEANING_JUNK_RE.test(String(meaning || '')) || /的(过去式|过去分词|现在分词|复数)/.test(String(meaning || ''));
   return {
     id: `${type}-${index}-${term}`,
     type, term, pos,
     // v2.76.0：入库即清洗词性标记（"a. 能干的" → "能干的"），
     // 显示 / 搜索 / 朗读三处共用同一份文本，避免同一条释义在不同页面表现不一致
-    meaning: cleanMeaning(meaning),
+    meaning: (dirty && core) ? core : cleanMeaning(meaning),
+    // v2.78.0：核心释义（高频、1~2 个义项），背诵页选项与卡片主释义使用
+    core: core,
     // v2.43.0 修复闪退：4元素精简词条（总汇词库）解构后 corePoints 等为 undefined，
     // 详情页 .map() 直接崩溃；此处统一兜底为空数组
     frequency: frequency || '拓展',
@@ -9905,16 +9981,43 @@ function stripPosPrefix(text) {
    2) 每组去掉词性标记（a. adj. n. vt. …）与领域标签（[经] [医] [计] …）
    3) 丢掉清洗后为空的组；与前面完全相同的组去重（如「删除；[计] 删除」→「删除」）
    4) 全部丢失时回退为原文本，保证不出现空释义 */
+/* v2.78.0：释义里的三类历史脏数据（来自一部老词典），必须在入库时清掉
+   ① DOS 命令说明：「DOS内部命令:复制文件」「DOS外部命令:格式化磁盘」
+   ② 缩略语展开：「计算机辅助教育」「BASIC语言」「美国北卡罗来纳州Internet网」
+   ③ 语法注释：「be 的现在分词」「bite 的过去式和过去分词」
+   这些内容与高考无关，出现在选项里会让人以为释义错了。规则常量见文件顶部。 */
 function cleanMeaning(text) {
   var raw = String(text || '').trim();
   if (!raw) return '';
   var groups = raw.replace(/[;；]/g, '；').split('；');
   var out = [];
   for (var i = 0; i < groups.length; i++) {
-    var g = groups[i]
+    var g = groups[i];
+    if (MEANING_GRAMMAR_RE.test(g.trim())) continue;      // 纯语法注释组直接丢
+    var junkAt = g.search(MEANING_JUNK_RE);
+    if (junkAt >= 0) g = g.slice(0, junkAt);              // 脏内容之后的一律截断
+    // 组内嵌在末尾的语法注释（"存在, 性质, 生物, be的现在分词"）按子句剔除
+    g = g.replace(/[,，、\s]*[A-Za-z\u4e00-\u9fa5]{0,12}的(过去式|过去分词|现在分词|复数|第三人称单数|比较级|最高级)[^,，；;]*/g, '');
+    // 同一组里混着的工具说明（"远程, 远程访问实用程序"）只去掉那一段，保留正常义项
+    var segs = g.split(/[,，、]/);
+    var kept = [];
+    var techCount = 0;
+    for (var si = 0; si < segs.length; si++) {
+      var seg = segs[si].trim();
+      if (!seg) continue;
+      if (seg.length >= 3 && MEANING_TOOL_TAIL_RE.test(seg) && !MEANING_TOOL_KEEP[seg]) continue;
+      if (MEANING_TECH_RE.test(seg)) techCount++;
+      kept.push(seg);
+    }
+    // 整组都是缩略语展开（"医学文摘索引, 存取隔离机构, 高级信息管理程序…"）→ 整组丢弃
+    if (segs.length >= 3 && techCount >= 2 && techCount * 2 >= segs.length) continue;
+    g = kept.join(', ');
+    g = g
+      .replace(/【[^】]{1,8}】/g, ' ')
       .replace(/\[[^\]]{1,8}\]/g, ' ')
+      .replace(/[（(][^）)]*(的复数形式|的过去式|的过去分词|的现在分词|缩写)[^）)]*[）)]/g, '')
       .replace(POS_TAG_RE, '$1')
-      .replace(/^[\s,，、.．]+|[\s,，、.．]+$/g, '')
+      .replace(/^[\s,，、.．\-—/\\]+|[\s,，、.．\-—/\\]+$/g, '')
       .replace(/\s{2,}/g, ' ')
       .trim();
     if (!g) continue;
@@ -9964,6 +10067,46 @@ function meaningsShareChars(meaning1, meaning2) {
   for (const c of m2) {
     if (/[\u4e00-\u9fa5]/.test(c) && !ignoreChars.has(c) && chars1.has(c)) return true;
   }
+  return false;
+}
+
+/* v2.78.0 选项去重：判断两条中文释义是不是「同一个意思」
+   旧版只用「完全相同」排除，结果困难模式里同时出现「放弃」与「放弃，遗弃」，
+   用户看到两个几乎一样的选项，怎么选都像错的。这里用三条确定性规则：
+   ① 去掉标点后相同 → 视为同一个
+   ② 包含关系（短的被长的完全包含）→ 视为同一个
+   ③ 汉字重合度 ≥ 0.6，或 4 字以内编辑距离 ≤ 1 → 视为同一个 */
+function meaningKey(s) {
+  return String(s == null ? '' : s).replace(/[\s，,。；;、：:（）()【】\[\]…·.．!！?？~～-]/g, '');
+}
+
+function editDistance(a, b) {
+  const m = a.length, n = b.length;
+  if (!m) return n;
+  if (!n) return m;
+  let prev = new Array(n + 1);
+  for (let j = 0; j <= n; j++) prev[j] = j;
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+
+function meaningsTooClose(a, b) {
+  const A = meaningKey(a), B = meaningKey(b);
+  if (!A || !B) return true;
+  if (A === B) return true;
+  if (A.indexOf(B) >= 0 || B.indexOf(A) >= 0) return true;
+  const sa = new Set(Array.from(A)), sb = new Set(Array.from(B));
+  let inter = 0;
+  sa.forEach((c) => { if (sb.has(c)) inter++; });
+  const union = sa.size + sb.size - inter;
+  if (union > 0 && inter / union >= 0.6) return true;
+  if (A.length <= 4 && B.length <= 4 && editDistance(A, B) <= 1) return true;
   return false;
 }
 
@@ -11604,7 +11747,11 @@ function App() {
   // v2.76.0 应用内提示卡片（替代 alert，避免 WebView 的「网址为 file://」原生标题）
   const [tipMsg, setTipMsg] = useState(null);
   useEffect(() => {
-    _appTipSink = function (text, title) { setTipMsg({ text: text, title: title }); };
+    _appTipSink = function (text, title, ms) {
+      setTipMsg({ text: text, title: title });
+      if (_appTipTimer) { clearTimeout(_appTipTimer); _appTipTimer = null; }
+      if (ms > 0) { _appTipTimer = setTimeout(function () { setTipMsg(null); }, ms); }
+    };
     return function () { _appTipSink = null; };
   }, []);
 
@@ -13089,8 +13236,8 @@ function App() {
     if (!item) return [];
     if (practiceMode === 'flashcard') return [];
     // 从普通词库中抽取干扰项，排除易混/同义/反义/褒贬分类词库
-    const normalBooks = books.filter(b => 
-      !b.id.includes('synonym') && !b.id.includes('antonym') && 
+    const normalBooks = books.filter(b =>
+      !b.id.includes('synonym') && !b.id.includes('antonym') &&
       !b.id.includes('confused') && !b.id.includes('dual-sentiment') &&
       !b.id.includes('positive') && !b.id.includes('negative')
     );
@@ -13099,155 +13246,82 @@ function App() {
     const itemPosCat = getPosCategory(item.pos);
 
     if (practiceMode === 'cn-to-en') {
-      // 中文选英文：用 term 做选项
+      // 中文选英文：用 term 做选项（不存在同义重复的问题）
       const correctTerm = item.term;
       const seenTerms = new Set([correctTerm.toLowerCase()]);
-
+      const pushTerm = (w, out) => {
+        if (out.length >= 3) return;
+        const t = String(w.term || '').toLowerCase();
+        if (!t || t === correctTerm.toLowerCase() || seenTerms.has(t)) return;
+        seenTerms.add(t); out.push(w.term);
+      };
+      let wrong = [];
       if (difficulty === 'hard') {
-        // 困难模式：优先用易混词(长得像的单词)和词族，其次用同词性
-        const confusing = findConfusingWords(correctTerm, normalWords);
-        const family = findWordFamily(correctTerm, normalWords);
-        const candidates = [...confusing, ...family].filter(w =>
-          w.id !== item.id && w.term && w.term !== correctTerm &&
-          !seenTerms.has(w.term.toLowerCase())
-        );
-        let wrongItems = [];
-        for (const w of candidates) {
-          if (wrongItems.length >= 3) break;
-          if (!seenTerms.has(w.term.toLowerCase())) {
-            seenTerms.add(w.term.toLowerCase());
-            wrongItems.push(w);
-          }
-        }
-        // 不够3个，用同词性补充
-        if (wrongItems.length < 3) {
-          const samePosPool = normalWords.filter(w =>
-            w.id !== item.id && w.term && w.term !== correctTerm &&
-            !seenTerms.has(w.term.toLowerCase()) &&
-            getPosCategory(w.pos) === itemPosCat
-          );
-          for (const w of shuffle(samePosPool)) {
-            if (wrongItems.length >= 3) break;
-            seenTerms.add(w.term.toLowerCase());
-            wrongItems.push(w);
-          }
-        }
-        // 仍不够，用任意词补充
-        if (wrongItems.length < 3) {
-          const anyPool = normalWords.filter(w =>
-            w.id !== item.id && w.term && w.term !== correctTerm &&
-            !seenTerms.has(w.term.toLowerCase())
-          );
-          for (const w of shuffle(anyPool)) {
-            if (wrongItems.length >= 3) break;
-            seenTerms.add(w.term.toLowerCase());
-            wrongItems.push(w);
-          }
-        }
-        const values = [correctTerm, ...wrongItems.map(i => i.term)];
-        return shuffle(values);
+        const cand = [...findConfusingWords(correctTerm, normalWords), ...findWordFamily(correctTerm, normalWords)]
+          .filter(w => w.id !== item.id && w.term);
+        for (const w of cand) pushTerm(w, wrong);
+        if (wrong.length < 3) for (const w of shuffle(normalWords.filter(w => w.id !== item.id && getPosCategory(w.pos) === itemPosCat))) pushTerm(w, wrong);
       } else {
-        // 简单模式：排除易混词和词族，优先用不同词性
         const confusingSet = new Set(findConfusingWords(correctTerm, normalWords).map(w => w.term.toLowerCase()));
         const familySet = new Set(findWordFamily(correctTerm, normalWords).map(w => w.term.toLowerCase()));
-        const pool = normalWords.filter(w =>
-          w.id !== item.id && w.term && w.term !== correctTerm &&
-          !confusingSet.has(w.term.toLowerCase()) &&
-          !familySet.has(w.term.toLowerCase()) &&
-          !seenTerms.has(w.term.toLowerCase())
-        );
-        // 优先不同词性
-        const diffPos = pool.filter(w => getPosCategory(w.pos) !== itemPosCat);
-        const samePos = pool.filter(w => getPosCategory(w.pos) === itemPosCat);
-        let wrongItems = shuffle(diffPos).slice(0, 3);
-        if (wrongItems.length < 3) {
-          for (const w of shuffle(samePos)) {
-            if (wrongItems.length >= 3) break;
-            wrongItems.push(w);
-          }
-        }
-        const values = [correctTerm, ...wrongItems.map(i => i.term)];
-        return shuffle(values);
+        const pool = normalWords.filter(w => w.id !== item.id && w.term && !confusingSet.has(w.term.toLowerCase()) && !familySet.has(w.term.toLowerCase()));
+        for (const w of shuffle(pool.filter(w => getPosCategory(w.pos) !== itemPosCat))) pushTerm(w, wrong);
+        for (const w of shuffle(pool)) pushTerm(w, wrong);
       }
+      for (const w of shuffle(normalWords.filter(w => w.id !== item.id))) pushTerm(w, wrong);
+      return shuffle([correctTerm, ...wrong]);
+    }
+
+    // 英文选中文：选项一律用「核心释义」（短、高频），而不是整条词典释义
+    const correctCore = coreOf(item.term, item.meaning);
+    const seenCores = [correctCore];
+    const picked = [];
+    const tryAdd = (w) => {
+      if (picked.length >= 3) return;
+      if (!w || w.id === item.id) return;
+      const c = coreOf(w.term, w.meaning);
+      if (!c || c.length < 1) return;
+      if (seenCores.some(x => meaningsTooClose(x, c))) return;
+      seenCores.push(c);
+      picked.push(c);
+    };
+
+    // 基础池：有释义、含中文、与正确项不撞
+    const basePool = normalWords.filter(w => {
+      if (!w.meaning || w.id === item.id || w.term === item.term) return false;
+      const c = coreOf(w.term, w.meaning);
+      return c && /[\u4e00-\u9fa5]/.test(c) && !meaningsTooClose(correctCore, c);
+    });
+
+    if (difficulty === 'hard') {
+      // 困难模式：优先同词性、且与正确项共享部分汉字的词（形近义不同），
+      // 但必须通过 meaningsTooClose 去重 —— 旧版就是缺这一步，
+      // 才出现「放弃」和「放弃，遗弃」同时上屏、两个选项都算对的情况。
+      const samePos = basePool.filter(w => getPosCategory(w.pos) === itemPosCat);
+      const near = samePos.filter(w => meaningsShareChars(item.meaning, w.meaning));
+      for (const w of shuffle(near)) tryAdd(w);
+      for (const w of shuffle(samePos)) tryAdd(w);
+      for (const w of shuffle(basePool)) tryAdd(w);
     } else {
-      // 英文选中文：用 meaning 做选项
-      const correctShort = getShortMeaning(item.meaning);
-      const seenMeanings = new Set([correctShort]);
-
-      // 基础过滤：有效释义、含中文、非同义
-      const basePool = normalWords.filter(w => {
-        if (!w.meaning) return false;
-        const sm = getShortMeaning(w.meaning);
-        if (sm.length < 2) return false;
-        if (!/[\u4e00-\u9fa5]/.test(sm)) return false;
-        if (sm === correctShort) return false; // 排除同义
-        if (w.id === item.id) return false;
-        if (w.term === item.term) return false;
-        return true;
-      });
-
-      if (difficulty === 'hard') {
-        // 困难模式：优先用近义词（共享中文实义字符），其次同词性
-        const nearSynonyms = basePool.filter(w => meaningsShareChars(item.meaning, w.meaning));
-        let wrongItems = shuffle(nearSynonyms).slice(0, 3);
-        // 不够3个，用同词性补充
-        if (wrongItems.length < 3) {
-          const samePosPool = basePool.filter(w =>
-            getPosCategory(w.pos) === itemPosCat &&
-            !wrongItems.includes(w)
-          );
-          for (const w of shuffle(samePosPool)) {
-            if (wrongItems.length >= 3) break;
-            wrongItems.push(w);
-          }
-        }
-        // 仍不够，用任意词补充
-        if (wrongItems.length < 3) {
-          const remaining = basePool.filter(w => !wrongItems.includes(w));
-          for (const w of shuffle(remaining)) {
-            if (wrongItems.length >= 3) break;
-            wrongItems.push(w);
-          }
-        }
-        // 去重
-        const uniqueWrong = [];
-        for (const w of wrongItems) {
-          const sm = getShortMeaning(w.meaning);
-          if (!seenMeanings.has(sm)) { seenMeanings.add(sm); uniqueWrong.push(w.meaning); }
-          if (uniqueWrong.length >= 3) break;
-        }
-        const values = [item.meaning, ...uniqueWrong];
-        return shuffle(values);
-      } else {
-        // 简单模式：排除近义词，优先不同词性
-        const farPool = basePool.filter(w => !meaningsShareChars(item.meaning, w.meaning));
-        const diffPos = farPool.filter(w => getPosCategory(w.pos) !== itemPosCat);
-        const samePos = farPool.filter(w => getPosCategory(w.pos) === itemPosCat);
-        let wrongItems = shuffle(diffPos).slice(0, 3);
-        if (wrongItems.length < 3) {
-          for (const w of shuffle(samePos)) {
-            if (wrongItems.length >= 3) break;
-            wrongItems.push(w);
-          }
-        }
-        // 仍不够，从近义词以外的词中补充
-        if (wrongItems.length < 3) {
-          const remaining = basePool.filter(w => !wrongItems.includes(w));
-          for (const w of shuffle(remaining)) {
-            if (wrongItems.length >= 3) break;
-            wrongItems.push(w);
-          }
-        }
-        const uniqueWrong = [];
-        for (const w of wrongItems) {
-          const sm = getShortMeaning(w.meaning);
-          if (!seenMeanings.has(sm)) { seenMeanings.add(sm); uniqueWrong.push(w.meaning); }
-          if (uniqueWrong.length >= 3) break;
-        }
-        const values = [item.meaning, ...uniqueWrong];
-        return shuffle(values);
+      // 简单模式：优先不同词性、释义差别大的词
+      const far = basePool.filter(w => !meaningsShareChars(item.meaning, w.meaning));
+      for (const w of shuffle(far.filter(w => getPosCategory(w.pos) !== itemPosCat))) tryAdd(w);
+      for (const w of shuffle(far)) tryAdd(w);
+      for (const w of shuffle(basePool)) tryAdd(w);
+    }
+    // 极端情况（词库很小）仍凑不满 3 个：放宽到「只要字面不同」。
+    // 宁可给两条相似的，也不能出现两条一模一样的。
+    if (picked.length < 3) {
+      for (const w of shuffle(normalWords)) {
+        if (picked.length >= 3) break;
+        const c = coreOf(w.term, w.meaning);
+        if (!c || w.id === item.id) continue;
+        if (seenCores.some(x => meaningKey(x) === meaningKey(c))) continue;
+        seenCores.push(c);
+        picked.push(c);
       }
     }
+    return shuffle([correctCore, ...picked]);
   }, [optionsKey]); // v2.56.0: 仅当显示单词/模式/难度/词库变化时重新生成，防止答题后选项刷新
 
   // 选项 → 单词条目映射（困难模式答题后展示选项词汇，点击跳转该词考点）
@@ -13259,7 +13333,8 @@ function App() {
     const meaningIdx = new Map();
     books.forEach(b => b.items.forEach(w => {
       if (w.term && !termIdx.has(w.term.toLowerCase())) termIdx.set(w.term.toLowerCase(), w);
-      if (w.meaning && !meaningIdx.has(w.meaning)) meaningIdx.set(w.meaning, w);
+      const ck = coreOf(w.term, w.meaning);
+      if (ck && !meaningIdx.has(ck)) meaningIdx.set(ck, w);
     }));
     const map = new Map();
     options.forEach(opt => {
@@ -13268,7 +13343,7 @@ function App() {
         const w = termIdx.get(opt.toLowerCase());
         if (w) map.set(opt, w);
       } else {
-        if (opt === item.meaning) { map.set(opt, item); return; }
+        if (opt === coreOf(item.term, item.meaning)) { map.set(opt, item); return; }
         const w = meaningIdx.get(opt);
         if (w) map.set(opt, w);
       }
@@ -13947,7 +14022,7 @@ function App() {
     setSessionTotal(t => t + 1);
     // 记录最近一次回答的单词（用于"上一个"回退）
     lastAnsweredRef.current = { item: c, index };
-    const right = practiceMode === 'cn-to-en' ? c.term : c.meaning;
+    const right = practiceMode === 'cn-to-en' ? c.term : coreOf(c.term, c.meaning);
     // 错词本模式下，答对不自动掌握也不自动跳转（优先级最高）
     const isWrongWordBook = currentBookIds.includes('wrong-words');
     if (option === right) {
@@ -14703,6 +14778,23 @@ function App() {
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5v11l7-5.5-7-5.5Z"/><path d="M17 6.5v11"/></svg>
               <span>自动跳转</span>
             </button>
+            {/* v2.78.0 音量键翻页开关放到背诵页：原来只在「我的-设置」里，做题时想开还得退出背诵页 */}
+            {isNativeApp && (
+              <button
+                className={`quickToggleBtn ${settings.volumeKeyNav ? 'volOn' : 'volOff'}`}
+                title="开启后按手机音量上/下键翻到上一个/下一个词"
+                onClick={() => {
+                  const v = !settings.volumeKeyNav;
+                  setSettings(s => ({ ...s, volumeKeyNav: v }));
+                  saveSettings({ ...settings, volumeKeyNav: v });
+                  try { if (window.VolumeKeyNative) window.VolumeKeyNative.setVolumeKeyNavEnabled(v); } catch (e) {}
+                  appTip(v ? '音量上键上一个词，音量下键下一个词' : '已关闭，音量键恢复调节音量', '音量键翻页', 1800);
+                }}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 6v12L7.2 14.5H4z" /><path d="M16.2 9.2a4 4 0 0 1 0 5.6" /><path d="M18.6 6.6a7.6 7.6 0 0 1 0 10.8" /></svg>
+                <span>音量键{settings.volumeKeyNav ? '开' : '关'}</span>
+              </button>
+            )}
           </div>
 
           {/* 单词/短语分类 */}
@@ -14755,7 +14847,7 @@ function App() {
               </div>
 
               <div className="questionArea">
-                <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? getShortMeaning(displayCurrent.meaning) : practiceMode === 'flashcard' ? displayCurrent.term : displayCurrent.term}</h2>
+                <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? coreOf(displayCurrent.term, displayCurrent.meaning) : displayCurrent.term}</h2>
                 {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1.1em', margin: '4px 0' }}>{displayCurrent.pos}</p>}
                 {practiceMode !== 'cn-to-en' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
                 <button className="sound" onClick={() => speak(displayCurrent.term, settings.speakRate)}><Icon name="speaker" />发音</button>
@@ -14765,10 +14857,9 @@ function App() {
               {practiceMode !== 'flashcard' && !selected && (
                 <div className="options">
                   {options.map(option => {
-                    const right = practiceMode === 'cn-to-en' ? current.term : current.meaning;
-                    // en-to-cn 模式下选项只显示简短中文释义，不显示词性标记和详细义项
-                    const displayOption = practiceMode === 'en-to-cn' ? getShortMeaning(option) : option;
-                    return <button key={option} onClick={() => handleSelect(option)}>{displayOption}</button>;
+                    const right = practiceMode === 'cn-to-en' ? current.term : coreOf(current.term, current.meaning);
+                    // v2.78.0：选项本身就是核心释义（短、高频），不需要再截断
+                    return <button key={option} onClick={() => handleSelect(option)}>{option}</button>;
                   })}
                 </div>
               )}
@@ -14781,20 +14872,20 @@ function App() {
               {/* 答题后选项消失，解释内容顶替选项位置 */}
               {(showBack || selected) && (() => {
                 const isFlashcard = practiceMode === 'flashcard';
-                const isCorrect = selected && (practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning) === selected;
+                const isCorrect = selected && (practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning)) === selected;
                 const enrichment = (isFlashcard || isCorrect) ? getWordEnrichment(displayCurrent.term) : null;
                 const showAll = isFlashcard || detailMode === 'full' || isCorrect;
                 const mergedPoints = getMergedPoints(displayCurrent); // v2.56.0 跨词库考点整合
                 return (
                 <div className="answerBox">
                   {selected && (
-                    <p style={{ fontWeight: 600, marginBottom: 8, color: (practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning) === selected ? '#16a34a' : '#dc2626' }}>
-                      {selected === (practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning) ? '✅ 回答正确' : `❌ 回答错误（你选了：${selected}）`}
+                    <p style={{ fontWeight: 600, marginBottom: 8, color: (practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning)) === selected ? '#16a34a' : '#dc2626' }}>
+                      {selected === (practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning)) ? '回答正确' : `回答错误（你选了：${selected}）`}
                     </p>
                   )}
                   {/* 困难模式：答题后展示全部选项词汇（英文+中文），点击跳转该词考点一并掌握 */}
                   {selected && practiceMode !== 'flashcard' && (settings.difficulty === 'hard') && (() => {
-                    const right = practiceMode === 'cn-to-en' ? displayCurrent.term : displayCurrent.meaning;
+                    const right = practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning);
                     return (
                       <div className="points" style={{ marginTop: 8, marginBottom: 10 }}>
                         <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 6 }}><Icon name="target" />选项词汇 · 点击查看考点</p>
@@ -14803,7 +14894,7 @@ function App() {
                             const w = optionItemMap.get(opt);
                             const isRight = opt === right;
                             const isPicked = opt === selected;
-                            const mainText = practiceMode === 'cn-to-en' ? opt : getShortMeaning(opt);
+                            const mainText = opt;
                             return (
                               <div key={opt}
                                 style={{
@@ -16518,6 +16609,7 @@ function App() {
           <div className="cloudUpdateSection">
             <h3><Icon name="speaker" />离线语音</h3>
             <p className="muted">中文朗读默认从云端获取，占用更小、音质更稳。只有需要断网朗读时才下载离线包。</p>
+            <p className="muted" style={{ marginTop: -4 }}>听读音频联网时即点即播，不再把每个词的音频存到手机里；只有「导出 MP3」才会写入文件。</p>
             <div className="offlineVoiceBox">
               <div className="offlineVoiceRow">
                 <div className="ovText">

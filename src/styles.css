@@ -3181,3 +3181,26 @@ button .ic, .smallBtn .ic, .navBtn .ic { pointer-events: none; }
 }
 .ovSwitch.on { background: var(--primary, #3b82f6); }
 .ovSwitch.on::after { transform: translateX(19px); }
+
+/* ===== v2.78.0 ===== */
+/* 音量键翻页开关（背诵页快捷开关行） */
+.quickToggleBtn.volOn {
+  background: rgba(13, 148, 136, .10);
+  color: #0d9488;
+  border-color: rgba(13, 148, 136, .22);
+  font-weight: 700;
+}
+.quickToggleBtn.volOff {
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+  border-color: transparent;
+}
+/* 核心释义：背诵卡片标题下的一行小字，完整释义仍在详情页 */
+.coreMeaning {
+  margin: 6px 0 2px;
+  font-size: 1.02em;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: .2px;
+}
+.coreMeaning .mnItem { margin-right: 8px; }
