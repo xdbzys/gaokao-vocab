@@ -1,11 +1,11 @@
 {
-  "version": "2.77.0",
-  "versionCode": 297,
-  "changelog": "【v2.77.0】中文更好听、离线包可选、下拉随手关\n优化 中文朗读改走云端配音，语速恢复到正常档，听感更干净\n新增 听读时中文义项之间留出自然停顿，长释义不再一口气念完\n新增 离线语音包改为可选，默认不占空间，需要断网朗读时再开启\n优化 释义里多条中文意思之间拉开间距，不再首尾相连\n优化 设置里的下拉选择点空白处即可关闭，选完自动收起\n优化 听读缓存加上限，长期使用占用不再越滚越大",
-  "devNotes": "v2.77.0: (1) 中文链路改成云端优先——旧版把 16kbps 的离线包排在最前，用户听到的是重压缩音频；现在百度 64kbps 优先、离线包只在断网或云端失败时兜底，并把 spd 映射从 rate*3 改为 rate*5，1.0x 回到常速。(2) 释义按 '；' 拆段串行朗读，段间 180ms，解决长串连读难听。(3) 离线包改为 opt-in：SharedPreferences 开关，默认关闭；关闭即删除已解压目录，onCreate 不再自动下载，新增 NativeVoice.setOffline/offlineBytes/requestOffline/clearOffline 桥。(4) 听读缓存加 40MB 上限，按最后访问时间淘汰，整库播完不再累积到 150MB+。(5) InlineSelect 的遮罩与选项都在 <label> 内，点击会被 label 默认行为转发给内部按钮，导致「点空白关不掉」；改为 preventDefault 掐断转发。(6) Meanings 组件按 '；' 切分并保留分号 + 10px 间距。(7) Edge 神经语音通道已大面积 403，连续失败 3 次后本进程跳过，避免每词等一次 WebSocket 往返。",
+  "version": "2.78.0",
+  "versionCode": 299,
+  "changelog": "【v2.78.0】中文释义更准、选项更清楚、听读更省空间\n新增 背诵页可直接开关「音量键翻页」，音量上/下键切换上一个/下一个词\n新增 释义以高考高频义项为主，选项只显示最常用的中文\n新增 听读联网时在线播放，不再把每个词的音频存到手机里\n优化 四选一自动去重，困难模式不会再出现两个几乎一样的中文\n优化 全库词条释义清理，去掉与高考无关的内容\n优化 词形变化、缩略语等注释不再混进释义\n优化 老版本遗留的听读音频缓存自动清理一次",
+  "devNotes": "v2.78.0: (1) 新增 src/coreMeanings.js（3857 词，来自三份人工校对词表，由 src/scripts/build-core-meanings.js 生成），背诵选项与卡片主释义改用 core；词性先匹配、再按与现有释义的汉字交集过滤，挡掉精选表自身的错条（sacred→害怕、statue→法令）。(2) cleanMeaning 增加三类历史脏数据清理：DOS 命令、缩略语展开（计算机辅助/BASIC/Internet 网）、语法注释（be 的现在分词）；缩略语整组判定按「以程序/系统/协议结尾且非白名单」逐段剔除，命中 ≥2 段且过半则整组丢弃（ACE 类词条）。(3) 选项去重 meaningsTooClose：去标点后相同 / 包含关系 / 汉字 Jaccard ≥0.6 / 短词编辑距离 ≤1，困难模式优先同词性+共享汉字，但必须过这道去重，才不会再出现「放弃」和「放弃，遗弃」同屏。(4) 音量键开关从「我的-设置」镜像到背诵页快捷开关行（仅安装版）。(5) PlayerService：联网时 en/zh 都走 playAlbumUrl 流式播放，prefetch 在流式模式下直接跳过；启动时一次性清理旧版 album_media 缓存（SharedPreferences 标记位）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4418599,
-  "apkSha256": "cbb76800b7b6d14c71a49eb50b3015a61add14da396eaab281733586e73abe17"
+  "apkSize": 4471437,
+  "apkSha256": "4a4acb8b722c2c49cd0091672a4d021c82990ca4ade0770321e591f0d8e05cdc"
 }
