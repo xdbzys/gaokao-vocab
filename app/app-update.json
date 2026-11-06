@@ -1,0 +1,9 @@
+{
+  "version": "2.79.0",
+  "versionCode": 299,
+  "changelog": "【v2.79.0】网页打开更快，词库用到哪本下哪本\n新增 网页版首屏只加载轻量骨架，不再一口气下载全部词库\n新增 词库分片下载失败时给出简短原因和「重试」按钮，不用刷新整页\n新增 网页版内置图标和更新清单，打开时少两次多余请求\n优化 词库「加载中」「加载失败」分开显示，等的时候知道在等什么\n优化 单文件热更包改用压缩构建，更新时下载体积更小\n优化 全库词条校验等数据到齐后再扫描，每本词库都覆盖到",
+  "devNotes": "v2.79.0: 网页版拆成多文件 + 内容哈希分片（scripts/build-web.js），首屏只有 index.html + 入口 JS，词库由 BOOK_DEFS 声明、ensureBookData 按需动态 import 拉取。BOOK_DATA_STATE / BOOK_DATA_ERRORS 记录分片状态，失败时背诵页给出简短原因与「重试」（retryBookData 先清掉缓存的失败 Promise 与 error 标记，再重新 ensureBookData），多本词书同时失败汇总成一条提示。index.web.html 内联 SVG data-URI favicon、骨架三段文案改为互斥；build-web.js 把 app-update.json 复制进 dist-web/，消除两条 404。单文件热更包（scripts/build-single-html.js）用插件把入口的 import() 静态化以去掉 iife 惰性包装，并默认开启 minify，gzip 回到 1.05MB 预算内。test_v278 改为等全部分片 ready 后再扫描，并断言扫描条数 ≥12000。",
+  "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
+  "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+}
