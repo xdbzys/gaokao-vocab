@@ -343,6 +343,8 @@ jobs:
           cp -r dist-web/assets/. dist/app/assets/
           cp dist-web/index.html dist/index.html
           cp dist-web/index.html dist/app/index.html
+          # /app/ 也要有一份更新清单，否则页面内的 app-update.json 探测会 404
+          cp dist/app-update.json dist/app/app-update.json
           # 确认清单没被覆盖（缺 apkSha256 直接失败）
           node -e "const u=require('./dist/app-update.json');if(!u.apkSha256||!u.apkSize){console.error('app-update.json 丢失 APK 摘要');process.exit(1)}console.log('app-update.json ok', u.version, u.apkSize, u.apkSha256.slice(0,12))"
           # 上一步覆盖了 dist/index.html，单文件产物放回 /web/ 与 /legacy/ 供兜底使用
