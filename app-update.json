@@ -1,9 +1,11 @@
 {
   "version": "2.81.3",
-  "versionCode": 306,
+  "versionCode": 307,
   "changelog": "【v2.81.3】词库词性标注规范\n优化 词性标注：补齐 985 核心词汇里遗漏/残缺的词性（如 billion、million 标为数词，ought、would 标为助动词，broadcast、challenge 等补全名/动双词性），不再出现「待标注」占位\n优化 高考3500 词库的词性标签：剥离误混入词性字段的音标，标签只显示干净词性（如 v. 不再跟随一坨音标）\n优化 词性数据统一校验：所有词库与导入数据在入库时统一归一，缺词性时不显示占位字样，词性筛选与困难模式归类更准确",
   "devNotes": "v2.81.3: 修复词库内词性未标注问题。① 数据层：seeds-985.js 10 条脏值（待标注×6 afterward/billion/million/ought/website/would；残缺 v/×4 broadcast/budget/burst/challenge）按 GaoKao_3500.json / 高考总汇词库 / 985 释义前缀对齐修正为权威词性。② 运行时防御：makeItem 新增 normalizeItemPos，统一剥离 3500 词库 pos 里误混的『 /音标/』段、补全残缺句点、把『待标注』占位还原为释义前缀词性；normalizePos 导入路径兜底由『待标注』改为空值（不渲染标签）。全库 12847 条离线验证：残留待标注=0、残留音标=0、残留尾斜杠=0、空词性=0，n./v. 等多词性写法无误伤。versionCode 306（CI→307，继续 > 线上 305，解锁更新）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+  "apkSize": 4488784,
+  "apkSha256": "0e3a7c3617d45cd21101cfd2b1062580cf022abcc8ae4656c6229c1a75e99b92"
 }

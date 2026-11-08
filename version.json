@@ -1,9 +1,11 @@
 {
   "version": "2.81.3",
-  "versionCode": 306,
+  "versionCode": 307,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.81.3】词库词性标注规范\n优化 词性标注：补齐 985 核心词汇里遗漏/残缺的词性，不再出现「待标注」占位\n优化 高考3500 词库的词性标签：剥离误混入词性字段的音标，标签只显示干净词性\n优化 词性数据统一校验：所有词库与导入数据入库时统一归一，缺词性不显示占位字样"
+  "apkSize": 4488784,
+  "apkSha256": "0e3a7c3617d45cd21101cfd2b1062580cf022abcc8ae4656c6229c1a75e99b92",
+  "changelog": "【v2.81.3】词库词性标注规范\n优化 词性标注：补齐 985 核心词汇里遗漏/残缺的词性（如 billion、million 标为数词，ought、would 标为助动词，broadcast、challenge 等补全名/动双词性），不再出现「待标注」占位\n优化 高考3500 词库的词性标签：剥离误混入词性字段的音"
 }
