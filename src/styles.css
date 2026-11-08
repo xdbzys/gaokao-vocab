@@ -3217,31 +3217,35 @@ button .ic, .smallBtn .ic, .navBtn .ic { pointer-events: none; }
 }
 .coreMeaning .mnItem { margin-right: 8px; }
 
-/* ===== v2.80.0 护眼模式（暖色低蓝光）=====
-   通过 body.eye-care 覆盖主题色：暖米色背景 + 暖棕文字 + 琥珀主色，
-   降低蓝光电刺激，长时间背诵更舒服。仅做单开关，不另做深色。 */
+/* ===== v2.81.2 护眼模式（低蓝光暖色主题，按视觉工效学重做）=====
+   设计依据（视觉工效 / 眼科共识）：
+   ① 降低色温：用暖白（≈3600K）替代冷白，削减 415–455nm 短波蓝光，缓解长时间屏幕的视疲劳与褪黑素抑制；
+   ② 暖纸色背景替代纯白：降低屏幕眩光与明暗对比，避免高亮白底刺眼；
+   ③ 暖近黑文字（非纯黑 #000）：减轻纯黑/纯白极限对比带来的瞳孔频繁调节负担；
+   ④ 主色改用暖琥珀，回避冷蓝系（蓝是屏幕里最伤眼、最易引发眩光的色相）；
+   ⑤ 整屏叠一层极淡暖色滤镜，进一步滤掉残余蓝光，且不影响内容辨识。 */
 body.eye-care {
-  --primary: #c0801f;
-  --primary-dark: #9c6312;
-  --primary-light: #f3e4c2;
-  --primary-bg: #faf1dc;
-  --danger: #c0532c;
-  --danger-light: #f6dccd;
-  --warning: #c9921c;
-  --warning-light: #f4e6c4;
-  --text: #4a3b28;
-  --text-secondary: #8a755a;
-  --text-tertiary: #b09a7c;
-  --bg: #f4ecd8;
-  --bg-card: #fbf4e6;
-  --border: #e7dabd;
-  --border-light: #f0e6d2;
-  --shadow-sm: 0 1px 3px rgba(74,59,40,0.07);
-  --shadow: 0 4px 16px rgba(74,59,40,0.10);
-  --shadow-lg: 0 8px 30px rgba(74,59,40,0.12);
-  background: #f4ecd8;
+  --primary: #b5793a;
+  --primary-dark: #8a5a1f;
+  --primary-light: #f2e6cf;
+  --primary-bg: #f6eedb;
+  --danger: #c2532c;
+  --danger-light: #f6ddcf;
+  --warning: #bd8a1c;
+  --warning-light: #f3e7c5;
+  --text: #3c352a;
+  --text-secondary: #7c6f59;
+  --text-tertiary: #a8967a;
+  --bg: #f3ebd8;
+  --bg-card: #fbf5e8;
+  --border: #e6dac0;
+  --border-light: #efe5d0;
+  --shadow-sm: 0 1px 3px rgba(60,53,42,0.06);
+  --shadow: 0 4px 16px rgba(60,53,42,0.09);
+  --shadow-lg: 0 8px 30px rgba(60,53,42,0.11);
+  background: #f3ebd8;
 }
-/* 护眼模式下给整屏加一层极淡暖色滤镜，进一步削减蓝光 */
+/* 护眼模式：整屏极淡暖色滤镜，削减残余短波蓝光（极低透明度，不偏色、不挡内容） */
 body.eye-care .app {
   background: transparent;
 }
@@ -3250,8 +3254,23 @@ body.eye-care::after {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: rgba(255, 176, 59, 0.06);
+  background: rgba(255, 168, 54, 0.05);
   z-index: 9999;
+}
+/* 例句语境：目标词高亮（护眼模式下随主题变量走，不写死冷色） */
+.sentenceCtx .ctxTarget {
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  border-radius: 4px;
+  padding: 0 3px;
+}
+.sentenceCtx .ctxTranslation {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 4px 0 0;
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
 }
 
 /* ===== v2.80.0 例句语境模式 ===== */

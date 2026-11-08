@@ -102,8 +102,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.81.1';
-const APP_VERSION_CODE = 303;
+const APP_VERSION = '2.81.2';
+const APP_VERSION_CODE = 304;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -5868,6 +5868,35 @@ function App() {
     return null;
   }
 
+  // v2.81.2：例句语境模式——全局例句索引。所有词库在后台并行加载
+  // （loadBookDataInBackground 会把每本词库的 items 灌进来），数据到货后 books 引用变化会重算本 map。
+  // 优先级：高考真题词库的「英文|||中文」双语例句优先，其余词库的例句作兜底。
+  const sentenceMap = useMemo(() => {
+    const map = {}; // termLower -> { en, zh, isExam }
+    for (const b of books) {
+      if (!b || !b.items || !b.items.length) continue;
+      const isExam = b.id === 'gaokao-exam' || /真题/.test(b.name || '');
+      for (const it of b.items) {
+        if (!it || !Array.isArray(it.examples)) continue;
+        for (const ex of it.examples) {
+          const parts = String(ex).split('|||');
+          if (parts.length < 2) continue;
+          const en = parts[0].trim();
+          const zh = parts.slice(1).join('|||').trim();
+          if (!en || !/[a-zA-Z]/.test(en)) continue;
+          const k = String(it.term).toLowerCase();
+          if (!k) continue;
+          const existing = map[k];
+          // 优先保留真题例句；非真题只有在尚无记录时才写入
+          if (!existing || (isExam && !existing.isExam)) {
+            map[k] = { en, zh, isExam };
+          }
+        }
+      }
+    }
+    return map;
+  }, [books]);
+
   // 背诵页词汇列表（不受 section 切换影响，始终基于 studyBookIds）
   const learnItems = useMemo(() => {
     let items = learnActiveBook.items.filter(item => {
@@ -5881,8 +5910,13 @@ function App() {
     if (settings.ebbinghaus) {
       items = items.slice().sort((a, b) => ebSortKey(a) - ebSortKey(b));
     }
+    // v2.81.2：例句语境模式下，只保留「有双语例句（优先真题）」的单词，
+    // 避免没有例句的词退化成普通英文选中文，失去语境练习的意义
+    if (practiceMode === 'sentence') {
+      items = items.filter(it => sentenceMap[String(it.term).toLowerCase()]);
+    }
     return items;
-  }, [learnActiveBook, posFilter, typeFilter, hideMastered, settings.shuffleMode, settings.ebbinghaus, progress]);
+  }, [learnActiveBook, posFilter, typeFilter, hideMastered, settings.shuffleMode, settings.ebbinghaus, progress, practiceMode, sentenceMap]);
 
   // v2.79.0：所选背诵词库的分片状态。「加载中」与「加载失败」是两条互斥路径，
   // 只盯 items.length === 0 会让分片请求失败时永远停在「词库加载中…」。
@@ -7561,7 +7595,9 @@ function App() {
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5v11l7-5.5-7-5.5Z"/><path d="M17 6.5v11"/></svg>
               <span>自动跳转</span>
             </button>
-            {/* v2.81.0：自动发音开关移到背诵页（原来只在「我的」里，做题时想开关还得退出背诵页） */}
+            {/* v2.81.2：自动发音开关回到「我的」页（原始位置）；背诵页仅在闪卡模式保留此按钮，
+                因为闪卡模式不显示「难度」按钮，用它顶位可使背诵页快捷按钮始终保持六个 */}
+            {practiceMode === 'flashcard' && (
             <button
               className={`quickToggleBtn ${settings.autoSpeak !== false ? 'speakOn' : 'speakOff'}`}
               title="开启后背诵页出现新单词时自动发音"
@@ -7570,6 +7606,7 @@ function App() {
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 6v12L7.2 14.5H4z" /><path d="M15.5 8.5a4 4 0 0 1 0 7" /><path d="M18 6a7.5 7.5 0 0 1 0 12" /></svg>
               <span>自动发音</span>
             </button>
+            )}
             {/* v2.78.0 音量键翻页开关放到背诵页：原来只在「我的-设置」里，做题时想开还得退出背诵页 */}
             {isNativeApp && (
               <button
@@ -7639,30 +7676,30 @@ function App() {
               </div>
 
               <div className="questionArea">
-                {practiceMode === 'sentence' ? (() => {
-                  const enr = getWordEnrichment(displayCurrent.term);
-                  const col = enr && enr.collocations && enr.collocations.length ? enr.collocations[0] : null;
-                  if (col) {
-                    // 只取英文部分作语境（去掉末尾中文释义，避免直接给答案）
-                    const eng = String(col).replace(/\s*[一-鿿].*$/, '').trim();
-                    const safe = displayCurrent.term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const parts = eng.split(new RegExp('(' + safe + ')', 'i'));
-                    return (
-                      <div className="sentenceCtx">
-                        <div className="ctxBadge">语境</div>
-                        <p className="ctxSentence">
-                          {parts.map((p, i) => (p.toLowerCase() === displayCurrent.term.toLowerCase())
-                            ? <b key={i} style={{ color: 'var(--primary-dark)' }}>{p}</b>
-                            : <span key={i}>{p}</span>)}
-                        </p>
-                        <p className="ctxHint">选出「{displayCurrent.term}」在句中的含义</p>
-                      </div>
-                    );
-                  }
-                  return <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{displayCurrent.term}</h2>;
-                })() : (
-                  <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? coreOf(displayCurrent.term, displayCurrent.meaning) : displayCurrent.term}</h2>
-                )}
+              {practiceMode === 'sentence' ? (() => {
+                const sent = sentenceMap[String(displayCurrent.term).toLowerCase()];
+                if (sent) {
+                  // 用真实双语例句（优先高考真题）作语境：英文原句高亮目标词，答题后揭示中文译文
+                  const safe = String(displayCurrent.term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                  const parts = sent.en.split(new RegExp('(' + safe + ')', 'i'));
+                  return (
+                    <div className="sentenceCtx">
+                      <div className="ctxBadge">{sent.isExam ? '高考真题语境' : '例句语境'}</div>
+                      <p className="ctxSentence">
+                        {parts.map((p, i) => (String(p).toLowerCase() === String(displayCurrent.term).toLowerCase())
+                          ? <b key={i} className="ctxTarget">{p}</b>
+                          : <span key={i}>{p}</span>)}
+                      </p>
+                      {selected
+                        ? <p className="ctxTranslation">{sent.zh}</p>
+                        : <p className="ctxHint">根据语境，选出「{displayCurrent.term}」在句中的含义</p>}
+                    </div>
+                  );
+                }
+                return <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{displayCurrent.term}</h2>;
+              })() : (
+                <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? coreOf(displayCurrent.term, displayCurrent.meaning) : displayCurrent.term}</h2>
+              )}
                 {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1.1em', margin: '4px 0' }}>{displayCurrent.pos}</p>}
                 {practiceMode !== 'cn-to-en' && practiceMode !== 'sentence' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
                 <button className="sound" onClick={() => speak(displayCurrent.term, settings.speakRate)}><Icon name="speaker" />发音</button>
@@ -7904,7 +7941,9 @@ function App() {
             /* v2.79.0：网页版首屏会先出界面，词库数据在后台下载，这里给个明确的等待提示 */
             <div className="empty">词库加载中…<br />首次打开需要下载词库数据，请稍等 1~2 秒。</div>
           ) : (
-            <div className="empty">当前筛选下没有内容，请切换词库或分类。</div>
+            <div className="empty">{practiceMode === 'sentence'
+              ? '当前词库没有可用的真题/双语例句。例句语境模式建议切换到「近五年真题高频词」，或在其他词库中挑选带例句的单词。'
+              : '当前筛选下没有内容，请切换词库或分类。'}</div>
           )}
         </section>
       )}
@@ -9331,9 +9370,22 @@ function App() {
             })()}
           </div>
 
-          {/* v2.81.0：自动发音、音量键翻页开关已移至背诵页快捷栏，此处不再重复，避免冗余 */}
+          {/* v2.81.2：自动发音开关回到「我的」页（原始位置）；背诵页仅在闪卡模式保留快捷按钮 */}
+          {/* v2.44.0 合并自动发音开关：背诵页新单词自动发音 + 跳转单词自动发音 */}
+          <div className="toggleCard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', marginTop: 12, borderRadius: 12, background: 'var(--primary-light)', border: '1px solid var(--border-light)' }}>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600 }}><Icon name="speaker" />自动发音（背诵新词 + 跳转）</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>背诵页出现新单词时自动发音，点击单词跳转详情时也自动发音</div>
+            </div>
+            <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0 }}>
+              <input type="checkbox" checked={settings.autoSpeak !== false} onChange={e => { const v = e.target.checked; setSettings(s => ({ ...s, navAutoSpeak: v, autoSpeak: v })); saveSettings({ ...settings, navAutoSpeak: v, autoSpeak: v }); }} style={{ opacity: 0, width: 0, height: 0 }} />
+              <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.autoSpeak !== false ? 'var(--primary)' : '#ccc', borderRadius: 26, transition: '0.3s' }}>
+                <span style={{ position: 'absolute', height: 20, width: 20, left: 3, bottom: 3, backgroundColor: 'white', borderRadius: '50%', transition: '0.3s', transform: settings.autoSpeak !== false ? 'translateX(22px)' : 'translateX(0)' }} />
+              </span>
+            </label>
+          </div>
 
-          {/* 设置区域（v2.81.0：背诵模式/难度/顺序/自动掌握/自动跳转/自动发音/音量键翻页 已在背诵页快捷栏，此处不再重复） */}
+          {/* 设置区域 */}
           <div className="settingsGroup">
             <h3>设置</h3>
             <label>每日目标
