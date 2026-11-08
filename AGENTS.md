@@ -178,6 +178,7 @@ node scripts/build-web.cjs          # 产出 dist-web/，脚本内建「首屏 g
 
 ```
 src/main.jsx                 前端全部逻辑（单文件，约 1.7 万行）
+src/sfx.js                   答题音效（v2.80.0 新增：8 个真实 MP3 base64 内嵌，离线可用，勿手改）
 src/styles.css               全部样式（新增样式追加到文件末尾，按版本号注释分块）
 src/avatarData.js            内置头像（data URI，改头像就换这个文件）
 src/MainActivity.java        WebView 容器 / 更新安装 / 保存目录（SAF）/ 返回键
@@ -194,6 +195,22 @@ version.json                 轻量版本探针（约 300 字节，先比 code �
 zhvoice.zip                  中文高清语音包（仓库根，走 jsDelivr）
 android/app/src/main/assets/public/   构建时由 dist 覆盖，不要手改
 ```
+
+---
+
+## 6.5. v2.80.0 新增的四项体验功能（实现要点）
+
+- **护眼模式**：`settings.eyeCare` 开关 → `useEffect` 给 `document.body` 加/去 `eye-care` 类；
+  `styles.css` 末尾 `body.eye-care { ... }` 覆盖主题 CSS 变量为暖色低蓝光，并叠一层极淡暖色滤镜。
+  仅单开关，不做深色（与用户约定）。
+- **艾宾浩斯记忆法**：`settings.ebbinghaus` 开关 + `localStorage` 键 `gaokao_review_schedule`
+  （termKey → `{ l: 间隔档位, d: 下次复习时间戳 }`）。遗忘曲线间隔：20分钟/1小时/9小时/1天/2天/6天/15天/35天。
+  开启后 `learnItems` 按 `d` 升序排，到期（含新词 d=0）优先；答题时答对进下一档、答错回第 1 档。
+- **答题音效**：`src/sfx.js` 导出 `SFX_CORRECT`（4 套）/ `SFX_WRONG`（4 套），均为 base64 MP3，
+  `playAnswerSfx(isCorrect, correctId, wrongId)` 用 `new Audio(dataURI).play()` 播放（离线、无文件请求）。
+  `handleSelect` 内按对错触发；设置里 `soundEnabled` 总开关 + `soundCorrect`/`soundWrong` 分别切换并试听。
+- **例句语境模式**：`choiceModes` 新增 `sentence`；题目区用 `getWordEnrichment(term).collocations[0]`
+  的英文部分（去掉末尾中文释义）作语境，高亮目标词，按语境选义项（复用既有的 4 选项逻辑）。
 
 ---
 

@@ -4,6 +4,7 @@ import { Capacitor, Filesystem, Directory, Encoding } from './vendor/native-brid
 import './styles.css';
 import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, presentParticipleRules, nounPluralRules } from './vendor/wordTransformations';
 import { CORE_MEANINGS } from './coreMeanings';
+import { SFX_CORRECT, SFX_WRONG } from './sfx';
 
 /* v2.79.0：jszip（96KB）只在导入 pptx/docx 时用到，改为用时再 import，
    首屏不再为它付费。调用点在 extractPptxText / extractDocxText 里。 */
@@ -101,8 +102,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.79.0';
-const APP_VERSION_CODE = 299;
+const APP_VERSION = '2.81.0';
+const APP_VERSION_CODE = 301;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -1310,6 +1311,7 @@ function loadBookDataInBackground() {
 const choiceModes = [
   { id: 'en-to-cn', name: '英文选中文' },
   { id: 'cn-to-en', name: '中文选英文' },
+  { id: 'sentence', name: '例句语境' },
   { id: 'flashcard', name: '闪卡模式' }
 ];
 
@@ -1385,6 +1387,14 @@ function loadSettings() {
       showAnnouncement: true,
       autoMaster: false,
       volumeKeyNav: false,
+      // v2.80.0：护眼模式（暖色低蓝光单开关）
+      eyeCare: false,
+      // v2.80.0：艾宾浩斯记忆法（按遗忘曲线安排复习）
+      ebbinghaus: false,
+      // v2.80.0：答题音效
+      soundEnabled: false,
+      soundCorrect: 'c1',
+      soundWrong: 'w1',
       // v2.55.9: 自动发音开关归一。
       // v2.44.0 已把"背诵新词自动发音"与"跳转自动发音"合并为一个开关，
       // 但老版本保存的设置里没有 autoSpeak 字段，旧默认 false 会导致：
@@ -1400,7 +1410,7 @@ function loadSettings() {
     return merged;
   } catch {
     const savedMode = localStorage.getItem(MODE_KEY);
-    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: true, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false };
+    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: true, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false, eyeCare: false, ebbinghaus: false, soundEnabled: false, soundCorrect: 'c1', soundWrong: 'w1' };
   }
 }
 
@@ -1421,6 +1431,69 @@ function loadBooks() {
 
 function saveCustomBooks(books) {
   localStorage.setItem('customBooks', JSON.stringify(books.filter(b => b.editable)));
+}
+
+/* ============================
+   v2.80.0：艾宾浩斯记忆法
+   ---------------------------------------------------------------
+   开启后，每词记录「下次复习时间」，按遗忘曲线间隔递推：
+   20分钟 → 1小时 → 9小时 → 1天 → 2天 → 6天 → 15天 → 35天。
+   答对：进入下一间隔；答错：回到第 1 间隔（20 分钟后重排）。
+   背诵页会把「已到期（含新词）」的词优先排到前面。
+   数据存 localStorage，老用户无此字段时自然视为新词。
+   ============================ */
+const EB_INTERVALS = [
+  20 * 60 * 1000,        // 20 分钟
+  60 * 60 * 1000,        // 1 小时
+  9 * 60 * 60 * 1000,    // 9 小时
+  24 * 60 * 60 * 1000,   // 1 天
+  2 * 24 * 60 * 60 * 1000,  // 2 天
+  6 * 24 * 60 * 60 * 1000,  // 6 天
+  15 * 24 * 60 * 60 * 1000, // 15 天
+  35 * 24 * 60 * 60 * 1000  // 35 天
+];
+const EB_KEY = 'gaokao_review_schedule';
+function loadReviewSchedule() {
+  try { return JSON.parse(localStorage.getItem(EB_KEY) || '{}') || {}; } catch (e) { return {}; }
+}
+function saveReviewSchedule(s) {
+  try { localStorage.setItem(EB_KEY, JSON.stringify(s)); } catch (e) {}
+}
+const _reviewSchedule = loadReviewSchedule();
+function recordEbbinghaus(term, correct) {
+  const k = termKey(term);
+  const cur = _reviewSchedule[k] || { l: 0, d: 0 };
+  if (correct) {
+    const l = Math.min((cur.l || 0) + 1, EB_INTERVALS.length - 1);
+    cur.l = l;
+    cur.d = Date.now() + EB_INTERVALS[l];
+  } else {
+    cur.l = 0;
+    cur.d = Date.now() + EB_INTERVALS[0];
+  }
+  _reviewSchedule[k] = cur;
+  saveReviewSchedule(_reviewSchedule);
+}
+// 排序键：到期时间越早（含新词 d=0）越靠前
+function ebSortKey(item) {
+  const e = _reviewSchedule[termKey(item.term)];
+  return e ? e.d : 0;
+}
+
+/* ============================
+   v2.80.0：答题音效（真实 MP3，base64 内嵌，离线可用）
+   ================================================================ */
+function playAnswerSfx(isCorrect, correctId, wrongId) {
+  const list = isCorrect ? SFX_CORRECT : SFX_WRONG;
+  const id = isCorrect ? correctId : wrongId;
+  const item = list.find(s => s.id === id) || list[0];
+  if (!item || !item.data) return;
+  try {
+    const a = new Audio(item.data);
+    a.volume = 1;
+    const p = a.play();
+    if (p && typeof p.catch === 'function') p.catch(function () {});
+  } catch (e) {}
 }
 
 function loadStudyLog() {
@@ -5804,8 +5877,12 @@ function App() {
       return posOk && typeOk && masteredOk;
     });
     if (settings.shuffleMode) items = seededShuffle(items, shuffleSeedRef.current);
+    // v2.80.0：艾宾浩斯开启时，到期（含新词）的词优先排到前面
+    if (settings.ebbinghaus) {
+      items = items.slice().sort((a, b) => ebSortKey(a) - ebSortKey(b));
+    }
     return items;
-  }, [learnActiveBook, posFilter, typeFilter, hideMastered, settings.shuffleMode, progress]);
+  }, [learnActiveBook, posFilter, typeFilter, hideMastered, settings.shuffleMode, settings.ebbinghaus, progress]);
 
   // v2.79.0：所选背诵词库的分片状态。「加载中」与「加载失败」是两条互斥路径，
   // 只盯 items.length === 0 会让分片请求失败时永远停在「词库加载中…」。
@@ -6193,6 +6270,13 @@ function App() {
       window.VolumeKeyNative.setVolumeKeyNavEnabled(!!settings.volumeKeyNav);
     }
   }, [settings.volumeKeyNav]);
+
+  // v2.80.0：护眼模式（暖色低蓝光）——切换 body 上的 eye-care 类，由 CSS 覆盖主题色
+  useEffect(() => {
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.classList.toggle('eye-care', !!settings.eyeCare);
+    }
+  }, [settings.eyeCare]);
 
   // 问题5：重置某词库进度
   function resetBookProgress(bookId) {
@@ -6717,9 +6801,14 @@ function App() {
     // 记录最近一次回答的单词（用于"上一个"回退）
     lastAnsweredRef.current = { item: c, index };
     const right = practiceMode === 'cn-to-en' ? c.term : coreOf(c.term, c.meaning);
+    const isCorrect = option === right;
+    // v2.80.0：答题音效（正确/错误分开，可在设置里开关与切换）
+    if (settings.soundEnabled) playAnswerSfx(isCorrect, settings.soundCorrect, settings.soundWrong);
+    // v2.80.0：艾宾浩斯记忆法（记录本次作答，更新下次复习时间）
+    if (settings.ebbinghaus) recordEbbinghaus(c.term, isCorrect);
     // 错词本模式下，答对不自动掌握也不自动跳转（优先级最高）
     const isWrongWordBook = currentBookIds.includes('wrong-words');
-    if (option === right) {
+    if (isCorrect) {
       setSessionCorrect(co => co + 1);
       recordStudy(c);
       // 自动标记已掌握（仅非错词本模式，且开关开启且当前未标记）
@@ -7472,6 +7561,15 @@ function App() {
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5v11l7-5.5-7-5.5Z"/><path d="M17 6.5v11"/></svg>
               <span>自动跳转</span>
             </button>
+            {/* v2.81.0：自动发音开关移到背诵页（原来只在「我的」里，做题时想开关还得退出背诵页） */}
+            <button
+              className={`quickToggleBtn ${settings.autoSpeak !== false ? 'speakOn' : 'speakOff'}`}
+              title="开启后背诵页出现新单词时自动发音"
+              onClick={() => { const v = settings.autoSpeak === false; setSettings(s => ({ ...s, autoSpeak: v, navAutoSpeak: v })); saveSettings({ ...settings, autoSpeak: v, navAutoSpeak: v }); }}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 6v12L7.2 14.5H4z" /><path d="M15.5 8.5a4 4 0 0 1 0 7" /><path d="M18 6a7.5 7.5 0 0 1 0 12" /></svg>
+              <span>自动发音</span>
+            </button>
             {/* v2.78.0 音量键翻页开关放到背诵页：原来只在「我的-设置」里，做题时想开还得退出背诵页 */}
             {isNativeApp && (
               <button
@@ -7541,9 +7639,32 @@ function App() {
               </div>
 
               <div className="questionArea">
-                <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? coreOf(displayCurrent.term, displayCurrent.meaning) : displayCurrent.term}</h2>
+                {practiceMode === 'sentence' ? (() => {
+                  const enr = getWordEnrichment(displayCurrent.term);
+                  const col = enr && enr.collocations && enr.collocations.length ? enr.collocations[0] : null;
+                  if (col) {
+                    // 只取英文部分作语境（去掉末尾中文释义，避免直接给答案）
+                    const eng = String(col).replace(/\s*[一-鿿].*$/, '').trim();
+                    const safe = displayCurrent.term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const parts = eng.split(new RegExp('(' + safe + ')', 'i'));
+                    return (
+                      <div className="sentenceCtx">
+                        <div className="ctxBadge">语境</div>
+                        <p className="ctxSentence">
+                          {parts.map((p, i) => (p.toLowerCase() === displayCurrent.term.toLowerCase())
+                            ? <b key={i} style={{ color: 'var(--primary-dark)' }}>{p}</b>
+                            : <span key={i}>{p}</span>)}
+                        </p>
+                        <p className="ctxHint">选出「{displayCurrent.term}」在句中的含义</p>
+                      </div>
+                    );
+                  }
+                  return <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{displayCurrent.term}</h2>;
+                })() : (
+                  <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? coreOf(displayCurrent.term, displayCurrent.meaning) : displayCurrent.term}</h2>
+                )}
                 {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1.1em', margin: '4px 0' }}>{displayCurrent.pos}</p>}
-                {practiceMode !== 'cn-to-en' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
+                {practiceMode !== 'cn-to-en' && practiceMode !== 'sentence' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
                 <button className="sound" onClick={() => speak(displayCurrent.term, settings.speakRate)}><Icon name="speaker" />发音</button>
               </div>
 
@@ -9210,51 +9331,14 @@ function App() {
             })()}
           </div>
 
-          {/* v2.44.0 合并自动发音开关：背诵页新单词自动发音 + 跳转单词自动发音 */}
-          {/* v2.55.9: 显示状态改由 autoSpeak 驱动（与 useEffect 实际判断的字段一致，避免显示开实际关） */}
-          <div className="toggleCard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', marginTop: 12, borderRadius: 12, background: 'var(--primary-light)', border: '1px solid var(--border-light)' }}>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 600 }}><Icon name="speaker" />自动发音（背诵新词 + 跳转）</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>背诵页出现新单词时自动发音，点击单词跳转详情时也自动发音</div>
-            </div>
-            <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0 }}>
-              <input type="checkbox" checked={settings.autoSpeak !== false} onChange={e => { const v = e.target.checked; setSettings(s => ({ ...s, navAutoSpeak: v, autoSpeak: v })); saveSettings({ ...settings, navAutoSpeak: v, autoSpeak: v }); }} style={{ opacity: 0, width: 0, height: 0 }} />
-              <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.autoSpeak !== false ? 'var(--primary)' : '#ccc', borderRadius: 26, transition: '0.3s' }}>
-                <span style={{ position: 'absolute', height: 20, width: 20, left: 3, bottom: 3, backgroundColor: 'white', borderRadius: '50%', transition: '0.3s', transform: settings.autoSpeak !== false ? 'translateX(22px)' : 'translateX(0)' }} />
-              </span>
-            </label>
-          </div>
+          {/* v2.81.0：自动发音、音量键翻页开关已移至背诵页快捷栏，此处不再重复，避免冗余 */}
 
-          {/* 音量键翻页开关（仅APP端） */}
-          {isNativeApp && (
-          <div className="toggleCard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', marginTop: 12, borderRadius: 12, background: 'var(--primary-light)', border: '1px solid var(--border-light)' }}>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 600 }}><Icon name="phone" />音量键翻页</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>背诵页：音量上/下键翻页；闪卡模式：先按音量键显示释义，再按翻页</div>
-            </div>
-            <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0 }}>
-              <input type="checkbox" checked={settings.volumeKeyNav === true} onChange={e => { const v = e.target.checked; setSettings(s => ({ ...s, volumeKeyNav: v })); saveSettings({ ...settings, volumeKeyNav: v }); if (window.VolumeKeyNative) window.VolumeKeyNative.setVolumeKeyNavEnabled(v); }} style={{ opacity: 0, width: 0, height: 0 }} />
-              <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.volumeKeyNav ? 'var(--primary)' : '#ccc', borderRadius: 26, transition: '0.3s' }}>
-                <span style={{ position: 'absolute', height: 20, width: 20, left: 3, bottom: 3, backgroundColor: 'white', borderRadius: '50%', transition: '0.3s', transform: settings.volumeKeyNav ? 'translateX(22px)' : 'translateX(0)' }} />
-              </span>
-            </label>
-          </div>
-          )}
-
-          {/* 设置区域 */}
+          {/* 设置区域（v2.81.0：背诵模式/难度/顺序/自动掌握/自动跳转/自动发音/音量键翻页 已在背诵页快捷栏，此处不再重复） */}
           <div className="settingsGroup">
             <h3>设置</h3>
             <label>每日目标
               <input type="number" value={settings.dailyGoal} min={1} max={500}
                 onChange={e => { const v = Number(e.target.value) || 50; setSettings(s => ({ ...s, dailyGoal: v })); saveSettings({ ...settings, dailyGoal: v }); }} />
-            </label>
-            <label>默认背诵模式
-              <InlineSelect block value={settings.mode} onChange={v => { setSettings(s => ({ ...s, mode: v })); saveSettings({ ...settings, mode: v }); }}
-                options={choiceModes.map(m => ({ value: m.id, label: m.name }))} />
-            </label>
-            <label>默认难度
-              <InlineSelect block value={settings.difficulty || 'easy'} onChange={v => { setSettings(s => ({ ...s, difficulty: v })); saveSettings({ ...settings, difficulty: v }); }}
-                options={[{ value: 'easy', label: '简单（无近义词，差距大）' }, { value: 'hard', label: '困难（近义词/易混词/同词性）' }]} />
             </label>
             <label>发音语速（左右滑动调节）
               <WheelPicker
@@ -9265,20 +9349,10 @@ function App() {
                 width={140}
               />
             </label>
-            <label>答对后自动标记已掌握
-              <InlineSelect block value={settings.autoMaster ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, autoMaster: on })); saveSettings({ ...settings, autoMaster: on }); }}
-                options={[{ value: 'off', label: '关闭（手动标记）' }, { value: 'on', label: '开启（答对自动标记，不再出现在背诵页）' }]} />
-            </label>
-            <label>答对后自动跳转下一题
-              <InlineSelect block value={settings.autoJump ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, autoJump: on })); saveSettings({ ...settings, autoJump: on }); }}
-                options={[{ value: 'off', label: '关闭（手动点下一个）' }, { value: 'on', label: '开启' }]} />
-            </label>
             {settings.autoJump && <label>自动跳转延迟
               <InlineSelect block value={settings.autoJumpDelay || 1500} onChange={v => { setSettings(s => ({ ...s, autoJumpDelay: v })); saveSettings({ ...settings, autoJumpDelay: v }); }}
                 options={[500, 800, 1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000, 8000].map(n => ({ value: n, label: (n / 1000).toFixed(1) + ' 秒' }))} />
             </label>}
-            {/* v2.44.0 切换单词自动朗读已合并到上方自动发音开关 */}
-            {/* 跳转单词自动发音开关已合并到上方独立卡片 */}
             {isFullApp && (
               <label>开屏更新公告
                 <InlineSelect block value={settings.showAnnouncement ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, showAnnouncement: on })); saveSettings({ ...settings, showAnnouncement: on }); }}
@@ -9291,6 +9365,40 @@ function App() {
               <p>总词库：{books.length} 个</p>
               <p>总词汇量：{books.reduce((s, b) => s + (b.items.length || b.total || 0), 0)} 条</p>
             </div>
+          </div>
+
+          {/* v2.80.0：学习辅助与反馈 */}
+          <div className="settingsGroup" style={{ marginTop: 16 }}>
+            <h3>学习辅助与反馈</h3>
+
+            {/* 护眼模式（暖色低蓝光单开关） */}
+            <label>护眼模式（暖色低蓝光）
+              <InlineSelect block value={settings.eyeCare ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, eyeCare: on })); saveSettings({ ...settings, eyeCare: on }); }} options={[{ value: 'off', label: '关闭（默认浅色）' }, { value: 'on', label: '开启' }]} />
+            </label>
+
+            {/* 艾宾浩斯记忆法 */}
+            <label>艾宾浩斯记忆法
+              <InlineSelect block value={settings.ebbinghaus ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, ebbinghaus: on })); saveSettings({ ...settings, ebbinghaus: on }); }} options={[{ value: 'off', label: '关闭（顺序/乱序背诵）' }, { value: 'on', label: '开启（按遗忘曲线复习）' }]} />
+            </label>
+
+            {/* 答题音效总开关 */}
+            <label>答题音效
+              <InlineSelect block value={settings.soundEnabled ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, soundEnabled: on })); saveSettings({ ...settings, soundEnabled: on }); }} options={[{ value: 'off', label: '关闭' }, { value: 'on', label: '开启' }]} />
+            </label>
+
+            {/* 答对音效切换（多选预设，点一下试听并换下一个） */}
+            {settings.soundEnabled && (
+              <label>答对音效
+                <button className="smallBtn" onClick={() => { const list = SFX_CORRECT; const idx = Math.max(0, list.findIndex(s => s.id === settings.soundCorrect)); const next = list[(idx + 1) % list.length]; setSettings(s => ({ ...s, soundCorrect: next.id })); saveSettings({ ...settings, soundCorrect: next.id }); playAnswerSfx(true, next.id, settings.soundWrong); }}>{SFX_CORRECT.find(s => s.id === settings.soundCorrect)?.name || '清脆叮咚'} · 切换</button>
+              </label>
+            )}
+
+            {/* 答错音效切换 */}
+            {settings.soundEnabled && (
+              <label>答错音效
+                <button className="smallBtn" onClick={() => { const list = SFX_WRONG; const idx = Math.max(0, list.findIndex(s => s.id === settings.soundWrong)); const next = list[(idx + 1) % list.length]; setSettings(s => ({ ...s, soundWrong: next.id })); saveSettings({ ...settings, soundWrong: next.id }); playAnswerSfx(false, settings.soundCorrect, next.id); }}>{SFX_WRONG.find(s => s.id === settings.soundWrong)?.name || '温柔下降'} · 切换</button>
+              </label>
+            )}
           </div>
 
           {/* 数据备份与恢复 */}
