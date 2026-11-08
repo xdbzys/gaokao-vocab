@@ -1,9 +1,11 @@
 {
   "version": "2.81.1",
-  "versionCode": 303,
+  "versionCode": 304,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.81.1】修复更新检测，旧版本可正常收到新版本\n新增 自动发音开关移到背诵页快捷栏：做题时随时开关，无需退出背诵页\n优化 我的-设置去冗余：背诵模式、难度、自动掌握、自动跳转、自动发音、音量键翻页均在背诵页快捷栏可调，我的页不再重复\n优化 更新机制：修正版本号匹配逻辑，确保已安装版本能正确收到新版本更新提示"
+  "apkSize": 4487745,
+  "apkSha256": "ed1860729332689fc9860bd0a02232bf6905ae1d36e9942aed37d7822fa7916e",
+  "changelog": "【v2.81.1】修复更新检测，旧版本可正常收到新版本\n新增 自动发音开关移到背诵页快捷栏：做题时随时开关，无需退出背诵页\n优化 我的-设置去冗余：背诵模式、难度、自动掌握、自动跳转、自动发音、音量键翻页均在背诵页快捷栏可调，我的页不再重复\n优化 更新机制：修正版本号匹配逻辑，确保已安装版本能正确收到新版本更新提示（此"
 }
