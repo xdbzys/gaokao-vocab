@@ -1,9 +1,11 @@
 {
   "version": "2.81.0",
-  "versionCode": 301,
+  "versionCode": 302,
   "changelog": "【v2.81.0】设置归位，背诵页随手开关，我的页更清爽\n新增 自动发音开关移到背诵页快捷栏：做题时随时开关，无需退出背诵页\n优化 我的-设置去冗余：背诵模式、难度、自动掌握、自动跳转、自动发音、音量键翻页均在背诵页快捷栏可调，我的页不再重复",
   "devNotes": "v2.81.0: 自动发音（autoSpeak/navAutoSpeak）开关从「我的」独立卡片移到背诵页 quickToggleRow（新增 speakOn/speakOff 样式，琥珀色）。我的页删除与背诵页重复的开关：自动发音卡片、音量键翻页卡片、默认背诵模式、默认难度、自动标记已掌握、自动跳转；保留每日目标、发音语速、自动跳转延迟（仅 autoJump 开时显示）、开屏公告，以及学习辅助与反馈（护眼/艾宾浩斯/音效）。自动发音 useEffect 已限定 section==='learn'，背诵页开关即时生效。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+  "apkSize": 4487750,
+  "apkSha256": "c7a5cb51f4a89601aa37cccbc17a6c4f861b36beba72992d5b190c6ce44503c7"
 }
