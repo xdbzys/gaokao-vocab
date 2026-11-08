@@ -1,11 +1,11 @@
 {
-  "version": "2.79.0",
+  "version": "2.81.0",
   "versionCode": 302,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4469121,
-  "apkSha256": "0630e605b2e2400ad2bc65239fa23bae99979217f22f4d304a134d68a0c38f3f",
-  "changelog": "【v2.79.0】网页打开更快，词库用到哪本下哪本\n新增 网页版首屏只加载轻量骨架，不再一口气下载全部词库\n新增 词库分片下载失败时给出简短原因和「重试」按钮，不用刷新整页\n新增 网页版内置图标和更新清单，打开时少两次多余请求\n优化 词库「加载中」「加载失败」分开显示，等的时候知道在等什么\n优化 单文件热更包改用压缩构"
+  "apkSize": 4487750,
+  "apkSha256": "c7a5cb51f4a89601aa37cccbc17a6c4f861b36beba72992d5b190c6ce44503c7",
+  "changelog": "【v2.81.0】设置归位，背诵页随手开关，我的页更清爽\n新增 自动发音开关移到背诵页快捷栏：做题时随时开关，无需退出背诵页\n优化 我的-设置去冗余：背诵模式、难度、自动掌握、自动跳转、自动发音、音量键翻页均在背诵页快捷栏可调，我的页不再重复"
 }
