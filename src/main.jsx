@@ -102,8 +102,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.81.2';
-const APP_VERSION_CODE = 304;
+const APP_VERSION = '2.81.3';
+const APP_VERSION_CODE = 306;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -767,8 +767,30 @@ function coreOf(term, meaning) {
   return out;
 }
 
+/* v2.81.3：词性归一（修复「词性未标注 / 词性被音标污染」的历史数据）。
+   内置词库里混了三类脏值，全部在这里收口，保证显示标签、词性筛选、困难模式干扰项
+   拿到的是同一份干净词性：
+   ① '待标注'（normalizePos 的兜底值被误写进数据源）——界面会直接显示"待标注"三字；
+   ② 'v/' 这类残缺词性（末尾斜杠、缺句点）——补全为 'v.'；
+   ③ 3500 词库把音标塞进 pos 字段，形如 'v. /ә'bændәn/'——词性标签连带显示一坨音标，
+      这里剥掉「空格 + /…/」音标段（要求前导空格，避免误伤 'n./v.' 这类多词性写法）。
+   对 '待标注'/空值，尝试从释义开头的词性前缀还原（如 'num.十亿' → 'num.'）。 */
+function normalizeItemPos(raw, meaning) {
+  let p = String(raw == null ? '' : raw).trim();
+  if (p === '短语') return '短语';
+  p = p.replace(/\s+\/[^/]*\/\s*$/, '').trim();              // ③ 剥离 " /音标/"
+  p = p.replace(/\/+\s*$/, '').trim();                        // ② 去掉残缺尾斜杠
+  if (p && !p.endsWith('.') && /^[A-Za-z]+$/.test(p)) p += '.'; // ② 单词性补全句点 v -> v.
+  if (!p || p === '待标注') {                                 // ① 占位/空 → 从释义前缀还原
+    const m = String(meaning || '').match(/^\s*(?:\(s\))?\s*(n\.|vt\.|vi\.|v\.|adj\.|adv\.|ad\.|a\.|prep\.|pron\.|conj\.|interj\.|art\.|num\.|aux\.|modal\.|abbr\.)/i);
+    p = m ? m[1].toLowerCase().replace(/^ad\.$/, 'adv.').replace(/^a\.$/, 'adj.') : '';
+  }
+  return p.trim();
+}
+
 function makeItem(row, type, index, source) {
-  const [term, pos, meaning, frequency, corePoints, allPoints, examples] = row;
+  const [term, rawPos, meaning, frequency, corePoints, allPoints, examples] = row;
+  const pos = normalizeItemPos(rawPos, meaning);
   const core = coreOf(term, meaning);
   // v2.78.0：含 DOS 命令 / 缩略语展开 / 语法注释的释义，清洗后仍是断句残片，
   // 直接用核心释义替换，避免详情页还在显示「计算机辅助教育」这类内容
@@ -1602,11 +1624,13 @@ function getPosFilterList() {
 
 function normalizePos(posText, isPhrase) {
   if (isPhrase) return '短语';
-  if (!posText) return '待标注';
+  // v2.81.3：没词性时不再写死「待标注」占位（用户导入/AI 提取词库会走到这里，
+  // 那个字面值会被词性标签直接显示出来）。改为空值 → 界面不渲染词性标签。
+  if (!posText) return '';
   return posText.toLowerCase().replace(/，/g, '/').replace(/、/g, '/').replace(/&/g, '/').replace(/\s+/g, ' ')
     .split('/').map(p => p.trim().replace(/\.+$/, '')).filter(Boolean)
     .map(p => { const a = POS_ALIASES[p] || p; return (POS_WORDS.includes(p) || POS_WORDS.includes(a)) ? `${a.endsWith('.') ? a : a + '.'}` : p.endsWith('.') ? p : `${p}.`; })
-    .filter((v, i, arr) => arr.indexOf(v) === i).join('/') || '待标注';
+    .filter((v, i, arr) => arr.indexOf(v) === i).join('/') || '';
 }
 
 function collectPosText(text) {

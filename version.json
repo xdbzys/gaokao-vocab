@@ -1,11 +1,9 @@
 {
-  "version": "2.81.2",
-  "versionCode": 305,
+  "version": "2.81.3",
+  "versionCode": 306,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4488624,
-  "apkSha256": "e1ac8ef18510203ca9075a954081b9221e3effd702ee9ae22e4faacae484f668",
-  "changelog": "【v2.81.2】例句语境模式重做 + 自动发音归位 + 护眼模式升级\n优化 例句语境模式：改用真实高考真题双语例句作语境（英文原句高亮目标词，答题后揭示中文译文），优先采用近五年真题高频词库例句；无例句的词不再退化成普通英文选中文，并提示切换到「近五年真题高频词」\n优化 自动发音开关回到「我的」页（原始位置）；背诵页"
+  "changelog": "【v2.81.3】词库词性标注规范\n优化 词性标注：补齐 985 核心词汇里遗漏/残缺的词性，不再出现「待标注」占位\n优化 高考3500 词库的词性标签：剥离误混入词性字段的音标，标签只显示干净词性\n优化 词性数据统一校验：所有词库与导入数据入库时统一归一，缺词性不显示占位字样"
 }
