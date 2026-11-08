@@ -1,9 +1,11 @@
 {
   "version": "2.81.2",
-  "versionCode": 304,
+  "versionCode": 305,
   "changelog": "【v2.81.2】例句语境模式重做 + 自动发音归位 + 护眼模式升级\n优化 例句语境模式：改用真实高考真题双语例句作语境（英文原句高亮目标词，答题后揭示中文译文），优先采用近五年真题高频词库例句；无例句的词不再退化成普通英文选中文，并提示切换到「近五年真题高频词」\n优化 自动发音开关回到「我的」页（原始位置）；背诵页快捷栏仅在闪卡模式保留该按钮，使各模式快捷按钮数量保持一致\n优化 护眼模式：按视觉工效学重做低蓝光暖色主题（暖纸色背景替代纯白减眩光、暖近黑文字降高对比负担、暖琥珀主色避冷蓝、整屏极淡暖色滤镜滤短波蓝光）",
   "devNotes": "v2.81.2: 功能调整与体验优化。① 例句语境模式：新增 sentenceMap（从全部词库 examples 建全局索引，优先 gaokao-exam 真题双语例句 English|||Chinese），sentence 模式 learnItems 只保留有例句的单词，题目区展示英文原句+高亮目标词+答题后揭示中文译文；② 自动发音开关回到「我的」页卡片（v2.81.0 曾移到背诵页），背诵页快捷栏仅在 flashcard 模式保留（因闪卡不显示难度按钮，用它顶位使快捷按钮数一致）；③ 护眼模式重写 body.eye-care 主题。versionCode 304（CI 将→305，继续 > 此前所有包，解锁更新）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+  "apkSize": 4488624,
+  "apkSha256": "e1ac8ef18510203ca9075a954081b9221e3effd702ee9ae22e4faacae484f668"
 }

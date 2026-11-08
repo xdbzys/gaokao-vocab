@@ -1,9 +1,11 @@
 {
   "version": "2.81.2",
-  "versionCode": 304,
+  "versionCode": 305,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.81.2】例句语境模式重做 + 自动发音归位 + 护眼模式升级\n优化 例句语境模式：改用真实高考真题双语例句作语境，优先采用近五年真题高频词库例句；无例句的词不再退化成普通英文选中文\n优化 自动发音开关回到「我的」页；背诵页快捷栏仅在闪卡模式保留该按钮，使各模式快捷按钮数量一致\n优化 护眼模式：按视觉工效学重做低蓝光暖色主题"
+  "apkSize": 4488624,
+  "apkSha256": "e1ac8ef18510203ca9075a954081b9221e3effd702ee9ae22e4faacae484f668",
+  "changelog": "【v2.81.2】例句语境模式重做 + 自动发音归位 + 护眼模式升级\n优化 例句语境模式：改用真实高考真题双语例句作语境（英文原句高亮目标词，答题后揭示中文译文），优先采用近五年真题高频词库例句；无例句的词不再退化成普通英文选中文，并提示切换到「近五年真题高频词」\n优化 自动发音开关回到「我的」页（原始位置）；背诵页"
 }
