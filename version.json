@@ -1,9 +1,11 @@
 {
   "version": "2.82.0",
-  "versionCode": 308,
+  "versionCode": 309,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
+  "apkSize": 4490136,
+  "apkSha256": "ab6395ca7a8ba320b4277f59b8f38adc14b206d84bbb84f1c0d9067cbedf6655",
   "changelog": "【v2.82.0】背诵页首屏紧凑布局\n新增 答题后显示全部考点开关（我的 → 学习辅助与反馈）：开启后答完题展示该单词全部考点、搭配、词族与例句；关闭时只展示其他选项单词的中文\n优化 背诵页选项改为两列紧凑胶囊按钮，题目与全部选项一打开即可完整呈现\n优化 背诵页六个快捷按钮、进度区与题卡纵向空间收紧，减少上下滚动"
 }

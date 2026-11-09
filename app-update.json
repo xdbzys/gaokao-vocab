@@ -1,9 +1,11 @@
 {
   "version": "2.82.0",
-  "versionCode": 308,
+  "versionCode": 309,
   "changelog": "【v2.82.0】背诵页首屏紧凑布局\n新增 答题后显示全部考点开关（我的 → 学习辅助与反馈）：开启后答完题展示该单词全部考点、搭配、词族与例句；关闭时只展示其他选项单词的中文\n优化 背诵页选项改为两列紧凑胶囊按钮，题目与全部选项一打开即可完整呈现\n优化 背诵页六个快捷按钮、进度区与题卡纵向空间收紧，减少上下滚动",
   "devNotes": "v2.82.0: 背诵页首屏紧凑布局 + 答后考点开关。① 选项由单列大按钮改为两列紧凑胶囊（min-height 44px、padding 8px 10px、gap 8px），并用 .learnPage 作用域压缩六个快捷按钮、进度区、题卡（min-height 380px → 0）、题目区与例句语境，保证打开背诵页首屏完整显示题目与全部选项；两列网格对 4 选 1 与 6 选项都适配。② 新增 settings.answerFullPoints（默认 false）与「我的 → 学习辅助与反馈 → 答题后显示全部考点」开关：关闭时答题后只保留结果 + 当前单词释义 + 其他选项单词的中文对照（列表紧凑、不带考点跳转入口），隐藏全部考点 / 常考要点 / 搭配 / 派生 / 近义反义 / 词族 / 例句；开启后展示该单词跨词库全部考点与增强数据（答错也全量显示），并恢复「考点 ›」跳转。闪卡模式行为不变。versionCode 308（CI→309，> 线上 307，确保旧安装包能收到更新）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+  "apkSize": 4490136,
+  "apkSha256": "ab6395ca7a8ba320b4277f59b8f38adc14b206d84bbb84f1c0d9067cbedf6655"
 }
