@@ -245,3 +245,24 @@ android/app/src/main/assets/public/   构建时由 dist 覆盖，不要手改
   用旧 base 推会 422（not a fast forward）。
 - 只改文档、不想再跑一遍 20 分钟的 APK 构建时，commit message 里加 `[skip ci]`，
   GitHub 会跳过 workflow（文档改动也不影响 Pages，可以放心跳过）。
+
+
+---
+
+## 9. v2.82.0 变更记录（背诵页首屏紧凑布局 / 答后考点开关）
+
+**布局**：`main.jsx` 背诵页 `<section className="learnPage">`、题卡 `<div className="card learnCard">`；
+`styles.css` 里 `.options` 改为 `grid-template-columns: repeat(2, minmax(0,1fr))` 两列紧凑胶囊
+（`min-height: 44px`、`padding: 8px 10px`、`gap: 8px`、`flex: 0 0 auto`），
+`.learnPage` 作用域压缩六个快捷按钮、进度区、题卡（`min-height` 380px → 0）、题目区、例句语境与答后面板。
+两列网格对 4 选 1 与 6 个选项都成立；窄屏（≤360px）另有二次压缩。
+
+**开关**：`settings.answerFullPoints`（默认 `false`），位置「我的 → 学习辅助与反馈 → 答题后显示全部考点」。
+答题后 `answerBox` 内 `fullPoints / showDetail / showAll` 三个派生量控制：
+- 关闭（默认）：只显示结果、当前单词释义、`其他选项单词 · 中文对照` 紧凑列表；
+  隐藏 `mergedPoints` 考点、`enrichment` 增强数据、词族/易混词与例句，列表不显示「考点 ›」。
+- 开启：显示该单词跨词库全部考点 + 常考要点/搭配/派生/近义反义 + 词族 + 例句，答错也全量显示；
+  列表恢复「考点 ›」跳转。
+- 闪卡模式不受影响（`showDetail` 恒为 true）。
+
+**版本**：`APP_VERSION 2.82.0` / `APP_VERSION_CODE 308`（CI 生成 309，> 线上 307）。

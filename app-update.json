@@ -1,11 +1,9 @@
 {
-  "version": "2.81.3",
-  "versionCode": 307,
-  "changelog": "【v2.81.3】词库词性标注规范\n优化 词性标注：补齐 985 核心词汇里遗漏/残缺的词性（如 billion、million 标为数词，ought、would 标为助动词，broadcast、challenge 等补全名/动双词性），不再出现「待标注」占位\n优化 高考3500 词库的词性标签：剥离误混入词性字段的音标，标签只显示干净词性（如 v. 不再跟随一坨音标）\n优化 词性数据统一校验：所有词库与导入数据在入库时统一归一，缺词性时不显示占位字样，词性筛选与困难模式归类更准确",
-  "devNotes": "v2.81.3: 修复词库内词性未标注问题。① 数据层：seeds-985.js 10 条脏值（待标注×6 afterward/billion/million/ought/website/would；残缺 v/×4 broadcast/budget/burst/challenge）按 GaoKao_3500.json / 高考总汇词库 / 985 释义前缀对齐修正为权威词性。② 运行时防御：makeItem 新增 normalizeItemPos，统一剥离 3500 词库 pos 里误混的『 /音标/』段、补全残缺句点、把『待标注』占位还原为释义前缀词性；normalizePos 导入路径兜底由『待标注』改为空值（不渲染标签）。全库 12847 条离线验证：残留待标注=0、残留音标=0、残留尾斜杠=0、空词性=0，n./v. 等多词性写法无误伤。versionCode 306（CI→307，继续 > 线上 305，解锁更新）。",
+  "version": "2.82.0",
+  "versionCode": 308,
+  "changelog": "【v2.82.0】背诵页首屏紧凑布局\n新增 答题后显示全部考点开关（我的 → 学习辅助与反馈）：开启后答完题展示该单词全部考点、搭配、词族与例句；关闭时只展示其他选项单词的中文\n优化 背诵页选项改为两列紧凑胶囊按钮，题目与全部选项一打开即可完整呈现\n优化 背诵页六个快捷按钮、进度区与题卡纵向空间收紧，减少上下滚动",
+  "devNotes": "v2.82.0: 背诵页首屏紧凑布局 + 答后考点开关。① 选项由单列大按钮改为两列紧凑胶囊（min-height 44px、padding 8px 10px、gap 8px），并用 .learnPage 作用域压缩六个快捷按钮、进度区、题卡（min-height 380px → 0）、题目区与例句语境，保证打开背诵页首屏完整显示题目与全部选项；两列网格对 4 选 1 与 6 选项都适配。② 新增 settings.answerFullPoints（默认 false）与「我的 → 学习辅助与反馈 → 答题后显示全部考点」开关：关闭时答题后只保留结果 + 当前单词释义 + 其他选项单词的中文对照（列表紧凑、不带考点跳转入口），隐藏全部考点 / 常考要点 / 搭配 / 派生 / 近义反义 / 词族 / 例句；开启后展示该单词跨词库全部考点与增强数据（答错也全量显示），并恢复「考点 ›」跳转。闪卡模式行为不变。versionCode 308（CI→309，> 线上 307，确保旧安装包能收到更新）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4488784,
-  "apkSha256": "0e3a7c3617d45cd21101cfd2b1062580cf022abcc8ae4656c6229c1a75e99b92"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
 }

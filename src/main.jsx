@@ -102,8 +102,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.81.3';
-const APP_VERSION_CODE = 306;
+const APP_VERSION = '2.82.0';
+const APP_VERSION_CODE = 308;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -1417,6 +1417,8 @@ function loadSettings() {
       soundEnabled: false,
       soundCorrect: 'c1',
       soundWrong: 'w1',
+      // v2.82.0：答题后是否显示该单词全部考点（默认关，只给其他选项单词的中文对照）
+      answerFullPoints: false,
       // v2.55.9: 自动发音开关归一。
       // v2.44.0 已把"背诵新词自动发音"与"跳转自动发音"合并为一个开关，
       // 但老版本保存的设置里没有 autoSpeak 字段，旧默认 false 会导致：
@@ -1432,7 +1434,7 @@ function loadSettings() {
     return merged;
   } catch {
     const savedMode = localStorage.getItem(MODE_KEY);
-    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: true, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false, eyeCare: false, ebbinghaus: false, soundEnabled: false, soundCorrect: 'c1', soundWrong: 'w1' };
+    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: true, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false, eyeCare: false, ebbinghaus: false, soundEnabled: false, soundCorrect: 'c1', soundWrong: 'w1', answerFullPoints: false };
   }
 }
 
@@ -7538,10 +7540,10 @@ function App() {
     <div className="app">
       {/* ====== 背诵页 ====== */}
       {section === 'learn' && (
-        <section>
+        <section className="learnPage">
           {/* 专属标识（仅旧网页版；新网页版 /app/ 与 App 保持一致，不显示） */}
           {!isFullApp && (
-            <div style={{ textAlign: 'center', padding: '8px 0 4px', }}>
+            <div className="learnBrand" style={{ textAlign: 'center', padding: '8px 0 4px', }}>
               <span style={{ color: '#2563eb', fontWeight: 800, fontSize: 20, letterSpacing: 2, textShadow: '0 1px 4px rgba(37,99,235,0.25)' }}><Icon name="sparkle" />李群雁专属<Icon name="sparkle" /></span>
             </div>
           )}
@@ -7680,7 +7682,7 @@ function App() {
 
           {/* 答题区 */}
           {current ? (
-            <div className="card">
+            <div className="card learnCard">
               <div className="cardMeta">
                 <span className="freqTag" style={{ color: freqColor(displayCurrent.frequency), borderColor: freqColor(displayCurrent.frequency) }}>{displayCurrent.frequency}</span>
                 {displayCurrent.pos && <span className="posTag" style={{ color: posColor(displayCurrent.pos), background: posColor(displayCurrent.pos) + '18' }}>{displayCurrent.pos}</span>}
@@ -7724,7 +7726,7 @@ function App() {
               })() : (
                 <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? coreOf(displayCurrent.term, displayCurrent.meaning) : displayCurrent.term}</h2>
               )}
-                {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1.1em', margin: '4px 0' }}>{displayCurrent.pos}</p>}
+                {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1em', margin: '2px 0' }}>{displayCurrent.pos}</p>}
                 {practiceMode !== 'cn-to-en' && practiceMode !== 'sentence' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
                 <button className="sound" onClick={() => speak(displayCurrent.term, settings.speakRate)}><Icon name="speaker" />发音</button>
               </div>
@@ -7749,8 +7751,12 @@ function App() {
               {(showBack || selected) && (() => {
                 const isFlashcard = practiceMode === 'flashcard';
                 const isCorrect = selected && (practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning)) === selected;
-                const enrichment = (isFlashcard || isCorrect) ? getWordEnrichment(displayCurrent.term) : null;
-                const showAll = isFlashcard || detailMode === 'full' || isCorrect;
+                // v2.82.0：默认答题后只给「其他选项单词的中文对照」，保持首屏紧凑；
+                // 在「我的 → 学习辅助与反馈」开启「答题后显示全部考点」后，才展开该单词全部考点。
+                const fullPoints = settings.answerFullPoints === true;
+                const showDetail = fullPoints || isFlashcard;
+                const enrichment = (isFlashcard || isCorrect || fullPoints) ? getWordEnrichment(displayCurrent.term) : null;
+                const showAll = fullPoints || isFlashcard || detailMode === 'full' || isCorrect;
                 const mergedPoints = getMergedPoints(displayCurrent); // v2.56.0 跨词库考点整合
                 return (
                 <div className="answerBox">
@@ -7759,13 +7765,13 @@ function App() {
                       {selected === (practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning)) ? '回答正确' : `回答错误（你选了：${selected}）`}
                     </p>
                   )}
-                  {/* 困难模式：答题后展示全部选项词汇（英文+中文），点击跳转该词考点一并掌握 */}
-                  {selected && practiceMode !== 'flashcard' && (settings.difficulty === 'hard') && (() => {
+                  {/* v2.82.0：答题后展示「其他选项单词的中文对照」；开启全部考点后带考点跳转入口 */}
+                  {selected && practiceMode !== 'flashcard' && (() => {
                     const right = practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning);
                     return (
-                      <div className="points" style={{ marginTop: 8, marginBottom: 10 }}>
-                        <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 6 }}><Icon name="target" />选项词汇 · 点击查看考点</p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div className="points" style={{ marginTop: 6, marginBottom: fullPoints ? 10 : 6 }}>
+                        <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 6 }}><Icon name="target" />{fullPoints ? '选项词汇 · 点击查看考点' : '其他选项单词 · 中文对照'}</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: fullPoints ? 6 : 4 }}>
                           {options.map(opt => {
                             const w = optionItemMap.get(opt);
                             const isRight = opt === right;
@@ -7777,7 +7783,7 @@ function App() {
                                   display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
                                   background: isRight ? 'rgba(22,163,74,0.10)' : (isPicked ? 'rgba(220,38,38,0.08)' : 'var(--bg-tertiary)'),
                                   border: `1.5px solid ${isRight ? '#16a34a' : (isPicked ? '#dc2626' : 'var(--border-light)')}`,
-                                  borderRadius: 10, padding: '7px 10px',
+                                  borderRadius: 10, padding: fullPoints ? '7px 10px' : '5px 8px',
                                   cursor: w ? 'pointer' : 'default',
                                 }}
                                 onClick={() => { if (w) { openDetailItem(w); if (settings.navAutoSpeak !== false) speak(w.term, settings.speakRate); } }}
@@ -7785,20 +7791,20 @@ function App() {
                                 <span style={{ fontSize: 14, fontWeight: 700, color: isRight ? '#16a34a' : (isPicked ? '#dc2626' : 'inherit'), minWidth: 16 }}>
                                   {isRight ? '✓' : (isPicked ? '✗' : '•')}
                                 </span>
-                                <span style={{ fontSize: 15, fontWeight: 600 }}>
+                                <span style={{ fontSize: fullPoints ? 15 : 13, fontWeight: 600 }}>
                                   {practiceMode === 'cn-to-en'
                                     ? mainText
                                     : <span style={{ fontWeight: 600 }}>{mainText}</span>}
                                 </span>
                                 {w && (
-                                  <span style={{ fontSize: 13, opacity: 0.8 }}>
+                                  <span style={{ fontSize: fullPoints ? 13 : 12, opacity: 0.8 }}>
                                     {practiceMode === 'cn-to-en'
                                       ? `— ${getShortMeaning(w.meaning)}`
                                       : `— ${w.term}`}
                                     {w.pos ? <small style={{ opacity: 0.7 }}>（{w.pos}）</small> : null}
                                   </span>
                                 )}
-                                {w && <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--primary)', fontWeight: 600, whiteSpace: 'nowrap' }}>考点 ›</span>}
+                                {fullPoints && w && <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--primary)', fontWeight: 600, whiteSpace: 'nowrap' }}>考点 ›</span>}
                               </div>
                             );
                           })}
@@ -7806,14 +7812,14 @@ function App() {
                       </div>
                     );
                   })()}
-                  <h3>{displayCurrent.term} &middot; <Meanings text={displayCurrent.meaning} /></h3>
-                  <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>
-                  <div className="points">
+                  <h3>{displayCurrent.term} &middot; {showDetail ? <Meanings text={displayCurrent.meaning} /> : coreOf(displayCurrent.term, displayCurrent.meaning)}</h3>
+                  {showDetail && <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>}
+                  {showDetail && <div className="points">
                     {/* v2.56.0: 跨词库整合考点——同一单词在所有词库的考点一并展示 */}
                     {(showAll ? mergedPoints.allPoints : mergedPoints.corePoints.slice(0, 2)).map(p => <p key={p}>• {p}</p>)}
-                  </div>
-                  {/* 闪卡模式或答对时：显示全部考点和增强数据 */}
-                  {(isFlashcard || isCorrect) && enrichment && (
+                  </div>}
+                  {/* 开启「答题后显示全部考点」或闪卡模式：显示全部考点和增强数据 */}
+                  {showDetail && enrichment && (
                     <>
                       {enrichment.examPoints.length > 0 && (
                         <div className="points" style={{ marginTop: 8 }}>
@@ -7868,8 +7874,8 @@ function App() {
                       )}
                     </>
                   )}
-                  {/* 闪卡模式或答对时：显示关联词族和易混词 */}
-                  {(isFlashcard || isCorrect) && (() => {
+                  {/* 开启「答题后显示全部考点」或闪卡模式：显示关联词族和易混词 */}
+                  {showDetail && (() => {
                     const family = findWordFamily(displayCurrent.term, allWords);
                     const aiFamilyTerms = getCachedFamily(displayCurrent.term);
                     const aiFamilyItems = aiFamilyTerms
@@ -9455,6 +9461,12 @@ function App() {
             {/* 艾宾浩斯记忆法 */}
             <label>艾宾浩斯记忆法
               <InlineSelect block value={settings.ebbinghaus ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, ebbinghaus: on })); saveSettings({ ...settings, ebbinghaus: on }); }} options={[{ value: 'off', label: '关闭（顺序/乱序背诵）' }, { value: 'on', label: '开启（按遗忘曲线复习）' }]} />
+            </label>
+
+            {/* v2.82.0：答题后显示全部考点 */}
+            <label>答题后显示全部考点
+              <InlineSelect block value={settings.answerFullPoints ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, answerFullPoints: on })); saveSettings({ ...settings, answerFullPoints: on }); }} options={[{ value: 'off', label: '关闭（仅显示其他选项单词的中文）' }, { value: 'on', label: '开启（显示该单词全部考点）' }]} />
+              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>关闭时答题后只保留结果与其他选项单词的中文对照，页面保持紧凑；开启后展示该单词的全部考点、搭配、词族与例句。</span>
             </label>
 
             {/* 答题音效总开关 */}
