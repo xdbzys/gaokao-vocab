@@ -1,11 +1,11 @@
 {
-  "version": "2.82.0",
-  "versionCode": 309,
+  "version": "2.82.1",
+  "versionCode": 311,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4490136,
-  "apkSha256": "ab6395ca7a8ba320b4277f59b8f38adc14b206d84bbb84f1c0d9067cbedf6655",
-  "changelog": "【v2.82.0】背诵页首屏紧凑布局\n新增 答题后显示全部考点开关（我的 → 学习辅助与反馈）：开启后答完题展示该单词全部考点、搭配、词族与例句；关闭时只展示其他选项单词的中文\n优化 背诵页选项改为两列紧凑胶囊按钮，题目与全部选项一打开即可完整呈现\n优化 背诵页六个快捷按钮、进度区与题卡纵向空间收紧，减少上下滚动"
+  "apkSize": 4489366,
+  "apkSha256": "effc4f410427ac0dac297f7de438cbc9467706f2f4ad4589d329c6e8eac1b9f0",
+  "changelog": "【v2.82.1】答题选项恢复原尺寸\n优化 答题选项恢复为原来的单列大按钮，题卡、题目区、进度区与答后面板同步恢复原有间距\n优化 仅保留背诵页六个设置开关的紧凑排布，减少顶部占用\n优化 答题后显示全部考点开关保持不变：开启看该单词全部考点，关闭只看其他选项单词的中文"
 }

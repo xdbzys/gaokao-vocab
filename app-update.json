@@ -1,11 +1,11 @@
 {
-  "version": "2.82.0",
-  "versionCode": 309,
-  "changelog": "【v2.82.0】背诵页首屏紧凑布局\n新增 答题后显示全部考点开关（我的 → 学习辅助与反馈）：开启后答完题展示该单词全部考点、搭配、词族与例句；关闭时只展示其他选项单词的中文\n优化 背诵页选项改为两列紧凑胶囊按钮，题目与全部选项一打开即可完整呈现\n优化 背诵页六个快捷按钮、进度区与题卡纵向空间收紧，减少上下滚动",
-  "devNotes": "v2.82.0: 背诵页首屏紧凑布局 + 答后考点开关。① 选项由单列大按钮改为两列紧凑胶囊（min-height 44px、padding 8px 10px、gap 8px），并用 .learnPage 作用域压缩六个快捷按钮、进度区、题卡（min-height 380px → 0）、题目区与例句语境，保证打开背诵页首屏完整显示题目与全部选项；两列网格对 4 选 1 与 6 选项都适配。② 新增 settings.answerFullPoints（默认 false）与「我的 → 学习辅助与反馈 → 答题后显示全部考点」开关：关闭时答题后只保留结果 + 当前单词释义 + 其他选项单词的中文对照（列表紧凑、不带考点跳转入口），隐藏全部考点 / 常考要点 / 搭配 / 派生 / 近义反义 / 词族 / 例句；开启后展示该单词跨词库全部考点与增强数据（答错也全量显示），并恢复「考点 ›」跳转。闪卡模式行为不变。versionCode 308（CI→309，> 线上 307，确保旧安装包能收到更新）。",
+  "version": "2.82.1",
+  "versionCode": 311,
+  "changelog": "【v2.82.1】答题选项恢复原尺寸\n优化 答题选项恢复为原来的单列大按钮，题卡、题目区、进度区与答后面板同步恢复原有间距\n优化 仅保留背诵页六个设置开关的紧凑排布，减少顶部占用\n优化 答题后显示全部考点开关保持不变：开启看该单词全部考点，关闭只看其他选项单词的中文",
+  "devNotes": "v2.82.1: 按用户反馈收敛 v2.82.0 的布局改动。① 答题选项 .options 完整还原为 v2.81.3 的单列大按钮（gap 10px、flex 1、padding 15px 18px、font-size 16px、text-align left、border-radius 18px、font-weight 500），窄屏 media 也还原；题卡 min-height 380px、题目区、进度条、分类行、例句语境、答后面板、词性行全部恢复原尺寸，learnBrand / learnCard 还原为无类名。② 只保留 .learnPage 作用域下六个设置开关（quickToggleRow / quickToggleBtn / svg）的压缩，矮屏窄屏另有更紧凑一档；其余元素一律不压缩。③ v2.82.0 的「答题后显示全部考点」开关功能完整保留，仅把其选项词汇列表的尺寸微调还原。versionCode 310（CI→311，> 线上 309，确保旧安装包能收到更新）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4490136,
-  "apkSha256": "ab6395ca7a8ba320b4277f59b8f38adc14b206d84bbb84f1c0d9067cbedf6655"
+  "apkSize": 4489366,
+  "apkSha256": "effc4f410427ac0dac297f7de438cbc9467706f2f4ad4589d329c6e8eac1b9f0"
 }
