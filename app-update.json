@@ -1,9 +1,11 @@
 {
   "version": "2.82.1",
-  "versionCode": 310,
+  "versionCode": 311,
   "changelog": "【v2.82.1】答题选项恢复原尺寸\n优化 答题选项恢复为原来的单列大按钮，题卡、题目区、进度区与答后面板同步恢复原有间距\n优化 仅保留背诵页六个设置开关的紧凑排布，减少顶部占用\n优化 答题后显示全部考点开关保持不变：开启看该单词全部考点，关闭只看其他选项单词的中文",
   "devNotes": "v2.82.1: 按用户反馈收敛 v2.82.0 的布局改动。① 答题选项 .options 完整还原为 v2.81.3 的单列大按钮（gap 10px、flex 1、padding 15px 18px、font-size 16px、text-align left、border-radius 18px、font-weight 500），窄屏 media 也还原；题卡 min-height 380px、题目区、进度条、分类行、例句语境、答后面板、词性行全部恢复原尺寸，learnBrand / learnCard 还原为无类名。② 只保留 .learnPage 作用域下六个设置开关（quickToggleRow / quickToggleBtn / svg）的压缩，矮屏窄屏另有更紧凑一档；其余元素一律不压缩。③ v2.82.0 的「答题后显示全部考点」开关功能完整保留，仅把其选项词汇列表的尺寸微调还原。versionCode 310（CI→311，> 线上 309，确保旧安装包能收到更新）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+  "apkSize": 4489366,
+  "apkSha256": "effc4f410427ac0dac297f7de438cbc9467706f2f4ad4589d329c6e8eac1b9f0"
 }
