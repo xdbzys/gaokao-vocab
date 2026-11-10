@@ -102,8 +102,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.82.0';
-const APP_VERSION_CODE = 308;
+const APP_VERSION = '2.82.1';
+const APP_VERSION_CODE = 310;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -7543,7 +7543,7 @@ function App() {
         <section className="learnPage">
           {/* 专属标识（仅旧网页版；新网页版 /app/ 与 App 保持一致，不显示） */}
           {!isFullApp && (
-            <div className="learnBrand" style={{ textAlign: 'center', padding: '8px 0 4px', }}>
+            <div style={{ textAlign: 'center', padding: '8px 0 4px', }}>
               <span style={{ color: '#2563eb', fontWeight: 800, fontSize: 20, letterSpacing: 2, textShadow: '0 1px 4px rgba(37,99,235,0.25)' }}><Icon name="sparkle" />李群雁专属<Icon name="sparkle" /></span>
             </div>
           )}
@@ -7682,7 +7682,7 @@ function App() {
 
           {/* 答题区 */}
           {current ? (
-            <div className="card learnCard">
+            <div className="card">
               <div className="cardMeta">
                 <span className="freqTag" style={{ color: freqColor(displayCurrent.frequency), borderColor: freqColor(displayCurrent.frequency) }}>{displayCurrent.frequency}</span>
                 {displayCurrent.pos && <span className="posTag" style={{ color: posColor(displayCurrent.pos), background: posColor(displayCurrent.pos) + '18' }}>{displayCurrent.pos}</span>}
@@ -7726,7 +7726,7 @@ function App() {
               })() : (
                 <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? coreOf(displayCurrent.term, displayCurrent.meaning) : displayCurrent.term}</h2>
               )}
-                {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1em', margin: '2px 0' }}>{displayCurrent.pos}</p>}
+                {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1.1em', margin: '4px 0' }}>{displayCurrent.pos}</p>}
                 {practiceMode !== 'cn-to-en' && practiceMode !== 'sentence' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
                 <button className="sound" onClick={() => speak(displayCurrent.term, settings.speakRate)}><Icon name="speaker" />发音</button>
               </div>
@@ -7769,9 +7769,9 @@ function App() {
                   {selected && practiceMode !== 'flashcard' && (() => {
                     const right = practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning);
                     return (
-                      <div className="points" style={{ marginTop: 6, marginBottom: fullPoints ? 10 : 6 }}>
+                      <div className="points" style={{ marginTop: 8, marginBottom: 10 }}>
                         <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 6 }}><Icon name="target" />{fullPoints ? '选项词汇 · 点击查看考点' : '其他选项单词 · 中文对照'}</p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: fullPoints ? 6 : 4 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {options.map(opt => {
                             const w = optionItemMap.get(opt);
                             const isRight = opt === right;
@@ -7783,7 +7783,7 @@ function App() {
                                   display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
                                   background: isRight ? 'rgba(22,163,74,0.10)' : (isPicked ? 'rgba(220,38,38,0.08)' : 'var(--bg-tertiary)'),
                                   border: `1.5px solid ${isRight ? '#16a34a' : (isPicked ? '#dc2626' : 'var(--border-light)')}`,
-                                  borderRadius: 10, padding: fullPoints ? '7px 10px' : '5px 8px',
+                                  borderRadius: 10, padding: '7px 10px',
                                   cursor: w ? 'pointer' : 'default',
                                 }}
                                 onClick={() => { if (w) { openDetailItem(w); if (settings.navAutoSpeak !== false) speak(w.term, settings.speakRate); } }}
@@ -7791,13 +7791,13 @@ function App() {
                                 <span style={{ fontSize: 14, fontWeight: 700, color: isRight ? '#16a34a' : (isPicked ? '#dc2626' : 'inherit'), minWidth: 16 }}>
                                   {isRight ? '✓' : (isPicked ? '✗' : '•')}
                                 </span>
-                                <span style={{ fontSize: fullPoints ? 15 : 13, fontWeight: 600 }}>
+                                <span style={{ fontSize: 15, fontWeight: 600 }}>
                                   {practiceMode === 'cn-to-en'
                                     ? mainText
                                     : <span style={{ fontWeight: 600 }}>{mainText}</span>}
                                 </span>
                                 {w && (
-                                  <span style={{ fontSize: fullPoints ? 13 : 12, opacity: 0.8 }}>
+                                  <span style={{ fontSize: 13, opacity: 0.8 }}>
                                     {practiceMode === 'cn-to-en'
                                       ? `— ${getShortMeaning(w.meaning)}`
                                       : `— ${w.term}`}

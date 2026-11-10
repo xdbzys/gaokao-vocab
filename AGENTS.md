@@ -266,3 +266,19 @@ android/app/src/main/assets/public/   构建时由 dist 覆盖，不要手改
 - 闪卡模式不受影响（`showDetail` 恒为 true）。
 
 **版本**：`APP_VERSION 2.82.0` / `APP_VERSION_CODE 308`（CI 生成 309，> 线上 307）。
+
+
+---
+
+## 10. v2.82.1 变更记录（收敛布局：只压缩设置开关）
+
+用户反馈 v2.82.0 把「六个设置开关」和「答题选项」一起缩小了，要求**只压缩设置开关、答题选项还原**。
+
+- 答题选项 `.options` 完整还原到 v2.81.3：单列 `display:grid; gap:10px; flex:1`，
+  按钮 `text-align:left; padding:15px 18px; font-size:16px; line-height:1.4; border-radius:18px; font-weight:500`；
+  `@media (max-width:360px)` 里的 `.options` 规则也还原。
+- 删除第 9 节里 `.learnPage` 对题卡 / 题目区 / 进度条 / 分类行 / 例句语境 / 答后面板 / 导航按钮的全部压缩，
+  `card.learnCard` 与 `learnBrand` 类名移除，`posText` 内联字号间距还原。
+- **只保留** `.learnPage .quickToggleRow / .quickToggleBtn / svg` 的压缩（矮屏窄屏另有更紧凑一档）。
+- v2.82.0 的「答题后显示全部考点」开关功能完整保留，仅还原其选项词汇列表的尺寸微调。
+- 版本 2.82.1 / code 310（CI→311）。
