@@ -3315,3 +3315,27 @@ body.eye-care::after {
   .learnPage .quickToggleBtn { padding: 4px 6px; border-radius: 10px; font-size: 0.7em; line-height: 1.2; }
   .learnPage .quickToggleBtn svg { width: 12px; height: 12px; }
 }
+
+
+/* ===== v2.83.0 高考考频徽标 / 口径说明 ===== */
+.examFreqTag {
+  display: inline-flex; align-items: center; gap: 1px;
+  padding: 2px 8px; border-radius: 10px; font-size: 11px; line-height: 1.5;
+  font-weight: 600; white-space: nowrap; border: 1px solid currentColor;
+}
+.examFreqCompact { padding: 1px 6px; font-size: 10px; }
+.examFreqLv3 { color: #d5453b; background: rgba(213, 69, 59, .07); }   /* 高频 */
+.examFreqLv2 { color: #c87a1c; background: rgba(200, 122, 28, .07); }   /* 中频 */
+.examFreqLv1 { color: #7a8699; background: rgba(122, 134, 153, .07); }  /* 低频 */
+.examFreqLv0 { color: #8a94a6; background: rgba(138, 148, 166, .07); }  /* 基础 */
+.examFreqSep { opacity: .55; font-weight: 400; }
+.examFreqRecent { font-weight: 400; opacity: .85; }
+.examFreqNote {
+  margin: 10px 0 4px; padding: 10px 12px; border-radius: 10px;
+  background: #f5f7fa; border: 1px solid #e5e9f0;
+  font-size: 12px; line-height: 1.65; color: #4a5568;
+}
+.examFreqNote strong { color: #2d3748; }
+.examFreqNote p { margin: 4px 0; }
+body.eye-care .examFreqNote { background: #f3e9d8; border-color: #e3d2b4; color: #5c4a33; }
+body.eye-care .examFreqNote strong { color: #4a3826; }

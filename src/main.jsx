@@ -102,8 +102,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.82.1';
-const APP_VERSION_CODE = 310;
+const APP_VERSION = '2.83.0';
+const APP_VERSION_CODE = 312;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -788,6 +788,43 @@ function normalizeItemPos(raw, meaning) {
   return p.trim();
 }
 
+/* ================================================================
+   v2.83.0：高考考频（真题语料实测次数 + 高/中/低频分级）
+   数据在独立分片 data/exam-freq.js，App 挂载后异步载入；
+   未就绪时不显示徽标、不参与排序，失败也不影响原有功能。
+   ================================================================ */
+let EXAM_FREQ = null;
+const EXAM_LEVEL_LABEL = ['基础', '低频', '中频', '高频'];
+function getExamFreq(term) {
+  if (!EXAM_FREQ || !term) return null;
+  const key = String(term).trim().toLowerCase();
+  const hit = EXAM_FREQ.map[key];
+  if (!hit) return { level: 1, count: 0, recent: 0, basis: 'fallback' };
+  return {
+    level: hit[0], count: hit[1],
+    recent: EXAM_FREQ.recent[key] || 0,
+    basis: hit[1] > 0 ? 'corpus' : 'fallback',
+  };
+}
+function examLevelOf(term) { const f = getExamFreq(term); return f ? f.level : 1; }
+function examCountOf(term) { const f = getExamFreq(term); return f ? f.count : 0; }
+/* 词卡 / 词库列表 / 详情页共用：等级徽标 + 真题出现次数（未覆盖显示「—」） */
+function ExamFreqTag({ term, compact }) {
+  if (!EXAM_FREQ || !term) return null;
+  const f = getExamFreq(term);
+  if (!f) return null;
+  const tip = f.basis === 'corpus'
+    ? '等级与次数来自 130+ 份历年高考/模拟真题语料（约 50 万词次）逐词统计'
+    : '该词未被真题语料收录，等级按高考考纲与通用语料库词频标注，次数不作估算';
+  return (
+    <span className={'examFreqTag examFreqLv' + f.level + (compact ? ' examFreqCompact' : '')} title={tip}>
+      {EXAM_LEVEL_LABEL[f.level]}<span className="examFreqSep"> · </span>
+      {f.count > 0 ? '真题 ' + f.count + ' 次' : '次数 —'}
+      {!compact && f.recent > 0 && <span className="examFreqRecent"> · 近五年 {f.recent} 次</span>}
+    </span>
+  );
+}
+
 function makeItem(row, type, index, source) {
   const [term, rawPos, meaning, frequency, corePoints, allPoints, examples] = row;
   const pos = normalizeItemPos(rawPos, meaning);
@@ -1419,6 +1456,8 @@ function loadSettings() {
       soundWrong: 'w1',
       // v2.82.0：答题后是否显示该单词全部考点（默认关，只给其他选项单词的中文对照）
       answerFullPoints: false,
+      // v2.83.0：优先背诵高考高频词（默认关，保持词库原顺序）
+      freqFirst: false,
       // v2.55.9: 自动发音开关归一。
       // v2.44.0 已把"背诵新词自动发音"与"跳转自动发音"合并为一个开关，
       // 但老版本保存的设置里没有 autoSpeak 字段，旧默认 false 会导致：
@@ -1434,7 +1473,7 @@ function loadSettings() {
     return merged;
   } catch {
     const savedMode = localStorage.getItem(MODE_KEY);
-    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: true, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false, eyeCare: false, ebbinghaus: false, soundEnabled: false, soundCorrect: 'c1', soundWrong: 'w1', answerFullPoints: false };
+    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: true, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false, eyeCare: false, ebbinghaus: false, soundEnabled: false, soundCorrect: 'c1', soundWrong: 'w1', answerFullPoints: false, freqFirst: false };
   }
 }
 
@@ -4466,6 +4505,17 @@ function App() {
        ② bookDataVersion +1 —— 给"只依赖 progress"的 useEffect（已掌握词库重建）
           一个额外的重算理由，否则老用户带着进度进来会看到空的已掌握词库。 */
   const [bookDataVersion, setBookDataVersion] = useState(0);
+  // v2.83.0：高考考频数据独立分片，挂载后异步加载；到货后触发一次重渲染让徽标与排序生效
+  const [examFreqReady, setExamFreqReady] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    import('./data/exam-freq').then(function (m) {
+      if (!alive) return;
+      EXAM_FREQ = { map: m.EXAM_FREQ_MAP, recent: m.EXAM_RECENT_MAP, meta: m.EXAM_FREQ_META };
+      setExamFreqReady(true);
+    }).catch(function () {});
+    return function () { alive = false; };
+  }, []);
   useEffect(() => onBookData(() => {
     setBookDataVersion(function (v) { return v + 1; });
     setBooks(prev => prev.slice());
@@ -5936,13 +5986,26 @@ function App() {
     if (settings.ebbinghaus) {
       items = items.slice().sort((a, b) => ebSortKey(a) - ebSortKey(b));
     }
+    // v2.83.0：优先背诵高频词 —— 按考频等级分桶降序（高频 → 中频 → 低频 → 基础）。
+    // 用显式下标保序，不依赖 Array.sort 稳定性（兼容老 WebView）：
+    //  · 开启艾宾浩斯 / 乱序时，桶内保留到期顺序或乱序结果，不破坏复习节奏；
+    //  · 否则桶内再按真题出现次数降序，真正「频率高的先背」。
+    if (settings.freqFirst && examFreqReady) {
+      const preserve = settings.ebbinghaus || settings.shuffleMode;
+      items = items.map((it, i) => ({ it, i })).sort((a, b) => {
+        const d = examLevelOf(b.it.term) - examLevelOf(a.it.term);
+        if (d !== 0) return d;
+        if (preserve) return a.i - b.i;
+        return examCountOf(b.it.term) - examCountOf(a.it.term);
+      }).map(x => x.it);
+    }
     // v2.81.2：例句语境模式下，只保留「有双语例句（优先真题）」的单词，
     // 避免没有例句的词退化成普通英文选中文，失去语境练习的意义
     if (practiceMode === 'sentence') {
       items = items.filter(it => sentenceMap[String(it.term).toLowerCase()]);
     }
     return items;
-  }, [learnActiveBook, posFilter, typeFilter, hideMastered, settings.shuffleMode, settings.ebbinghaus, progress, practiceMode, sentenceMap]);
+  }, [learnActiveBook, posFilter, typeFilter, hideMastered, settings.shuffleMode, settings.ebbinghaus, settings.freqFirst, examFreqReady, progress, practiceMode, sentenceMap]);
 
   // v2.79.0：所选背诵词库的分片状态。「加载中」与「加载失败」是两条互斥路径，
   // 只盯 items.length === 0 会让分片请求失败时永远停在「词库加载中…」。
@@ -7685,6 +7748,7 @@ function App() {
             <div className="card">
               <div className="cardMeta">
                 <span className="freqTag" style={{ color: freqColor(displayCurrent.frequency), borderColor: freqColor(displayCurrent.frequency) }}>{displayCurrent.frequency}</span>
+                {examFreqReady && <ExamFreqTag term={displayCurrent.term} />}
                 {displayCurrent.pos && <span className="posTag" style={{ color: posColor(displayCurrent.pos), background: posColor(displayCurrent.pos) + '18' }}>{displayCurrent.pos}</span>}
                 {/* v2.44.0 显示单词所属词库 */}
                 {(() => {
@@ -8488,6 +8552,7 @@ function App() {
                     {item.phonetic && <span className="phoneticSmall">{item.phonetic}</span>}
                     {item.pos && <span className="posTag" style={{ color: posColor(item.pos), background: posColor(item.pos) + '18' }}>{item.pos}</span>}
                     <span className="freqTag" style={{ color: freqColor(item.frequency), borderColor: freqColor(item.frequency) }}>{item.frequency}</span>
+                    {examFreqReady && <ExamFreqTag term={item.term} compact />}
                   </div>
                   <p>{getShortMeaning(item.meaning)}</p>
                 </div>
@@ -9469,6 +9534,21 @@ function App() {
               <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>关闭时答题后只保留结果与其他选项单词的中文对照，页面保持紧凑；开启后展示该单词的全部考点、搭配、词族与例句。</span>
             </label>
 
+            {/* v2.83.0：优先背诵高考高频词 */}
+            <label>优先背诵高频词
+              <InlineSelect block value={settings.freqFirst ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, freqFirst: on })); saveSettings({ ...settings, freqFirst: on }); }} options={[{ value: 'off', label: '关闭（按词库原顺序）' }, { value: 'on', label: '开启（高频 → 中频 → 低频）' }]} />
+              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>开启后背单词按高考真题考频分档推进，高频词排在最前；同档内默认再按真题出现次数降序。若同时开启艾宾浩斯或乱序，则保留其到期/乱序顺序，不改变已掌握与筛选规则。</span>
+            </label>
+
+            {/* v2.83.0：高考考频数据来源与统计口径（如实标注，不编造次数） */}
+            <div className="examFreqNote">
+              <strong>高考考频数据说明</strong>
+              <p>全库单词已标注 <strong>高频 / 中频 / 低频 / 基础</strong> 四档，并在背诵页、词库列表与单词详情页显示 <strong>历年真题出现次数</strong>。</p>
+              <p className="muted">词卡上原有的「基础 / 真题 / 985」等标签是<strong>词库分类</strong>，与带次数的考频徽标是不同维度，两者并存不代表矛盾。</p>
+              <p>次数来自 130+ 份历年高考全国卷及各省模拟真题语料（约 50 万词次）的逐词统计；未被语料收录的词次数显示「—」，等级按高考考纲与通用语料库词频标注，<strong>不编造考查次数</strong>。「近五年 N 次」来自本 App 自带的近五年真题高频词表。</p>
+              <p className="muted">公开资料无法覆盖全部年份、全部省份的逐词精确考查次数，本表用于安排背诵优先级，不代表官方考查次数。</p>
+            </div>
+
             {/* 答题音效总开关 */}
             <label>答题音效
               <InlineSelect block value={settings.soundEnabled ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, soundEnabled: on })); saveSettings({ ...settings, soundEnabled: on }); }} options={[{ value: 'off', label: '关闭' }, { value: 'on', label: '开启' }]} />
@@ -9955,6 +10035,7 @@ function App() {
                 <div className="detailMetaRow">
                   {detailItem.pos && <span className="detailPosTag" style={{ color: posColor(detailItem.pos), background: posColor(detailItem.pos) + '18' }}>{detailItem.pos}</span>}
                   {detailItem.frequency && <span className="detailFreqTag" style={{ color: freqColor(detailItem.frequency) }}>{detailItem.frequency}</span>}
+                  {examFreqReady && <ExamFreqTag term={detailItem.term} />}
                   {/* v2.44.0 显示单词所属词库 */}
                   {(() => {
                     const books = (detailItem.sourceBooks && detailItem.sourceBooks.length > 0)

@@ -282,3 +282,37 @@ android/app/src/main/assets/public/   构建时由 dist 覆盖，不要手改
 - **只保留** `.learnPage .quickToggleRow / .quickToggleBtn / svg` 的压缩（矮屏窄屏另有更紧凑一档）。
 - v2.82.0 的「答题后显示全部考点」开关功能完整保留，仅还原其选项词汇列表的尺寸微调。
 - 版本 2.82.1 / code 310（CI→311）。
+
+
+## 11. v2.83.0 变更记录（高考考频分级 / 考察次数 / 优先背诵高频词）
+
+用户要求：对所有词库联网对照高考，标注高频/中频/低频与考察次数，范围含所有年份；
+并在「我的」新增「是否开启优先背诵频率高的单词」设置。
+
+### 数据文件
+- 新增 `src/data/exam-freq.js`（独立分片，93KB，App 挂载后动态 import，不进首屏包）。
+  导出 `EXAM_FREQ_MAP`（word -> [level, count]）、`EXAM_RECENT_MAP`、`EXAM_FREQ_META`。
+- `level`：3 高频 / 2 中频 / 1 低频 / 0 基础（虚词，不参与优先排序）。
+  `count`：历年真题语料中的出现次数；0 = 未被语料收录，界面显示「—」。
+- 生成脚本：`gen_exam_freq.py`（项目根，离线运行，输入为联网数据，非运行时依赖）。
+
+### 数据来源与口径（如实标注，严禁编造次数）
+1. 主数据：GitHub 开源 `HK-SHAO/English-Dictionary` 的 `dic.txt` —— 130+ 份历年高考全国卷
+   及各省高三模拟卷、约 50 万词次的逐词频数统计（真题语料实测）。
+2. 补充：项目 `seeds-exam.js`「近五年真题高频词」508 条的真题词频，界面显示为「近五年 N 次」。
+3. 兜底：`FrequencyWords` 通用英语语料库词频。未被真题语料收录的词只给等级、不给次数。
+4. 分级：按真题语料频次分位，高频前 25%（门槛 39 次）、中频 25%~60%（门槛 8 次）、
+   低频后 40%；139 个基础虚词单列。与公开真题考频口径（高频≥42 / 中频 19-42 / 低频 9-19）接近。
+5. 局限：公开资料无法覆盖全部年份、全部省份的逐词精确考查次数；App「我的」页原文说明，
+   等级仅用于安排背诵优先级，不代表官方考查次数。
+
+### 实现要点
+- `main.jsx` 模块级：`EXAM_FREQ` / `getExamFreq()` / `examLevelOf()` / `examCountOf()` /
+  `ExamFreqTag`；App 内 `examFreqReady` state + `import('./data/exam-freq')` 懒加载。
+- 徽标挂载三处：背诵页 `cardMeta`、词库列表 `listItemTitle`、详情页 `detailMetaRow`。
+- `settings.freqFirst`（默认 false）：`learnItems` 在艾宾浩斯排序之后按等级分桶降序；
+  用显式下标保序（不依赖 Array.sort 稳定性），艾宾浩斯/乱序开启时保留桶内顺序，
+  否则桶内按真题次数降序。`useMemo` deps 补 `settings.freqFirst` / `examFreqReady`。
+- 「我的 → 学习辅助与反馈」新增开关与 `examFreqNote` 口径说明；`styles.css` 追加
+  `.examFreqTag` / `.examFreqLv0~3` / `.examFreqNote`（含护眼模式适配）。
+- 版本 2.83.0 / versionCode 312（线上 311 → CI 313）。
