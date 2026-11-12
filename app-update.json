@@ -1,9 +1,11 @@
 {
   "version": "2.83.0",
-  "versionCode": 312,
+  "versionCode": 313,
   "changelog": "【v2.83.0】高考考频分级与优先背诵高频词\n新增 全库单词标注高频 / 中频 / 低频 / 基础四档，背诵页、词库列表与详情页显示等级与历年真题出现次数\n新增 近五年真题高频词单独显示「近五年 N 次」，数据来自 130+ 份历年高考及模拟真题语料逐词统计\n新增 我的 → 学习辅助与反馈 →「优先背诵高频词」开关，开启后高频词优先，同档按真题次数推进\n优化 未被真题语料收录的词次数显示「—」，按考纲与通用词频标注等级，不编造考查次数并注明统计口径",
   "devNotes": "v2.83.0: ① 新增 src/data/exam-freq.js 独立分片（6964 个去重词，93KB），数据来自联网核验的 GitHub 开源 HK-SHAO/English-Dictionary（130+ 份历年高考全国卷及各省模拟卷、约 50 万词次逐词频数）+ 项目 seeds-exam.js 近五年真题高频词 508 条 + FrequencyWords 通用词频兜底；分级按真题语料频次分位（高频前 25% / 中频 25%~60% / 低频后 40%，另有 139 个基础虚词单列），高频门槛 39 次、中频门槛 8 次，与公开真题考频口径接近；未被语料收录的 2508 词标低频且次数为 0（界面显示「—」），不编造数字。② main.jsx 增加模块级 getExamFreq / examLevelOf / examCountOf / ExamFreqTag，App 挂载后动态 import 分片并置 examFreqReady，背诵页词卡、词库列表、详情页三处显示等级徽标与次数；我的页新增高考考频数据说明（含来源、口径与局限）。③ 设置新增 freqFirst（默认 false），learnItems 在艾宾浩斯之后按等级分桶降序，桶内若开启艾宾浩斯/乱序则显式下标保序，否则按真题次数降序；deps 补 settings.freqFirst / examFreqReady。④ 版本号 2.83.0 / versionCode 312（CI→313，> 线上 311，确保旧安装包能收到更新）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+  "apkSize": 4527279,
+  "apkSha256": "cbdb512147cb8575a5f78c6b974465ff6f8a4abaf74d0128a2cdff9ca965ff3f"
 }

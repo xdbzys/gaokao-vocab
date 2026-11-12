@@ -1,9 +1,11 @@
 {
   "version": "2.83.0",
-  "versionCode": 312,
+  "versionCode": 313,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.83.0】高考考频分级与优先背诵高频词\n新增 全库单词标注高频 / 中频 / 低频 / 基础四档，背诵页、词库列表与详情页显示等级与历年真题出现次数\n新增 近五年真题高频词单独显示「近五年 N 次」，数据来自 130+ 份历年高考及模拟真题语料逐词统计\n新增 我的 → 学习辅助与反馈 →「优先背诵高频词」开关，开启后高频词优先，同档按真题次数推进\n优化 未被真题语料收录的词次数显示「—」，按考纲与通用词频标注等级，不编造考查次数并注明统计口径"
+  "apkSize": 4527279,
+  "apkSha256": "cbdb512147cb8575a5f78c6b974465ff6f8a4abaf74d0128a2cdff9ca965ff3f",
+  "changelog": "【v2.83.0】高考考频分级与优先背诵高频词\n新增 全库单词标注高频 / 中频 / 低频 / 基础四档，背诵页、词库列表与详情页显示等级与历年真题出现次数\n新增 近五年真题高频词单独显示「近五年 N 次」，数据来自 130+ 份历年高考及模拟真题语料逐词统计\n新增 我的 → 学习辅助与反馈 →「优先背诵高频词」开关，"
 }
