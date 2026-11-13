@@ -1,9 +1,11 @@
 {
   "version": "2.85.0",
-  "versionCode": 316,
+  "versionCode": 317,
   "changelog": "【v2.85.0】自行导入单词也能有考频与关联词 + 全局界面细节优化\n新增 免密钥联网补全：内置真题表未收录的词（含自行导入生词）自动获取通用语料词频与同义/反义/语义关联词，无需配置 API Key\n新增 导入词也有高/中/低频等级徽标与关联词标记，界面明确标注「联网参考」，不伪装成高考真题考查次数\n新增 「我的 → 设置」联网补全开关、立即补全全部词库、清除缓存与数据来源说明；结果缓存本机、离线可用\n优化 全局界面细节：统一按钮/输入框焦点态与悬浮反馈、细滚动条、徽标与卡片质感层级、护眼模式一致性，不改变任何布局与按钮尺寸",
   "devNotes": "v2.85.0: ① 新增免密钥联网补全（模块级 NET_* 函数，写进 main.jsx 不新增分片）：Datamuse API 的 sp&md=f（Google Books Ngram 每百万词频）、rel_syn / rel_ant / ml（同义/反义/语义关联） + Free Dictionary API（音标/词性/英文释义），均免 API Key 且支持 CORS，已联网实测；结果按词缓存 localStorage(gaokao_net_enrich_v1)，8s 超时、失败静默降级、已缓存跳过、串行批量最多 60 词。② getExamFreq 在内置 exam-freq.js 未命中时读联网缓存返回 basis=net，ExamFreqTag 显示「联网参考」（虚线徽标），绝不把通用语料词频伪装成真题次数；优先背诵高频词排序自动覆盖导入词；getCachedFamily 合并联网关联词，详情页新增「联网关联词」块显示含不在词库内的词。③ 导入后自动触发 runNetEnrichFor（开关 settings.netEnrich 默认开启），设置集中区与导入页均提供手动补全/清除缓存入口与数据源说明。④ 全局 UI 轻量优化为纯 CSS 末尾追加（焦点环、滚动条、hover 滤镜、徽标过渡、reduced-motion），与 v2.84.0 基线的几何规则逐行比对无差异，未改任何布局尺寸、答题选项、题卡高度与按钮数量。⑤ 版本 2.85.0 / versionCode 316（线上 315 → CI 317）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+  "apkSize": 4602319,
+  "apkSha256": "f24e56c840b4a5f67869d2ada984548a45a58b8d330e24e39e05ba39db770114"
 }
