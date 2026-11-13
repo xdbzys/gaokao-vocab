@@ -1,11 +1,11 @@
 {
-  "version": "2.85.0",
-  "versionCode": 317,
+  "version": "2.86.0",
+  "versionCode": 319,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4602319,
-  "apkSha256": "f24e56c840b4a5f67869d2ada984548a45a58b8d330e24e39e05ba39db770114",
-  "changelog": "【v2.85.0】自行导入单词也能有考频与关联词 + 全局界面细节优化\n新增 免密钥联网补全：内置真题表未收录的词（含自行导入生词）自动获取通用语料词频与同义/反义/语义关联词，无需配置 API Key\n新增 导入词也有高/中/低频等级徽标与关联词标记，界面明确标注「联网参考」，不伪装成高考真题考查次数\n新增 「我的 "
+  "apkSize": 4599122,
+  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d",
+  "changelog": "【v2.86.0】内置算法全面接管关联词检索 + 删除 AI 功能 + 导出按考频顺序\n新增 导出词库默认按高考考频顺序输出（高频 → 中频 → 低频），与「优先背诵高频词」同一口径；导出面板可切换「按考频 / 词库原顺序」，复制、下载 txt、百词斩分批全部遵循同一顺序\n优化 内置关联词算法：同源词族按匹配强度排序、"
 }
