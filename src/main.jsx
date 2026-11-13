@@ -102,8 +102,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.85.0';
-const APP_VERSION_CODE = 316;
+const APP_VERSION = '2.86.0';
+const APP_VERSION_CODE = 318;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -792,7 +792,7 @@ function normalizeItemPos(raw, meaning) {
    v2.85.0：联网数据补全（免密钥、开箱即用）
    用途：给「内置真题考频表未收录的词」——尤其是用户后续自行导入的生词——
         补上考频等级与关联词，并把结果缓存到 localStorage，离线可用。
-   数据源（均免 API Key、支持 CORS，已在浏览器实测）：
+   数据源（均免密钥、无需任何配置，支持 CORS，已在浏览器实测）：
      · Datamuse API  https://api.datamuse.com
          sp=<word>&md=f   → Google Books Ngram 通用英语语料「每百万词出现次数」
          rel_syn / rel_ant / ml → 同义词 / 反义词 / 语义关联词
@@ -941,20 +941,11 @@ function fetchNetEnrich(word) {
   }).catch(function () { return null; });
 }
 
-/* 把某个词的联网关联词并入现有的 family 缓存（现有展示点会自动生效） */
-function mergeNetIntoFamilyCache(word, net) {
-  if (!net) return;
-  var w = String(word).trim().toLowerCase();
-  var fc = loadWordFamilyCache();
-  var cur = Array.isArray(fc[w]) ? fc[w].slice() : [];
-  var extra = [].concat(net.related || [], net.synonyms || []);
-  for (var i = 0; i < extra.length && cur.length < 24; i++) {
-    var x = String(extra[i] || '').toLowerCase().trim();
-    if (x && /^[a-z][a-z\-]{1,30}$/.test(x) && cur.indexOf(x) < 0) cur.push(x);
-  }
-  fc[w] = cur;
-  saveWordFamilyCache(fc);
-}
+/* v2.86.0：联网关联词不再写入同源词族缓存。
+   词族（同源派生）与语义关联（近义/反义/相关）是两类不同关系，
+   分开存放才能保证关联词检索结果准确、来源可追溯。 */
+function mergeNetIntoFamilyCache() { /* 保留调用兼容：数据改由 getNetEnrich 独立读取 */ }
+
 
 /* 批量补全：只补内置真题表未命中的词，跳过已缓存，串行避免瞬时请求过多 */
 function batchNetEnrich(items, onProgress, opts) {
@@ -976,7 +967,7 @@ function batchNetEnrich(items, onProgress, opts) {
     var w = list[idx++];
     return fetchNetEnrich(w).then(function (d) {
       done++;
-      if (d) { ok++; mergeNetIntoFamilyCache(w, d); }
+      if (d) { ok++; }   // v2.86.0：不再并入词族缓存，联网词单独分类展示
       if (onProgress) { try { onProgress(done, list.length, w); } catch (e) {} }
       return step();
     });
@@ -1002,9 +993,15 @@ function getExamFreq(term) {
       basis: hit[1] > 0 ? 'corpus' : 'fallback',
     };
   }
-  // v2.85.0：内置真题表未收录（含用户自行导入的生词）→ 用联网补全的通用语料词频给等级
+  // 内置真题表未收录（含用户自行导入的生词）→ 用联网补全的通用语料词频给等级。
+  // v2.86.0：词频本次没取到（网络原因）时绝不冒充「低频」，标 pending 且下次重试。
   const net = getNetEnrich(key);
-  if (net) return { level: net.level || 1, count: 0, recent: 0, basis: 'net', netFreq: net.freq || 0, netFreqOk: net.freqOk !== false };
+  if (net) {
+    if (net.freqOk === false) {
+      return { level: 0, count: 0, recent: 0, basis: 'pending', netFreq: 0, netFreqOk: false };
+    }
+    return { level: net.level || 1, count: 0, recent: 0, basis: 'net', netFreq: net.freq || 0, netFreqOk: true };
+  }
   return { level: 1, count: 0, recent: 0, basis: 'fallback' };
 }
 function examLevelOf(term) { const f = getExamFreq(term); return f ? f.level : 1; }
@@ -1014,19 +1011,19 @@ function ExamFreqTag({ term, compact }) {
   if (!EXAM_FREQ || !term) return null;
   const f = getExamFreq(term);
   if (!f) return null;
-  const netMode = f.basis === 'net';
-  const tip = netMode
-    ? (f.netFreqOk === false
-      ? '该词未被内置真题语料收录；联网词频本次未获取到（网络原因），等级保守按低频标注，下次补全会自动重试。非高考真题考查次数。'
-      : '该词未被内置真题语料收录；等级由联网获取的通用英语语料词频（' +
-        (f.netFreq > 0 ? f.netFreq.toFixed(2) + ' 次/每百万词' : '不足 0.01') +
-        '）推算，非高考真题考查次数。数据已缓存本地，离线可用。')
+  const netMode = f.basis === 'net' || f.basis === 'pending';
+  const tip = f.basis === 'pending'
+    ? '该词未被内置真题语料收录；联网词频本次未获取到（网络原因），暂不标注等级，下次补全会自动重试。不编造任何考查次数。'
+    : (netMode
+      ? ('该词未被内置真题语料收录；等级由联网获取的通用英语语料词频（' +
+         (f.netFreq > 0 ? f.netFreq.toFixed(2) + ' 次/每百万词' : '不足 0.01') +
+         '）推算，非高考真题考查次数。数据已缓存本地，离线可用。')
     : (f.basis === 'corpus'
       ? '等级与次数来自 130+ 份历年高考/模拟真题语料（约 50 万词次）逐词统计'
-      : '该词未被真题语料收录，等级按高考考纲与通用语料库词频标注，次数不作估算');
+        : '该词未被真题语料收录，等级按高考考纲与通用语料库词频标注，次数不作估算'));
   return (
-    <span className={'examFreqTag examFreqLv' + f.level + (netMode ? ' examFreqNet' : '') + (compact ? ' examFreqCompact' : '')} title={tip}>
-      {EXAM_LEVEL_LABEL[f.level]}<span className="examFreqSep"> · </span>
+    <span className={'examFreqTag examFreqLv' + f.level + (netMode ? ' examFreqNet' : '') + (f.basis === 'pending' ? ' examFreqPending' : '') + (compact ? ' examFreqCompact' : '')} title={tip}>
+      {f.basis === 'pending' ? '待补全' : EXAM_LEVEL_LABEL[f.level]}<span className="examFreqSep"> · </span>
       {netMode ? '联网参考' : (f.count > 0 ? '真题 ' + f.count + ' 次' : '次数 —')}
       {!compact && f.recent > 0 && <span className="examFreqRecent"> · 近五年 {f.recent} 次</span>}
     </span>
@@ -2078,7 +2075,7 @@ function getPosFilterList() {
 
 function normalizePos(posText, isPhrase) {
   if (isPhrase) return '短语';
-  // v2.81.3：没词性时不再写死「待标注」占位（用户导入/AI 提取词库会走到这里，
+  // v2.81.3：没词性时不再写死「待标注」占位（用户导入 / 内置解析词库会走到这里，
   // 那个字面值会被词性标签直接显示出来）。改为空值 → 界面不渲染词性标签。
   if (!posText) return '';
   return posText.toLowerCase().replace(/，/g, '/').replace(/、/g, '/').replace(/&/g, '/').replace(/\s+/g, ' ')
@@ -2636,6 +2633,10 @@ function findWordFamily(term, items) {
   if (_wordFamilyCache.has(cacheKey)) return _wordFamilyCache.get(cacheKey);
   const seen = new Set([term]);
   const related = [];
+  const relatedStrength = [];
+  // v2.86.0：记录每条关联的匹配强度（3=词干完全相同 / 2=前缀或去尾E / 1=音变派生），
+  // 用于排序，保证最可靠的同源派生词不会被大量弱匹配挤出 15 个展示名额。
+  const pushRelated = (item, strength) => { related.push(item); relatedStrength.push(strength); };
   const termStem = getStem(term);
   const termLower = term.toLowerCase();
   // 去尾E后的词干（用于匹配 type → typist, nature → natural 等）
@@ -2722,7 +2723,10 @@ function findWordFamily(term, items) {
       && !isFalseEtymology(term, item.term);
 
     if (isRelated) {
-      related.push(item);
+      // 词干完全相同最可靠；前缀 / 去尾E 次之；辅音交替、元音变化等派生关系再次之
+      const strength = (stemExactMatch || shortStemEqual) ? 3
+        : (prefixMatch || stemPrefixMatch || eDropMatch) ? 2 : 1;
+      pushRelated(item, strength);
       seen.add(item.term);
     }
   }
@@ -2733,7 +2737,7 @@ function findWordFamily(term, items) {
     if (seen.has(cognate)) continue;
     const item = items.find(i => i.term.toLowerCase() === cognate.toLowerCase());
     if (item) {
-      related.push(item);
+      pushRelated(item, 3);   // 人工校对确认的同源词，最高可信
       seen.add(item.term);
     }
   }
@@ -2746,12 +2750,12 @@ function findWordFamily(term, items) {
     if (key === term.toLowerCase() || seen.has(key)) continue;
     const real = items.find(i => i.term.toLowerCase() === key);
     if (real) {
-      related.push(real);
+      pushRelated(real, 3);   // 人工校对表 + 词库真实条目
       seen.add(real.term);
       continue;
     }
     if (!sup.meaning) continue; // 反向映射条目无释义且词库无此词时跳过
-    related.push({
+    pushRelated({
       id: `supp-${key}`,
       type: 'word',
       term: sup.term,
@@ -2764,59 +2768,55 @@ function findWordFamily(term, items) {
       phonetic: '',
       notes: '',
       source: '高考总汇词库',
-    });
+    }, 2);   // 拓展条目（不在词库内），可信度次之
     seen.add(key);
   }
 
-  // 按词性分组排序
+  // v2.86.0：先按匹配强度降序，再按词性分组、字母序；显式下标保序，
+  // 兼容老 WebView 的 Array.sort 不稳定实现。
   const posOrder = { 'n.': 1, 'v.': 2, 'adj.': 3, 'adv.': 4 };
-  related.sort((a, b) => {
-    const oa = posOrder[a.pos] || 99;
-    const ob = posOrder[b.pos] || 99;
+  const ranked = related.map((item, i) => ({ item, s: relatedStrength[i], i }));
+  ranked.sort((a, b) => {
+    if (b.s !== a.s) return b.s - a.s;
+    const oa = posOrder[a.item.pos] || 99;
+    const ob = posOrder[b.item.pos] || 99;
     if (oa !== ob) return oa - ob;
-    return a.term.localeCompare(b.term);
+    if (a.i !== b.i) return a.i - b.i;
+    return a.item.term.localeCompare(b.item.term);
   });
 
-  const _result = related.slice(0, 15); // 最多显示15个关联词
+  const _result = ranked.slice(0, 15).map(x => x.item); // 最多显示15个同源词
   _wordFamilyCache.set(cacheKey, _result);
   return _result;
 }
 
 /* ============================
-   联网关联词检查：导入新单词时自动联网检查词族关系
+   同源词族缓存：内置词根算法的标注结果（无需联网）
    ============================ */
 
-const WORD_FAMILY_CACHE_KEY = 'gaokao_word_family_cache';
+const WORD_FAMILY_CACHE_KEY = 'gaokao_word_family_cache';   // 内置算法同源词族缓存
 
-// 加载本地缓存的AI关联词数据
+// 加载内置算法标注的同源词族缓存
 function loadWordFamilyCache() {
   try { return JSON.parse(localStorage.getItem(WORD_FAMILY_CACHE_KEY) || '{}'); }
   catch { return {}; }
 }
 
-// 保存AI关联词数据到本地
+// 保存内置算法标注的同源词族缓存
 function saveWordFamilyCache(cache) {
   try { localStorage.setItem(WORD_FAMILY_CACHE_KEY, JSON.stringify(cache)); }
   catch {}
 }
 
-// 获取某个单词的AI缓存关联词
+// 获取某个单词的内置算法缓存关联词（仅同源词族）。
+// v2.86.0：联网得到的同义词 / 语义关联词不再并入此处——它们是「语义相关」，
+// 不是「同源派生」，混进词族会让关联词检索失真。联网词由 getNetEnrich 单独分类展示。
 function getCachedFamily(word) {
   const cache = loadWordFamilyCache();
-  const local = cache[word.toLowerCase()] || [];
-  // v2.85.0：并入免密钥联网补全得到的关联词
-  const net = getNetEnrich(word);
-  if (!net) return local;
-  const out = local.slice();
-  const extra = [].concat(net.related || [], net.synonyms || []);
-  for (let i = 0; i < extra.length && out.length < 24; i++) {
-    const x = String(extra[i] || '').toLowerCase().trim();
-    if (x && /^[a-z][a-z\-]{1,30}$/.test(x) && out.indexOf(x) < 0) out.push(x);
-  }
-  return out;
+  return cache[word.toLowerCase()] || [];
 }
 
-// === 易混词AI缓存 ===
+// === 易混词缓存（内置算法标注） ===
 const CONFUSING_CACHE_KEY = 'gaokao_confusing_cache';
 
 function loadConfusingCache() {
@@ -2834,78 +2834,18 @@ function getCachedConfusing(word) {
   return cache[word.toLowerCase()] || [];
 }
 
-// 使用AI大模型检查词族关系和易混词
-async function checkWordFamilyWithAI(word, candidateWords, aiConfig) {
-  if (!aiConfig.endpoint || !aiConfig.model || !aiConfig.apiKey) return null;
-  if (!candidateWords.length) return { related: [], confusing: [] };
+/* v2.86.0：原「AI 大模型检查词族 / 免费词典 API 补充」已删除。
+   前者要求用户自填 API Key，后者取回数据后从未被使用、只会多发一次无效请求。
+   同源词族完全由内置词根算法 findWordFamily 判定；
+   近义 / 反义 / 语义关联由免密钥联网数据 NET_* 提供，并单独分类展示。 */
 
-  const prompt = `你是英语词汇学专家。请分析单词"${word}"与以下词库中单词的关系。
-
-词库候选词（最多30个）：${candidateWords.slice(0, 30).join(', ')}
-
-请分别找出两类词：
-
-1. 同源词（词根变形）：同一个词根的不同形式变化
-   - 词性变化：success(n.) → successful(adj.) → successfully(adv.) → succeed(v.)
-   - 派生变化：create(v.) → creation(n.) → creative(adj.) → creativity(n.)
-   注意：仅仅拼写相似但词源不同的不算同源词（如 rely 和 relax 无关）
-
-2. 易混词：拼写相似但含义完全不同的词
-   - 如 affect(影响) vs effect(效果)
-   - 如 adapt(适应) vs adopt(收养)
-   - 如 accept(接受) vs except(除了)
-
-只返回JSON格式：
-{"related": ["同源词1", "同源词2"], "confusing": ["易混词1", "易混词2"]}
-没有则返回空数组：{"related": [], "confusing": []}`;
-
-  const resp = await fetch(aiConfig.endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${aiConfig.apiKey}` },
-    body: JSON.stringify({
-      model: aiConfig.model,
-      temperature: 0.1,
-      messages: [
-        { role: 'system', content: '只返回JSON，不要其他文字' },
-        { role: 'user', content: prompt }
-      ]
-    })
-  });
-  if (!resp.ok) throw new Error(`AI请求失败：${resp.status}`);
-  const data = await resp.json();
-  const json = extractJsonObject(data.choices?.[0]?.message?.content || '');
-  return { related: json.related || [], confusing: json.confusing || [] };
-}
-
-// 使用免费词典API补充词族信息（不需要API Key）
-// 通过获取单词的词源和定义，辅助判断词族关系
-async function checkWordFamilyWithDictApi(word) {
-  try {
-    const resp = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.toLowerCase())}`);
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    if (!Array.isArray(data) || !data.length) return null;
-    const entry = data[0];
-    // 提取词源信息（如果有）
-    const origin = entry.origin || '';
-    // 提取所有词性
-    const meanings = entry.meanings || [];
-    const posList = meanings.map(m => m.partOfSpeech).join(', ');
-    // 提取定义
-    const definitions = meanings.flatMap(m => (m.definitions || []).slice(0, 2).map(d => d.definition));
-    return { origin, posList, definitions, word: entry.word };
-  } catch { return null; }
-}
-
-// 批量联网检查词族关系
-// newItems: 新导入的单词列表
-// allItems: 词库中所有单词
-// aiConfig: AI配置
+// 内置算法批量标注：为导入 / 手动检查的词建立「同源词族」与「易混词」缓存。
+// v2.86.0：全程使用内置词根算法 + 静态词表，不需要任何配置或联网请求。
+// newItems: 新导入的单词列表；allItems: 词库中所有单词
 // onProgress: 进度回调 (current, total, word, found)
-async function autoTagWordFamily(newItems, allItems, aiConfig, onProgress) {
+async function autoTagWordFamily(newItems, allItems, onProgress) {
   const cache = loadWordFamilyCache();
   const confusingCache = loadConfusingCache();
-  const hasAi = aiConfig.endpoint && aiConfig.model && aiConfig.apiKey;
   let totalChecked = 0;
   let totalFound = 0;
   let totalConfusing = 0;
@@ -2914,62 +2854,20 @@ async function autoTagWordFamily(newItems, allItems, aiConfig, onProgress) {
   for (const item of newItems) {
     const word = item.term.toLowerCase().trim();
     if (!word || word.length < 2) { totalChecked++; continue; }
+    if (cache[word]) { totalChecked++; continue; }   // 已检查过的词直接跳过
 
-    // 如果已有缓存，跳过
-    if (cache[word]) { totalChecked++; continue; }
+    // 同源词族：内置词根算法（含人工校对表、隐藏同源词、假同源过滤）
+    const family = findWordFamily(item.term, allItems).map(i => i.term.toLowerCase());
+    cache[word] = family;
+    if (family.length) totalFound++;
 
-    // 获取候选词：词库中所有其他单词（排除自身）
-    const candidates = allItems
-      .filter(i => i.term.toLowerCase() !== word)
-      .map(i => i.term.toLowerCase())
-      .filter((v, idx, arr) => arr.indexOf(v) === idx) // 去重
-      .slice(0, 100); // 限制候选词数量
-
-    let aiRelated = [];
-    let aiConfusing = [];
-
-    if (hasAi) {
-      // 使用AI检查词族和易混词
-      try {
-        const aiResult = await checkWordFamilyWithAI(word, candidates, aiConfig);
-        // 只保留词库中存在的词
-        aiRelated = (aiResult.related || [])
-          .map(w => w.toLowerCase().trim())
-          .filter(w => candidates.includes(w));
-        aiConfusing = (aiResult.confusing || [])
-          .map(w => w.toLowerCase().trim())
-          .filter(w => candidates.includes(w));
-      } catch (e) {
-        // AI失败，使用本地算法
-        aiRelated = findWordFamily(item.term, allItems).map(i => i.term.toLowerCase());
-      }
-    } else {
-      // 没有AI配置，使用本地算法（v2.85.0：原「词典 API 补充」取回数据后并未使用，
-      // 只会多一次无效网络请求；联网补全统一由 NET_* 模块负责，且受 netEnrich 开关控制）
-      const localFamily = findWordFamily(item.term, allItems).map(i => i.term.toLowerCase());
-      aiRelated = localFamily;
-      // 本地易混词检查
-      aiConfusing = findConfusingWords(item.term, allItems).map(i => i.term.toLowerCase());
-    }
-
-    if (aiRelated.length > 0) {
-      cache[word] = aiRelated;
-      totalFound++;
-    } else {
-      // 标记为已检查（空数组），避免重复检查
-      cache[word] = [];
-    }
-
-    // 存储易混词缓存
-    if (aiConfusing.length > 0) {
-      confusingCache[word] = aiConfusing;
-      totalConfusing++;
-    } else {
-      confusingCache[word] = [];
-    }
+    // 易混词：内置编辑距离算法 + 静态易混词表（已排除同源词族成员）
+    const confusing = findConfusingWords(item.term, allItems).map(i => i.term.toLowerCase());
+    confusingCache[word] = confusing;
+    if (confusing.length) totalConfusing++;
 
     totalChecked++;
-    if (onProgress) onProgress(totalChecked, total, word, aiRelated.length + aiConfusing.length);
+    if (onProgress) onProgress(totalChecked, total, word, family.length + confusing.length);
   }
 
   saveWordFamilyCache(cache);
@@ -3009,6 +2907,7 @@ function findConfusingWords(term, items) {
   const cacheKey = term.toLowerCase().trim() + '|' + items.length;
   if (_confusingCache.has(cacheKey)) return _confusingCache.get(cacheKey);
   const key = term.toLowerCase().trim();
+  const keyStem = getStem(key);
   const result = [];
   const seen = new Set();
   // 0. 排除词族成员（词族归"关联词族"显示，不归"易混词"）
@@ -3024,7 +2923,7 @@ function findConfusingWords(term, items) {
       }
     });
   }
-  // 2. 从AI联网检查缓存中查找（补充静态数据未覆盖的）
+  // 2. 从内置算法标注缓存中查找（补充静态数据未覆盖的）
   const aiConfusing = getCachedConfusing(key);
   aiConfusing.forEach(w => {
     const item = items.find(i => i.term.toLowerCase() === w.toLowerCase());
@@ -3041,6 +2940,9 @@ function findConfusingWords(term, items) {
       if (other === key || seen.has(other) || other.length < 3) continue;
       // 排除词族成员
       if (familyTerms.has(other)) continue;
+      // v2.86.0：词干相同属于同源派生（create / creation 等），
+      // 不是「拼写相似但含义不同」的易混词，避免内置算法给出错误辨析。
+      if (getStem(other) === keyStem) continue;
       const dist = levenshteinDistance(key, other);
       const prefix = commonPrefixLen(key, other);
       const lenDiff = Math.abs(key.length - other.length);
@@ -3068,10 +2970,10 @@ function getConfusingNote(term) {
   return entry ? entry.note : '';
 }
 
-// 判断某个易混词是否来自AI联网标注
-function isAiConfusingWord(term, confusingTerm) {
-  const aiConfusing = getCachedConfusing(term.toLowerCase().trim());
-  return aiConfusing.includes(confusingTerm.toLowerCase().trim());
+// 判断某个易混词是否由内置算法标注（写进缓存，用于界面区分静态词表与算法结果）
+function isTaggedConfusingWord(term, confusingTerm) {
+  const tagged = getCachedConfusing(term.toLowerCase().trim());
+  return tagged.includes(confusingTerm.toLowerCase().trim());
 }
 
 // 支持多种编号格式：1. / 1) / (1) / [1] / ① / 1、/ 第1 / 1.
@@ -3386,68 +3288,12 @@ function parseImportedText(text, defaultType = 'word') {
 }
 
 /* ============================
-   八、AI识别功能
+   八、导入解析（内置算法，无需任何配置）
+   ------------------------------------------------------------
+   v2.86.0：彻底移除「AI 大模型识别」。TXT / PDF / DOCX / PPTX / 图片 OCR
+   全部走本地解析；词表结构化与关联词检索改由内置算法 + 免密钥公开数据完成，
+   用户不需要配置任何服务商或模型。
    ============================ */
-
-// 内置AI服务商预设
-const AI_PROVIDERS = [
-  { id: 'siliconflow', name: '硅基流动（国内，推荐）', endpoint: 'https://api.siliconflow.cn/v1/chat/completions', model: 'deepseek-ai/DeepSeek-V2.5', keyUrl: 'https://cloud.siliconflow.cn' },
-  { id: 'openai', name: 'OpenAI（需VPN）', endpoint: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini', keyUrl: 'https://platform.openai.com' },
-  { id: 'zhipu', name: '智谱AI（国内）', endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-flash', keyUrl: 'https://open.bigmodel.cn' },
-  { id: 'aliyun', name: '阿里云百炼（国内）', endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen-turbo', keyUrl: 'https://bailian.console.aliyun.com' },
-  { id: 'baidu', name: '百度千帆（国内）', endpoint: 'https://qianfan.baidubce.com/v2/chat/completions', model: 'ernie-speed', keyUrl: 'https://qianfan.cloud.baidu.com' },
-  { id: 'custom', name: '自定义', endpoint: '', model: '', keyUrl: '' },
-];
-
-const AI_CONFIG_KEY = 'aiImportConfig';
-
-function loadAiConfig() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(AI_CONFIG_KEY) || '{}');
-    const defaults = { provider: 'siliconflow', apiKey: '' };
-    const config = { ...defaults, ...saved };
-    // 如果provider不是custom，自动填充endpoint和model
-    const provider = AI_PROVIDERS.find(p => p.id === config.provider);
-    if (provider && config.provider !== 'custom') {
-      config.endpoint = provider.endpoint;
-      config.model = provider.model;
-    }
-    return config;
-  } catch { return { provider: 'siliconflow', apiKey: '', endpoint: AI_PROVIDERS[0].endpoint, model: AI_PROVIDERS[0].model }; }
-}
-
-function saveAiConfig(c) { localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(c)); }
-
-function fileToDataUrl(file) {
-  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
-}
-
-function getAiPrompt(defaultType, sourceText = '') {
-  return `你是高中高考英语词库整理助手。请从用户给出的词表中提取高考英语单词和短语。要求：1.只输出JSON。2.格式{"items":[...]}。3.每个item包含：term,type,pos,meaning,frequency,corePoints,allPoints,examples。4.type为word或phrase。5.词性规范化。6.meaning用中文。7.忽略标题和无关文字。原始文本：${sourceText.slice(0, 12000)}`;
-}
-
-function extractJsonObject(text) {
-  const c = String(text || '').replace(/```json|```/g, '').trim();
-  const s = c.indexOf('{'), e = c.lastIndexOf('}');
-  if (s < 0 || e < s) throw new Error('AI没有返回有效JSON');
-  return JSON.parse(c.slice(s, e + 1));
-}
-
-function normalizeAiItems(items, defaultType) {
-  return (items || []).map((item, i) => {
-    const term = String(item.term || '').trim();
-    const isPhrase = item.type === 'phrase' || term.includes(' ') || defaultType === 'phrase';
-    const allPoints = Array.isArray(item.allPoints) && item.allPoints.length ? item.allPoints.map(String) : ['AI识别导入，建议检查补充'];
-    const corePoints = Array.isArray(item.corePoints) && item.corePoints.length ? item.corePoints.map(String).slice(0, 2) : allPoints.slice(0, 2);
-    return {
-      id: `ai-${Date.now()}-${i}-${term}`, type: isPhrase ? 'phrase' : 'word', term,
-      pos: normalizePos(item.pos || '', isPhrase), meaning: String(item.meaning || '请补充中文意思').trim(),
-      frequency: item.frequency || '自定义', corePoints, allPoints,
-      examples: Array.isArray(item.examples) ? item.examples.map(String) : [],
-      notes: '', source: 'AI大模型识别'
-    };
-  }).filter(item => item.term && /[A-Za-z]/.test(item.term));
-}
 
 async function readFileText(file) {
   if (!file) return '';
@@ -3534,7 +3380,7 @@ async function extractImageText(file) {
     const result = await worker.recognize(file);
     await worker.terminate();
     return cleanOcrText(result.data.text);
-  } catch (e) { throw new Error('图片识别失败: ' + e.message + '。建议手动输入或使用AI识别。'); }
+  } catch (e) { throw new Error('图片识别失败: ' + e.message + '。建议手动粘贴词表，或改用 TXT / PDF / DOCX 文件导入。'); }
 }
 
 /* ============================
@@ -5094,6 +4940,8 @@ function App() {
   // v2.72.0：分隔方式可选空格 / Tab / 逗号 / 分号 / 自定义 / 仅单词
   const [exportSep, setExportSep] = useState('space');
   const [exportSepCustom, setExportSepCustom] = useState(' | ');
+  // v2.86.0：导出顺序（默认按考频，与「优先背诵高频词」同一套口径）
+  const [exportOrder, setExportOrder] = useState('freq');
   const [exportMsg, setExportMsg] = useState('');
   // all=全部 hide=隐藏已掌握 only=仅已掌握
   const [listenFilter, setListenFilter] = useState(() => {
@@ -5186,7 +5034,6 @@ function App() {
   const [importStatus, setImportStatus] = useState('');
   const [lastFile, setLastFile] = useState(null);
   const [importTargetBookId, setImportTargetBookId] = useState(null); // 导入目标词库
-  const [aiConfig, setAiConfig] = useState(loadAiConfig);
   const [progress, setProgress] = useState(loadProgress);
   // progress 的 ref，用于在事件处理函数中同步访问最新值
   const progressRef = useRef(progress);
@@ -5237,8 +5084,6 @@ function App() {
   // 正确率统计
   const [sessionCorrect, setSessionCorrect] = useState(0);
   const [sessionTotal, setSessionTotal] = useState(0);
-  // AI配置折叠
-  const [showAiBox, setShowAiBox] = useState(false);
   // 联网关联词检查状态
   const [familyCheckStatus, setFamilyCheckStatus] = useState('');
   const [familyChecking, setFamilyChecking] = useState(false);
@@ -6205,6 +6050,23 @@ function App() {
       seen[k] = 1;
       out.push({ term: t, meaning: m });
     });
+    // v2.86.0：默认按高考考频顺序导出 —— 高频 → 中频 → 低频 → 基础/待补全，
+    // 同档再按真题出现次数、联网词频降序，最后用显式下标保序（兼容老 WebView）。
+    // 复制、下载 txt、百词斩分批共用本函数，因此全部遵循同一顺序。
+    if (exportOrder === 'freq' && EXAM_FREQ) {
+      out = out.map(function (w, i) {
+        var f = getExamFreq(w.term);
+        return { w: w, i: i, lv: f ? f.level : 0, cnt: f ? f.count : 0, nf: (f && f.netFreq) ? f.netFreq : 0 };
+      }).sort(function (a, b) {
+        var d = b.lv - a.lv;
+        if (d !== 0) return d;
+        d = b.cnt - a.cnt;
+        if (d !== 0) return d;
+        d = b.nf - a.nf;
+        if (d !== 0) return d;
+        return a.i - b.i;
+      }).map(function (x) { return x.w; });
+    }
     return out;
   };
 
@@ -6251,7 +6113,7 @@ function App() {
   const doDownloadExport = function () {
     var text = buildExportText();
     if (!text) { setExportMsg('没有可导出的单词'); return; }
-    var name = '背群英词库_' + exportScope + '_' + new Date().toISOString().slice(0, 10) + '.txt';
+    var name = '背群英词库_' + exportScope + '_' + (exportOrder === 'freq' ? '按考频' : '原顺序') + '_' + new Date().toISOString().slice(0, 10) + '.txt';
     saveTextFile(text, name).then(function (p) {
       setExportMsg(p ? ('已保存到 ' + p) : ('已下载 ' + name));
     });
@@ -7200,7 +7062,7 @@ function App() {
       'gaokao_hide_mastered': '隐藏已掌握', 'gaokao_first_use': '首次使用日期',
       'gaokao_practice_mode': '背诵模式', 'gaokao_hidden_books': '隐藏词库', 'gaokao_study_words_log': '学习单词记录',
       'gaokao_downloaded': '下载缓存', 'gaokao_avatar': '头像', 'customBooks': '自定义词库',
-      'customSpelling': '自定义拼写', 'aiImportConfig': 'AI导入配置', 'gaokao_mastered_words': '已掌握单词',
+      'customSpelling': '自定义拼写', 'aiImportConfig': '旧版AI配置（已废弃）', 'gaokao_mastered_words': '已掌握单词',
     };
     // 不恢复的键：版本标记、公告等应由当前版本控制，避免旧备份覆盖新版本状态
     const SKIP_KEYS = new Set(['gaokao_dismissed_version', '_backup_version', '_backup_app']);
@@ -7450,69 +7312,49 @@ function App() {
       setImportStatus(`导入成功：新增 ${fresh.length} 条 → ${targetBook.name}` + (skipped ? `（已跳过重复 ${skipped} 条）` : ''));
       items = fresh;
     }
-    // 导入后自动联网检查关联词（异步，不阻塞）
+    // 导入后：内置算法检索同源词族/易混词 + 免密钥联网补全考频与语义关联（异步、不阻塞）
     autoCheckFamilyAfterImport(items);
   }
 
-  // 导入后自动联网检查关联词
+  // 导入后关联词检索：内置算法即时完成，联网数据异步补全。
+  // v2.86.0：全程不需要用户提供任何配置，也不调用任何大模型。
   async function autoCheckFamilyAfterImport(newItems) {
-    // v2.85.0：免密钥联网补全（异步、不阻塞），与原有 AI / 本地词族检查独立并行
+    // 免密钥联网补全（异步、不阻塞）：考频等级 + 近义/反义/语义关联
     if (settings.netEnrich !== false) {
       runNetEnrichFor(newItems, '导入词联网补全');
     }
-    const hasAi = aiConfig.endpoint && aiConfig.model && aiConfig.apiKey;
-    if (!hasAi) {
-      // 没有AI配置，使用本地算法快速标注
-      setFamilyCheckStatus('正在使用本地算法检查关联词和易混词...');
-      setFamilyChecking(true);
-      try {
-        const allItems = books.flatMap(b => b.items);
-        const result = await autoTagWordFamily(newItems, allItems, aiConfig, (cur, total, word, found) => {
-          setFamilyCheckStatus(`本地检查中 ${cur}/${total}：${word} ${found > 0 ? `✓${found}个` : ''}`);
-        });
-        setFamilyCheckStatus(`检查完成：${result.totalChecked}个单词，发现${result.totalFound}个有关联词、${result.totalConfusing}个有易混词`);
-      } catch (e) {
-        setFamilyCheckStatus('关联词检查失败：' + e.message);
-      } finally {
-        setFamilyChecking(false);
-      }
-      return;
-    }
-
-    // 有AI配置，使用AI联网检查
+    // 内置算法：同源词族 + 易混词，本地即时计算并写入缓存
+    setFamilyCheckStatus('正在用内置算法检索同源词族与易混词...');
     setFamilyChecking(true);
-    setFamilyCheckStatus('正在联网检查关联词和易混词（AI）...');
     try {
       const allItems = books.flatMap(b => b.items);
-      const result = await autoTagWordFamily(newItems, allItems, aiConfig, (cur, total, word, found) => {
-        setFamilyCheckStatus(`联网检查中 ${cur}/${total}：${word} ${found > 0 ? `✓${found}个` : ''}`);
+      const result = await autoTagWordFamily(newItems, allItems, (cur, total, word, found) => {
+        setFamilyCheckStatus(`内置检索中 ${cur}/${total}：${word} ${found > 0 ? `✓${found}个` : ''}`);
       });
-      setFamilyCheckStatus(`联网检查完成：${result.totalChecked}个单词，发现${result.totalFound}个有关联词、${result.totalConfusing}个有易混词`);
+      setFamilyCheckStatus(`内置算法检索完成：${result.totalChecked} 个单词，${result.totalFound} 个有同源词族、${result.totalConfusing} 个有易混词`);
     } catch (e) {
-      setFamilyCheckStatus('联网检查失败：' + e.message);
+      setFamilyCheckStatus('关联词检索失败：' + e.message);
     } finally {
       setFamilyChecking(false);
     }
   }
 
-  // 手动触发：检查当前词库所有单词的关联词
+  // 手动触发：用内置算法检索当前词库所有单词的同源词族与易混词
   async function runManualFamilyCheck() {
     if (familyChecking) return;
-    const hasAi = aiConfig.endpoint && aiConfig.model && aiConfig.apiKey;
     const itemsToCheck = libraryActiveBook.items;
     if (!itemsToCheck.length) { setFamilyCheckStatus('当前词库没有单词'); return; }
 
     setFamilyChecking(true);
-    setFamilyCheckStatus(hasAi ? '正在联网检查关联词和易混词（AI）...' : '正在检查关联词和易混词（本地算法）...');
+    setFamilyCheckStatus('正在用内置算法检索关联词和易混词...');
     try {
       const allItems = books.flatMap(b => b.items);
-      const result = await autoTagWordFamily(itemsToCheck, allItems, aiConfig, (cur, total, word, found) => {
-        setFamilyCheckStatus(`检查中 ${cur}/${total}：${word} ${found > 0 ? `✓${found}个` : ''}`);
+      const result = await autoTagWordFamily(itemsToCheck, allItems, (cur, total, word, found) => {
+        setFamilyCheckStatus(`内置检索中 ${cur}/${total}：${word} ${found > 0 ? `✓${found}个` : ''}`);
       });
-      const method = hasAi ? '联网(AI)' : '本地算法';
-      setFamilyCheckStatus(`${method}检查完成：${result.totalChecked}个单词，发现${result.totalFound}个有关联词、${result.totalConfusing}个有易混词${!hasAi ? '（配置AI可获更精准结果）' : ''}`);
+      setFamilyCheckStatus(`内置算法检索完成：${result.totalChecked} 个单词，${result.totalFound} 个有同源词族、${result.totalConfusing} 个有易混词`);
     } catch (e) {
-      setFamilyCheckStatus('检查失败：' + e.message);
+      setFamilyCheckStatus('检索失败：' + e.message);
     } finally {
       setFamilyChecking(false);
     }
@@ -7558,10 +7400,6 @@ function App() {
       const _dup = parseImportedText.lastDupCount || 0;
       setImportStatus(`识别完成：${items.length} 条` + (_dup ? `（自动合并重复 ${_dup} 条）` : '') + '。请确认后导入。');
     } catch (e) { setImportStatus(`失败：${e.message}`); }
-  }
-
-  function updateAiConfig(patch) {
-    const next = { ...aiConfig, ...patch }; setAiConfig(next); saveAiConfig(next);
   }
 
   // 反馈通过 Gitee Issues 提交（仅APP使用）
@@ -7627,33 +7465,6 @@ function App() {
       setFeedbackStatus('网络错误，请检查网络后重试');
     }
   }
-
-  async function callAiModel({ text: t = '', file: f = null }) {
-    if (!aiConfig.endpoint || !aiConfig.model || !aiConfig.apiKey) throw new Error('请先配置AI');
-    const isImage = f && /\.(png|jpg|jpeg|webp)$/i.test(f.name);
-    const content = isImage
-      ? [{ type: 'text', text: getAiPrompt('word', t || '请识别图片词表') }, { type: 'image_url', image_url: { url: await fileToDataUrl(f) } }]
-      : getAiPrompt('word', t);
-    const resp = await fetch(aiConfig.endpoint, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${aiConfig.apiKey}` },
-      body: JSON.stringify({ model: aiConfig.model, temperature: 0.1, messages: [{ role: 'system', content: '只返回JSON' }, { role: 'user', content }] })
-    });
-    if (!resp.ok) throw new Error(`AI请求失败：${resp.status}`);
-    const data = await resp.json();
-    const json = extractJsonObject(data.choices?.[0]?.message?.content || '');
-    return normalizeAiItems(json.items, 'word');
-  }
-
-  async function runAiOnText() {
-    try { setImportStatus('AI整理中...|||AI。'); const items = await callAiModel({ text: importText }); setImportStatus(`AI完成：${items.length} 条`); }
-    catch (e) { setImportStatus(`AI失败：${e.message}`); }
-  }
-
-  async function runAiOnFile() {
-    try { if (!lastFile) { setImportStatus('请先选择文件'); return; } setImportStatus('AI识别中...|||AI。'); const isImage = /\.(png|jpg|jpeg|webp)$/i.test(lastFile.name); const text = isImage ? importText : await readFileText(lastFile); const items = await callAiModel({ text, file: isImage ? lastFile : null }); setImportStatus(`AI完成：${items.length} 条`); }
-    catch (e) { setImportStatus(`AI失败：${e.message}`); }
-  }
-
 
   // 版本更新检查：优先使用 raw 直链，失败则回退到 API
   // silent 模式：静默检查，发现更新后自动下载APK，下载完成后弹出安装提示
@@ -8429,23 +8240,17 @@ function App() {
                   )}
                   {/* 开启「答题后显示全部考点」或闪卡模式：显示关联词族和易混词 */}
                   {showDetail && (() => {
+                    // v2.86.0：词族只由内置词根算法给出；联网同义词语义关联不混入，保证检索准确
                     const family = findWordFamily(displayCurrent.term, allWords);
-                    const aiFamilyTerms = getCachedFamily(displayCurrent.term);
-                    const aiFamilyItems = aiFamilyTerms
-                      .map(w => allWords.find(i => i.term.toLowerCase() === w.toLowerCase()))
-                      .filter(Boolean);
-                    const localTerms = new Set(family.map(i => i.term.toLowerCase()));
-                    const aiOnlyItems = aiFamilyItems.filter(i => !localTerms.has(i.term.toLowerCase()));
-                    const allFamily = [...family, ...aiOnlyItems];
                     const confusing = findConfusingWords(displayCurrent.term, allWords);
-                    if (allFamily.length === 0 && confusing.length === 0) return null;
+                    if (family.length === 0 && confusing.length === 0) return null;
                     return (
                       <>
-                        {allFamily.length > 0 && (
+                        {family.length > 0 && (
                           <div className="points" style={{ marginTop: 8 }}>
                             <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 4 }}><Icon name="link" />关联词族</p>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                              {allFamily.map(item => {
+                              {family.map(item => {
                                 const inBank = !!findWordInBank(item.term);
                                 return (
                                 <span key={item.id} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }}
@@ -8960,6 +8765,20 @@ function App() {
                 </div>
               </div>
               <div className="listenSettingRow">
+                <span>导出顺序</span>
+                <div className="listenSeg">
+                  <button className={exportOrder === 'freq' ? 'on' : ''} onClick={() => { setExportOrder('freq'); setExportMsg(''); }}>按考频（高频优先）</button>
+                  <button className={exportOrder === 'source' ? 'on' : ''} onClick={() => { setExportOrder('source'); setExportMsg(''); }}>词库原顺序</button>
+                </div>
+              </div>
+              <div className="listenTip exportOrderTip">
+                {exportOrder === 'freq'
+                  ? (examFreqReady
+                    ? '已按高考考频排序：高频 → 中频 → 低频 → 基础；同档按真题出现次数降序。与「优先背诵高频词」使用同一套数据，导入词按联网参考等级排在对应档位。'
+                    : '考频数据正在载入，载入完成后会自动按考频排序；此时先保持词库原顺序。')
+                  : '已切换为词库原顺序，不按考频重排。'}
+              </div>
+              <div className="listenSettingRow">
                 <span>掌握状态</span>
                 <div className="listenSeg">
                   <button className={exportScope === 'mastered' ? 'on' : ''} onClick={() => setExportScope('mastered')}>已掌握</button>
@@ -9021,7 +8840,7 @@ function App() {
                   </div>
                 );
               })()}
-              <div className="listenTip">「复制到剪贴板」按上面选的分隔方式输出「单词 + 释义」，适合 Excel / 墨墨 / Anki；「百词斩直导」固定英文逗号 + 纯单词，是百词斩能直接吃下的格式。</div>
+              <div className="listenTip">按「导出顺序」输出；「复制到剪贴板」按上面选的分隔方式输出「单词 + 释义」，适合 Excel / 墨墨 / Anki；「百词斩直导」固定英文逗号 + 纯单词，是百词斩能直接吃下的格式。下载的文件名会标明所用顺序。</div>
             </div>
           )}
           <input className="searchInput" value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索英文、中文、词性..." />
@@ -9760,7 +9579,7 @@ function App() {
         <section className="panel">
           <div className="importBox">
             <h2>导入词库</h2>
-            <p className="muted">支持 TXT、复制粘贴、图片、PDF、PPTX、DOCX。配置AI后可使用大模型智能识别。</p>
+            <p className="muted">支持 TXT、复制粘贴、图片、PDF、PPTX、DOCX，全部使用内置解析与内置算法，无需任何配置。</p>
             {/* v2.70.0 百词斩同步已并入「词库 → 导出词库」面板，导出入口唯一 */}
 
             {/* 上方4个按钮 */}
@@ -9783,46 +9602,6 @@ function App() {
               </label>
             </div>
 
-            {/* AI配置区（折叠式） */}
-            <button className="aiToggle" onClick={() => setShowAiBox(!showAiBox)}>
-              <Icon name="chevronDown" className={showAiBox ? 'caretUp' : ''} />AI大模型识别（可选）
-            </button>
-            {showAiBox && (
-              <div className="aiBox">
-                <label style={{marginBottom:4,display:'block',fontSize:13,color:'var(--text-secondary)'}}>选择AI服务商
-                  <InlineSelect block value={aiConfig.provider || 'siliconflow'} onChange={pid => {
-                    const p = AI_PROVIDERS.find(x => x.id === pid);
-                    if (p) {
-                      if (pid === 'custom') {
-                        updateAiConfig({ provider: pid, endpoint: '', model: '' });
-                      } else {
-                        updateAiConfig({ provider: pid, endpoint: p.endpoint, model: p.model });
-                      }
-                    }
-                  }}
-                    options={AI_PROVIDERS.map(p => ({ value: p.id, label: p.name }))} />
-                </label>
-                {aiConfig.provider === 'custom' && (
-                  <>
-                    <input value={aiConfig.endpoint} onChange={e => updateAiConfig({ endpoint: e.target.value })} placeholder="AI接口地址" />
-                    <input value={aiConfig.model} onChange={e => updateAiConfig({ model: e.target.value })} placeholder="模型名" />
-                  </>
-                )}
-                <input type="password" value={aiConfig.apiKey} onChange={e => updateAiConfig({ apiKey: e.target.value })} placeholder="API Key" />
-                {aiConfig.provider !== 'custom' && (
-                  <p className="muted" style={{fontSize:11,margin:'4px 0'}}>
-                    模型: {AI_PROVIDERS.find(p => p.id === aiConfig.provider)?.model}
-                    {' · '}
-                    <a href={AI_PROVIDERS.find(p => p.id === aiConfig.provider)?.keyUrl} target="_blank" rel="noopener noreferrer" style={{color:'var(--primary)'}}>获取Key</a>
-                  </p>
-                )}
-                <div className="importActions">
-                  <button onClick={runAiOnText}>AI整理文本</button>
-                  <button onClick={runAiOnFile}>AI识别文件</button>
-                </div>
-              </div>
-            )}
-
             <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder="在此粘贴词表文本..." />
             <div className="importActions">
               <InlineSelect style={{ flex: 1, marginRight: 8 }} value={importTargetBookId || ''} onChange={v => setImportTargetBookId(v || null)}
@@ -9831,27 +9610,25 @@ function App() {
             </div>
             <p className="status">{importStatus || '粘贴或上传文件后点击导入，未选词库时自动创建新词库'}</p>
 
-            {/* 联网关联词检查 */}
+            {/* 关联词检索与考频补全（内置算法 + 免密钥联网数据） */}
             <div className="familyCheckBox">
               <div className="familyCheckHeader">
-                <span className="familyCheckTitle"><Icon name="link" />联网关联词检查</span>
+                <span className="familyCheckTitle"><Icon name="link" />关联词检索与考频补全</span>
                 <button
                   className={`familyCheckBtn${familyChecking ? ' checking' : ''}`}
                   onClick={runManualFamilyCheck}
                   disabled={familyChecking}
                 >
-                  {familyChecking ? '检查中...' : '检查当前词库关联词'}
+                  {familyChecking ? '检索中...' : '用内置算法检索当前词库'}
                 </button>
               </div>
               <p className="familyCheckDesc">
-                导入新单词时自动联网补全<strong>词族关联词 + 考频等级</strong>：内置真题表未收录的词走免密钥公开接口（Datamuse / Free Dictionary API），结果缓存本机、离线可用。配置 AI 大模型可进一步获得更精准的词族与易混词标注。
+                <strong>同源词族与易混词由内置词根算法即时检索</strong>，不需要任何配置；内置真题考频表未收录的词（含你自行导入的生词）再通过<strong>免密钥公开接口</strong>（Datamuse / Free Dictionary API）补全考频等级与近义 / 反义 / 语义关联词。两类关系分开标注、互不混淆，结果缓存本机、离线可用。
                 {' '}
-                {aiConfig.endpoint && aiConfig.apiKey
-                  ? <span style={{color: 'var(--primary)'}}><Icon name="check" />AI已配置</span>
-                  : <span style={{color: 'var(--text-tertiary)'}}>免密钥联网补全已就绪</span>}
+                <span style={{color: 'var(--text-tertiary)'}}><Icon name="check" />内置算法 + 联网数据已就绪</span>
               </p>
               <div className="netEnrichRow">
-                <button className="familyCheckBtn" disabled={netEnriching} onClick={() => runNetEnrichFor(libraryActiveBook.items, '当前词库补全')}>{netEnriching ? '补全中…' : '补全当前词库（免密钥联网）'}</button>
+                <button className="familyCheckBtn" disabled={netEnriching} onClick={() => runNetEnrichFor(libraryActiveBook.items, '当前词库补全')}>{netEnriching ? '补全中…' : '补全当前词库（免密钥联网数据）'}</button>
                 <span className="muted netEnrichCount">已缓存 {netCacheCount} 词</span>
               </div>
               {netEnrichStatus && (
@@ -9935,8 +9712,8 @@ function App() {
             </label>
             {/* v2.85.0：免密钥联网补全（关联词 + 考频），照顾自行导入的生词 */}
             <label>联网补全关联词与考频
-              <InlineSelect block value={settings.netEnrich !== false ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, netEnrich: on })); saveSettings({ ...settings, netEnrich: on }); }} options={[{ value: 'off', label: '关闭（不自动联网补全）' }, { value: 'on', label: '开启（导入后自动补全，免 API Key）' }]} />
-              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>内置真题语料已覆盖的词保持原数据；内置表未收录的词（含你自行导入的单词）会自动联网获取通用语料词频与同义 / 反义 / 语义关联词，从而也有考频等级与关联词标记。结果缓存在本机，离线可用；关闭后不再自动联网补全。</span>
+              <InlineSelect block value={settings.netEnrich !== false ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, netEnrich: on })); saveSettings({ ...settings, netEnrich: on }); }} options={[{ value: 'off', label: '关闭（不自动联网补全）' }, { value: 'on', label: '开启（导入后自动补全，无需任何配置）' }]} />
+              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>同源词族与易混词一律由内置算法判定；内置真题考频表未收录的词（含你自行导入的单词）自动联网获取通用语料词频与近义 / 反义 / 语义关联词，从而也有考频等级与关联词标记。界面明确区分「真题实测」与「联网参考」，不编造考查次数；结果缓存本机、离线可用。</span>
             </label>
             <div className="netEnrichRow">
               <button className="smallBtn" disabled={netEnriching} onClick={() => runNetEnrichFor(books.flatMap(b => b.items), '全库补全')}>{netEnriching ? '补全中…' : '立即补全全部词库'}</button>
@@ -9988,8 +9765,16 @@ function App() {
             <div className="examFreqNote netEnrichNote">
               <strong>联网补全数据来源说明</strong>
               <p>内置真题表未收录的词（含自行导入单词）可通过<strong>免密钥公开接口</strong>补全关联词与考频等级：词频、同义 / 反义 / 语义关联词来自 <strong>Datamuse API</strong>（Google Books Ngram 通用英语语料），音标、词性与英文释义来自 <strong>Free Dictionary API</strong>。</p>
-              <p>两者均<strong>无需 API Key</strong>；结果按词缓存在本机，离线可用、已缓存不重复请求，无网络时静默跳过。在上方开关可随时关闭自动补全或清除缓存。</p>
+              <p>两者均<strong>无需任何配置</strong>（本版本已彻底移除 AI 大模型依赖）；结果按词缓存在本机，离线可用、已缓存不重复请求，无网络时静默跳过，词频未取到时标「待补全」而不冒充低频。在上方开关可随时关闭自动补全或清除缓存。</p>
               <p className="muted">联网词频是通用英语语料的出现频率，界面标注「联网参考」，<strong>不是高考真题考查次数</strong>，也不估算具体次数；等级仅用于安排背诵优先级。</p>
+            </div>
+
+            {/* v2.86.0：内置算法与导出顺序口径 */}
+            <div className="examFreqNote builtinAlgoNote">
+              <strong>关联词检索与导出顺序说明</strong>
+              <p><strong>同源词族</strong>（create / creation / creative）与<strong>易混词辨析</strong>（affect / effect）全部由<strong>内置词根算法</strong>离线判定：词干还原、派生后缀、辅音/元音交替、假同源过滤与人工校对表，并按匹配强度排序；不需要任何配置或联网请求。</p>
+              <p><strong>近义 / 反义 / 语义关联词</strong>来自联网公开语料，单独分区标注「联网参考」，与同源词族互不混用；命中内置词库时同时显示真实中文释义。</p>
+              <p><strong>考频标记</strong>以内置真题语料实测次数优先，联网数据只补等级、绝不生成考查次数。<strong>导出词库默认按考频顺序</strong>（高频优先），与「优先背诵高频词」同一口径，可在词库页导出面板切换回原顺序。</p>
             </div>
 
             <h4 className="settingsSubTitle">学习信息</h4>
@@ -10687,15 +10472,19 @@ function App() {
                   </div>
                 )}
 
-                {/* v2.85.0：免密钥联网补全得到的关联词（含不在词库内的词） */}
+                {/* v2.86.0：联网关联词按「近义 / 反义 / 语义关联」分开标注，
+                    与内置算法的同源词族互不混淆；命中词库时补真实中文释义 */}
                 {(() => {
                   const net = getNetEnrich(detailItem.term);
                   if (!net) return null;
+                  const syn = net.synonyms || [], ant = net.antonyms || [];
                   const groups = [
-                    { label: '近义 / 语义关联', words: [].concat(net.related || [], net.synonyms || []) },
-                    { label: '反义', words: net.antonyms || [] }
+                    { label: '近义词', words: syn },
+                    { label: '反义词', words: ant },
+                    { label: '语义关联', words: (net.related || []).filter(w => syn.indexOf(w) < 0 && ant.indexOf(w) < 0) }
                   ].filter(g => g.words.length);
                   if (!groups.length) return null;
+                  const familyKeys = new Set(findWordFamily(detailItem.term, allWords).map(i => String(i.term).toLowerCase()));
                   return (
                     <div className="detailSection netRelatedSection">
                       <p className="detailSectionTitle"><Icon name="link" />联网关联词 <span className="netRelatedBadge">联网参考</span></p>
@@ -10705,50 +10494,43 @@ function App() {
                           <div className="detailTagWrap">
                             {g.words.slice(0, 12).map((w, i) => {
                               const hit = allWords.find(x => x.term.toLowerCase() === w.toLowerCase());
-                              return <span key={i} className="netRelatedTag" onClick={() => { if (hit) { openDetailItem(hit); if (settings.navAutoSpeak !== false) speak(w, settings.speakRate); } else { speak(w, settings.speakRate); } }}>{w}{hit && <small style={{ opacity: 0.6 }}> · 词库</small>}</span>;
+                              let meaning = hit ? (getShortMeaning(hit.meaning) || '') : '';
+                              // 词库释义里可能带「贬义（消极态度）——」等元标签前缀，展示时只保留释义本身
+                              const dash = meaning.indexOf('——');
+                              if (dash >= 0) meaning = meaning.slice(dash + 2).trim();
+                              if (meaning.length > 18) meaning = meaning.slice(0, 18) + '…';
+                              const dual = familyKeys.has(w.toLowerCase());
+                              return <span key={i} className="netRelatedTag" onClick={() => { if (hit) { openDetailItem(hit); if (settings.navAutoSpeak !== false) speak(w, settings.speakRate); } else { speak(w, settings.speakRate); } }}>{w}{meaning && <small style={{ opacity: 0.75 }}> {meaning}</small>}{hit && <small style={{ opacity: 0.6 }}> · 词库</small>}{dual && <small style={{ opacity: 0.85 }}> · 同源</small>}</span>;
                             })}
                           </div>
                         </div>
                       ))}
-                      <p className="netRelatedTip">来自 Datamuse 公开语料接口，非高考真题考查次数；可在「我的 → 设置」关闭联网补全或清除缓存。</p>
+                      <p className="netRelatedTip">来自 Datamuse 公开语料接口（近义 / 反义 / 语义关联），与内置算法给出的「同源词族」是不同关系，两类不混用；不是高考真题考查次数。可在「我的 → 设置」关闭联网补全或清除缓存。</p>
                     </div>
                   );
                 })()}
 
-                {/* 关联词族 */}
+                {/* 同源词族（内置词根算法，只有同源派生词） */}
                 {(() => {
                   const family = findWordFamily(detailItem.term, allWords);
-                  // 获取AI联网检查的关联词缓存
-                  const aiFamilyTerms = getCachedFamily(detailItem.term);
-                  const aiFamilyItems = aiFamilyTerms
-                    .map(w => allWords.find(i => i.term.toLowerCase() === w.toLowerCase()))
-                    .filter(Boolean);
-                  // AI发现但本地算法未发现的关联词
-                  const localTerms = new Set(family.map(i => i.term.toLowerCase()));
-                  const aiOnlyItems = aiFamilyItems.filter(i => !localTerms.has(i.term.toLowerCase()));
-                  // 合并：本地算法结果 + AI额外发现
-                  const allFamily = [...family, ...aiOnlyItems];
-                  const hasAiTag = aiFamilyTerms.length > 0;
-                  if (allFamily.length === 0 && !hasAiTag) return null;
+                  if (family.length === 0) return null;
                   return (
                     <div className="detailSection detailWordFamily">
                       <p className="detailSectionTitle">
-                        <Icon name="link" />关联词族
-                        {hasAiTag && <span className="aiBadge">AI联网标注</span>}
+                        <Icon name="link" />同源词族
+                        <span className="builtinBadge">内置算法</span>
                       </p>
                       <div className="detailTagWrap">
-                        {allFamily.map(item => {
-                          const isAiTagged = aiFamilyTerms.includes(item.term.toLowerCase());
+                        {family.map(item => {
                           const inBank = !!findWordInBank(item.term);
                           const masterOnly = inBank && isMasterOnlyWord(item.term);
                           const familyBtnStyle = masterOnly ? { background: '#d6e4de', color: '#4a6b5e', borderColor: '#b8ccc3' } : {};
                           return (
-                            <button key={item.id} className={`detailFamilyBtn${isAiTagged ? ' aiTagged' : ''}`}
+                            <button key={item.id} className="detailFamilyBtn"
                               style={familyBtnStyle}
                               onClick={() => { if (inBank) openDetailItem(item); }}>
                               {item.term} <small>{item.pos}</small>
                               {!inBank && item.meaning && <small style={{ opacity: 0.8 }}>（{getShortMeaning(item.meaning) || item.meaning}）</small>}
-                              {isAiTagged && !localTerms.has(item.term.toLowerCase()) && <span className="aiDot">AI</span>}
                             </button>
                           );
                         })}
@@ -10762,26 +10544,25 @@ function App() {
                   const confusing = findConfusingWords(detailItem.term, allWords);
                   if (confusing.length === 0) return null;
                   const note = getConfusingNote(detailItem.term);
-                  const aiConfusingTerms = getCachedConfusing(detailItem.term);
-                  const hasAiConfusing = aiConfusingTerms.length > 0;
+                  const tagged = getCachedConfusing(detailItem.term);
                   return (
                     <div className="detailSection detailConfusing">
                       <p className="detailSectionTitle">
                         <Icon name="warn" />易混词辨析
-                        {hasAiConfusing && <span className="aiBadge">AI联网标注</span>}
+                        {tagged.length > 0 && <span className="builtinBadge">内置算法</span>}
                       </p>
                       {note && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 8px' }}>{note}</p>}
                       <div className="detailTagWrap">
                         {confusing.map(item => {
-                          const isAiTagged = isAiConfusingWord(detailItem.term, item.term);
+                          const isTagged = isTaggedConfusingWord(detailItem.term, item.term);
                           const masterOnly = isMasterOnlyWord(item.term);
                           const confBtnStyle = masterOnly ? { background: '#d6e4de', color: '#4a6b5e', borderColor: '#b8ccc3' } : {};
                           return (
-                            <button key={item.id} className={`detailConfusingBtn${isAiTagged ? ' aiTagged' : ''}`}
+                            <button key={item.id} className={`detailConfusingBtn${isTagged ? ' tagged' : ''}`}
                               style={confBtnStyle}
                               onClick={() => openDetailItem(item)}>
                               {item.term} <small>{item.pos}</small>
-                              {isAiTagged && <span className="aiDot">AI</span>}
+                              {isTagged && <span className="tagDot">算法</span>}
                             </button>
                           );
                         })}

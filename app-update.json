@@ -1,11 +1,9 @@
 {
-  "version": "2.85.0",
-  "versionCode": 317,
-  "changelog": "【v2.85.0】自行导入单词也能有考频与关联词 + 全局界面细节优化\n新增 免密钥联网补全：内置真题表未收录的词（含自行导入生词）自动获取通用语料词频与同义/反义/语义关联词，无需配置 API Key\n新增 导入词也有高/中/低频等级徽标与关联词标记，界面明确标注「联网参考」，不伪装成高考真题考查次数\n新增 「我的 → 设置」联网补全开关、立即补全全部词库、清除缓存与数据来源说明；结果缓存本机、离线可用\n优化 全局界面细节：统一按钮/输入框焦点态与悬浮反馈、细滚动条、徽标与卡片质感层级、护眼模式一致性，不改变任何布局与按钮尺寸",
-  "devNotes": "v2.85.0: ① 新增免密钥联网补全（模块级 NET_* 函数，写进 main.jsx 不新增分片）：Datamuse API 的 sp&md=f（Google Books Ngram 每百万词频）、rel_syn / rel_ant / ml（同义/反义/语义关联） + Free Dictionary API（音标/词性/英文释义），均免 API Key 且支持 CORS，已联网实测；结果按词缓存 localStorage(gaokao_net_enrich_v1)，8s 超时、失败静默降级、已缓存跳过、串行批量最多 60 词。② getExamFreq 在内置 exam-freq.js 未命中时读联网缓存返回 basis=net，ExamFreqTag 显示「联网参考」（虚线徽标），绝不把通用语料词频伪装成真题次数；优先背诵高频词排序自动覆盖导入词；getCachedFamily 合并联网关联词，详情页新增「联网关联词」块显示含不在词库内的词。③ 导入后自动触发 runNetEnrichFor（开关 settings.netEnrich 默认开启），设置集中区与导入页均提供手动补全/清除缓存入口与数据源说明。④ 全局 UI 轻量优化为纯 CSS 末尾追加（焦点环、滚动条、hover 滤镜、徽标过渡、reduced-motion），与 v2.84.0 基线的几何规则逐行比对无差异，未改任何布局尺寸、答题选项、题卡高度与按钮数量。⑤ 版本 2.85.0 / versionCode 316（线上 315 → CI 317）。",
+  "version": "2.86.0",
+  "versionCode": 318,
+  "changelog": "【v2.86.0】内置算法全面接管关联词检索 + 删除 AI 功能 + 导出按考频顺序\n新增 导出词库默认按高考考频顺序输出（高频 → 中频 → 低频），与「优先背诵高频词」同一口径；导出面板可切换「按考频 / 词库原顺序」，复制、下载 txt、百词斩分批全部遵循同一顺序\n优化 内置关联词算法：同源词族按匹配强度排序、易混词排除同源派生词干，检索结果更准确；同源词族、近义/反义/语义关联三类分开标注，命中词库补真实中文释义\n优化 考频标记更诚实：真题实测次数优先，联网词频只给等级、不编造次数；网络未取到时标「待补全」而不是冒充低频\n删除 AI 大模型识别：移除服务商配置、API Key 输入、AI 识别文件与 AI 标注徽标；TXT/PDF/DOCX/PPTX/图片 OCR 等内置解析照常可用，全部功能开箱即用、无需任何配置",
+  "devNotes": "v2.86.0: ① 彻底删除 AI 大模型功能：AI_PROVIDERS/AI_CONFIG_KEY/loadAiConfig/saveAiConfig/getAiPrompt/extractJsonObject/normalizeAiItems/fileToDataUrl/checkWordFamilyWithAI/checkWordFamilyWithDictApi/callAiModel/runAiOnText/runAiOnFile/aiConfig state/showAiBox state/updateAiConfig 及导入页 AI 配置 UI 全部移除；保留 TXT/PDF/DOCX/PPTX/图片 OCR 内置解析，OCR 失败提示不再推荐 AI。autoTagWordFamily 重写为纯内置算法（findWordFamily + findConfusingWords），导入/手动检查触发链去掉所有 hasAi 分支。② 内置算法优化：findWordFamily 新增 relatedStrength 匹配强度（3=词干完全相同 / 2=前缀或去尾E / 1=音变派生），按强度降序排序保证强匹配不被弱匹配挤出 15 个名额；findConfusingWords 排除 getStem 相同的同源派生词干，避免把派生词误判成易混词。③ 关联词分类准确化：getCachedFamily 不再并入联网同义/语义关联词（原 v2.85 会把 fastidious 之类同义词混进同源词族），mergeNetIntoFamilyCache 停用；详情页联网关联词改为近义/反义/语义关联三类分开，命中内置词库补真实中文释义，与同源词族交叉时标「同源」；答后面板与详情页词族只用内置算法结果，AI 徽标改内置算法徽标(.builtinBadge/.tagDot)。④ 考频诚实化：getExamFreq 在 net.freqOk===false 时返回 basis='pending'、level=0，ExamFreqTag 显示「待补全 · 联网参考」，不把网络失败伪装成低频。⑤ 导出按考频：新增 settings 之外的 exportOrder state（默认 freq），exportSrcList 按 level→count→netFreq 降序、显式下标保序；复制/下载/百词斩分批共用；导出面板新增顺序开关与状态提示，文件名标顺序。⑥ 版本 2.86.0 / versionCode 318（线上 317 → CI 319）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4602319,
-  "apkSha256": "f24e56c840b4a5f67869d2ada984548a45a58b8d330e24e39e05ba39db770114"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
 }

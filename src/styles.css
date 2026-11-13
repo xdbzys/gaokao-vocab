@@ -857,45 +857,45 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   border-color: rgba(59, 130, 246, 0.2);
 }
 
-/* AI标注的关联词样式 */
-.aiBadge {
+/* 内置算法标注样式（v2.86.0：原 AI 徽标已移除） */
+.builtinBadge {
   display: inline-block;
   margin-left: 6px;
   padding: 1px 6px;
   border-radius: 6px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #0f766e, #0891b2);
   color: white;
   font-size: 0.7em;
   font-weight: 600;
   vertical-align: middle;
 }
-.detailFamilyBtn.aiTagged {
+.detailFamilyBtn.tagged {
   background: #6366f112;
   border-color: #6366f140;
   color: #4f46e5;
 }
-.detailFamilyBtn.aiTagged small {
+.detailFamilyBtn.tagged small {
   color: #6366f1;
 }
-.aiDot {
+.tagDot {
   display: inline-block;
   margin-left: 4px;
   padding: 0 4px;
   border-radius: 4px;
-  background: #6366f1;
+  background: #0f766e;
   color: white;
   font-size: 0.7em;
   font-weight: 700;
   vertical-align: middle;
 }
 
-/* AI标注的易混词按钮 */
-.detailConfusingBtn.aiTagged {
+/* 内置算法标注的易混词按钮 */
+.detailConfusingBtn.tagged {
   background: #6366f112;
   border-color: #6366f140;
   color: #4f46e5;
 }
-.detailConfusingBtn.aiTagged small {
+.detailConfusingBtn.tagged small {
   color: #6366f1;
 }
 
@@ -1172,29 +1172,6 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 }
 
 .fileButton input { display: none; }
-
-.aiToggle {
-  width: 100%;
-  background: var(--border-light);
-  color: var(--text-secondary);
-  text-align: left;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 14px;
-  margin: 8px 0;
-}
-
-.aiBox {
-  display: grid;
-  gap: 8px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--bg);
-  padding: 12px;
-  margin-bottom: 10px;
-}
-
-.aiBox h3 { margin-bottom: 0; font-size: 15px; }
 
 .importActions {
   display: grid;
@@ -2954,7 +2931,7 @@ button .ic, .smallBtn .ic, .navBtn .ic { pointer-events: none; }
 .listenSkipBtn .ic { width: 20px; height: 20px; margin-right: 0; }
 .listenMp3Btn .ic { width: 18px; height: 18px; margin-right: 0; }
 .multiBookBtn .ic { width: 14px; height: 14px; margin: 0 0 0 4px; }
-.aiToggle .ic, .affixToggleBtn .ic { width: 13px; height: 13px; margin-right: 5px; }
+.affixToggleBtn .ic { width: 13px; height: 13px; margin-right: 5px; }
 .fileButton .ic { width: 18px; height: 18px; margin-right: 6px; }
 @media (max-width: 360px) {
   .listenPlayBtn .ic { width: 22px; height: 22px; }
@@ -3538,3 +3515,11 @@ body.eye-care .netRelatedBadge {
     scroll-behavior: auto !important;
   }
 }
+
+/* v2.86.0：联网词频未取到（网络原因）时的「待补全」态——不冒充基础虚词等级 */
+.examFreqTag.examFreqPending {
+  border-style: dashed;
+  color: #8a6d3b;
+  background: rgba(180, 140, 70, .08);
+}
+body.eye-care .examFreqTag.examFreqPending { color: #8a6a3a; background: rgba(180, 140, 70, .10); }

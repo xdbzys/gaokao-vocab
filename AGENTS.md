@@ -403,3 +403,40 @@ android/app/src/main/assets/public/   构建时由 dist 覆盖，不要手改
 
 ### 版本
 - versionName `2.85.0`，versionCode `316`（线上 315 → CI #308 生成 317）。
+
+## v2.86.0：内置算法接管关联词检索 / 删除 AI / 导出按考频顺序
+
+### 删除 AI 大模型（不再需要用户提供 API Key）
+- 移除 `AI_PROVIDERS`、`AI_CONFIG_KEY`、`loadAiConfig/saveAiConfig`、`getAiPrompt`、
+  `extractJsonObject`、`normalizeAiItems`、`fileToDataUrl`、`checkWordFamilyWithAI`、
+  `checkWordFamilyWithDictApi`（后者取回数据从未使用、只会多发无效请求）、
+  `callAiModel`、`runAiOnText`、`runAiOnFile`、`aiConfig`/`showAiBox` state、
+  `updateAiConfig` 与导入页 AI 配置 UI、`.aiBadge/.aiDot/.aiToggle/.aiBox` 样式。
+- **保留**：TXT / PDF / DOCX / PPTX / 图片 OCR 等内置解析（`readFileText` 及 extract* 系列），
+  这些不依赖任何 Key。OCR 失败提示不再推荐 AI。
+- `autoTagWordFamily(newItems, allItems, onProgress)` 改为纯内置算法，签名去掉 aiConfig；
+  `autoCheckFamilyAfterImport` / `runManualFamilyCheck` 去掉全部 `hasAi` 分支。
+- 详情页与答后面板的「AI联网标注」徽标改为 `.builtinBadge`「内置算法」/`.tagDot`「算法」。
+
+### 内置算法优化与关联词分类
+- `findWordFamily`：新增 `relatedStrength`（3 词干完全相同 / 2 前缀或去尾E / 1 音变派生），
+  `ranked.sort` 按强度降序 → 词性 → 显式下标保序，强匹配不再被弱匹配挤出 15 个名额。
+- `findConfusingWords`：新增 `keyStem`，`getStem(other)===keyStem` 时跳过，
+  避免把同源派生词误判成「拼写相似但含义不同」的易混词。
+- **准确性修复**：`getCachedFamily` 不再合并联网 `related/synonyms`；
+  `mergeNetIntoFamilyCache` 停用。词族 = 纯内置同源派生；联网数据 = 近义/反义/语义关联，
+  详情页 `.netRelatedSection` 三类分开，命中词库补中文释义，与词族交叉标「· 同源」。
+
+### 考频诚实标注
+- `getExamFreq` 在 `net.freqOk === false` 时返回 `basis:'pending'`、`level:0`；
+  `ExamFreqTag` 显示「待补全 · 联网参考」，不把网络失败伪装成低频。
+- 真题实测次数始终优先；联网只给等级、绝不生成次数。
+
+### 导出按考频顺序
+- 新增 `exportOrder` state（默认 `'freq'`，可切 `'source'` 原顺序）。
+- `exportSrcList()` 按 `level → count → netFreq` 降序 + 显式下标保序；
+  复制、下载 txt、百词斩分批共用同一函数，因此全部遵循考频顺序。
+- 导出面板新增「导出顺序」开关与状态提示（考频数据载入状态）、文件名标顺序。
+
+### 版本
+- versionName `2.86.0`，versionCode `318`（线上 317 → CI #309 生成 319）。
