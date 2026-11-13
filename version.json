@@ -1,11 +1,11 @@
 {
-  "version": "2.84.0",
-  "versionCode": 315,
+  "version": "2.85.0",
+  "versionCode": 317,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4598439,
-  "apkSha256": "6ad4f9a751f953c283c3243dbdfdc3b21918579baac96a4ef059b8b6eaa45dec",
-  "changelog": "【v2.84.0】设置集中上移 + 真题文章多词联答\n新增 背诵页「真题文章」模式：一篇高考真题原文里多个单词一起作答，可选「选项」或「填空」两种回答方式\n新增 文章全部取自 2008-2026 历年高考英语真题阅读原文（开源真题数据库），逐字保留、绝不编造，并标注年份与卷别\n新增 填空只做宽松语义判断，写出大致意思相"
+  "apkSize": 4602319,
+  "apkSha256": "f24e56c840b4a5f67869d2ada984548a45a58b8d330e24e39e05ba39db770114",
+  "changelog": "【v2.85.0】自行导入单词也能有考频与关联词 + 全局界面细节优化\n新增 免密钥联网补全：内置真题表未收录的词（含自行导入生词）自动获取通用语料词频与同义/反义/语义关联词，无需配置 API Key\n新增 导入词也有高/中/低频等级徽标与关联词标记，界面明确标注「联网参考」，不伪装成高考真题考查次数\n新增 「我的 "
 }
