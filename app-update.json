@@ -1,9 +1,11 @@
 {
   "version": "2.86.0",
-  "versionCode": 318,
+  "versionCode": 319,
   "changelog": "【v2.86.0】内置算法全面接管关联词检索 + 删除 AI 功能 + 导出按考频顺序\n新增 导出词库默认按高考考频顺序输出（高频 → 中频 → 低频），与「优先背诵高频词」同一口径；导出面板可切换「按考频 / 词库原顺序」，复制、下载 txt、百词斩分批全部遵循同一顺序\n优化 内置关联词算法：同源词族按匹配强度排序、易混词排除同源派生词干，检索结果更准确；同源词族、近义/反义/语义关联三类分开标注，命中词库补真实中文释义\n优化 考频标记更诚实：真题实测次数优先，联网词频只给等级、不编造次数；网络未取到时标「待补全」而不是冒充低频\n删除 AI 大模型识别：移除服务商配置、API Key 输入、AI 识别文件与 AI 标注徽标；TXT/PDF/DOCX/PPTX/图片 OCR 等内置解析照常可用，全部功能开箱即用、无需任何配置",
   "devNotes": "v2.86.0: ① 彻底删除 AI 大模型功能：AI_PROVIDERS/AI_CONFIG_KEY/loadAiConfig/saveAiConfig/getAiPrompt/extractJsonObject/normalizeAiItems/fileToDataUrl/checkWordFamilyWithAI/checkWordFamilyWithDictApi/callAiModel/runAiOnText/runAiOnFile/aiConfig state/showAiBox state/updateAiConfig 及导入页 AI 配置 UI 全部移除；保留 TXT/PDF/DOCX/PPTX/图片 OCR 内置解析，OCR 失败提示不再推荐 AI。autoTagWordFamily 重写为纯内置算法（findWordFamily + findConfusingWords），导入/手动检查触发链去掉所有 hasAi 分支。② 内置算法优化：findWordFamily 新增 relatedStrength 匹配强度（3=词干完全相同 / 2=前缀或去尾E / 1=音变派生），按强度降序排序保证强匹配不被弱匹配挤出 15 个名额；findConfusingWords 排除 getStem 相同的同源派生词干，避免把派生词误判成易混词。③ 关联词分类准确化：getCachedFamily 不再并入联网同义/语义关联词（原 v2.85 会把 fastidious 之类同义词混进同源词族），mergeNetIntoFamilyCache 停用；详情页联网关联词改为近义/反义/语义关联三类分开，命中内置词库补真实中文释义，与同源词族交叉时标「同源」；答后面板与详情页词族只用内置算法结果，AI 徽标改内置算法徽标(.builtinBadge/.tagDot)。④ 考频诚实化：getExamFreq 在 net.freqOk===false 时返回 basis='pending'、level=0，ExamFreqTag 显示「待补全 · 联网参考」，不把网络失败伪装成低频。⑤ 导出按考频：新增 settings 之外的 exportOrder state（默认 freq），exportSrcList 按 level→count→netFreq 降序、显式下标保序；复制/下载/百词斩分批共用；导出面板新增顺序开关与状态提示，文件名标顺序。⑥ 版本 2.86.0 / versionCode 318（线上 317 → CI 319）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+  "apkSize": 4599122,
+  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d"
 }
