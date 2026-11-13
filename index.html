@@ -3348,6 +3348,113 @@ body.eye-care::after {
 .examFreqNote p { margin: 4px 0; }
 body.eye-care .examFreqNote { background: #f3e9d8; border-color: #e3d2b4; color: #5c4a33; }
 body.eye-care .examFreqNote strong { color: #4a3826; }
+
+/* ============================================================
+   v2.84.0 「我的」页设置集中区 + 真题文章联答
+   ============================================================ */
+.meSettingsAll { margin-top: 12px; }
+.settingsLead { font-size: 12px; line-height: 1.5; margin: 2px 0 8px; }
+.settingsSubTitle {
+  font-size: 13px; font-weight: 700; color: var(--primary);
+  margin: 14px 0 6px; padding: 6px 0 4px; border-top: 1px solid var(--border-light);
+}
+.passageSourceNote { margin-top: 8px; }
+body.eye-care .settingsSubTitle { color: #8a5a1f; }
+
+.passageCard { padding: 14px; }
+.passageBadge {
+  display: inline-block; font-size: 11px; font-weight: 700; color: #92400e;
+  background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; padding: 2px 7px;
+}
+.passageCount { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+.passageArticle {
+  font-size: 13px; line-height: 1.68; color: var(--text);
+  white-space: pre-wrap; word-break: break-word;
+  background: var(--primary-light); border: 1px solid var(--border-light);
+  border-radius: 10px; padding: 10px; margin: 8px 0 4px;
+  /* 真题原文较长，限高内部滚动，保证文章与下方作答区在首屏同时可见 */
+  max-height: 150px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+/* 文章联答模式：隐藏与本题型无关的快捷/分类/统计区块，把首屏让给文章与选项。
+   模式按钮仍保留，可随时循环切回其他背诵模式。 */
+.learnPage.passageMode .learnBrand,
+.learnPage.passageMode .learnTop,
+.learnPage.passageMode .typeFilterRow,
+.learnPage.passageMode .progressBar { display: none; }
+.learnPage.passageMode .quickToggleRow .quickToggleBtn:not(.modeBtn) { display: none; }
+.learnPage.passageMode .quickToggleRow { margin-bottom: 6px; }
+.passageScrollHint { font-size: 11px; color: var(--text-muted); margin: 0 0 6px; text-align: right; }
+.passageBlankMark {
+  display: inline-block; font-weight: 700; color: #b45309;
+  background: #fde68a; border-radius: 5px; margin: 0 2px;
+}
+.passageBlankMark.ok { background: #bbf7d0; color: #15803d; }
+.passageBlankMark.bad { background: #fecaca; color: #b91c1c; }
+.passageWayRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.passageWayRow .muted { font-size: 12px; }
+.passageWayBtns { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.passageWayBtns button {
+  border: 0; background: var(--card-bg, #fff); color: var(--text);
+  font-size: 13px; font-weight: 600; padding: 7px 16px; cursor: pointer;
+}
+.passageWayBtns button.active { background: var(--primary); color: #fff; }
+.passageTip { font-size: 11px; line-height: 1.5; color: var(--text-muted); margin: 5px 0 8px; }
+.passageBlanks { display: flex; flex-direction: column; gap: 6px; }
+.passageBlankRow { display: flex; align-items: center; gap: 6px; }
+.passageBlankNo {
+  flex: 0 0 22px; width: 22px; height: 22px; line-height: 22px; text-align: center;
+  font-size: 12px; font-weight: 700; color: #fff; background: var(--primary); border-radius: 50%;
+}
+.passageOpts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; flex: 1; }
+.passageOpt {
+  border: 1px solid var(--border); background: var(--card-bg, #fff); color: var(--text);
+  border-radius: 8px; padding: 5px 4px; font-size: 12px; cursor: pointer; text-align: center;
+  word-break: break-word;
+}
+.passageOpt.picked { border-color: var(--primary); background: var(--primary-light); font-weight: 700; }
+.passageOpt.right { border-color: #16a34a; background: #dcfce7; color: #15803d; font-weight: 700; }
+.passageOpt.wrong { border-color: #dc2626; background: #fee2e2; color: #b91c1c; }
+.passageOpt:disabled { cursor: default; opacity: .9; }
+.passageInput {
+  flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 10px; font-size: 14px; background: var(--card-bg, #fff); color: var(--text);
+}
+.passageInput.right { border-color: #16a34a; background: #f0fdf4; }
+.passageInput.wrong { border-color: #dc2626; background: #fef2f2; }
+.passageJudge { flex: 0 0 18px; font-size: 16px; font-weight: 700; }
+.passageJudge.ok { color: #16a34a; }
+.passageJudge.bad { color: #dc2626; }
+.passageSubmit { width: 100%; margin-top: 9px; padding: 9px 0; font-size: 14px; }
+.passageSubmit:disabled { opacity: .5; }
+.passageResult { margin-top: 12px; }
+.passageScore {
+  font-size: 15px; font-weight: 700; text-align: center; color: var(--primary);
+  background: var(--primary-light); border-radius: 8px; padding: 8px; margin-bottom: 8px;
+}
+.passageResultRow {
+  display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline;
+  font-size: 13px; line-height: 1.5; padding: 6px 8px; border-radius: 7px; margin-bottom: 4px;
+}
+.passageResultRow.ok { background: #f0fdf4; }
+.passageResultRow.bad { background: #fef2f2; }
+.passageResultRow b { color: var(--text); }
+.passageResultRow span { color: var(--text-muted); }
+.passageResultRow em { font-style: normal; font-size: 12px; color: #b45309; }
+.passageActions { display: flex; gap: 8px; margin-top: 10px; }
+.passageActions > * { flex: 1; }
+.passageSource {
+  font-size: 11px; line-height: 1.6; color: var(--text-muted);
+  border-top: 1px dashed var(--border); margin: 12px 0 0; padding-top: 8px;
+}
+.passageEntryBtn {
+  display: block; width: 100%; margin-top: 8px; padding: 8px 10px;
+  font-size: 12px; font-weight: 600; color: var(--primary);
+  background: var(--primary-light); border: 1px solid var(--border-light);
+  border-radius: 8px; cursor: pointer;
+}
+body.eye-care .passageArticle { background: #f3e9d8; border-color: #e3d2b4; }
+body.eye-care .passageBadge { background: #efe0c4; border-color: #dcc49b; color: #6b4a1c; }
+body.eye-care .passageBlankMark { background: #e8d3a9; color: #6b4a1c; }
 </style>
 <style>
   /* ============================================================
@@ -3572,6 +3679,6 @@ setTimeout(function () {
 }, 12000);
 </script>
 
-<script type="module" src="./assets/main.B5TSR6K6.js"></script>
+<script type="module" src="./assets/main.LLXSZVVO.js"></script>
 </body>
 </html>
