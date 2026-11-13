@@ -102,8 +102,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.84.0';
-const APP_VERSION_CODE = 314;
+const APP_VERSION = '2.85.0';
+const APP_VERSION_CODE = 316;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -789,6 +789,202 @@ function normalizeItemPos(raw, meaning) {
 }
 
 /* ================================================================
+   v2.85.0：联网数据补全（免密钥、开箱即用）
+   用途：给「内置真题考频表未收录的词」——尤其是用户后续自行导入的生词——
+        补上考频等级与关联词，并把结果缓存到 localStorage，离线可用。
+   数据源（均免 API Key、支持 CORS，已在浏览器实测）：
+     · Datamuse API  https://api.datamuse.com
+         sp=<word>&md=f   → Google Books Ngram 通用英语语料「每百万词出现次数」
+         rel_syn / rel_ant / ml → 同义词 / 反义词 / 语义关联词
+     · Free Dictionary API  https://api.dictionaryapi.dev
+         音标 / 词性 / 英文释义（用户导入时缺词性、音标的兜底补充）
+   原则：内置真题语料实测数据优先，联网结果只补缺；等级按通用语料词频推算，
+        界面明确标注「联网参考」，绝不把联网词频伪装成高考真题考查次数。
+   失败静默降级：无网络 / 超时 / 接口异常都不影响任何原有功能。
+   ================================================================ */
+const NET_CACHE_KEY = 'gaokao_net_enrich_v1';
+const NET_ENRICH_META = {
+  freqSource: 'Datamuse API（Google Books Ngram 通用英语语料，每百万词出现次数）',
+  relatedSource: 'Datamuse API（rel_syn 同义 / rel_ant 反义 / ml 语义关联）',
+  dictSource: 'Free Dictionary API（音标、词性、英文释义）',
+  notice: '联网数据来自公开通用英语语料库，只用于给内置真题表未收录的词（含自行导入单词）安排背诵优先级与关联词；不是高考真题考查次数，不代表官方命题频率。'
+};
+
+function loadNetCache() {
+  try { return JSON.parse(localStorage.getItem(NET_CACHE_KEY) || '{}') || {}; }
+  catch (e) { return {}; }
+}
+function saveNetCache(cache) {
+  try { localStorage.setItem(NET_CACHE_KEY, JSON.stringify(cache)); } catch (e) {}
+}
+function getNetEnrich(word) {
+  const c = loadNetCache();
+  return c[String(word == null ? '' : word).trim().toLowerCase()] || null;
+}
+function netCacheSize() {
+  try { return Object.keys(loadNetCache()).length; } catch (e) { return 0; }
+}
+function clearNetCache() {
+  try { localStorage.removeItem(NET_CACHE_KEY); } catch (e) {}
+}
+
+/* 通用语料每百万词频 → 四档等级，口径与 data/exam-freq.js 的高/中/低频一致 */
+function netFreqLevel(f) {
+  if (!f || f <= 0) return 1;
+  if (f >= 60) return 3;   // 高频
+  if (f >= 12) return 2;   // 中频
+  return 1;                // 低频
+}
+
+function netFetchJson(url, ms) {
+  var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var opt = ctl ? { signal: ctl.signal } : undefined;
+  var timer = setTimeout(function () { try { if (ctl) ctl.abort(); } catch (e) {} }, ms || 8000);
+  return fetch(url, opt).then(function (r) {
+    if (!r.ok) return null;
+    return r.json();
+  }).then(function (j) { clearTimeout(timer); return j; })
+    .catch(function () { clearTimeout(timer); return null; });
+}
+
+/* 通用重试：偶发网络抖动 / 连接重置时再试一次 */
+function netFetchRetry(url, ms) {
+  return netFetchJson(url, ms).then(function (j) {
+    if (j) return j;
+    return new Promise(function (resolve) {
+      setTimeout(function () { resolve(netFetchJson(url, ms)); }, 300);
+    });
+  });
+}
+/* 词频请求：实测 Datamuse 对部分词在 sp=<w>&md=f&max=1 组合下会连接重置，
+   去掉 max=1 后稳定返回；取回数组里再按精确拼写匹配，避免拿到形近词的词频。 */
+function netFetchFreq(word, ms) {
+  var url = 'https://api.datamuse.com/words?sp=' + encodeURIComponent(word) + '&md=f';
+  return netFetchRetry(url, ms);
+}
+
+function netWords(arr, self) {
+  if (!Array.isArray(arr)) return [];
+  var out = [];
+  for (var i = 0; i < arr.length; i++) {
+    var w = String((arr[i] && arr[i].word) || '').toLowerCase().trim();
+    if (!/^[a-z][a-z\-]{1,30}$/.test(w) || w === self) continue;
+    if (out.indexOf(w) < 0) out.push(w);
+  }
+  return out;
+}
+
+/* 联网补全一个词；成功写入缓存并返回数据，失败返回 null */
+function fetchNetEnrich(word) {
+  var w = String(word == null ? '' : word).trim().toLowerCase();
+  if (!w || !/^[a-z][a-z\- ]{1,40}$/.test(w)) return Promise.resolve(null);
+  var enc = encodeURIComponent(w);
+  var base = 'https://api.datamuse.com/words?';
+  return Promise.all([
+    netFetchFreq(w, 8000),
+    netFetchJson(base + 'rel_syn=' + enc + '&max=8', 8000),
+    netFetchJson(base + 'rel_ant=' + enc + '&max=6', 8000),
+    netFetchRetry(base + 'ml=' + enc + '&max=10', 8000),
+    netFetchJson('https://api.dictionaryapi.dev/api/v2/entries/en/' + enc, 8000)
+  ]).then(function (res) {
+    var sp = res[0], syn = res[1], ant = res[2], ml = res[3], dict = res[4];
+    var freq = 0;
+    if (Array.isArray(sp)) {
+      var hit = null;
+      for (var i = 0; i < sp.length; i++) {
+        if (String((sp[i] && sp[i].word) || '').toLowerCase() === w) { hit = sp[i]; break; }
+      }
+      if (!hit) hit = sp[0];
+      var tags = (hit && hit.tags) || [];
+      for (var j = 0; j < tags.length; j++) {
+        if (String(tags[j]).indexOf('f:') === 0) { freq = parseFloat(String(tags[j]).slice(2)) || 0; break; }
+      }
+    }
+    var synonyms = netWords(syn, w).slice(0, 8);
+    var antonyms = netWords(ant, w).slice(0, 6);
+    var related = netWords(ml, w).filter(function (x) { return synonyms.indexOf(x) < 0; }).slice(0, 10);
+    var phonetic = '', pos = '', def = '';
+    if (Array.isArray(dict) && dict[0]) {
+      var e = dict[0];
+      phonetic = e.phonetic || '';
+      if (!phonetic && Array.isArray(e.phonetics)) {
+        for (var k = 0; k < e.phonetics.length; k++) {
+          if (e.phonetics[k] && e.phonetics[k].text) { phonetic = e.phonetics[k].text; break; }
+        }
+      }
+      var ms = e.meanings || [];
+      var posList = [];
+      for (var p = 0; p < ms.length && posList.length < 3; p++) {
+        if (ms[p] && ms[p].partOfSpeech && posList.indexOf(ms[p].partOfSpeech) < 0) posList.push(ms[p].partOfSpeech);
+      }
+      pos = posList.join(', ');
+      for (var q = 0; q < ms.length && !def; q++) {
+        var ds = (ms[q] && ms[q].definitions) || [];
+        if (ds[0] && ds[0].definition) def = String(ds[0].definition);
+      }
+    }
+    if (!(freq > 0 || synonyms.length || antonyms.length || related.length || phonetic)) return null;
+    // freqOk=false 表示「本次没取到词频」（网络原因），不是「该词词频为 0」；
+    // 等级保守按低频，界面如实说明，并在下次补全时重试，绝不把请求失败当真实数据。
+    var freqOk = freq > 0;
+    var data = {
+      freq: freq, freqOk: freqOk, partial: !freqOk,
+      level: freqOk ? netFreqLevel(freq) : 1,
+      synonyms: synonyms, antonyms: antonyms, related: related,
+      phonetic: phonetic, pos: pos, def: def,
+      ts: Date.now(), src: 'datamuse+dictionaryapi'
+    };
+    var c = loadNetCache();
+    c[w] = data;
+    saveNetCache(c);
+    return data;
+  }).catch(function () { return null; });
+}
+
+/* 把某个词的联网关联词并入现有的 family 缓存（现有展示点会自动生效） */
+function mergeNetIntoFamilyCache(word, net) {
+  if (!net) return;
+  var w = String(word).trim().toLowerCase();
+  var fc = loadWordFamilyCache();
+  var cur = Array.isArray(fc[w]) ? fc[w].slice() : [];
+  var extra = [].concat(net.related || [], net.synonyms || []);
+  for (var i = 0; i < extra.length && cur.length < 24; i++) {
+    var x = String(extra[i] || '').toLowerCase().trim();
+    if (x && /^[a-z][a-z\-]{1,30}$/.test(x) && cur.indexOf(x) < 0) cur.push(x);
+  }
+  fc[w] = cur;
+  saveWordFamilyCache(fc);
+}
+
+/* 批量补全：只补内置真题表未命中的词，跳过已缓存，串行避免瞬时请求过多 */
+function batchNetEnrich(items, onProgress, opts) {
+  var o = opts || {};
+  var limit = o.limit || 60;
+  var cache = loadNetCache();
+  var list = [];
+  for (var i = 0; i < items.length; i++) {
+    var w = String((items[i] && items[i].term) || '').trim().toLowerCase();
+    if (!w || !/^[a-z][a-z\- ]{1,40}$/.test(w)) continue;
+    if (cache[w] && !cache[w].partial) continue;   // 词频未取到的词下次重试
+    if (EXAM_FREQ && EXAM_FREQ.map && EXAM_FREQ.map[w]) continue;  // 内置真题数据优先
+    if (list.indexOf(w) < 0) list.push(w);
+    if (list.length >= limit) break;
+  }
+  var done = 0, ok = 0, idx = 0;
+  function step() {
+    if (idx >= list.length) return Promise.resolve({ total: list.length, done: done, ok: ok });
+    var w = list[idx++];
+    return fetchNetEnrich(w).then(function (d) {
+      done++;
+      if (d) { ok++; mergeNetIntoFamilyCache(w, d); }
+      if (onProgress) { try { onProgress(done, list.length, w); } catch (e) {} }
+      return step();
+    });
+  }
+  return step();
+}
+
+/* ================================================================
    v2.83.0：高考考频（真题语料实测次数 + 高/中/低频分级）
    数据在独立分片 data/exam-freq.js，App 挂载后异步载入；
    未就绪时不显示徽标、不参与排序，失败也不影响原有功能。
@@ -799,12 +995,17 @@ function getExamFreq(term) {
   if (!EXAM_FREQ || !term) return null;
   const key = String(term).trim().toLowerCase();
   const hit = EXAM_FREQ.map[key];
-  if (!hit) return { level: 1, count: 0, recent: 0, basis: 'fallback' };
-  return {
-    level: hit[0], count: hit[1],
-    recent: EXAM_FREQ.recent[key] || 0,
-    basis: hit[1] > 0 ? 'corpus' : 'fallback',
-  };
+  if (hit) {
+    return {
+      level: hit[0], count: hit[1],
+      recent: EXAM_FREQ.recent[key] || 0,
+      basis: hit[1] > 0 ? 'corpus' : 'fallback',
+    };
+  }
+  // v2.85.0：内置真题表未收录（含用户自行导入的生词）→ 用联网补全的通用语料词频给等级
+  const net = getNetEnrich(key);
+  if (net) return { level: net.level || 1, count: 0, recent: 0, basis: 'net', netFreq: net.freq || 0, netFreqOk: net.freqOk !== false };
+  return { level: 1, count: 0, recent: 0, basis: 'fallback' };
 }
 function examLevelOf(term) { const f = getExamFreq(term); return f ? f.level : 1; }
 function examCountOf(term) { const f = getExamFreq(term); return f ? f.count : 0; }
@@ -813,13 +1014,20 @@ function ExamFreqTag({ term, compact }) {
   if (!EXAM_FREQ || !term) return null;
   const f = getExamFreq(term);
   if (!f) return null;
-  const tip = f.basis === 'corpus'
-    ? '等级与次数来自 130+ 份历年高考/模拟真题语料（约 50 万词次）逐词统计'
-    : '该词未被真题语料收录，等级按高考考纲与通用语料库词频标注，次数不作估算';
+  const netMode = f.basis === 'net';
+  const tip = netMode
+    ? (f.netFreqOk === false
+      ? '该词未被内置真题语料收录；联网词频本次未获取到（网络原因），等级保守按低频标注，下次补全会自动重试。非高考真题考查次数。'
+      : '该词未被内置真题语料收录；等级由联网获取的通用英语语料词频（' +
+        (f.netFreq > 0 ? f.netFreq.toFixed(2) + ' 次/每百万词' : '不足 0.01') +
+        '）推算，非高考真题考查次数。数据已缓存本地，离线可用。')
+    : (f.basis === 'corpus'
+      ? '等级与次数来自 130+ 份历年高考/模拟真题语料（约 50 万词次）逐词统计'
+      : '该词未被真题语料收录，等级按高考考纲与通用语料库词频标注，次数不作估算');
   return (
-    <span className={'examFreqTag examFreqLv' + f.level + (compact ? ' examFreqCompact' : '')} title={tip}>
+    <span className={'examFreqTag examFreqLv' + f.level + (netMode ? ' examFreqNet' : '') + (compact ? ' examFreqCompact' : '')} title={tip}>
       {EXAM_LEVEL_LABEL[f.level]}<span className="examFreqSep"> · </span>
-      {f.count > 0 ? '真题 ' + f.count + ' 次' : '次数 —'}
+      {netMode ? '联网参考' : (f.count > 0 ? '真题 ' + f.count + ' 次' : '次数 —')}
       {!compact && f.recent > 0 && <span className="examFreqRecent"> · 近五年 {f.recent} 次</span>}
     </span>
   );
@@ -1661,6 +1869,8 @@ function loadSettings() {
       freqFirst: false,
       // v2.84.0：真题文章联答的默认回答方式（choice=四选一英文词 / blank=宽松语义填空）
       passageWay: 'choice',
+      // v2.85.0：导入生词后自动联网补全关联词与考频（免密钥，可关闭）
+      netEnrich: true,
       // v2.55.9: 自动发音开关归一。
       // v2.44.0 已把"背诵新词自动发音"与"跳转自动发音"合并为一个开关，
       // 但老版本保存的设置里没有 autoSpeak 字段，旧默认 false 会导致：
@@ -1676,7 +1886,7 @@ function loadSettings() {
     return merged;
   } catch {
     const savedMode = localStorage.getItem(MODE_KEY);
-    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: true, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false, eyeCare: false, ebbinghaus: false, soundEnabled: false, soundCorrect: 'c1', soundWrong: 'w1', answerFullPoints: false, freqFirst: false };
+    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: true, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false, eyeCare: false, ebbinghaus: false, soundEnabled: false, soundCorrect: 'c1', soundWrong: 'w1', answerFullPoints: false, freqFirst: false, passageWay: 'choice', netEnrich: true };
   }
 }
 
@@ -2593,7 +2803,17 @@ function saveWordFamilyCache(cache) {
 // 获取某个单词的AI缓存关联词
 function getCachedFamily(word) {
   const cache = loadWordFamilyCache();
-  return cache[word.toLowerCase()] || [];
+  const local = cache[word.toLowerCase()] || [];
+  // v2.85.0：并入免密钥联网补全得到的关联词
+  const net = getNetEnrich(word);
+  if (!net) return local;
+  const out = local.slice();
+  const extra = [].concat(net.related || [], net.synonyms || []);
+  for (let i = 0; i < extra.length && out.length < 24; i++) {
+    const x = String(extra[i] || '').toLowerCase().trim();
+    if (x && /^[a-z][a-z\-]{1,30}$/.test(x) && out.indexOf(x) < 0) out.push(x);
+  }
+  return out;
 }
 
 // === 易混词AI缓存 ===
@@ -2724,20 +2944,12 @@ async function autoTagWordFamily(newItems, allItems, aiConfig, onProgress) {
         aiRelated = findWordFamily(item.term, allItems).map(i => i.term.toLowerCase());
       }
     } else {
-      // 没有AI配置，使用本地算法 + 词典API补充
+      // 没有AI配置，使用本地算法（v2.85.0：原「词典 API 补充」取回数据后并未使用，
+      // 只会多一次无效网络请求；联网补全统一由 NET_* 模块负责，且受 netEnrich 开关控制）
       const localFamily = findWordFamily(item.term, allItems).map(i => i.term.toLowerCase());
       aiRelated = localFamily;
       // 本地易混词检查
       aiConfusing = findConfusingWords(item.term, allItems).map(i => i.term.toLowerCase());
-
-      // 尝试用词典API获取额外信息（不阻塞，仅补充）
-      try {
-        const dictInfo = await checkWordFamilyWithDictApi(word);
-        if (dictInfo && dictInfo.origin) {
-          // 如果有词源信息，尝试从词源中提取可能的词根
-          // 这部分仅作为补充，不覆盖本地算法结果
-        }
-      } catch {}
     }
 
     if (aiRelated.length > 0) {
@@ -5030,6 +5242,10 @@ function App() {
   // 联网关联词检查状态
   const [familyCheckStatus, setFamilyCheckStatus] = useState('');
   const [familyChecking, setFamilyChecking] = useState(false);
+  // v2.85.0：免密钥联网补全（关联词 + 考频）状态
+  const [netEnrichStatus, setNetEnrichStatus] = useState('');
+  const [netEnriching, setNetEnriching] = useState(false);
+  const [netCacheCount, setNetCacheCount] = useState(() => netCacheSize());
   // 反馈弹窗（仅APP使用，网页版不渲染）
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
@@ -7240,6 +7456,10 @@ function App() {
 
   // 导入后自动联网检查关联词
   async function autoCheckFamilyAfterImport(newItems) {
+    // v2.85.0：免密钥联网补全（异步、不阻塞），与原有 AI / 本地词族检查独立并行
+    if (settings.netEnrich !== false) {
+      runNetEnrichFor(newItems, '导入词联网补全');
+    }
     const hasAi = aiConfig.endpoint && aiConfig.model && aiConfig.apiKey;
     if (!hasAi) {
       // 没有AI配置，使用本地算法快速标注
@@ -7296,6 +7516,38 @@ function App() {
     } finally {
       setFamilyChecking(false);
     }
+  }
+
+  // v2.85.0：免密钥联网补全 —— 给内置真题表未收录的词补关联词与考频等级
+  // 只在开关开启时由「导入完成 / 手动按钮」触发；失败静默降级，不阻塞背诵
+  async function runNetEnrichFor(items, label) {
+    if (netEnriching) return;
+    setNetEnriching(true);
+    setNetEnrichStatus('正在联网补全关联词与考频…');
+    try {
+      const result = await batchNetEnrich(items, (cur, total, word) => {
+        setNetEnrichStatus(`联网补全中 ${cur}/${total}：${word}`);
+      });
+      const cached = netCacheSize();
+      setNetCacheCount(cached);
+      if (result.total === 0) {
+        setNetEnrichStatus(`${label}完成：当前没有需要补全的词（内置词已有真题数据，其余均已缓存）`);
+      } else {
+        setNetEnrichStatus(`${label}完成：检查 ${result.total} 个词，成功补全 ${result.ok} 个；本机已缓存 ${cached} 词，离线可用`);
+      }
+      try { _emitBookData(); } catch (e) {}   // 立即刷新徽标 / 详情页
+    } catch (e) {
+      setNetEnrichStatus('联网补全未完成：' + (e && e.message ? e.message : '网络不可用') + '（不影响原有功能，可稍后重试）');
+    } finally {
+      setNetEnriching(false);
+    }
+  }
+
+  async function clearNetEnrichCache() {
+    if (netEnriching) return;
+    clearNetCache();
+    setNetCacheCount(0);
+    setNetEnrichStatus('已清除联网缓存；下次导入或手动补全时重新获取（内置真题数据不受影响）');
   }
 
   async function handleFile(file) {
@@ -9592,12 +9844,19 @@ function App() {
                 </button>
               </div>
               <p className="familyCheckDesc">
-                导入新单词时自动联网检查词族关系。配置AI大模型可获得更精准的关联词标注。
+                导入新单词时自动联网补全<strong>词族关联词 + 考频等级</strong>：内置真题表未收录的词走免密钥公开接口（Datamuse / Free Dictionary API），结果缓存本机、离线可用。配置 AI 大模型可进一步获得更精准的词族与易混词标注。
                 {' '}
                 {aiConfig.endpoint && aiConfig.apiKey
                   ? <span style={{color: 'var(--primary)'}}><Icon name="check" />AI已配置</span>
-                  : <span style={{color: 'var(--text-tertiary)'}}>未配置AI，使用本地算法</span>}
+                  : <span style={{color: 'var(--text-tertiary)'}}>免密钥联网补全已就绪</span>}
               </p>
+              <div className="netEnrichRow">
+                <button className="familyCheckBtn" disabled={netEnriching} onClick={() => runNetEnrichFor(libraryActiveBook.items, '当前词库补全')}>{netEnriching ? '补全中…' : '补全当前词库（免密钥联网）'}</button>
+                <span className="muted netEnrichCount">已缓存 {netCacheCount} 词</span>
+              </div>
+              {netEnrichStatus && (
+                <p className={`familyCheckStatus${netEnriching ? ' active' : ''}`}>{netEnrichStatus}</p>
+              )}
               {familyCheckStatus && (
                 <p className={`familyCheckStatus${familyChecking ? ' active' : ''}`}>{familyCheckStatus}</p>
               )}
@@ -9674,6 +9933,20 @@ function App() {
               <InlineSelect block value={settings.freqFirst ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, freqFirst: on })); saveSettings({ ...settings, freqFirst: on }); }} options={[{ value: 'off', label: '关闭（按词库原顺序）' }, { value: 'on', label: '开启（高频 → 中频 → 低频）' }]} />
               <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>开启后背单词按高考真题考频分档推进，高频词排在最前；同档内默认再按真题出现次数降序。若同时开启艾宾浩斯或乱序，则保留其到期/乱序顺序，不改变已掌握与筛选规则。</span>
             </label>
+            {/* v2.85.0：免密钥联网补全（关联词 + 考频），照顾自行导入的生词 */}
+            <label>联网补全关联词与考频
+              <InlineSelect block value={settings.netEnrich !== false ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, netEnrich: on })); saveSettings({ ...settings, netEnrich: on }); }} options={[{ value: 'off', label: '关闭（不自动联网补全）' }, { value: 'on', label: '开启（导入后自动补全，免 API Key）' }]} />
+              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>内置真题语料已覆盖的词保持原数据；内置表未收录的词（含你自行导入的单词）会自动联网获取通用语料词频与同义 / 反义 / 语义关联词，从而也有考频等级与关联词标记。结果缓存在本机，离线可用；关闭后不再自动联网补全。</span>
+            </label>
+            <div className="netEnrichRow">
+              <button className="smallBtn" disabled={netEnriching} onClick={() => runNetEnrichFor(books.flatMap(b => b.items), '全库补全')}>{netEnriching ? '补全中…' : '立即补全全部词库'}</button>
+              <button className="smallBtn" disabled={netEnriching} onClick={clearNetEnrichCache}>清除联网缓存</button>
+              <span className="muted netEnrichCount">已缓存 {netCacheCount} 词</span>
+            </div>
+            {netEnrichStatus && (
+              <p className={`familyCheckStatus${netEnriching ? ' active' : ''}`}>{netEnrichStatus}</p>
+            )}
+
             {/* v2.84.0：真题文章联答的默认回答方式 */}
             <label>真题文章 · 默认回答方式
               <InlineSelect block value={settings.passageWay === 'blank' ? 'blank' : 'choice'} onChange={v => { setSettings(s => ({ ...s, passageWay: v })); saveSettings({ ...settings, passageWay: v }); }} options={[{ value: 'choice', label: '选项（从四个英文单词中选）' }, { value: 'blank', label: '填空（写中文意思，语义相近即判对）' }]} />
@@ -9709,6 +9982,14 @@ function App() {
               <strong>真题文章来源说明</strong>
               <p>「真题文章」模式的文章<strong>全部取自历年高考英语真题阅读原文</strong>，来自 GitHub 开源数据库 <strong>ZhangYixuan-in-BUPT/gaokao-english-exam-database</strong>（2008–2026 年 233 套试卷、739+ 篇阅读理解）。</p>
               <p>每篇为真题原文的<strong>连续片段，逐字保留、未改写、未编造、未拼接</strong>；挖空词及其释义来自本 App 内置词库。原文保留试卷扫描排版原貌，个别处可能有扫描识别的笔误，请以真题试卷为准。</p>
+            </div>
+
+            {/* v2.85.0：联网补全数据来源（免密钥，明确不是真题次数） */}
+            <div className="examFreqNote netEnrichNote">
+              <strong>联网补全数据来源说明</strong>
+              <p>内置真题表未收录的词（含自行导入单词）可通过<strong>免密钥公开接口</strong>补全关联词与考频等级：词频、同义 / 反义 / 语义关联词来自 <strong>Datamuse API</strong>（Google Books Ngram 通用英语语料），音标、词性与英文释义来自 <strong>Free Dictionary API</strong>。</p>
+              <p>两者均<strong>无需 API Key</strong>；结果按词缓存在本机，离线可用、已缓存不重复请求，无网络时静默跳过。在上方开关可随时关闭自动补全或清除缓存。</p>
+              <p className="muted">联网词频是通用英语语料的出现频率，界面标注「联网参考」，<strong>不是高考真题考查次数</strong>，也不估算具体次数；等级仅用于安排背诵优先级。</p>
             </div>
 
             <h4 className="settingsSubTitle">学习信息</h4>
@@ -10405,6 +10686,34 @@ function App() {
                     </div>
                   </div>
                 )}
+
+                {/* v2.85.0：免密钥联网补全得到的关联词（含不在词库内的词） */}
+                {(() => {
+                  const net = getNetEnrich(detailItem.term);
+                  if (!net) return null;
+                  const groups = [
+                    { label: '近义 / 语义关联', words: [].concat(net.related || [], net.synonyms || []) },
+                    { label: '反义', words: net.antonyms || [] }
+                  ].filter(g => g.words.length);
+                  if (!groups.length) return null;
+                  return (
+                    <div className="detailSection netRelatedSection">
+                      <p className="detailSectionTitle"><Icon name="link" />联网关联词 <span className="netRelatedBadge">联网参考</span></p>
+                      {groups.map((g, gi) => (
+                        <div key={gi} className="netRelatedGroup">
+                          <span className="netRelatedLabel">{g.label}</span>
+                          <div className="detailTagWrap">
+                            {g.words.slice(0, 12).map((w, i) => {
+                              const hit = allWords.find(x => x.term.toLowerCase() === w.toLowerCase());
+                              return <span key={i} className="netRelatedTag" onClick={() => { if (hit) { openDetailItem(hit); if (settings.navAutoSpeak !== false) speak(w, settings.speakRate); } else { speak(w, settings.speakRate); } }}>{w}{hit && <small style={{ opacity: 0.6 }}> · 词库</small>}</span>;
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                      <p className="netRelatedTip">来自 Datamuse 公开语料接口，非高考真题考查次数；可在「我的 → 设置」关闭联网补全或清除缓存。</p>
+                    </div>
+                  );
+                })()}
 
                 {/* 关联词族 */}
                 {(() => {

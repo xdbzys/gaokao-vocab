@@ -3446,3 +3446,95 @@ body.eye-care .settingsSubTitle { color: #8a5a1f; }
 body.eye-care .passageArticle { background: #f3e9d8; border-color: #e3d2b4; }
 body.eye-care .passageBadge { background: #efe0c4; border-color: #dcc49b; color: #6b4a1c; }
 body.eye-care .passageBlankMark { background: #e8d3a9; color: #6b4a1c; }
+
+
+/* ================================================================
+   v2.85.0：全局 UI 轻量优化（纯视觉质感，不改任何布局尺寸 / 结构）
+   说明：本段只追加焦点态、滚动条、过渡、徽标与新增组件样式，
+        不触碰 .options / .card / .quickToggleBtn 等任何几何规则。
+   ================================================================ */
+
+/* 1) 键盘与辅助功能焦点态（原仅输入框有 focus，按钮完全无焦点提示） */
+button:focus-visible, select:focus-visible, input:focus-visible,
+textarea:focus-visible, a:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+select:focus, input:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, .12);
+}
+::selection { background: rgba(59, 130, 246, .22); color: var(--text); }
+
+/* 2) 统一的悬浮 / 禁用反馈（只改滤镜与透明度，不改变尺寸与布局） */
+button:not(:disabled):hover { filter: brightness(.97); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+
+/* 3) 细滚动条：长文、真题文章、词库列表观感一致 */
+* { scrollbar-width: thin; scrollbar-color: rgba(120, 135, 160, .38) transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(120, 135, 160, .38); border-radius: 6px; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(120, 135, 160, .6); }
+
+/* 4) 卡片层级与过渡统一（沿用已有阴影变量） */
+.examFreqNote, .familyCheckBox, .detailSection {
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.examFreqNote { box-shadow: var(--shadow-sm); }
+
+/* 5) 考频徽标：新增「联网参考」态，与真题实测态明确区分 */
+.examFreqTag { transition: background-color .18s ease, border-color .18s ease; }
+.examFreqNet {
+  color: #4b607c; background: rgba(75, 96, 124, .08);
+  border-style: dashed; border-color: #6b7f9e;
+}
+.examFreqNet .examFreqSep { opacity: .5; }
+body.eye-care .examFreqNet {
+  color: #6b4a1c; background: rgba(140, 110, 70, .1); border-color: #b49a72;
+}
+
+/* 6) v2.85.0 新增组件：联网补全入口 + 详情页联网关联词 */
+.netEnrichRow {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  margin: 2px 0 4px;
+}
+.netEnrichCount { font-size: 12px; margin-left: auto; white-space: nowrap; }
+.netEnrichNote { border-left: 3px solid rgba(59, 130, 246, .45); }
+.netRelatedSection { border: 1px dashed rgba(59, 130, 246, .3); }
+.netRelatedBadge {
+  display: inline-block; margin-left: 4px; padding: 1px 6px;
+  border-radius: 8px; font-size: 10px; font-weight: 600;
+  color: #4b607c; background: rgba(75, 96, 124, .1);
+  border: 1px dashed rgba(75, 96, 124, .45);
+  vertical-align: 1px;
+}
+.netRelatedGroup { margin-top: 8px; }
+.netRelatedLabel {
+  display: block; font-size: 11px; color: var(--text-tertiary); margin-bottom: 5px;
+}
+.netRelatedTag {
+  display: inline-block; padding: 4px 10px; border-radius: 10px;
+  font-size: 13px; cursor: pointer; color: #4b607c;
+  background: rgba(75, 96, 124, .08); border: 1px solid rgba(75, 96, 124, .18);
+  transition: background-color .15s ease;
+}
+.netRelatedTag:hover { background: rgba(75, 96, 124, .18); }
+.netRelatedTip {
+  margin: 9px 0 0; font-size: 11px; line-height: 1.5; color: var(--text-tertiary);
+}
+body.eye-care .netRelatedSection,
+body.eye-care .netEnrichNote { border-color: #dcc49b; }
+body.eye-care .netRelatedTag,
+body.eye-care .netRelatedBadge {
+  color: #6b4a1c; background: #efe0c4; border-color: #dcc49b;
+}
+
+/* 7) 尊重系统「减少动态效果」偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

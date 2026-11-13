@@ -359,3 +359,47 @@ android/app/src/main/assets/public/   构建时由 dist 覆盖，不要手改
 - `push.py` FILES 清单追加 `src/data/exam-passages.js`。
 - 版本 2.84.0 / versionCode 314（线上 313 → CI 315）。
 
+## v2.85.0：免密钥联网补全（导入生词的考频与关联词）+ 全局 UI 轻量优化
+
+### 需求背景
+内置 `exam-freq.js` 只覆盖 6964 个词，用户自行导入的生词查不到就没有考频标记；
+原先「联网关联词」只在配置了 AI 大模型（endpoint/model/apiKey）时才真正联网，
+无 Key 时退化为纯本地算法，Free Dictionary API 取回的数据也没被使用。
+
+### 联网数据源（免 API Key、支持 CORS，均已联网实测）
+- **Datamuse API** `https://api.datamuse.com/words`
+  - `sp=<word>&md=f` → Google Books Ngram 通用英语语料「每百万词出现次数」（tags: `f:310.08`）
+  - `rel_syn` 同义词 / `rel_ant` 反义词 / `ml` 语义关联词
+- **Free Dictionary API** `https://api.dictionaryapi.dev/api/v2/entries/en/<word>`
+  - 音标、词性、英文释义（导入词缺词性/音标时兜底）
+- **口径声明**：联网词频是通用英语语料频率，**不是高考真题考查次数**；
+  界面标「联网参考」，不估算具体次数；内置真题语料实测数据始终优先，联网只补缺。
+
+### 实现要点（全部在 `src/main.jsx`，不新增数据分片）
+- 模块级 `NET_CACHE_KEY = 'gaokao_net_enrich_v1'`、`NET_ENRICH_META`、
+  `loadNetCache/saveNetCache/getNetEnrich/netCacheSize/clearNetCache`、
+  `netFreqLevel`（≥60 高频 / ≥12 中频 / 其余低频，四档对齐 `exam-freq.js`）、
+  `netFetchJson`（AbortController 8s 超时）、`fetchNetEnrich`（Promise.all 五个接口）、
+  `mergeNetIntoFamilyCache`、`batchNetEnrich`（只补内置表未命中的词，跳过已缓存，串行，单次≤60）。
+- `getExamFreq`：内置表未命中 → 读联网缓存返回 `basis: 'net'`；
+  `ExamFreqTag` 显示「联网参考」+ 虚线徽标 `.examFreqNet`，title 里给出真实每百万词频；
+  「优先背诵高频词」排序（`examLevelOf`）因此自动覆盖导入词。
+- `getCachedFamily` 合并联网 `related/synonyms`，现有答后面板与详情页关联词族自动生效；
+  详情页另加「联网关联词」块（`.netRelatedSection`），可显示不在词库内的词，点击朗读/跳词库。
+- `settings.netEnrich`（默认 true）：`autoCheckFamilyAfterImport` 导入后自动触发
+  `runNetEnrichFor`；设置集中区与导入页都有「立即补全」「清除缓存」「已缓存 N 词」与状态文案。
+- **离线可用**：结果缓存 localStorage，`_emitBookData()` 触发徽标/详情页刷新；
+  无网络、超时、接口异常一律静默降级，不影响任何原有功能。
+
+### 全局 UI 轻量优化（纯 CSS 末尾追加）
+- 统一 `:focus-visible` 焦点环、输入框 focus 外发光、`::selection`；
+- 按钮 hover 用 `filter: brightness()`（不改变尺寸）、禁用态透明度统一；
+- 细滚动条（webkit + Firefox 属性）、考频徽标过渡、`.examFreqNote` 轻阴影；
+- 新增组件样式 `.netEnrichRow/.netEnrichNote/.netRelated*` 及护眼模式适配；
+- `prefers-reduced-motion` 降级。
+- **约束**：与 v2.84.0 基线 `diff` 确认只在文件末尾追加，
+  未触碰 `.options` / `.card` / `.quickToggleBtn` 等任何几何规则；
+  答题选项尺寸、题卡 min-height 380px、六个快捷按钮数量均保持原样。
+
+### 版本
+- versionName `2.85.0`，versionCode `316`（线上 315 → CI #308 生成 317）。
