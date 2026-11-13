@@ -102,8 +102,8 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.83.0';
-const APP_VERSION_CODE = 312;
+const APP_VERSION = '2.84.0';
+const APP_VERSION_CODE = 314;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -1371,6 +1371,7 @@ const choiceModes = [
   { id: 'en-to-cn', name: '英文选中文' },
   { id: 'cn-to-en', name: '中文选英文' },
   { id: 'sentence', name: '例句语境' },
+  { id: 'passage', name: '真题文章' },
   { id: 'flashcard', name: '闪卡模式' }
 ];
 
@@ -1380,6 +1381,206 @@ const choiceModes = [
    ============================ */
 
 const PROGRESS_KEY = 'gaokao_progress';
+
+/* ============================================================
+   v2.84.0 真题文章联答：数据与判分
+   ------------------------------------------------------------
+   文章数据在独立分片 data/exam-passages.js，全部来自历年高考英语
+   真题阅读原文（逐字保留、不改写、不编造），App 挂载后按需加载。
+   ============================================================ */
+let EXAM_PASSAGES = [];
+let EXAM_DISTRACTORS = [];
+let EXAM_PASSAGES_META = null;
+
+/* 归一化作答：去空白/标点/词性前缀/「的、地、得」尾字 */
+function paNorm(v) {
+  return String(v == null ? '' : v)
+    .toLowerCase()
+    .replace(/[\s\u3000，,。.；;！!？?、:：'"“”‘’()（）\[\]【】]/g, '')
+    .replace(/^(?:n|vt|vi|v|adj|adv|ad|a|prep|pron|conj|interj|art|num|aux|modal|abbr)\./, '')
+    .replace(/[的地得]$/, '')
+    .trim();
+}
+/* 极简英文词形还原，容忍复数 / 时态 / 副词等变化 */
+function paStem(w) {
+  if (/ies$/.test(w) && w.length > 4) return w.slice(0, -3) + 'y';
+  if (w.length > 5) return w.replace(/(ing|ed|es|s|ly)$/, '');
+  return w;
+}
+/* 编辑距离（只需判断 ≤1 的拼写容错） */
+function paLev(a, b) {
+  if (a === b) return 0;
+  if (Math.abs(a.length - b.length) > 1) return 99;
+  let i = 0, j = 0, diff = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) { i++; j++; continue; }
+    diff++;
+    if (diff > 1) return 99;
+    if (a.length > b.length) i++;
+    else if (b.length > a.length) j++;
+    else { i++; j++; }
+  }
+  return diff + (a.length - i) + (b.length - j);
+}
+/* 中文字符 bigram Dice 相似度，用于「大概意思符合」的宽松判断 */
+function paBigrams(t) {
+  const out = [];
+  if (t.length === 1) return [t];
+  for (let i = 0; i < t.length - 1; i++) out.push(t.slice(i, i + 2));
+  return out;
+}
+function paDice(a, b) {
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  const A = paBigrams(a), B = paBigrams(b), cnt = new Map();
+  for (const x of A) cnt.set(x, (cnt.get(x) || 0) + 1);
+  let hit = 0;
+  for (const y of B) { const c = cnt.get(y) || 0; if (c > 0) { hit++; cnt.set(y, c - 1); } }
+  return 2 * hit / (A.length + B.length);
+}
+/* 填空判分：只判断「意思是否大致相符」，不要求逐字一致。
+   英文输入：目标词 / 词形变化 / 拼写差 1 字符都算对；
+   中文输入：与核心释义或任一词库义项相同、互相包含、或 bigram 相似度 ≥0.34 即算对。*/
+function paBlankCorrect(input, b) {
+  const q = paNorm(input);
+  if (!q) return false;
+  const word = String(b[0] || ''), core = String(b[1] || ''), senses = b[2] || [];
+  if (/^[a-z\-]+$/.test(q)) {
+    if (q === word || paStem(q) === paStem(word)) return true;
+    if (word.length >= 5 && paLev(q, word) <= 1) return true;
+    return false;
+  }
+  const targets = [core].concat(senses).map(paNorm).filter(x => x.length >= 2);
+  for (const t of targets) {
+    if (q === t) return true;
+    const short = Math.min(q.length, t.length), long = Math.max(q.length, t.length);
+    if (short >= 2 && (t.indexOf(q) >= 0 || q.indexOf(t) >= 0) && long <= short * 2 + 2) return true;
+    if (paDice(q, t) >= 0.34) return true;
+  }
+  return false;
+}
+/* 选项方式：从真实词库单词池中，按目标词哈希稳定挑 3 个长度接近的干扰词 */
+function paChoiceSet(word, pool) {
+  let h = 0;
+  for (let i = 0; i < word.length; i++) h = (h * 31 + word.charCodeAt(i)) >>> 0;
+  const cands = pool.filter(w => w !== word && Math.abs(w.length - word.length) <= 3 && w.charAt(0) !== word.charAt(0));
+  const picked = [];
+  for (let i = 0; i < cands.length && picked.length < 3; i++) {
+    const w = cands[(h + i * 7919) % cands.length];
+    if (w && picked.indexOf(w) < 0) picked.push(w);
+  }
+  for (let i = 0; i < pool.length && picked.length < 3; i++) {
+    const w = pool[i];
+    if (w !== word && picked.indexOf(w) < 0) picked.push(w);
+  }
+  const all = picked.slice(0, 3);
+  all.splice(h % (all.length + 1), 0, word);
+  return all;
+}
+
+/* 真题文章联答卡：一篇文章多个空一起作答，支持「选项 / 填空」两种回答方式。
+   key={passageIdx} 由父组件传入，换一篇时自动重置局部作答状态。 */
+function PassagePractice(props) {
+  const passage = props.passage, meta = props.meta, way = props.way;
+  const pool = props.pool, idx = props.idx, total = props.total;
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const blanks = passage.b;
+  const n = blanks.length;
+  const sets = useMemo(() => blanks.map(b => paChoiceSet(b[0], pool)), [passage, pool]);
+
+  function setAns(i, v) { setAnswers(a => { const o = Object.assign({}, a); o[i] = v; return o; }); }
+  function reset() { setAnswers({}); setSubmitted(false); }
+
+  const judge = [];
+  for (let i = 0; i < n; i++) {
+    judge.push(way === 'choice' ? answers[i] === blanks[i][0] : paBlankCorrect(answers[i], blanks[i]));
+  }
+  const score = judge.filter(Boolean).length;
+  const filled = Object.keys(answers).filter(k => String(answers[k]).trim().length > 0).length;
+
+  function submit() {
+    if (submitted) return;
+    setSubmitted(true);
+    if (props.onFinish) props.onFinish(score, n);
+  }
+
+  return (
+    <div className="card passageCard">
+      <div className="cardMeta">
+        <span className="passageBadge">高考真题 · {passage.y} {passage.r}{passage.l ? ' ' + passage.l + ' 篇' : ''}</span>
+        <span className="passageCount">第 {idx % total + 1}/{total} 篇</span>
+      </div>
+
+      <div className="passageArticle">
+        {passage.t.split(String.fromCharCode(0xE000)).map((seg, i) => (
+          <React.Fragment key={i}>
+            <span>{seg}</span>
+            {i < n && <span className={'passageBlankMark' + (submitted ? (judge[i] ? ' ok' : ' bad') : '')}>&nbsp;[{i + 1}]&nbsp;</span>}
+          </React.Fragment>
+        ))}
+      </div>
+      <p className="passageScrollHint">↑ 文章较长，可上下滑动阅读全文</p>
+
+      <div className="passageWayRow">
+        <div className="passageWayBtns">
+          <button className={way === 'choice' ? 'active' : ''} onClick={() => { props.onWayChange('choice'); reset(); }}>选项</button>
+          <button className={way === 'blank' ? 'active' : ''} onClick={() => { props.onWayChange('blank'); reset(); }}>填空</button>
+        </div>
+        <span className="muted">共 {n} 空 · 一起作答</span>
+      </div>
+      <p className="passageTip">{way === 'choice'
+        ? '根据上下文，从四个英文单词中选出该空应填的词。'
+        : '不给任何选项：写出这个词的意思即可（中文或英文都行），大概意思相符就判正确，不要求逐字一致。'}</p>
+
+      <div className="passageBlanks">
+        {blanks.map((b, i) => (
+          <div className="passageBlankRow" key={i}>
+            <span className="passageBlankNo">{i + 1}</span>
+            {way === 'choice' ? (
+              <div className="passageOpts">
+                {sets[i].map(w => (
+                  <button key={w}
+                    className={'passageOpt' + (answers[i] === w ? ' picked' : '') + (submitted ? (w === b[0] ? ' right' : (answers[i] === w ? ' wrong' : '')) : '')}
+                    disabled={submitted}
+                    onClick={() => setAns(i, w)}>{w}</button>
+                ))}
+              </div>
+            ) : (
+              <input className={'passageInput' + (submitted ? (judge[i] ? ' right' : ' wrong') : '')}
+                value={answers[i] || ''} disabled={submitted}
+                placeholder="写出意思（中文或英文）"
+                onChange={e => setAns(i, e.target.value)} />
+            )}
+            {submitted && <span className={'passageJudge' + (judge[i] ? ' ok' : ' bad')}>{judge[i] ? '✓' : '✗'}</span>}
+          </div>
+        ))}
+      </div>
+
+      {!submitted ? (
+        <button className="primary passageSubmit" onClick={submit} disabled={filled === 0}>提交答案（{filled}/{n}）</button>
+      ) : (
+        <div className="passageResult">
+          <div className="passageScore">答对 {score}/{n} · {score === n ? '全对' : score >= Math.ceil(n / 2) ? '不错，继续' : '再练一篇'}</div>
+          {blanks.map((b, i) => (
+            <div className={'passageResultRow' + (judge[i] ? ' ok' : ' bad')} key={i}>
+              <b>{i + 1}. {b[0]}</b>
+              <span>{b[1]}{b[2] && b[2].length > 1 ? '（' + b[2].slice(0, 4).join(' / ') + '）' : ''}</span>
+              {way === 'blank' && <em>你写：{String(answers[i] || '（空）')}</em>}
+            </div>
+          ))}
+          <div className="passageActions">
+            <button className="smallBtn" onClick={reset}>再做一次</button>
+            <button className="primary" onClick={props.onNext}>换一篇真题 →</button>
+          </div>
+        </div>
+      )}
+
+      <p className="passageSource">{meta ? meta.notice : '文章取自历年高考英语真题原文，逐字保留，未改写、未编造。'}</p>
+    </div>
+  );
+}
+
 const SETTINGS_KEY = 'gaokao_settings';
 const MODE_KEY = 'gaokao_practice_mode';
 const STUDYLOG_KEY = 'gaokao_study_log';
@@ -1458,6 +1659,8 @@ function loadSettings() {
       answerFullPoints: false,
       // v2.83.0：优先背诵高考高频词（默认关，保持词库原顺序）
       freqFirst: false,
+      // v2.84.0：真题文章联答的默认回答方式（choice=四选一英文词 / blank=宽松语义填空）
+      passageWay: 'choice',
       // v2.55.9: 自动发音开关归一。
       // v2.44.0 已把"背诵新词自动发音"与"跳转自动发音"合并为一个开关，
       // 但老版本保存的设置里没有 autoSpeak 字段，旧默认 false 会导致：
@@ -4513,6 +4716,20 @@ function App() {
       if (!alive) return;
       EXAM_FREQ = { map: m.EXAM_FREQ_MAP, recent: m.EXAM_RECENT_MAP, meta: m.EXAM_FREQ_META };
       setExamFreqReady(true);
+    }).catch(function () {});
+    return function () { alive = false; };
+  }, []);
+  // v2.84.0：真题文章数据独立分片，挂载后异步加载；到货后触发重渲染
+  const [passagesReady, setPassagesReady] = useState(false);
+  const [passageIdx, setPassageIdx] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    import('./data/exam-passages').then(function (m) {
+      if (!alive) return;
+      EXAM_PASSAGES = m.EXAM_PASSAGES || [];
+      EXAM_DISTRACTORS = m.EXAM_DISTRACTORS || [];
+      EXAM_PASSAGES_META = m.EXAM_PASSAGES_META || null;
+      setPassagesReady(true);
     }).catch(function () {});
     return function () { alive = false; };
   }, []);
@@ -7603,10 +7820,10 @@ function App() {
     <div className="app">
       {/* ====== 背诵页 ====== */}
       {section === 'learn' && (
-        <section className="learnPage">
+        <section className={'learnPage' + (practiceMode === 'passage' ? ' passageMode' : '')}>
           {/* 专属标识（仅旧网页版；新网页版 /app/ 与 App 保持一致，不显示） */}
           {!isFullApp && (
-            <div style={{ textAlign: 'center', padding: '8px 0 4px', }}>
+            <div className="learnBrand" style={{ textAlign: 'center', padding: '8px 0 4px', }}>
               <span style={{ color: '#2563eb', fontWeight: 800, fontSize: 20, letterSpacing: 2, textShadow: '0 1px 4px rgba(37,99,235,0.25)' }}><Icon name="sparkle" />李群雁专属<Icon name="sparkle" /></span>
             </div>
           )}
@@ -7640,7 +7857,9 @@ function App() {
                 </div>
               )}
             </div>
-            <span className="progressTag">{index + 1}/{learnItems.length}</span>
+            <span className="progressTag">{practiceMode === 'passage' && passagesReady && EXAM_PASSAGES.length
+              ? `第 ${passageIdx % EXAM_PASSAGES.length + 1}/${EXAM_PASSAGES.length} 篇`
+              : `${index + 1}/${learnItems.length}`}</span>
           </div>
 
           {/* 背诵模式快捷开关（v2.72.0：去 emoji，统一线性图标 + 状态色） */}
@@ -7743,8 +7962,25 @@ function App() {
             </div>
           </div>
 
-          {/* 答题区 */}
-          {current ? (
+          {/* 答题区：v2.84.0 真题文章联答走独立分支，不复用一词一题的词卡 */}
+          {practiceMode === 'passage' ? (
+            passagesReady && EXAM_PASSAGES.length > 0 ? (
+              <PassagePractice
+                key={passageIdx}
+                passage={EXAM_PASSAGES[passageIdx % EXAM_PASSAGES.length]}
+                meta={EXAM_PASSAGES_META}
+                pool={EXAM_DISTRACTORS}
+                way={settings.passageWay === 'blank' ? 'blank' : 'choice'}
+                onWayChange={v => { setSettings(st => ({ ...st, passageWay: v })); saveSettings({ ...settings, passageWay: v }); }}
+                onNext={() => setPassageIdx(i => (i + 1) % EXAM_PASSAGES.length)}
+                onFinish={(c, t) => { if (settings.soundEnabled) playAnswerSfx(c >= Math.ceil(t / 2), settings.soundCorrect, settings.soundWrong); }}
+                idx={passageIdx}
+                total={EXAM_PASSAGES.length}
+              />
+            ) : (
+              <div className="empty">真题文章加载中…<br />首次进入需下载 200 篇历年高考真题原文，请稍等 1~2 秒。</div>
+            )
+          ) : current ? (
             <div className="card">
               <div className="cardMeta">
                 <span className="freqTag" style={{ color: freqColor(displayCurrent.frequency), borderColor: freqColor(displayCurrent.frequency) }}>{displayCurrent.frequency}</span>
@@ -7783,6 +8019,7 @@ function App() {
                       {selected
                         ? <p className="ctxTranslation">{sent.zh}</p>
                         : <p className="ctxHint">根据语境，选出「{displayCurrent.term}」在句中的含义</p>}
+                      <button className="passageEntryBtn" onClick={() => { setPracticeMode('passage'); setSettings(st => ({ ...st, mode: 'passage' })); saveSettings({ ...settings, mode: 'passage' }); setSelected(''); setShowBack(false); }}>体验真题文章联答（一段文章多个词一起答）→</button>
                     </div>
                   );
                 }
@@ -9388,6 +9625,101 @@ function App() {
             </div>
           </div>
 
+          {/* v2.84.0：设置集中区 —— 原「自动发音」卡片 /「设置」/「学习辅助与反馈」三处
+              合并为一个区块，并整体移到「我的」页最上方（用户信息之后、学习日历之前）。 */}
+          <div className="settingsGroup meSettingsAll">
+            <h3>设置</h3>
+            <p className="muted settingsLead">全部开关集中在此，修改后立即生效并自动保存。</p>
+
+            <label>自动发音（背诵新词 + 跳转）
+              <InlineSelect block value={settings.autoSpeak !== false ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, navAutoSpeak: on, autoSpeak: on })); saveSettings({ ...settings, navAutoSpeak: on, autoSpeak: on }); }} options={[{ value: 'off', label: '关闭' }, { value: 'on', label: '开启（新词与跳转自动朗读）' }]} />
+            </label>
+
+            <label>每日目标
+              <input type="number" value={settings.dailyGoal} min={1} max={500}
+                onChange={e => { const v = Number(e.target.value) || 50; setSettings(s => ({ ...s, dailyGoal: v })); saveSettings({ ...settings, dailyGoal: v }); }} />
+            </label>
+            <label>发音语速（左右滑动调节）
+              <WheelPicker
+                values={WHEEL_SPEAK_RATE}
+                value={WHEEL_SPEAK_RATE.indexOf(settings.speakRate) >= 0 ? settings.speakRate : 0.78}
+                onChange={v => { setSettings(s => ({ ...s, speakRate: v })); saveSettings({ ...settings, speakRate: v }); }}
+                format={v => v.toFixed(2) + 'x'}
+                width={140}
+              />
+            </label>
+            {settings.autoJump && <label>自动跳转延迟
+              <InlineSelect block value={settings.autoJumpDelay || 1500} onChange={v => { setSettings(s => ({ ...s, autoJumpDelay: v })); saveSettings({ ...settings, autoJumpDelay: v }); }}
+                options={[500, 800, 1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000, 8000].map(n => ({ value: n, label: (n / 1000).toFixed(1) + ' 秒' }))} />
+            </label>}
+            {isFullApp && (
+              <label>开屏更新公告
+                <InlineSelect block value={settings.showAnnouncement ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, showAnnouncement: on })); saveSettings({ ...settings, showAnnouncement: on }); }}
+                  options={[{ value: 'on', label: '开启（启动时显示更新公告）' }, { value: 'off', label: '关闭' }]} />
+              </label>
+            )}
+
+            <h4 className="settingsSubTitle">学习辅助与反馈</h4>
+            <label>护眼模式（暖色低蓝光）
+              <InlineSelect block value={settings.eyeCare ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, eyeCare: on })); saveSettings({ ...settings, eyeCare: on }); }} options={[{ value: 'off', label: '关闭（默认浅色）' }, { value: 'on', label: '开启' }]} />
+            </label>
+            <label>艾宾浩斯记忆法
+              <InlineSelect block value={settings.ebbinghaus ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, ebbinghaus: on })); saveSettings({ ...settings, ebbinghaus: on }); }} options={[{ value: 'off', label: '关闭（顺序/乱序背诵）' }, { value: 'on', label: '开启（按遗忘曲线复习）' }]} />
+            </label>
+            <label>答题后显示全部考点
+              <InlineSelect block value={settings.answerFullPoints ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, answerFullPoints: on })); saveSettings({ ...settings, answerFullPoints: on }); }} options={[{ value: 'off', label: '关闭（仅显示其他选项单词的中文）' }, { value: 'on', label: '开启（显示该单词全部考点）' }]} />
+              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>关闭时答题后只保留结果与其他选项单词的中文对照，页面保持紧凑；开启后展示该单词的全部考点、搭配、词族与例句。</span>
+            </label>
+            <label>优先背诵高频词
+              <InlineSelect block value={settings.freqFirst ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, freqFirst: on })); saveSettings({ ...settings, freqFirst: on }); }} options={[{ value: 'off', label: '关闭（按词库原顺序）' }, { value: 'on', label: '开启（高频 → 中频 → 低频）' }]} />
+              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>开启后背单词按高考真题考频分档推进，高频词排在最前；同档内默认再按真题出现次数降序。若同时开启艾宾浩斯或乱序，则保留其到期/乱序顺序，不改变已掌握与筛选规则。</span>
+            </label>
+            {/* v2.84.0：真题文章联答的默认回答方式 */}
+            <label>真题文章 · 默认回答方式
+              <InlineSelect block value={settings.passageWay === 'blank' ? 'blank' : 'choice'} onChange={v => { setSettings(s => ({ ...s, passageWay: v })); saveSettings({ ...settings, passageWay: v }); }} options={[{ value: 'choice', label: '选项（从四个英文单词中选）' }, { value: 'blank', label: '填空（写中文意思，语义相近即判对）' }]} />
+              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>背诵页切到「真题文章」模式时，一篇文章里的多个空一起作答；卡上也可随时临时切换回答方式。填空不给任何选项，按你写的意思与词库释义的相近程度判断，不要求逐字一致。</span>
+            </label>
+
+            {/* 答题音效总开关 */}
+            <label>答题音效
+              <InlineSelect block value={settings.soundEnabled ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, soundEnabled: on })); saveSettings({ ...settings, soundEnabled: on }); }} options={[{ value: 'off', label: '关闭' }, { value: 'on', label: '开启' }]} />
+            </label>
+            {settings.soundEnabled && (
+              <label>答对音效
+                <button className="smallBtn" onClick={() => { const list = SFX_CORRECT; const idx = Math.max(0, list.findIndex(s => s.id === settings.soundCorrect)); const next = list[(idx + 1) % list.length]; setSettings(s => ({ ...s, soundCorrect: next.id })); saveSettings({ ...settings, soundCorrect: next.id }); playAnswerSfx(true, next.id, settings.soundWrong); }}>{SFX_CORRECT.find(s => s.id === settings.soundCorrect)?.name || '清脆叮咚'} · 切换</button>
+              </label>
+            )}
+            {settings.soundEnabled && (
+              <label>答错音效
+                <button className="smallBtn" onClick={() => { const list = SFX_WRONG; const idx = Math.max(0, list.findIndex(s => s.id === settings.soundWrong)); const next = list[(idx + 1) % list.length]; setSettings(s => ({ ...s, soundWrong: next.id })); saveSettings({ ...settings, soundWrong: next.id }); playAnswerSfx(false, settings.soundCorrect, next.id); }}>{SFX_WRONG.find(s => s.id === settings.soundWrong)?.name || '温柔下降'} · 切换</button>
+              </label>
+            )}
+
+            <h4 className="settingsSubTitle">数据来源说明</h4>
+            {/* v2.83.0：高考考频数据来源与统计口径（如实标注，不编造次数） */}
+            <div className="examFreqNote">
+              <strong>高考考频数据说明</strong>
+              <p>全库单词已标注 <strong>高频 / 中频 / 低频 / 基础</strong> 四档，并在背诵页、词库列表与单词详情页显示 <strong>历年真题出现次数</strong>。</p>
+              <p className="muted">词卡上原有的「基础 / 真题 / 985」等标签是<strong>词库分类</strong>，与带次数的考频徽标是不同维度，两者并存不代表矛盾。</p>
+              <p>次数来自 130+ 份历年高考全国卷及各省模拟真题语料（约 50 万词次）的逐词统计；未被语料收录的词次数显示「—」，等级按高考考纲与通用语料库词频标注，<strong>不编造考查次数</strong>。「近五年 N 次」来自本 App 自带的近五年真题高频词表。</p>
+              <p className="muted">公开资料无法覆盖全部年份、全部省份的逐词精确考查次数，本表用于安排背诵优先级，不代表官方考查次数。</p>
+            </div>
+            {/* v2.84.0：真题文章来源（绝不编造） */}
+            <div className="examFreqNote passageSourceNote">
+              <strong>真题文章来源说明</strong>
+              <p>「真题文章」模式的文章<strong>全部取自历年高考英语真题阅读原文</strong>，来自 GitHub 开源数据库 <strong>ZhangYixuan-in-BUPT/gaokao-english-exam-database</strong>（2008–2026 年 233 套试卷、739+ 篇阅读理解）。</p>
+              <p>每篇为真题原文的<strong>连续片段，逐字保留、未改写、未编造、未拼接</strong>；挖空词及其释义来自本 App 内置词库。原文保留试卷扫描排版原貌，个别处可能有扫描识别的笔误，请以真题试卷为准。</p>
+            </div>
+
+            <h4 className="settingsSubTitle">学习信息</h4>
+            <div className="settingsInfo">
+              <p>首次使用：{firstUseDate}</p>
+              <p>今日日期：{todayKey}</p>
+              <p>总词库：{books.length} 个</p>
+              <p>总词汇量：{books.reduce((s, b) => s + (b.items.length || b.total || 0), 0)} 条</p>
+            </div>
+          </div>
+
           {/* 打卡日历 */}
           <div className="calendarSection">
             <h3>学习日历</h3>
@@ -9463,110 +9795,6 @@ function App() {
               const totalWords = studyDates.reduce((sum, d) => sum + studyWordsLog[d].length, 0);
               return <p className="muted" style={{ textAlign: 'center', marginTop: 6, fontSize: 13 }}>共 {studyDates.length} 天、{totalWords} 词可温习</p>;
             })()}
-          </div>
-
-          {/* v2.81.2：自动发音开关回到「我的」页（原始位置）；背诵页仅在闪卡模式保留快捷按钮 */}
-          {/* v2.44.0 合并自动发音开关：背诵页新单词自动发音 + 跳转单词自动发音 */}
-          <div className="toggleCard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', marginTop: 12, borderRadius: 12, background: 'var(--primary-light)', border: '1px solid var(--border-light)' }}>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 600 }}><Icon name="speaker" />自动发音（背诵新词 + 跳转）</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>背诵页出现新单词时自动发音，点击单词跳转详情时也自动发音</div>
-            </div>
-            <label style={{ position: 'relative', display: 'inline-block', width: 48, height: 26, flexShrink: 0 }}>
-              <input type="checkbox" checked={settings.autoSpeak !== false} onChange={e => { const v = e.target.checked; setSettings(s => ({ ...s, navAutoSpeak: v, autoSpeak: v })); saveSettings({ ...settings, navAutoSpeak: v, autoSpeak: v }); }} style={{ opacity: 0, width: 0, height: 0 }} />
-              <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: settings.autoSpeak !== false ? 'var(--primary)' : '#ccc', borderRadius: 26, transition: '0.3s' }}>
-                <span style={{ position: 'absolute', height: 20, width: 20, left: 3, bottom: 3, backgroundColor: 'white', borderRadius: '50%', transition: '0.3s', transform: settings.autoSpeak !== false ? 'translateX(22px)' : 'translateX(0)' }} />
-              </span>
-            </label>
-          </div>
-
-          {/* 设置区域 */}
-          <div className="settingsGroup">
-            <h3>设置</h3>
-            <label>每日目标
-              <input type="number" value={settings.dailyGoal} min={1} max={500}
-                onChange={e => { const v = Number(e.target.value) || 50; setSettings(s => ({ ...s, dailyGoal: v })); saveSettings({ ...settings, dailyGoal: v }); }} />
-            </label>
-            <label>发音语速（左右滑动调节）
-              <WheelPicker
-                values={WHEEL_SPEAK_RATE}
-                value={WHEEL_SPEAK_RATE.indexOf(settings.speakRate) >= 0 ? settings.speakRate : 0.78}
-                onChange={v => { setSettings(s => ({ ...s, speakRate: v })); saveSettings({ ...settings, speakRate: v }); }}
-                format={v => v.toFixed(2) + 'x'}
-                width={140}
-              />
-            </label>
-            {settings.autoJump && <label>自动跳转延迟
-              <InlineSelect block value={settings.autoJumpDelay || 1500} onChange={v => { setSettings(s => ({ ...s, autoJumpDelay: v })); saveSettings({ ...settings, autoJumpDelay: v }); }}
-                options={[500, 800, 1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000, 8000].map(n => ({ value: n, label: (n / 1000).toFixed(1) + ' 秒' }))} />
-            </label>}
-            {isFullApp && (
-              <label>开屏更新公告
-                <InlineSelect block value={settings.showAnnouncement ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, showAnnouncement: on })); saveSettings({ ...settings, showAnnouncement: on }); }}
-                  options={[{ value: 'on', label: '开启（启动时显示更新公告）' }, { value: 'off', label: '关闭' }]} />
-              </label>
-            )}
-            <div className="settingsInfo">
-              <p>首次使用：{firstUseDate}</p>
-              <p>今日日期：{todayKey}</p>
-              <p>总词库：{books.length} 个</p>
-              <p>总词汇量：{books.reduce((s, b) => s + (b.items.length || b.total || 0), 0)} 条</p>
-            </div>
-          </div>
-
-          {/* v2.80.0：学习辅助与反馈 */}
-          <div className="settingsGroup" style={{ marginTop: 16 }}>
-            <h3>学习辅助与反馈</h3>
-
-            {/* 护眼模式（暖色低蓝光单开关） */}
-            <label>护眼模式（暖色低蓝光）
-              <InlineSelect block value={settings.eyeCare ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, eyeCare: on })); saveSettings({ ...settings, eyeCare: on }); }} options={[{ value: 'off', label: '关闭（默认浅色）' }, { value: 'on', label: '开启' }]} />
-            </label>
-
-            {/* 艾宾浩斯记忆法 */}
-            <label>艾宾浩斯记忆法
-              <InlineSelect block value={settings.ebbinghaus ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, ebbinghaus: on })); saveSettings({ ...settings, ebbinghaus: on }); }} options={[{ value: 'off', label: '关闭（顺序/乱序背诵）' }, { value: 'on', label: '开启（按遗忘曲线复习）' }]} />
-            </label>
-
-            {/* v2.82.0：答题后显示全部考点 */}
-            <label>答题后显示全部考点
-              <InlineSelect block value={settings.answerFullPoints ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, answerFullPoints: on })); saveSettings({ ...settings, answerFullPoints: on }); }} options={[{ value: 'off', label: '关闭（仅显示其他选项单词的中文）' }, { value: 'on', label: '开启（显示该单词全部考点）' }]} />
-              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>关闭时答题后只保留结果与其他选项单词的中文对照，页面保持紧凑；开启后展示该单词的全部考点、搭配、词族与例句。</span>
-            </label>
-
-            {/* v2.83.0：优先背诵高考高频词 */}
-            <label>优先背诵高频词
-              <InlineSelect block value={settings.freqFirst ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, freqFirst: on })); saveSettings({ ...settings, freqFirst: on }); }} options={[{ value: 'off', label: '关闭（按词库原顺序）' }, { value: 'on', label: '开启（高频 → 中频 → 低频）' }]} />
-              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>开启后背单词按高考真题考频分档推进，高频词排在最前；同档内默认再按真题出现次数降序。若同时开启艾宾浩斯或乱序，则保留其到期/乱序顺序，不改变已掌握与筛选规则。</span>
-            </label>
-
-            {/* v2.83.0：高考考频数据来源与统计口径（如实标注，不编造次数） */}
-            <div className="examFreqNote">
-              <strong>高考考频数据说明</strong>
-              <p>全库单词已标注 <strong>高频 / 中频 / 低频 / 基础</strong> 四档，并在背诵页、词库列表与单词详情页显示 <strong>历年真题出现次数</strong>。</p>
-              <p className="muted">词卡上原有的「基础 / 真题 / 985」等标签是<strong>词库分类</strong>，与带次数的考频徽标是不同维度，两者并存不代表矛盾。</p>
-              <p>次数来自 130+ 份历年高考全国卷及各省模拟真题语料（约 50 万词次）的逐词统计；未被语料收录的词次数显示「—」，等级按高考考纲与通用语料库词频标注，<strong>不编造考查次数</strong>。「近五年 N 次」来自本 App 自带的近五年真题高频词表。</p>
-              <p className="muted">公开资料无法覆盖全部年份、全部省份的逐词精确考查次数，本表用于安排背诵优先级，不代表官方考查次数。</p>
-            </div>
-
-            {/* 答题音效总开关 */}
-            <label>答题音效
-              <InlineSelect block value={settings.soundEnabled ? 'on' : 'off'} onChange={v => { const on = v === 'on'; setSettings(s => ({ ...s, soundEnabled: on })); saveSettings({ ...settings, soundEnabled: on }); }} options={[{ value: 'off', label: '关闭' }, { value: 'on', label: '开启' }]} />
-            </label>
-
-            {/* 答对音效切换（多选预设，点一下试听并换下一个） */}
-            {settings.soundEnabled && (
-              <label>答对音效
-                <button className="smallBtn" onClick={() => { const list = SFX_CORRECT; const idx = Math.max(0, list.findIndex(s => s.id === settings.soundCorrect)); const next = list[(idx + 1) % list.length]; setSettings(s => ({ ...s, soundCorrect: next.id })); saveSettings({ ...settings, soundCorrect: next.id }); playAnswerSfx(true, next.id, settings.soundWrong); }}>{SFX_CORRECT.find(s => s.id === settings.soundCorrect)?.name || '清脆叮咚'} · 切换</button>
-              </label>
-            )}
-
-            {/* 答错音效切换 */}
-            {settings.soundEnabled && (
-              <label>答错音效
-                <button className="smallBtn" onClick={() => { const list = SFX_WRONG; const idx = Math.max(0, list.findIndex(s => s.id === settings.soundWrong)); const next = list[(idx + 1) % list.length]; setSettings(s => ({ ...s, soundWrong: next.id })); saveSettings({ ...settings, soundWrong: next.id }); playAnswerSfx(false, settings.soundCorrect, next.id); }}>{SFX_WRONG.find(s => s.id === settings.soundWrong)?.name || '温柔下降'} · 切换</button>
-              </label>
-            )}
           </div>
 
           {/* 数据备份与恢复 */}

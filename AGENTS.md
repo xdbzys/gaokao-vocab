@@ -316,3 +316,46 @@ android/app/src/main/assets/public/   构建时由 dist 覆盖，不要手改
 - 「我的 → 学习辅助与反馈」新增开关与 `examFreqNote` 口径说明；`styles.css` 追加
   `.examFreqTag` / `.examFreqLv0~3` / `.examFreqNote`（含护眼模式适配）。
 - 版本 2.83.0 / versionCode 312（线上 311 → CI 313）。
+
+## v2.84.0 设置集中上移 + 真题文章多词联答
+
+### 数据来源（绝不编造）
+- 联网取得 GitHub 开源 `ZhangYixuan-in-BUPT/gaokao-english-exam-database`
+  的 `structured/database.json`（9.5MB）：2008–2026 年 233 套高考英语试卷、
+  739+ 篇阅读理解原文，含年份 / 地区 / 篇目 / 全文。
+- `gen_exam_passages.py` 生成 `src/data/exam-passages.js`（独立懒加载分片，
+  raw 164KB / gzip 63KB）：把真题原文按句切成 55–125 词的**连续片段**，
+  逐字保留、不改写、不编造、不拼接；精选 200 篇，覆盖 19 个年份、36 个地区。
+- 数据格式：`t` = 完整原文字符串，用私用区 `U+E000` 分隔挖空点
+  （运行时 `split(String.fromCharCode(0xE000))` 得 n+1 段，第 i 个空位于第 i 段之后，
+  比片段数组省大量 JSON 开销；用私用区字符是为避开真题 PDF 扫描文本里的控制字符）；
+  `b` = `[词库原形, 核心释义, 可接受义项数组]`，挖空词必须是段落中真实出现且
+  本 App 词库已收录（有真实中文释义）的词；`EXAM_DISTRACTORS` 为 320 个真实
+  词库英文单词，供选项方式生成干扰项。
+- 每篇挖 4–6 空；原文保留试卷扫描排版原貌，个别扫描笔误按真题试卷为准，
+  App「我的 → 数据来源说明」原文标注。
+
+### 功能
+- `choiceModes` 新增 `passage`（真题文章）；例句语境卡内有「体验真题文章联答」入口。
+- `PassagePractice` 组件（`key={passageIdx}` 换篇重置）：一篇文章多个空一起提交；
+  **选项**方式给 4 个真实词库英文词（完形填空式，客观无歧义）；
+  **填空**方式不给任何选项，按 `paBlankCorrect` 宽松语义判分 —— 英文输入支持
+  词形还原与编辑距离 ≤1，中文输入与词库义项相同 / 互相包含 / bigram Dice ≥0.34
+  即判正确（「大概意思符合就判对」）。
+- 答后逐空显示对错、正确单词、核心释义与全部义项，并把全文空处标色还原。
+- 设置新增 `passageWay`（默认 `choice`），「我的」页可设默认方式，卡上也可临时切换。
+
+### 设置集中上移
+- 原分散的「自动发音」独立卡片 /「设置」/「学习辅助与反馈」三块合并为单个
+  `settingsGroup meSettingsAll`，并移到「我的」页最上方（用户信息之后、
+  学习日历之前）；学习日历 / 今日学习 / 温习入口等统计区块顺延下移。
+- 新增「真题文章 · 默认回答方式」与「真题文章来源说明」两段说明。
+
+### 实现要点
+- App 内 `passagesReady` / `passageIdx` state + `import('./data/exam-passages')` 懒加载；
+  模块级 `EXAM_PASSAGES` / `EXAM_DISTRACTORS` / `EXAM_PASSAGES_META`。
+- 答题区条件链最前面加 `practiceMode === 'passage'` 独立分支，绕过 `current` 词卡；
+  顶部进度条在文章模式显示「第 N/200 篇」。
+- `push.py` FILES 清单追加 `src/data/exam-passages.js`。
+- 版本 2.84.0 / versionCode 314（线上 313 → CI 315）。
+
