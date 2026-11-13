@@ -1,9 +1,11 @@
 {
   "version": "2.84.0",
-  "versionCode": 314,
+  "versionCode": 315,
   "changelog": "【v2.84.0】设置集中上移 + 真题文章多词联答\n新增 背诵页「真题文章」模式：一篇高考真题原文里多个单词一起作答，可选「选项」或「填空」两种回答方式\n新增 文章全部取自 2008-2026 历年高考英语真题阅读原文（开源真题数据库），逐字保留、绝不编造，并标注年份与卷别\n新增 填空只做宽松语义判断，写出大致意思相符即判正确，不要求逐字一致；答后显示正确单词与词库释义\n优化 「我的」页把分散的自动发音、设置、学习辅助与反馈合并为一个集中设置区，并整体移到页面顶部",
   "devNotes": "v2.84.0: ① 新增 src/data/exam-passages.js 独立懒加载分片（200 篇、gzip 63KB）：文章 100% 取自联网核验的 GitHub 开源真题数据库 ZhangYixuan-in-BUPT/gaokao-english-exam-database（2008-2026 年 233 套卷、739+ 篇阅读原文），从原文截取连续段落，逐字保留、不改写、不编造、不拼接；覆盖 19 个年份、36 个地区；每篇挖 4-6 个文中真实出现且词库已收录的词，释义来自内置词库。② 背诵页新增 passage 模式：一篇文章多空一起提交；选项方式给四个真实词库英文词（完形填空式，客观无歧义），填空方式不给任何选项，按输入与词库义项的语义相近程度宽松判分（包含关系 / 字符 bigram Dice ≥0.34 / 英文词形还原与编辑距离容错），大概意思符合即判正确；答后逐空显示对错、正确词、核心释义与全部义项，并还原全文。③ 设置新增 passageWay（默认 choice），我的页设置集中上移，卡上亦可临时切换回答方式。④ 版本号 2.84.0 / versionCode 314（CI 将→315，> 线上 313）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html"
+  "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
+  "apkSize": 4598439,
+  "apkSha256": "6ad4f9a751f953c283c3243dbdfdc3b21918579baac96a4ef059b8b6eaa45dec"
 }

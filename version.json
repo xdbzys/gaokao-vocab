@@ -1,9 +1,11 @@
 {
   "version": "2.84.0",
-  "versionCode": 314,
+  "versionCode": 315,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "changelog": "【v2.84.0】设置集中上移 + 真题文章多词联答\n新增 背诵页「真题文章」模式：一篇高考真题原文里多个单词一起作答，可选「选项」或「填空」两种回答方式\n新增 文章全部取自 2008-2026 历年高考英语真题阅读原文（开源真题数据库），逐字保留、绝不编造，并标注年份与卷别\n新增 填空只做宽松语义判断，写出大致意思相符即判正确，不要求逐字一致；答后显示正确单词与词库释义\n优化 「我的」页把分散的自动发音、设置、学习辅助与反馈合并为一个集中设置区，并整体移到页面顶部"
+  "apkSize": 4598439,
+  "apkSha256": "6ad4f9a751f953c283c3243dbdfdc3b21918579baac96a4ef059b8b6eaa45dec",
+  "changelog": "【v2.84.0】设置集中上移 + 真题文章多词联答\n新增 背诵页「真题文章」模式：一篇高考真题原文里多个单词一起作答，可选「选项」或「填空」两种回答方式\n新增 文章全部取自 2008-2026 历年高考英语真题阅读原文（开源真题数据库），逐字保留、绝不编造，并标注年份与卷别\n新增 填空只做宽松语义判断，写出大致意思相"
 }
