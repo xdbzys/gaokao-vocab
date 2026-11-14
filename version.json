@@ -1,11 +1,11 @@
 {
   "version": "2.90.0",
-  "versionCode": 322,
+  "versionCode": 323,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4599122,
-  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d",
-  "changelog": "【v2.90.0】新增初中扩展词库：必考词 + 阅读词汇\n新增「初中必考词」1902 词（按中考词频排序）与「初中阅读词汇」406 词，词库选择 / 背诵 / 听读 / 导出均可选用\n词条规格与其他词库完全一致，复用内置释义、词性、考点、例句，带考频徽标、关联词、例句语境与按考频顺序导出\n数据来源可核验（MIT 开源中考词表 + 公开中考阅读高频词表 + KyleBing 初中词表），口径依据教育部课标三级词汇表 1600 词"
+  "apkSize": 4613418,
+  "apkSha256": "cbf749cd90cf2381dfefa0b9d70bf28a21b89b012c95364e549a910c66177edb",
+  "changelog": "【v2.90.0】新增初中扩展词库：必考词 + 阅读词汇\n新增「初中必考词」1902 词（按中考词频排序、高频在前）与「初中阅读词汇」406 词两个内置词库，可在词库选择 / 背诵 / 听读 / 导出中自由选用\n词条规格与其他词库完全一致：中文释义、词性、考点、例句复用内置词库数据，同样带考频徽标、关联词检索、例句语境"
 }
