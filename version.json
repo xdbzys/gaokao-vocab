@@ -1,11 +1,11 @@
 {
   "version": "2.88.0",
-  "versionCode": 320,
+  "versionCode": 321,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4599122,
-  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d",
-  "changelog": "【v2.88.0】考频数据权威核验 + 来源可核验\n核对教育部《课标》、北京教育考试院备考建议与清华社真题语料库方法，确认内置 130+ 份真题/模拟卷语料数据源真实可核验\n用 2021—2026 年 30 套真题全文词频交叉校验：72 词命中、秩相关 ρ=0.738、15 个超高频词 15/15 落在高频档\n如实标注含模拟卷、课标非考纲、官方不发次数，不编造不替换次数；「我的」页新增真实性核验说明"
+  "apkSize": 4601221,
+  "apkSha256": "d91043462a31bd84637e1fb62ff3fad40d217965eccc53ef938b045e957ab53a",
+  "changelog": "【v2.88.0】考频数据权威核验 + 来源可核验\n核对教育部《课标》（只给 3000 词范围、从不发布逐词考频）、北京教育考试院备考建议与清华大学出版社真题语料库方法，确认内置 130+ 份真题/模拟卷语料数据源真实可核验\n用 2021—2026 年 30 套高考真题全文词频做独立交叉校验：72 词全部命中、秩相关 "
 }
