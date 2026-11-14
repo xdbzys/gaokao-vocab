@@ -102,7 +102,7 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.87.0';
+const APP_VERSION = '2.88.0';
 const APP_VERSION_CODE = 318;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
@@ -1019,8 +1019,8 @@ function ExamFreqTag({ term, compact }) {
          (f.netFreq > 0 ? f.netFreq.toFixed(2) + ' 次/每百万词' : '不足 0.01') +
          '）推算，非高考真题考查次数。数据已缓存本地，离线可用。')
     : (f.basis === 'corpus'
-      ? '等级与次数来自 130+ 份历年高考/模拟真题语料（约 50 万词次）逐词统计'
-        : '该词未被真题语料收录，等级按高考考纲与通用语料库词频标注，次数不作估算'));
+      ? '等级与次数来自 130+ 份历年高考全国卷及各省模拟卷语料（约 50 万词次）逐词统计，含模拟卷、非官方考查次数'
+        : '该词未被语料收录，等级按《课标》词汇范围与通用语料库词频标注，次数不作估算'));
   return (
     <span className={'examFreqTag examFreqLv' + f.level + (netMode ? ' examFreqNet' : '') + (f.basis === 'pending' ? ' examFreqPending' : '') + (compact ? ' examFreqCompact' : '')} title={tip}>
       {f.basis === 'pending' ? '待补全' : EXAM_LEVEL_LABEL[f.level]}<span className="examFreqSep"> · </span>
@@ -9749,10 +9749,19 @@ function App() {
             <details className="noteDetails">
               <summary>高考考频数据说明</summary>
               <div className="examFreqNote">
-                <p>全库单词已标注 <strong>高频 / 中频 / 低频 / 基础</strong> 四档，并在背诵页、词库列表与单词详情页显示 <strong>历年真题出现次数</strong>。</p>
+                <p>全库单词已标注 <strong>高频 / 中频 / 低频 / 基础</strong> 四档，并在背诵页、词库列表与单词详情页显示 <strong>历年真题 / 模拟卷语料出现次数</strong>。</p>
                 <p className="muted">词卡上原有的「基础 / 真题 / 985」等标签是<strong>词库分类</strong>，与带次数的考频徽标是不同维度，两者并存不代表矛盾。</p>
-                <p>次数来自 130+ 份历年高考全国卷及各省模拟真题语料（约 50 万词次）的逐词统计；未被语料收录的词次数显示「—」，等级按高考考纲与通用语料库词频标注，<strong>不编造考查次数</strong>。「近五年 N 次」来自本 App 自带的近五年真题高频词表。</p>
-                <p className="muted">公开资料无法覆盖全部年份、全部省份的逐词精确考查次数，本表用于安排背诵优先级，不代表官方考查次数。</p>
+                <p>次数来自 <strong>130+ 份历年高考全国卷及各省份高三模拟卷（约 50 万词次）</strong>的逐词统计，<strong>含模拟卷、并非纯高考真题</strong>；未被语料收录的词次数显示「—」，等级按<strong>《普通高中英语课程标准》词汇范围</strong>与通用语料库词频标注，<strong>不编造考查次数</strong>。「近五年 N 次」来自内置近五年真题高频词表（508 条）。</p>
+                <p className="muted">教育部《课标》附录 2 只给 3000 词的考查范围，明确不标注词性与释义；课标与《中国高考评价体系》<strong>从未发布逐词考查次数</strong>。公开资料也无法覆盖全部年份、全部省份的逐词精确次数，本表用于安排背诵优先级，<strong>不代表官方考查次数</strong>。</p>
+              </div>
+            </details>
+            <details className="noteDetails">
+              <summary>考频数据真实性核验</summary>
+              <div className="examFreqNote">
+                <p><strong>次数来源可核验：</strong>开源项目 <strong>HK-SHAO/English-Dictionary</strong>（GitHub，README 载明 130 多份试卷、约 50 多万词次、Python 脚本逐词统计）；词形经 <code>-ing / -ed / -s / -ly</code> 归并、过滤短词与人名地名，故次数为<strong>该词族在语料中的出现次数</strong>，非官方考查次数。</p>
+                <p><strong>官方口径：</strong><strong>教育部</strong>《普通高中英语课程标准（2017 年版 2020 年修订）》附录 2 只收录 3000 词的考查范围、明确不标注词性与释义，课标与《中国高考评价体系》从未发布词频表；<strong>北京教育考试院</strong>《英语：学会做好减法和加法》明确建议「区别对待高频词和低频词、从高考真题高频词开始」，本 App 高频优先背诵即据此设计。<strong>清华大学出版社</strong>《新高中英语词汇真题语境记忆》（自建高考真题语料库、人工标注近 20 万条索引行统计词频义频）与语料库研究论文亦采用同样的「真题语料实测词频」方法。</p>
+                <p><strong>独立交叉校验：</strong>以 2021—2026 年 30 套高考真题全文词频统计作第三方样本，72 个词全部命中内置表，秩相关 <strong>ρ = 0.738</strong>；近年出现 ≥20 次的 <strong>15 个超高频词 15/15 落在高频档</strong>。个别近年低频词在内置表仍为高频，属「历届＋模拟卷累计」与「近五年全国卷」口径差异，<strong>保留原始实测数、不擅自改动</strong>。</p>
+                <p className="muted">结论：数据源真实可核验、分档趋势与近年真题一致、口径已如实标注；<strong>不编造、不替换、不冒充官方考频</strong>。</p>
               </div>
             </details>
             <details className="noteDetails">

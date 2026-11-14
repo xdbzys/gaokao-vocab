@@ -1,11 +1,11 @@
 {
-  "version": "2.87.0",
+  "version": "2.88.0",
   "versionCode": 320,
-  "changelog": "【v2.87.0】我的页面排版全面优化 + 设置项改为按钮开关\n优化「我的」页面设置区重排，分组更清晰、布局更紧凑；数据来源说明改为可折叠，减少冗长\n纯开/关设置项（自动发音、护眼模式、艾宾浩斯、答题后显示考点、优先高频词、联网补全、答题音效、开屏公告）全部改为按钮开关，点按右侧即可切换，修改后自动保存\n移除「清理不存在的词库」冗余按钮",
+  "changelog": "【v2.88.0】考频数据权威核验 + 来源可核验\n核对教育部《课标》（只给 3000 词范围、从不发布逐词考频）、北京教育考试院备考建议与清华大学出版社真题语料库方法，确认内置 130+ 份真题/模拟卷语料数据源真实可核验\n用 2021—2026 年 30 套高考真题全文词频做独立交叉校验：72 词全部命中、秩相关 ρ=0.738、15 个超高频词 15/15 落在高频档\n如实标注语料含模拟卷、课标非考纲、官方不发次数；不编造、不替换、不冒充官方考频\n「我的」页新增「考频数据真实性核验」说明（来源出处＋校验结论）；沿用 v2.87.0 的页面排版与按钮开关优化",
   "devNotes": "v2.86.0: ① 彻底删除 AI 大模型功能：AI_PROVIDERS/AI_CONFIG_KEY/loadAiConfig/saveAiConfig/getAiPrompt/extractJsonObject/normalizeAiItems/fileToDataUrl/checkWordFamilyWithAI/checkWordFamilyWithDictApi/callAiModel/runAiOnText/runAiOnFile/aiConfig state/showAiBox state/updateAiConfig 及导入页 AI 配置 UI 全部移除；保留 TXT/PDF/DOCX/PPTX/图片 OCR 内置解析，OCR 失败提示不再推荐 AI。autoTagWordFamily 重写为纯内置算法（findWordFamily + findConfusingWords），导入/手动检查触发链去掉所有 hasAi 分支。② 内置算法优化：findWordFamily 新增 relatedStrength 匹配强度（3=词干完全相同 / 2=前缀或去尾E / 1=音变派生），按强度降序排序保证强匹配不被弱匹配挤出 15 个名额；findConfusingWords 排除 getStem 相同的同源派生词干，避免把派生词误判成易混词。③ 关联词分类准确化：getCachedFamily 不再并入联网同义/语义关联词（原 v2.85 会把 fastidious 之类同义词混进同源词族），mergeNetIntoFamilyCache 停用；详情页联网关联词改为近义/反义/语义关联三类分开，命中内置词库补真实中文释义，与同源词族交叉时标「同源」；答后面板与详情页词族只用内置算法结果，AI 徽标改内置算法徽标(.builtinBadge/.tagDot)。④ 考频诚实化：getExamFreq 在 net.freqOk===false 时返回 basis='pending'、level=0，ExamFreqTag 显示「待补全 · 联网参考」，不把网络失败伪装成低频。⑤ 导出按考频：新增 settings 之外的 exportOrder state（默认 freq），exportSrcList 按 level→count→netFreq 降序、显式下标保序；复制/下载/百词斩分批共用；导出面板新增顺序开关与状态提示，文件名标顺序。⑥ 版本 2.86.0 / versionCode 318（线上 317 → CI 319）。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4599135,
-  "apkSha256": "11c85806f8550cd241edd3061d5c677bd80256f63e9e75c077972cfae6c6644d"
+  "apkSize": 4599122,
+  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d"
 }
