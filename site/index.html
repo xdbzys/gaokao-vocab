@@ -1380,15 +1380,15 @@
       <p>持续迭代，精益求精</p>
     </div>
     <div class="changelog-list">
-      <div class="changelog-item" data-ver="2.90.0">
-        <div class="changelog-version">v2.90.0</div>
+      <div class="changelog-item" data-ver="2.91.0">
+        <div class="changelog-version">v2.91.0</div>
         <div class="changelog-content">
           <div class="date">2026年11月</div>
           <ul>
-            <li><span class="changelog-tag tag-new">新增</span>「初中必考词」1902 词（按中考词频排序、高频在前）与「初中阅读词汇」406 词两个内置词库，可在词库选择 / 背诵 / 听读 / 导出中自由选用</li>
-            <li><span class="changelog-tag tag-new">新增</span>词条规格与其他词库完全一致：中文释义、词性、考点、例句复用内置词库数据，同样带考频徽标、关联词检索、例句语境、发音与按考频顺序导出</li>
-            <li><span class="changelog-tag tag-new">新增</span>数据来源可核验：中考核心词表 jim-688/zhongkao-english-vocab（MIT）、易中考中考阅读高频词表、文末拾趣阅读核心考点词、KyleBing/english-vocabulary 初中词表（MIT）；口径依据教育部《义务教育英语课程标准（2022版）》附录 3 三级词汇表 1600 词</li>
-            <li><span class="changelog-tag tag-new">新增</span>「我的 → 设置 → 数据来源说明」新增「初中扩展词库数据来源说明」，如实标注官方只给范围、不标词性释义、不发逐词考频</li>
+            <li><span class="changelog-tag tag-fix">修复</span>打不开、闪退：初中词库不再在启动时全量加载（此前 2308 词条在启动时构造，低端机 WebView 会因内存与主线程占用闪退）</li>
+            <li><span class="changelog-tag tag-fix">修复</span>无辜刷新界面：删除网页版启动时用线上 HTML 整页重写 document.write 与自动 reload 的逻辑，改为仅提示「有新版本」，由你主动点击才刷新</li>
+            <li><span class="changelog-tag tag-fix">修复</span>无法更新：更新清单三源请求加 6 秒超时（避免一直「检查中」）、移除会误报「必须装新版」的旧兜底、页面版本基线对齐线上</li>
+            <li><span class="changelog-tag tag-new">新增</span>初中必考词(1902) / 初中阅读词汇(406) 改为「我的」页按需下载：默认不加载、不占词库列表；点下载后才加入词库选择 / 背诵 / 听读 / 导出，可随时移除，数据随应用内置、无需联网</li>
           </ul>
         </div>
       </div>

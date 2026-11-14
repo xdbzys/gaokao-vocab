@@ -1,11 +1,11 @@
 {
-  "version": "2.90.0",
-  "versionCode": 323,
+  "version": "2.91.0",
+  "versionCode": 324,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4613418,
-  "apkSha256": "cbf749cd90cf2381dfefa0b9d70bf28a21b89b012c95364e549a910c66177edb",
-  "changelog": "【v2.90.0】新增初中扩展词库：必考词 + 阅读词汇\n新增「初中必考词」1902 词（按中考词频排序、高频在前）与「初中阅读词汇」406 词两个内置词库，可在词库选择 / 背诵 / 听读 / 导出中自由选用\n词条规格与其他词库完全一致：中文释义、词性、考点、例句复用内置词库数据，同样带考频徽标、关联词检索、例句语境"
+  "apkSize": 4614625,
+  "apkSha256": "92f84da29caf6386a65bf3547021e5a3f4581cb1fc49d9fb5630ff1060e2c327",
+  "changelog": "【v2.91.0】修复闪退 / 无辜刷新 / 无法更新 + 初中词库改为按需下载\n修复打不开、闪退：初中词库不再在启动时全量加载（此前 2308 词条在启动时构造，低端机 WebView 会因内存与主线程占用闪退）\n修复无辜刷新界面：删除网页版启动时用线上 HTML 整页重写 document.write 与自动 re"
 }
