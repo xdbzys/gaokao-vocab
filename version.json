@@ -1,11 +1,11 @@
 {
-  "version": "2.91.0",
+  "version": "2.92.0",
   "versionCode": 324,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4614625,
-  "apkSha256": "92f84da29caf6386a65bf3547021e5a3f4581cb1fc49d9fb5630ff1060e2c327",
-  "changelog": "【v2.91.0】修复闪退 / 无辜刷新 / 无法更新 + 初中词库改为按需下载\n修复打不开、闪退：初中词库不再在启动时全量加载（此前 2308 词条在启动时构造，低端机 WebView 会因内存与主线程占用闪退）\n修复无辜刷新界面：删除网页版启动时用线上 HTML 整页重写 document.write 与自动 re"
+  "apkSize": 4599122,
+  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d",
+  "changelog": "【v2.92.0】彻底解决闪退打不开 + 建立「以后不会再犯」的发布门禁\n本次修复的是启动链路本身，不再只修某一版的数据：\n① 原生层启动不再加载云端缓存页面、不再后台下载 3.85MB 页面后整页重载。旧逻辑会用上次热更缓存覆盖新安装包（只校验一个字符串），坏缓存会让重装也打不开；启动几秒后的整页重载则会在低端 WebView 上重复解析大页面 + 重建全库词条，直接 ANR/OOM 闪退，同时也是「无辜刷新界面」的来源。现在启动零网络、零自动刷新，只加载 APK 内置且经构建验证的页面，并自动清除历史坏缓存（已中招的设备覆盖安装后立即恢复）。\n② 新增启动自愈守卫：连续两次启动异常自动进入安全模式，跳过启动期后台词库构建、初中词库恢复与自动更新请求；初中词库改为浏览器空闲期分帧构造，不再一次生成 2308 词条。\n③ 新增不依赖 React 的恢复面板：页面没起来时直接给「安全模式启动 / 清数据重启 / 重新加载 / 下载最新版安装包」，打不开 App 也能自救，不再出现「打不开 → 点不到更新 → 一直打不开」的死锁。\n④ 网页版加载失败面板新增 CDN 完整版与安装包直链（弱网下主分片下载过慢时有明确出路）。\n⑤ CI 新增冷启动冒烟门禁：发布前用无头 Chrome 真跑单文件版与多文件版，断言守卫存在、业务界面确实渲染、未触发错误兜底、无启动整页重写，任一失败即阻断发布。\n版本更新能力完整保留：我的 → 版本更新 → 下载安装新 APK（带 SHA-256 校验）。"
 }

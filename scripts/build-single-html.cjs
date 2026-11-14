@@ -136,7 +136,11 @@ esbuild.build({
 }).then(function (r) {
   const js = r.outputFiles[0].text;
   const css = fs.readFileSync(path.join(APP_DIR, 'styles.css'), 'utf8');
+  // v2.92.0：与 Vite 产物一致，内联启动自愈守卫
+  const bootGuard = fs.readFileSync(path.join(APP_DIR, 'boot-guard.js'), 'utf8');
+  if (bootGuard.indexOf('gaokao_boot_guard_v1') < 0) throw new Error('boot-guard.js 内容异常');
   const html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">\n'
+    + '<script>' + bootGuard + '<\/script>\n'
     + '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">\n'
     + '<title>背群英</title><link rel="icon" type="image/svg+xml" href="' + FAVICON_DATA_URI + '">\n'
     + '<style>' + css + '</style></head>\n'

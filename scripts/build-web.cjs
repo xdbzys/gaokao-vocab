@@ -53,6 +53,9 @@ const APP_DIR = fs.existsSync(path.join(ROOT, 'src', 'main.jsx')) ? path.join(RO
 const ENTRY = path.join(APP_DIR, 'main.jsx');
 const STYLE = path.join(APP_DIR, 'styles.css');
 const TEMPLATE = path.join(APP_DIR, 'index.web.html');
+// v2.92.0：启动自愈守卫作为单一源，构建时内联进 <head>（早于入口分片）
+const BOOT_GUARD = fs.readFileSync(path.join(APP_DIR, 'boot-guard.js'), 'utf8');
+if (BOOT_GUARD.indexOf('gaokao_boot_guard_v1') < 0) throw new Error('boot-guard.js 内容异常');
 
 const args = process.argv.slice(2);
 function argOf(name, fallback) {
@@ -126,7 +129,9 @@ function nodePaths() {
   if (!entryOutput) throw new Error('未找到入口 chunk（assets/main.*.js）');
   const entryRel = path.relative(OUTDIR, path.resolve(process.cwd(), entryOutput)).split(path.sep).join('/');
 
+  if (template.indexOf('<!--APP_BOOT_GUARD-->') < 0) throw new Error('index.web.html 缺少 APP_BOOT_GUARD 占位');
   template = template
+    .replace('<!--APP_BOOT_GUARD-->', '<script>' + BOOT_GUARD + '</script>')
     .replace('<!--APP_CSS-->', '<style>' + css + '</style>')
     .replace('<!--APP_SCRIPT-->', '<script type="module" src="./' + entryRel + '"></script>');
 

@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
+<!--APP_BOOT_GUARD-->
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#2563eb">
 <title>背群英</title>
@@ -92,7 +93,7 @@
   #skFail { animation: skStageIn 0s linear 12s forwards; }
   @keyframes skStageIn { to { visibility: visible; opacity: 1; } }
   @keyframes skStageOut { to { visibility: hidden; opacity: 0; } }
-  #skFail { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  #skFail { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 16px; }
   /* 极老 WebView / 浏览器不支持 ES module 时，用单文件旧版兜底 */
   #skFail .skLegacy {
     font-size: 12px;
@@ -150,7 +151,9 @@
   <div id="skFail">
     <div class="skSub">加载失败，请检查网络后重试</div>
     <button type="button" onclick="location.reload()">重新加载</button>
-    <a class="skLegacy" href="../legacy/index.html">打不开？试试旧版单文件</a>
+    <a class="skLegacy" href="./legacy/index.html">打不开？试试单文件完整版</a>
+    <a class="skLegacy" href="https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html">从 CDN 打开完整版（弱网更稳）</a>
+    <a class="skLegacy" href="https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk">App 闪退打不开？下载最新版安装包覆盖安装</a>
   </div>
   <div id="skError"></div>
 </div>
@@ -225,8 +228,8 @@ setTimeout(function () {
     fail.style.opacity = 1;
     var btn = fail.querySelector('button');
     if (btn) btn.style.pointerEvents = 'auto';
-    var legacy = fail.querySelector('.skLegacy');
-    if (legacy) legacy.style.pointerEvents = 'auto';
+    var links = fail.querySelectorAll('.skLegacy');
+    for (var li = 0; li < links.length; li++) links[li].style.pointerEvents = 'auto';
   }
 }, 12000);
 </script>

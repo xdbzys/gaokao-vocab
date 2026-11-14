@@ -355,6 +355,39 @@ jobs:
           # 首屏预算红线：gzip 250KB（build-web.cjs 已内建同一检查，这里再兜一层）
           node -e "const m=require('./dist-web/build-manifest.json');const kb=(m.firstScreenGzip/1024).toFixed(1);console.log('首屏 gzip '+kb+'KB');if(m.firstScreenGzip>250*1024){console.error('首屏超出 250KB 预算');process.exit(1)}"
 
+      # v2.92.0 冷启动冒烟门禁：任何一版只要在「打开」这一步崩了，就不允许发布。
+      # 过去每版都靠人工点测，启动期 OOM / 模块加载失败 / 错误边界触发都可能漏到线上。
+      # 这里用 runner 自带 Chrome 真跑两套产物，零新增依赖；四项断言任一失败直接红。
+      - name: Cold-start smoke gate (blocks release on crash)
+        run: |
+          set -e
+          CHROME=$(command -v google-chrome || command -v chromium || command -v chromium-browser)
+          echo "chrome = $CHROME"
+          smoke() {
+            local name="$1" url="$2" out="/tmp/smoke_$1.html" log="/tmp/smoke_$1.log"
+            timeout 70 "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
+              --allow-file-access-from-files --virtual-time-budget=9000 \
+              --host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1" \
+              --dump-dom "$url" > "$out" 2> "$log" || true
+            grep -q 'gaokao_boot_guard_v1' "$out" || { echo "[$name] 产物缺少启动自愈守卫"; exit 1; }
+            # 用 DOM 结构判断「真的渲染了」，不用文案：文案也会出现在内联 JS 源码里，会误判
+            if ! grep -q '<div id="root"><' "$out" && ! grep -q '>英文选中文<' "$out"; then
+              echo "[$name] 冷启动未渲染业务界面（白屏/模块加载失败）"; tail -25 "$log"; exit 1; fi
+            # 同样用 DOM 标签判断兜底界面是否真的出现，避免被脚本里的字符串误伤
+            if grep -q '界面出现异常</h2>\|<div data-boot-guard="1"' "$out"; then
+              echo "[$name] 冷启动触发了错误兜底界面"; exit 1; fi
+            if grep -q '更新成功，替换页面内容' "$out"; then
+              echo "[$name] 检测到启动期整页重写（document.write 回归）"; exit 1; fi
+            echo "[$name] PASS  cold-start ok"
+          }
+          # 单文件版 = APK 内置页面 / Release 资产，用 file:// 还原真实 WebView 场景
+          smoke single "file://$PWD/dist/web/index.html"
+          # 多文件版 = GitHub Pages 根路径，ES module 在 file:// 下会被 CORS 拦，走本地 http
+          (cd dist && python3 -m http.server 8899 > /tmp/smoke_http.log 2>&1 &)
+          sleep 1
+          smoke multi "http://127.0.0.1:8899/index.html"
+          echo "COLD-START GATE PASSED"
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

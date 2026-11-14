@@ -845,33 +845,27 @@ public class MainActivity extends Activity {
      * v2.55.7: 缓存内容必须通过 isSafeContent 校验，否则删除缓存回退 APK 内置版本
      */
     private void loadContent() {
-        // v2.73.0：安装包刚被替换过时，先丢弃升级前缓存的热更新页面，
-        // 否则新原生能力会配上旧界面，「装了新版打开还是老样子」。
+        /* v2.92.0 启动闪退修复：彻底移除「云端缓存页面优先 + 启动后台下载正文并整页 reload」。
+         * 旧逻辑有两个致命问题：
+         *  ① 上次热更缓存的 3.85MB HTML 会优先于新 APK 内置页面加载，而 isSafeContent()
+         *     只校验一个 __SW_GUARD__ 字符串 —— 坏缓存 / 版本错配 / 下载截断的页面会被
+         *     判为安全并永久压制新安装包，表现为「装了新版还是闪退，重装也救不回来」。
+         *  ② 每次启动（尤其刚升级、缓存被清时）后台下载 3.85MB 正文后 doReload()
+         *     整页重载，等于在启动几秒后再跑一遍完整 HTML 解析 + 全库词条构造，
+         *     低端 WebView 直接 ANR / OOM 闪退，也正是「无辜刷新界面」的来源。
+         * 现在：启动零网络请求、零整页重载，只加载 APK 内置、经过构建验证的页面；
+         * 清掉历史缓存，让已经中招的设备覆盖安装后立刻恢复。
+         * 版本更新统一走「我的 → 版本更新 → 下载安装新 APK」（JS 侧 NativeUpdater，
+         * 带 SHA-256 校验），能力完整保留且不再有启动期副作用。 */
         resetWebCacheIfApkChanged();
         File cacheFile = new File(getFilesDir(), CACHE_FILE);
-        if (cacheFile.exists() && cacheFile.length() > 1000) {
-            String cached = readFileText(cacheFile);
-            if (isSafeContent(cached)) {
-                // 缓存是安全版本，直接加载（上次拉取的版本，离线可用）
-                String cachePath = "file://" + cacheFile.getAbsolutePath();
-                Log.i("GaokaoVocab", "Loading from cloud cache: " + cachePath);
-                setContentView(webView);
-                webView.loadUrl(cachePath);
-            } else {
-                // 缓存是不安全版本（旧版坏 HTML），删除并回退 APK 内置版本
-                Log.w("GaokaoVocab", "Cached content unsafe (no __SW_GUARD__), falling back to assets");
-                cacheFile.delete();
-                setContentView(webView);
-                webView.loadUrl("file:///android_asset/public/index.html");
-            }
-        } else {
-            // 首次启动无缓存，加载本地 assets（APK 内置已修复版本）
-            Log.i("GaokaoVocab", "No cache, loading local assets");
-            setContentView(webView);
-            webView.loadUrl("file:///android_asset/public/index.html");
+        if (cacheFile.exists()) {
+            try { cacheFile.delete(); } catch (Throwable ignored) {}
         }
-        // 后台检查云端更新（不阻塞 UI）
-        checkCloudUpdate();
+        setContentView(webView);
+        webView.loadUrl("file:///android_asset/public/index.html");
+        // 不再调用 checkCloudUpdate()：该方法保留为「将来手动触发热更」的入口，
+        // 启动期一律不调用，杜绝后台大流量下载与自动 reload。
     }
 
     /**

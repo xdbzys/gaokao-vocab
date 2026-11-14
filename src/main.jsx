@@ -102,10 +102,10 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.91.0';
+const APP_VERSION = '2.92.0';
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
-const APP_VERSION_CODE = 323;
+const APP_VERSION_CODE = 324;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -1491,18 +1491,28 @@ let _juniorBooksPromise = null;
 function buildJuniorBooks() {
   if (_juniorBooksPromise) return _juniorBooksPromise;
   _juniorBooksPromise = loadJuniorData().then(function (mods) {
-    return OPTIONAL_BOOK_DEFS.map(function (def) {
-      const seed = def.pick(mods);
-      const items = makeAllItems(seed, def.type, def.source);
-      return {
-        id: def.id,
-        name: def.name + '(' + items.length + '词)',
-        type: def.type,
-        source: def.source,
-        total: items.length,
-        editable: false,
-        items: items,
-      };
+    // v2.92.0：分帧构造，每本之间让出主线程，杜绝一次同步生成 2308 词条造成 ANR
+    return new Promise(function (resolve, reject) {
+      var out = [];
+      function step(i) {
+        if (i >= OPTIONAL_BOOK_DEFS.length) return resolve(out);
+        try {
+          const def = OPTIONAL_BOOK_DEFS[i];
+          const seed = def.pick(mods);
+          const items = makeAllItems(seed, def.type, def.source);
+          out.push({
+            id: def.id,
+            name: def.name + '(' + items.length + '词)',
+            type: def.type,
+            source: def.source,
+            total: items.length,
+            editable: false,
+            items: items,
+          });
+        } catch (err) { return reject(err); }
+        setTimeout(function () { step(i + 1); }, 0);
+      }
+      step(0);
     });
   }).catch(function (e) {
     _juniorBooksPromise = null;
@@ -4874,6 +4884,14 @@ class AppErrorBoundary extends React.Component {
               } catch (_) {}
               location.reload();
             }}>重置听读与设置后重载</button>
+            {' '}
+            <button style={{ padding: '8px 20px', fontSize: 13 }} onClick={function () {
+              try {
+                localStorage.setItem('gaokao_boot_guard_v1', JSON.stringify(
+                  { pending: 0, crashes: 0, forced: 1, ts: Date.now(), lastError: msg }));
+              } catch (_) {}
+              location.reload();
+            }}>安全模式重启（跳过后台加载）</button>
           </div>
         </div>
       );
@@ -5189,19 +5207,28 @@ function App() {
     appTip('已移除初中扩展词库，可随时在「我的」页重新下载。', '已移除');
   }
 
-  // 已下载过：等首屏稳定后静默重建（不阻塞启动、不影响首屏词库），失败也不影响主流程
+  // v2.92.0：已下载过也不在启动期全量重建。安全模式直接跳过；正常模式等首屏稳定后
+  // 放进浏览器空闲期，且 buildJuniorBooks 内部两本词库分两帧构造，避免同一帧内
+  // 生成 2308 个完整词条把主线程打满（这正是 v2.90 低端机 ANR/OOM 的形态）。
   useEffect(function () {
-    if (!juniorDownloaded) return;
+    if (!juniorDownloaded || window.__safeMode) return;
     var cancelled = false;
     var timer = setTimeout(function () {
-      buildJuniorBooks().then(function (jb) {
-        if (cancelled) return;
-        setBooks(function (prev) {
-          if (prev.some(function (b) { return b.id === 'junior-core'; })) return prev;
-          return prev.concat(jb);
-        });
-      }).catch(function (e) { console.error('[junior] 启动恢复失败', e); });
-    }, 1800);
+      var run = function () {
+        buildJuniorBooks().then(function (jb) {
+          if (cancelled) return;
+          setBooks(function (prev) {
+            if (prev.some(function (b) { return b.id === 'junior-core'; })) return prev;
+            return prev.concat(jb);
+          });
+        }).catch(function (e) { console.error('[junior] 启动恢复失败', e); });
+      };
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(run, { timeout: 8000 });
+      } else {
+        setTimeout(run, 1200);
+      }
+    }, 3500);
     return function () { cancelled = true; clearTimeout(timer); };
   }, []);
   // v2.73.0：更新动作互斥锁（原生侧另有原子锁，这里先挡一层，避免连点并发下载写坏临时文件）
@@ -5374,7 +5401,8 @@ function App() {
 
   // APP启动时自动检查更新（仅原生APP且仅首次）
   useEffect(() => {
-    if (isNativeApp && !updateCheckDone.current) {
+    // v2.92.0：安全模式不做任何启动期网络请求，先把界面稳住
+    if (isNativeApp && !updateCheckDone.current && !window.__safeMode) {
       updateCheckDone.current = true;
       // 延迟2秒检查，避免影响启动性能
       const timer = setTimeout(() => {
@@ -10817,8 +10845,39 @@ function mountApp() {
         <App />
       </AppErrorBoundary>
     );
-    // v2.79.0：壳子先上屏，词库数据在后台并行下载（见 loadBookDataInBackground）
-    try { loadBookDataInBackground(); } catch (e) { console.error('[book-data] 启动失败', e); }
+    // v2.92.0：挂载成功 → 清除「未完成启动」标记。只有真正完成启动才清零，
+    // 因此 OOM/ANR/整页重载中断都会在下一次启动被记为一次异常。
+    try { if (window.__bootGuard) window.__bootGuard.markReady(); } catch (e) {}
+    // v2.92.0：连续启动异常后进入安全模式，把最重的后台词库构建延后到界面稳定之后，
+    // 避免启动瞬间「大 HTML 解析 + 全库词条构造 + 网络请求」叠加把主线程/内存打满。
+    if (window.__safeMode) {
+      setTimeout(function () {
+        try { loadBookDataInBackground(); } catch (e) { console.error('[book-data] 安全模式延迟加载失败', e); }
+      }, 6000);
+      // 纯 DOM 横幅（不依赖 React 树），让用户看得见安全模式并能主动退出
+      setTimeout(function () {
+        try {
+          if (document.querySelector('[data-safe-mode-bar]')) return;
+          var bar = document.createElement('div');
+          bar.setAttribute('data-safe-mode-bar', '1');
+          bar.textContent = '安全模式已开启（已延后后台加载，避免再次闪退）· 点此恢复正常模式';
+          bar.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99998;padding:9px 12px;'
+            + 'background:#fff7ed;color:#9a3412;font-size:12px;text-align:center;cursor:pointer;'
+            + 'box-shadow:0 2px 8px rgba(0,0,0,.08)';
+          bar.onclick = function () {
+            try {
+              localStorage.setItem('gaokao_boot_guard_v1', JSON.stringify(
+                { pending: 0, crashes: 0, forced: 0, ts: Date.now(), lastError: '' }));
+            } catch (e) {}
+            try { location.reload(); } catch (e) {}
+          };
+          document.body.appendChild(bar);
+        } catch (e) {}
+      }, 900);
+    } else {
+      // v2.79.0：壳子先上屏，词库数据在后台并行下载（见 loadBookDataInBackground）
+      try { loadBookDataInBackground(); } catch (e) { console.error('[book-data] 启动失败', e); }
+    }
     // 通知 index.html 里的静态骨架退场（手机端首屏不会白屏）
     try {
       if (typeof window.__removeSkeleton === 'function') window.__removeSkeleton();
