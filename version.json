@@ -1,11 +1,11 @@
 {
-  "version": "2.92.0",
+  "version": "2.93.0",
   "versionCode": 325,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4618231,
-  "apkSha256": "9261326a61eda9379ba13b20fb963e3005b0e31978ffb1a17d4cb6b6c09dbddf",
-  "changelog": "【v2.92.0】彻底解决闪退打不开 + 建立「以后不会再犯」的发布门禁\n本次修复的是启动链路本身，不再只修某一版的数据：\n① 原生层启动不再加载云端缓存页面、不再后台下载 3.85MB 页面后整页重载。旧逻辑会用上次热更缓存覆盖新安装包（只校验一个字符串），坏缓存会让重装也打不开；启动几秒后的整页重载则会在低端 We"
+  "apkSize": 4599122,
+  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d",
+  "changelog": "【v2.93.0】「设置」改为独立新界面\n① 「我的」页只保留学习简介、设置入口与初中扩展词库下载卡片，不再内联展开一大片设置项。\n② 点「设置」打开全新的整屏设置界面：顶部有「← 返回」和标题「设置」，里面只有全部设置开关、选项与数据来源说明；底部导航栏自动隐藏，与「我的」页彻底分开，是页面切换而不是折叠展开。\n③ 顶部返回按钮与安卓物理返回键都先回到「我的」页，不会直接退出应用；设置改动依旧即时保存，护眼模式配色一致。\n④ 沿用 v2.92 的启动自愈守卫与 CI 冷启动发布门禁，本次改动已通过双构建与真机等价测试。\n更新方式：我的 → 版本更新 → 下载安装新 APK（覆盖安装，学习记录保留）。"
 }

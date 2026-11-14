@@ -102,10 +102,10 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.92.0';
+const APP_VERSION = '2.93.0';
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
-const APP_VERSION_CODE = 324;
+const APP_VERSION_CODE = 325;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -5260,10 +5260,11 @@ function App() {
   const [extendTab, setExtendTab] = useState('affix');
   // 温习功能
   const [showReview, setShowReview] = useState(false);
-  // v2.89.0：「我的」页设置默认收起，点「设置」入口才展开各种设置内容；状态记在本机，避免每次进入都要重开
-  const [meSettingsOpen, setMeSettingsOpen] = useState(() => {
-    try { return localStorage.getItem('gaokao_me_settings_open') === '1'; } catch (e) { return false; }
-  });
+  // v2.93.0：「设置」改为独立的二级界面 —— 点入口整屏切换过去，不再在「我的」页内联展开。
+  // 刻意不复用 section：历史上曾用 section='settings' 导致跳转空白页（见更新入口处修复注释），
+  // 而 TABS 初始化校验只认 7 个 tab。这里用独立布尔状态，且不做持久化，
+  // 保证每次回到「我的」页都是干净的简介，而不是莫名停在设置页。
+  const [settingsPageOpen, setSettingsPageOpen] = useState(false);
   const [reviewDate, setReviewDate] = useState(getToday());
   const [reviewMode, setReviewMode] = useState('list'); // 'list' or 'practice'
   const [reviewIndex, setReviewIndex] = useState(0);
@@ -5336,6 +5337,7 @@ function App() {
   useEffect(() => {
     window.__appBack = function () {
       try {
+        if (settingsPageOpen) { setSettingsPageOpen(false); return 'handled'; }
         if (tipMsg) { setTipMsg(null); return 'handled'; }
         if (showFeedback) { setShowFeedback(false); return 'handled'; }
         if (showExport) { setShowExport(false); return 'handled'; }
@@ -5355,7 +5357,7 @@ function App() {
     return function () { window.__appBack = null; };
   }, [tipMsg, showFeedback, showExport, showInstallPrompt, showBrowserFallback,
       showAnnouncementModal, updateInfo, detailItem, showBookPicker, showBookPicker2,
-      showReview, listenPanel, section]);
+      showReview, listenPanel, section, settingsPageOpen]);
 
   // v2.76.0 自定义保存目录：原生选择完成后回传显示名
   useEffect(() => {
@@ -8068,6 +8070,134 @@ function App() {
 
   return (
     <div className="app">
+      {/* ====== v2.93.0 独立「设置」界面（二级页面）：整屏切换，里面只有设置项 ====== */}
+      {settingsPageOpen && (
+        <section className="settingsPage" role="region" aria-label="设置">
+          <div className="settingsPageBar">
+            <button type="button" className="settingsBackBtn" aria-label="返回我的" onClick={() => setSettingsPageOpen(false)}>
+              <Icon name="chevronLeft" />返回
+            </button>
+            <h2 className="settingsPageTitle">设置</h2>
+            <span className="settingsPageBarSpacer" />
+          </div>
+          <div className="settingsPageScroll">
+          <div id="settingsPageBody" className="settingsGroup meSettingsAll settingsPageBody">
+            <p className="muted settingsLead">全部开关集中在此，点按右侧按钮即可开 / 关，修改后自动保存。</p>
+
+            <ToggleSwitch label="自动发音" desc="背诵新词与页面跳转时自动朗读" value={settings.autoSpeak !== false} onChange={v => { setSettings(s => ({ ...s, navAutoSpeak: v, autoSpeak: v })); saveSettings({ ...settings, navAutoSpeak: v, autoSpeak: v }); }} />
+
+            <label>每日目标
+              <input type="number" value={settings.dailyGoal} min={1} max={500}
+                onChange={e => { const v = Number(e.target.value) || 50; setSettings(s => ({ ...s, dailyGoal: v })); saveSettings({ ...settings, dailyGoal: v }); }} />
+            </label>
+            <label>发音语速（左右滑动调节）
+              <WheelPicker
+                values={WHEEL_SPEAK_RATE}
+                value={WHEEL_SPEAK_RATE.indexOf(settings.speakRate) >= 0 ? settings.speakRate : 0.78}
+                onChange={v => { setSettings(s => ({ ...s, speakRate: v })); saveSettings({ ...settings, speakRate: v }); }}
+                format={v => v.toFixed(2) + 'x'}
+                width={140}
+              />
+            </label>
+            {settings.autoJump && <label>自动跳转延迟
+              <InlineSelect block value={settings.autoJumpDelay || 1500} onChange={v => { setSettings(s => ({ ...s, autoJumpDelay: v })); saveSettings({ ...settings, autoJumpDelay: v }); }}
+                options={[500, 800, 1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000, 8000].map(n => ({ value: n, label: (n / 1000).toFixed(1) + ' 秒' }))} />
+            </label>}
+            {isFullApp && (
+              <ToggleSwitch label="开屏更新公告" desc="启动时显示新版本更新公告" value={settings.showAnnouncement} onChange={v => { setSettings(s => ({ ...s, showAnnouncement: v })); saveSettings({ ...settings, showAnnouncement: v }); }} />
+            )}
+
+            <h4 className="settingsSubTitle">学习辅助与反馈</h4>
+            <ToggleSwitch label="护眼模式" desc="暖色低蓝光，夜间护眼" value={settings.eyeCare} onChange={v => { setSettings(s => ({ ...s, eyeCare: v })); saveSettings({ ...settings, eyeCare: v }); }} />
+            <ToggleSwitch label="艾宾浩斯记忆法" desc="按遗忘曲线智能安排复习" value={settings.ebbinghaus} onChange={v => { setSettings(s => ({ ...s, ebbinghaus: v })); saveSettings({ ...settings, ebbinghaus: v }); }} />
+            <ToggleSwitch label="答题后显示全部考点" desc="关闭时仅显示其他选项单词的中文对照；开启后展示该单词全部考点、搭配、词族与例句" value={settings.answerFullPoints} onChange={v => { setSettings(s => ({ ...s, answerFullPoints: v })); saveSettings({ ...settings, answerFullPoints: v }); }} />
+            <ToggleSwitch label="优先背诵高频词" desc="按高考真题考频分档推进：高频 → 中频 → 低频，同档内按出现次数降序" value={settings.freqFirst} onChange={v => { setSettings(s => ({ ...s, freqFirst: v })); saveSettings({ ...settings, freqFirst: v }); }} />
+
+            <ToggleSwitch label="联网补全关联词与考频" desc="内置表未收录的词（含自导入单词）自动联网获取词频与关联词，无需任何配置；结果缓存本机、离线可用" value={settings.netEnrich !== false} onChange={v => { setSettings(s => ({ ...s, netEnrich: v })); saveSettings({ ...settings, netEnrich: v }); }} />
+            <div className="netEnrichRow">
+              <button className="smallBtn" disabled={netEnriching} onClick={() => runNetEnrichFor(books.flatMap(b => b.items), '全库补全')}>{netEnriching ? '补全中…' : '立即补全全部词库'}</button>
+              <button className="smallBtn" disabled={netEnriching} onClick={clearNetEnrichCache}>清除联网缓存</button>
+              <span className="muted netEnrichCount">已缓存 {netCacheCount} 词</span>
+            </div>
+            {netEnrichStatus && (
+              <p className={`familyCheckStatus${netEnriching ? ' active' : ''}`}>{netEnrichStatus}</p>
+            )}
+
+            <label>真题文章 · 默认回答方式
+              <InlineSelect block value={settings.passageWay === 'blank' ? 'blank' : 'choice'} onChange={v => { setSettings(s => ({ ...s, passageWay: v })); saveSettings({ ...settings, passageWay: v }); }} options={[{ value: 'choice', label: '选项（从四个英文单词中选）' }, { value: 'blank', label: '填空（写中文意思，语义相近即判对）' }]} />
+              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>背诵页切到「真题文章」模式时，一篇文章里的多个空一起作答；卡上也可随时临时切换回答方式。填空不给任何选项，按你写的意思与词库释义的相近程度判断，不要求逐字一致。</span>
+            </label>
+
+            <ToggleSwitch label="答题音效" desc="答对 / 答错给出不同音效反馈" value={settings.soundEnabled} onChange={v => { setSettings(s => ({ ...s, soundEnabled: v })); saveSettings({ ...settings, soundEnabled: v }); }} />
+            {settings.soundEnabled && (
+              <div className="toggleSub">
+                <label>答对音效
+                  <button className="smallBtn" onClick={() => { const list = SFX_CORRECT; const idx = Math.max(0, list.findIndex(s => s.id === settings.soundCorrect)); const next = list[(idx + 1) % list.length]; setSettings(s => ({ ...s, soundCorrect: next.id })); saveSettings({ ...settings, soundCorrect: next.id }); playAnswerSfx(true, next.id, settings.soundWrong); }}>{SFX_CORRECT.find(s => s.id === settings.soundCorrect)?.name || '清脆叮咚'} · 切换</button>
+                </label>
+                <label>答错音效
+                  <button className="smallBtn" onClick={() => { const list = SFX_WRONG; const idx = Math.max(0, list.findIndex(s => s.id === settings.soundWrong)); const next = list[(idx + 1) % list.length]; setSettings(s => ({ ...s, soundWrong: next.id })); saveSettings({ ...settings, soundWrong: next.id }); playAnswerSfx(false, settings.soundCorrect, next.id); }}>{SFX_WRONG.find(s => s.id === settings.soundWrong)?.name || '温柔下降'} · 切换</button>
+                </label>
+              </div>
+            )}
+
+            <h4 className="settingsSubTitle">数据来源说明</h4>
+            <details className="noteDetails">
+              <summary>高考考频数据说明</summary>
+              <div className="examFreqNote">
+                <p>全库单词已标注 <strong>高频 / 中频 / 低频 / 基础</strong> 四档，并在背诵页、词库列表与单词详情页显示 <strong>历年真题 / 模拟卷语料出现次数</strong>。</p>
+                <p className="muted">词卡上原有的「基础 / 真题 / 985」等标签是<strong>词库分类</strong>，与带次数的考频徽标是不同维度，两者并存不代表矛盾。</p>
+                <p>次数来自 <strong>130+ 份历年高考全国卷及各省份高三模拟卷（约 50 万词次）</strong>的逐词统计，<strong>含模拟卷、并非纯高考真题</strong>；未被语料收录的词次数显示「—」，等级按<strong>《普通高中英语课程标准》词汇范围</strong>与通用语料库词频标注，<strong>不编造考查次数</strong>。「近五年 N 次」来自内置近五年真题高频词表（508 条）。</p>
+                <p className="muted">教育部《课标》附录 2 只给 3000 词的考查范围，明确不标注词性与释义；课标与《中国高考评价体系》<strong>从未发布逐词考查次数</strong>。公开资料也无法覆盖全部年份、全部省份的逐词精确次数，本表用于安排背诵优先级，<strong>不代表官方考查次数</strong>。</p>
+              </div>
+            </details>
+            <details className="noteDetails">
+              <summary>考频数据真实性核验</summary>
+              <div className="examFreqNote">
+                <p><strong>次数来源可核验：</strong>开源项目 <strong>HK-SHAO/English-Dictionary</strong>（GitHub，README 载明 130 多份试卷、约 50 多万词次、Python 脚本逐词统计）；词形经 <code>-ing / -ed / -s / -ly</code> 归并、过滤短词与人名地名，故次数为<strong>该词族在语料中的出现次数</strong>，非官方考查次数。</p>
+                <p><strong>官方口径：</strong><strong>教育部</strong>《普通高中英语课程标准（2017 年版 2020 年修订）》附录 2 只收录 3000 词的考查范围、明确不标注词性与释义，课标与《中国高考评价体系》从未发布词频表；<strong>北京教育考试院</strong>《英语：学会做好减法和加法》明确建议「区别对待高频词和低频词、从高考真题高频词开始」，本 App 高频优先背诵即据此设计。<strong>清华大学出版社</strong>《新高中英语词汇真题语境记忆》（自建高考真题语料库、人工标注近 20 万条索引行统计词频义频）与语料库研究论文亦采用同样的「真题语料实测词频」方法。</p>
+                <p><strong>独立交叉校验：</strong>以 2021—2026 年 30 套高考真题全文词频统计作第三方样本，72 个词全部命中内置表，秩相关 <strong>ρ = 0.738</strong>；近年出现 ≥20 次的 <strong>15 个超高频词 15/15 落在高频档</strong>。个别近年低频词在内置表仍为高频，属「历届＋模拟卷累计」与「近五年全国卷」口径差异，<strong>保留原始实测数、不擅自改动</strong>。</p>
+                <p className="muted">结论：数据源真实可核验、分档趋势与近年真题一致、口径已如实标注；<strong>不编造、不替换、不冒充官方考频</strong>。</p>
+              </div>
+            </details>
+            <details className="noteDetails">
+              <summary>真题文章来源说明</summary>
+              <div className="examFreqNote passageSourceNote">
+                <p>「真题文章」模式的文章<strong>全部取自历年高考英语真题阅读原文</strong>，来自 GitHub 开源数据库 <strong>ZhangYixuan-in-BUPT/gaokao-english-exam-database</strong>（2008–2026 年 233 套试卷、739+ 篇阅读理解）。</p>
+                <p>每篇为真题原文的<strong>连续片段，逐字保留、未改写、未编造、未拼接</strong>；挖空词及其释义来自本 App 内置词库。原文保留试卷扫描排版原貌，个别处可能有扫描识别的笔误，请以真题试卷为准。</p>
+              </div>
+            </details>
+            <details className="noteDetails">
+              <summary>联网补全数据来源说明</summary>
+              <div className="examFreqNote netEnrichNote">
+                <p>内置真题表未收录的词（含自行导入单词）可通过<strong>免密钥公开接口</strong>补全关联词与考频等级：词频、同义 / 反义 / 语义关联词来自 <strong>Datamuse API</strong>（Google Books Ngram 通用英语语料），音标、词性与英文释义来自 <strong>Free Dictionary API</strong>。</p>
+                <p>两者均<strong>无需任何配置</strong>（本版本已彻底移除 AI 大模型依赖）；结果按词缓存在本机，离线可用、已缓存不重复请求，无网络时静默跳过，词频未取到时标「待补全」而不冒充低频。在上方开关可随时关闭自动补全或清除缓存。</p>
+                <p className="muted">联网词频是通用英语语料的出现频率，界面标注「联网参考」，<strong>不是高考真题考查次数</strong>，也不估算具体次数；等级仅用于安排背诵优先级。</p>
+              </div>
+            </details>
+            <details className="noteDetails">
+              <summary>关联词检索与导出顺序说明</summary>
+              <div className="examFreqNote builtinAlgoNote">
+                <p><strong>同源词族</strong>（create / creation / creative）与<strong>易混词辨析</strong>（affect / effect）全部由<strong>内置词根算法</strong>离线判定：词干还原、派生后缀、辅音/元音交替、假同源过滤与人工校对表，并按匹配强度排序；不需要任何配置或联网请求。</p>
+                <p><strong>近义 / 反义 / 语义关联词</strong>来自联网公开语料，单独分区标注「联网参考」，与同源词族互不混用；命中内置词库时同时显示真实中文释义。</p>
+                <p><strong>考频标记</strong>以内置真题语料实测次数优先，联网数据只补等级、绝不生成考查次数。<strong>导出词库默认按考频顺序</strong>（高频优先），与「优先背诵高频词」同一口径，可在词库页导出面板切换回原顺序。</p>
+              </div>
+            </details>
+            <details className="noteDetails">
+              <summary>初中扩展词库数据来源说明</summary>
+              <div className="examFreqNote juniorSourceNote">
+                <p>「初中必考词」「初中阅读词汇」是新增的<strong>扩展词库</strong>，词条规格与高考 3500、985 阅读核心词等<strong>完全一致</strong>：中文释义、词性、考点、例句复用本 App 内置词库数据，同样带考频徽标、关联词检索、例句语境、发音与按考频顺序导出。</p>
+                <p className="muted">v2.91.0 起这两本词库改为<strong>按需下载</strong>：默认不加载、不占用启动资源，也不会出现在词库列表；在「我的」页点「下载初中扩展词库」后才加入，可随时移除。数据随应用内置，启用无需联网。</p>
+                <p><strong>初中必考词</strong>取自开源项目 <strong>jim-688/zhongkao-english-vocab</strong>（MIT，中考核心词表按词频排序、高频在前）；口径依据教育部《义务教育英语课程标准（2022 年版）》附录 3 三级词汇表 <strong>1600 词</strong>（含小学二级 505 词、初中应掌握 1095 词，允许各地增加 100~300 词）。</p>
+                <p><strong>初中阅读词汇</strong>来自公开中考阅读理解高频词表：易中考《近中考阅读理解高频词汇总》、《中考英语阅读核心高频考点词》（态度 / 逻辑 / 高频动名形 / 熟词生义 / 同义替换），以及开源 <strong>KyleBing/english-vocabulary</strong> 初中词表（MIT）中的拓展词，剔除与必考词重复的部分。</p>
+                <p className="muted">官方课标只给词汇<strong>范围</strong>、明确「不标注单词的词性和中文释义」，也<strong>从未发布逐词考查次数</strong>；中文释义与词性由本 App 内置词库补全，考频徽标沿用全库统一的真题 / 模拟卷语料实测口径，仅用于安排背诵优先级，<strong>不代表官方考查次数</strong>。上述词表均为公开可核验的第三方整理，非官方发布数据。</p>
+              </div>
+            </details>
+
+          </div>
+          </div>
+        </section>
+      )}
+
       {/* ====== 背诵页 ====== */}
       {section === 'learn' && (
         <section className={'learnPage' + (practiceMode === 'passage' ? ' passageMode' : '')}>
@@ -9830,7 +9960,7 @@ function App() {
       )}
 
       {/* ====== 我的页面（设置+下载+学习统计） ====== */}
-      {section === 'me' && (
+      {section === 'me' && !settingsPageOpen && (
         <section className="panel mePage">
           {/* 顶部用户信息 */}
           <div className="meHeader">
@@ -9856,16 +9986,16 @@ function App() {
             <div className="meOverviewItem"><span>总词汇量</span><b>{books.reduce((s, b) => s + (b.items.length || b.total || 0), 0)} 条</b></div>
           </div>
 
-          {/* v2.89.0：设置收进单一入口，点开后才显示各种设置内容；展开状态本机记忆 */}
-          <button type="button" className={'settingsEntry' + (meSettingsOpen ? ' open' : '')}
-            aria-expanded={meSettingsOpen} aria-controls="meSettingsBody"
-            onClick={() => { const v = !meSettingsOpen; setMeSettingsOpen(v); try { localStorage.setItem('gaokao_me_settings_open', v ? '1' : '0'); } catch (e) {} }}>
+          {/* v2.93.0：点「设置」打开独立设置界面（整屏切换），不再在本页内联展开 */}
+          <button type="button" className="settingsEntry"
+            aria-label="打开设置界面"
+            onClick={() => setSettingsPageOpen(true)}>
             <span className="settingsEntryIcon"><Icon name="sliders" /></span>
             <span className="settingsEntryText">
               <b>设置</b>
-              <span>自动发音、护眼模式、艾宾浩斯、词频优先、答题音效与数据来源说明</span>
+              <span>点击进入独立设置界面 · 自动发音、护眼模式、艾宾浩斯、词频优先、答题音效</span>
             </span>
-            <span className="settingsEntryCaret"><Icon name="chevronDown" /></span>
+            <span className="settingsEntryCaret"><Icon name="chevronRight" /></span>
           </button>
 
           {/* v2.91.0 初中扩展词库：默认不加载，由用户在这里选择是否下载 */}
@@ -9902,121 +10032,7 @@ function App() {
             </div>
           )}
 
-          {meSettingsOpen && (
-          <div id="meSettingsBody" className="settingsGroup meSettingsAll settingsDrawerBody">
-            <p className="muted settingsLead">全部开关集中在此，点按右侧按钮即可开 / 关，修改后自动保存。</p>
-
-            <ToggleSwitch label="自动发音" desc="背诵新词与页面跳转时自动朗读" value={settings.autoSpeak !== false} onChange={v => { setSettings(s => ({ ...s, navAutoSpeak: v, autoSpeak: v })); saveSettings({ ...settings, navAutoSpeak: v, autoSpeak: v }); }} />
-
-            <label>每日目标
-              <input type="number" value={settings.dailyGoal} min={1} max={500}
-                onChange={e => { const v = Number(e.target.value) || 50; setSettings(s => ({ ...s, dailyGoal: v })); saveSettings({ ...settings, dailyGoal: v }); }} />
-            </label>
-            <label>发音语速（左右滑动调节）
-              <WheelPicker
-                values={WHEEL_SPEAK_RATE}
-                value={WHEEL_SPEAK_RATE.indexOf(settings.speakRate) >= 0 ? settings.speakRate : 0.78}
-                onChange={v => { setSettings(s => ({ ...s, speakRate: v })); saveSettings({ ...settings, speakRate: v }); }}
-                format={v => v.toFixed(2) + 'x'}
-                width={140}
-              />
-            </label>
-            {settings.autoJump && <label>自动跳转延迟
-              <InlineSelect block value={settings.autoJumpDelay || 1500} onChange={v => { setSettings(s => ({ ...s, autoJumpDelay: v })); saveSettings({ ...settings, autoJumpDelay: v }); }}
-                options={[500, 800, 1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000, 8000].map(n => ({ value: n, label: (n / 1000).toFixed(1) + ' 秒' }))} />
-            </label>}
-            {isFullApp && (
-              <ToggleSwitch label="开屏更新公告" desc="启动时显示新版本更新公告" value={settings.showAnnouncement} onChange={v => { setSettings(s => ({ ...s, showAnnouncement: v })); saveSettings({ ...settings, showAnnouncement: v }); }} />
-            )}
-
-            <h4 className="settingsSubTitle">学习辅助与反馈</h4>
-            <ToggleSwitch label="护眼模式" desc="暖色低蓝光，夜间护眼" value={settings.eyeCare} onChange={v => { setSettings(s => ({ ...s, eyeCare: v })); saveSettings({ ...settings, eyeCare: v }); }} />
-            <ToggleSwitch label="艾宾浩斯记忆法" desc="按遗忘曲线智能安排复习" value={settings.ebbinghaus} onChange={v => { setSettings(s => ({ ...s, ebbinghaus: v })); saveSettings({ ...settings, ebbinghaus: v }); }} />
-            <ToggleSwitch label="答题后显示全部考点" desc="关闭时仅显示其他选项单词的中文对照；开启后展示该单词全部考点、搭配、词族与例句" value={settings.answerFullPoints} onChange={v => { setSettings(s => ({ ...s, answerFullPoints: v })); saveSettings({ ...settings, answerFullPoints: v }); }} />
-            <ToggleSwitch label="优先背诵高频词" desc="按高考真题考频分档推进：高频 → 中频 → 低频，同档内按出现次数降序" value={settings.freqFirst} onChange={v => { setSettings(s => ({ ...s, freqFirst: v })); saveSettings({ ...settings, freqFirst: v }); }} />
-
-            <ToggleSwitch label="联网补全关联词与考频" desc="内置表未收录的词（含自导入单词）自动联网获取词频与关联词，无需任何配置；结果缓存本机、离线可用" value={settings.netEnrich !== false} onChange={v => { setSettings(s => ({ ...s, netEnrich: v })); saveSettings({ ...settings, netEnrich: v }); }} />
-            <div className="netEnrichRow">
-              <button className="smallBtn" disabled={netEnriching} onClick={() => runNetEnrichFor(books.flatMap(b => b.items), '全库补全')}>{netEnriching ? '补全中…' : '立即补全全部词库'}</button>
-              <button className="smallBtn" disabled={netEnriching} onClick={clearNetEnrichCache}>清除联网缓存</button>
-              <span className="muted netEnrichCount">已缓存 {netCacheCount} 词</span>
-            </div>
-            {netEnrichStatus && (
-              <p className={`familyCheckStatus${netEnriching ? ' active' : ''}`}>{netEnrichStatus}</p>
-            )}
-
-            <label>真题文章 · 默认回答方式
-              <InlineSelect block value={settings.passageWay === 'blank' ? 'blank' : 'choice'} onChange={v => { setSettings(s => ({ ...s, passageWay: v })); saveSettings({ ...settings, passageWay: v }); }} options={[{ value: 'choice', label: '选项（从四个英文单词中选）' }, { value: 'blank', label: '填空（写中文意思，语义相近即判对）' }]} />
-              <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>背诵页切到「真题文章」模式时，一篇文章里的多个空一起作答；卡上也可随时临时切换回答方式。填空不给任何选项，按你写的意思与词库释义的相近程度判断，不要求逐字一致。</span>
-            </label>
-
-            <ToggleSwitch label="答题音效" desc="答对 / 答错给出不同音效反馈" value={settings.soundEnabled} onChange={v => { setSettings(s => ({ ...s, soundEnabled: v })); saveSettings({ ...settings, soundEnabled: v }); }} />
-            {settings.soundEnabled && (
-              <div className="toggleSub">
-                <label>答对音效
-                  <button className="smallBtn" onClick={() => { const list = SFX_CORRECT; const idx = Math.max(0, list.findIndex(s => s.id === settings.soundCorrect)); const next = list[(idx + 1) % list.length]; setSettings(s => ({ ...s, soundCorrect: next.id })); saveSettings({ ...settings, soundCorrect: next.id }); playAnswerSfx(true, next.id, settings.soundWrong); }}>{SFX_CORRECT.find(s => s.id === settings.soundCorrect)?.name || '清脆叮咚'} · 切换</button>
-                </label>
-                <label>答错音效
-                  <button className="smallBtn" onClick={() => { const list = SFX_WRONG; const idx = Math.max(0, list.findIndex(s => s.id === settings.soundWrong)); const next = list[(idx + 1) % list.length]; setSettings(s => ({ ...s, soundWrong: next.id })); saveSettings({ ...settings, soundWrong: next.id }); playAnswerSfx(false, settings.soundCorrect, next.id); }}>{SFX_WRONG.find(s => s.id === settings.soundWrong)?.name || '温柔下降'} · 切换</button>
-                </label>
-              </div>
-            )}
-
-            <h4 className="settingsSubTitle">数据来源说明</h4>
-            <details className="noteDetails">
-              <summary>高考考频数据说明</summary>
-              <div className="examFreqNote">
-                <p>全库单词已标注 <strong>高频 / 中频 / 低频 / 基础</strong> 四档，并在背诵页、词库列表与单词详情页显示 <strong>历年真题 / 模拟卷语料出现次数</strong>。</p>
-                <p className="muted">词卡上原有的「基础 / 真题 / 985」等标签是<strong>词库分类</strong>，与带次数的考频徽标是不同维度，两者并存不代表矛盾。</p>
-                <p>次数来自 <strong>130+ 份历年高考全国卷及各省份高三模拟卷（约 50 万词次）</strong>的逐词统计，<strong>含模拟卷、并非纯高考真题</strong>；未被语料收录的词次数显示「—」，等级按<strong>《普通高中英语课程标准》词汇范围</strong>与通用语料库词频标注，<strong>不编造考查次数</strong>。「近五年 N 次」来自内置近五年真题高频词表（508 条）。</p>
-                <p className="muted">教育部《课标》附录 2 只给 3000 词的考查范围，明确不标注词性与释义；课标与《中国高考评价体系》<strong>从未发布逐词考查次数</strong>。公开资料也无法覆盖全部年份、全部省份的逐词精确次数，本表用于安排背诵优先级，<strong>不代表官方考查次数</strong>。</p>
-              </div>
-            </details>
-            <details className="noteDetails">
-              <summary>考频数据真实性核验</summary>
-              <div className="examFreqNote">
-                <p><strong>次数来源可核验：</strong>开源项目 <strong>HK-SHAO/English-Dictionary</strong>（GitHub，README 载明 130 多份试卷、约 50 多万词次、Python 脚本逐词统计）；词形经 <code>-ing / -ed / -s / -ly</code> 归并、过滤短词与人名地名，故次数为<strong>该词族在语料中的出现次数</strong>，非官方考查次数。</p>
-                <p><strong>官方口径：</strong><strong>教育部</strong>《普通高中英语课程标准（2017 年版 2020 年修订）》附录 2 只收录 3000 词的考查范围、明确不标注词性与释义，课标与《中国高考评价体系》从未发布词频表；<strong>北京教育考试院</strong>《英语：学会做好减法和加法》明确建议「区别对待高频词和低频词、从高考真题高频词开始」，本 App 高频优先背诵即据此设计。<strong>清华大学出版社</strong>《新高中英语词汇真题语境记忆》（自建高考真题语料库、人工标注近 20 万条索引行统计词频义频）与语料库研究论文亦采用同样的「真题语料实测词频」方法。</p>
-                <p><strong>独立交叉校验：</strong>以 2021—2026 年 30 套高考真题全文词频统计作第三方样本，72 个词全部命中内置表，秩相关 <strong>ρ = 0.738</strong>；近年出现 ≥20 次的 <strong>15 个超高频词 15/15 落在高频档</strong>。个别近年低频词在内置表仍为高频，属「历届＋模拟卷累计」与「近五年全国卷」口径差异，<strong>保留原始实测数、不擅自改动</strong>。</p>
-                <p className="muted">结论：数据源真实可核验、分档趋势与近年真题一致、口径已如实标注；<strong>不编造、不替换、不冒充官方考频</strong>。</p>
-              </div>
-            </details>
-            <details className="noteDetails">
-              <summary>真题文章来源说明</summary>
-              <div className="examFreqNote passageSourceNote">
-                <p>「真题文章」模式的文章<strong>全部取自历年高考英语真题阅读原文</strong>，来自 GitHub 开源数据库 <strong>ZhangYixuan-in-BUPT/gaokao-english-exam-database</strong>（2008–2026 年 233 套试卷、739+ 篇阅读理解）。</p>
-                <p>每篇为真题原文的<strong>连续片段，逐字保留、未改写、未编造、未拼接</strong>；挖空词及其释义来自本 App 内置词库。原文保留试卷扫描排版原貌，个别处可能有扫描识别的笔误，请以真题试卷为准。</p>
-              </div>
-            </details>
-            <details className="noteDetails">
-              <summary>联网补全数据来源说明</summary>
-              <div className="examFreqNote netEnrichNote">
-                <p>内置真题表未收录的词（含自行导入单词）可通过<strong>免密钥公开接口</strong>补全关联词与考频等级：词频、同义 / 反义 / 语义关联词来自 <strong>Datamuse API</strong>（Google Books Ngram 通用英语语料），音标、词性与英文释义来自 <strong>Free Dictionary API</strong>。</p>
-                <p>两者均<strong>无需任何配置</strong>（本版本已彻底移除 AI 大模型依赖）；结果按词缓存在本机，离线可用、已缓存不重复请求，无网络时静默跳过，词频未取到时标「待补全」而不冒充低频。在上方开关可随时关闭自动补全或清除缓存。</p>
-                <p className="muted">联网词频是通用英语语料的出现频率，界面标注「联网参考」，<strong>不是高考真题考查次数</strong>，也不估算具体次数；等级仅用于安排背诵优先级。</p>
-              </div>
-            </details>
-            <details className="noteDetails">
-              <summary>关联词检索与导出顺序说明</summary>
-              <div className="examFreqNote builtinAlgoNote">
-                <p><strong>同源词族</strong>（create / creation / creative）与<strong>易混词辨析</strong>（affect / effect）全部由<strong>内置词根算法</strong>离线判定：词干还原、派生后缀、辅音/元音交替、假同源过滤与人工校对表，并按匹配强度排序；不需要任何配置或联网请求。</p>
-                <p><strong>近义 / 反义 / 语义关联词</strong>来自联网公开语料，单独分区标注「联网参考」，与同源词族互不混用；命中内置词库时同时显示真实中文释义。</p>
-                <p><strong>考频标记</strong>以内置真题语料实测次数优先，联网数据只补等级、绝不生成考查次数。<strong>导出词库默认按考频顺序</strong>（高频优先），与「优先背诵高频词」同一口径，可在词库页导出面板切换回原顺序。</p>
-              </div>
-            </details>
-            <details className="noteDetails">
-              <summary>初中扩展词库数据来源说明</summary>
-              <div className="examFreqNote juniorSourceNote">
-                <p>「初中必考词」「初中阅读词汇」是新增的<strong>扩展词库</strong>，词条规格与高考 3500、985 阅读核心词等<strong>完全一致</strong>：中文释义、词性、考点、例句复用本 App 内置词库数据，同样带考频徽标、关联词检索、例句语境、发音与按考频顺序导出。</p>
-                <p className="muted">v2.91.0 起这两本词库改为<strong>按需下载</strong>：默认不加载、不占用启动资源，也不会出现在词库列表；在「我的」页点「下载初中扩展词库」后才加入，可随时移除。数据随应用内置，启用无需联网。</p>
-                <p><strong>初中必考词</strong>取自开源项目 <strong>jim-688/zhongkao-english-vocab</strong>（MIT，中考核心词表按词频排序、高频在前）；口径依据教育部《义务教育英语课程标准（2022 年版）》附录 3 三级词汇表 <strong>1600 词</strong>（含小学二级 505 词、初中应掌握 1095 词，允许各地增加 100~300 词）。</p>
-                <p><strong>初中阅读词汇</strong>来自公开中考阅读理解高频词表：易中考《近中考阅读理解高频词汇总》、《中考英语阅读核心高频考点词》（态度 / 逻辑 / 高频动名形 / 熟词生义 / 同义替换），以及开源 <strong>KyleBing/english-vocabulary</strong> 初中词表（MIT）中的拓展词，剔除与必考词重复的部分。</p>
-                <p className="muted">官方课标只给词汇<strong>范围</strong>、明确「不标注单词的词性和中文释义」，也<strong>从未发布逐词考查次数</strong>；中文释义与词性由本 App 内置词库补全，考频徽标沿用全库统一的真题 / 模拟卷语料实测口径，仅用于安排背诵优先级，<strong>不代表官方考查次数</strong>。上述词表均为公开可核验的第三方整理，非官方发布数据。</p>
-              </div>
-            </details>
-
-          </div>
-          )}
+          {/* v2.93.0：设置内容已移入上方独立「设置」界面，「我的」页保持简洁 */}
 
           {/* 打卡日历 */}
           <div className="calendarSection">
@@ -10821,7 +10837,7 @@ function App() {
       )}
 
       {/* 底部Tab栏（5个） */}
-      <nav className="tabbar">
+      <nav className={'tabbar' + (settingsPageOpen ? ' hidden' : '')}>
         {TABS.map(tab => (
           <button key={tab.id} className={section === tab.id ? 'active' : ''} onClick={() => setSection(tab.id)}>
             <span className="tabIcon"><tab.icon /></span>
