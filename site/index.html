@@ -1380,18 +1380,16 @@
       <p>持续迭代，精益求精</p>
     </div>
     <div class="changelog-list">
-      <div class="changelog-item" data-ver="2.92.0">
-        <div class="changelog-version">v2.92.0</div>
+      <div class="changelog-item" data-ver="2.93.0">
+        <div class="changelog-version">v2.93.0</div>
         <div class="changelog-content">
           <div class="date">2026年11月</div>
           <ul>
-            <li><span class="changelog-tag tag-new">新增</span>本次修复的是启动链路本身，不再只修某一版的数据：</li>
-            <li><span class="changelog-tag tag-new">新增</span>① 原生层启动不再加载云端缓存页面、不再后台下载 3.85MB 页面后整页重载。旧逻辑会用上次热更缓存覆盖新安装包（只校验一个字符串），坏缓存会让重装也打不开；启动几秒后的整页重载则会在低端 WebView 上重复解析大页面 + 重建全库词条，直接 ANR/OOM 闪退，同时也是「无辜刷新界面」的来源。现在启动零网络、零自动刷新，只加载 APK 内置且经构建验证的页面，并自动清除历史坏缓存（已中招的设备覆盖安装后立即恢复）。</li>
-            <li><span class="changelog-tag tag-new">新增</span>② 新增启动自愈守卫：连续两次启动异常自动进入安全模式，跳过启动期后台词库构建、初中词库恢复与自动更新请求；初中词库改为浏览器空闲期分帧构造，不再一次生成 2308 词条。</li>
-            <li><span class="changelog-tag tag-new">新增</span>③ 新增不依赖 React 的恢复面板：页面没起来时直接给「安全模式启动 / 清数据重启 / 重新加载 / 下载最新版安装包」，打不开 App 也能自救，不再出现「打不开 → 点不到更新 → 一直打不开」的死锁。</li>
-            <li><span class="changelog-tag tag-new">新增</span>④ 网页版加载失败面板新增 CDN 完整版与安装包直链（弱网下主分片下载过慢时有明确出路）。</li>
-            <li><span class="changelog-tag tag-new">新增</span>⑤ CI 新增冷启动冒烟门禁：发布前用无头 Chrome 真跑单文件版与多文件版，断言守卫存在、业务界面确实渲染、未触发错误兜底、无启动整页重写，任一失败即阻断发布。</li>
-            <li><span class="changelog-tag tag-new">新增</span>版本更新能力完整保留：我的 → 版本更新 → 下载安装新 APK（带 SHA-256 校验）。</li>
+            <li><span class="changelog-tag tag-new">新增</span>① 「我的」页只保留学习简介、设置入口与初中扩展词库下载卡片，不再内联展开一大片设置项。</li>
+            <li><span class="changelog-tag tag-new">新增</span>② 点「设置」打开全新的整屏设置界面：顶部有「← 返回」和标题「设置」，里面只有全部设置开关、选项与数据来源说明；底部导航栏自动隐藏，与「我的」页彻底分开，是页面切换而不是折叠展开。</li>
+            <li><span class="changelog-tag tag-new">新增</span>③ 顶部返回按钮与安卓物理返回键都先回到「我的」页，不会直接退出应用；设置改动依旧即时保存，护眼模式配色一致。</li>
+            <li><span class="changelog-tag tag-new">新增</span>④ 沿用 v2.92 的启动自愈守卫与 CI 冷启动发布门禁，本次改动已通过双构建与真机等价测试。</li>
+            <li><span class="changelog-tag tag-new">新增</span>更新方式：我的 → 版本更新 → 下载安装新 APK（覆盖安装，学习记录保留）。</li>
           </ul>
         </div>
       </div>
