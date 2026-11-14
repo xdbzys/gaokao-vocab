@@ -3180,6 +3180,29 @@ button .ic, .smallBtn .ic, .navBtn .ic { pointer-events: none; }
 .ovSwitch.on { background: var(--primary, #3b82f6); }
 .ovSwitch.on::after { transform: translateX(19px); }
 
+/* ===== v2.87.0：按钮开关行 + 折叠说明 ===== */
+.toggleRow { display: flex; align-items: center; gap: 12px; padding: 11px 2px; }
+.toggleRowText { flex: 1 1 auto; min-width: 0; }
+.toggleRowLabel { font-size: 14px; font-weight: 600; color: var(--text); }
+.toggleRowDesc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-top: 3px; }
+.toggleRow .ovSwitch { flex: 0 0 auto; }
+.toggleSub { padding: 6px 0 6px 14px; border-left: 2px solid var(--border-light); margin: 2px 0 4px 2px; }
+.toggleSub .fieldRow { margin: 8px 0; }
+.noteDetails {
+  border: 1px solid var(--border-light); border-radius: 12px;
+  background: var(--bg); overflow: hidden;
+}
+.noteDetails summary {
+  cursor: pointer; padding: 11px 14px; font-size: 13px; font-weight: 700;
+  color: var(--primary); list-style: none; display: flex;
+  align-items: center; justify-content: space-between;
+}
+.noteDetails summary::-webkit-details-marker { display: none; }
+.noteDetails summary::after { content: '展开 ▾'; font-size: 12px; color: var(--text-tertiary); font-weight: 600; }
+.noteDetails[open] summary::after { content: '收起 ▴'; }
+.noteDetails[open] summary { border-bottom: 1px solid var(--border-light); }
+.noteDetails .examFreqNote { border: none; border-radius: 0; margin: 0; box-shadow: none; }
+
 /* ===== v2.78.0 ===== */
 /* 音量键翻页开关（背诵页快捷开关行） */
 .quickToggleBtn.volOn {
@@ -3756,6 +3779,6 @@ setTimeout(function () {
 }, 12000);
 </script>
 
-<script type="module" src="./assets/main.HENA2SQZ.js"></script>
+<script type="module" src="./assets/main.DHMN2BTA.js"></script>
 </body>
 </html>
