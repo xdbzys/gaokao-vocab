@@ -1,11 +1,11 @@
 {
   "version": "2.89.0",
-  "versionCode": 321,
+  "versionCode": 322,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4599122,
-  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d",
-  "changelog": "【v2.89.0】「我的」页设置收进单一入口，简介不再被设置项占用\n新增「设置」入口，默认收起，点开后才显示全部开关、输入项与 5 个数据来源说明\n学习信息提为常驻「学习概览」，与用户信息、学习日历、今日学习一屏可见；展开状态本机记忆"
+  "apkSize": 4601726,
+  "apkSha256": "187c4a0f8a8bed200f03bfc07a8b6a1ae8e429e9f31fa8cd81ea4ab104e5479f",
+  "changelog": "【v2.89.0】「我的」页设置收进单一入口，简介不再被设置项占用\n「我的」页新增醒目的「设置」入口，默认收起：点开后才显示自动发音、护眼模式、艾宾浩斯、词频优先、答题音效、每日目标、发音语速等全部设置内容与 5 个数据来源说明\n学习信息（首次使用、今日日期、总词库、总词汇量）提为常驻「学习概览」卡片，与用户信息、学习"
 }
