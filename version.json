@@ -1,11 +1,11 @@
 {
   "version": "2.87.0",
-  "versionCode": 319,
+  "versionCode": 320,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4599122,
-  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d",
-  "changelog": "【v2.87.0】我的页面排版全面优化 + 设置项改为按钮开关\n优化「我的」页面设置区重排，分组更清晰、布局更紧凑；数据来源说明改为可折叠，减少冗长\n纯开/关设置项（自动发音、护眼模式、艾宾浩斯、答题后显示考点、优先高频词、联网补全、答题音效、开屏公告）全部改为按钮开关，点按右侧即可切换，修改后自动保存\n移除「清理不存在的词库」冗余按钮"
+  "apkSize": 4599135,
+  "apkSha256": "11c85806f8550cd241edd3061d5c677bd80256f63e9e75c077972cfae6c6644d",
+  "changelog": "【v2.87.0】我的页面排版全面优化 + 设置项改为按钮开关\n优化「我的」页面设置区重排，分组更清晰、布局更紧凑；数据来源说明改为可折叠，减少冗长\n纯开/关设置项（自动发音、护眼模式、艾宾浩斯、答题后显示考点、优先高频词、联网补全、答题音效、开屏公告）全部改为按钮开关，点按右侧即可切换，修改后自动保存\n移除「清理不存"
 }
