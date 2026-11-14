@@ -102,7 +102,7 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.89.0';
+const APP_VERSION = '2.90.0';
 const APP_VERSION_CODE = 318;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
@@ -1061,6 +1061,57 @@ function makeAllItems(seedArr, type, source) {
   return seedArr.map((row, i) => makeItem(row, type.includes('phrase') || type.includes('词组') || type.includes('易混') || type.includes('同义') || type.includes('反义') || type.includes('逻辑') || type.includes('结论') || type.includes('熟词') || type.includes('生义') || type.includes('褒贬') || type.includes('易错') || type.includes('超纲') || type.includes('必考') || type.includes('真题') || type.includes('主题') ? 'phrase' : type, i, source));
 }
 
+/* ---- v2.90.0 初中扩展词库 -----------------------------------------------
+   词单模块（data/seeds-junior.js）只存单词，不重复存词条数据。这里按 term
+   复用本 App 现有内置词库（3500 / 985 / 真题 / 小词库 / 总汇）的中文释义、
+   词性、考点与例句，拼成 makeItem 需要的 7 元素行，交给同一套 makeAllItems
+   处理。因此新词库天然具备：考频徽标、关联词检索、词性标注、例句语境、
+   发音、进度统计、按考频顺序导出——与其余内置词库完全同一规格。 */
+function loadJuniorData() {
+  return Promise.all([
+    import('./data/seeds-junior'),
+    import('./data/seeds-3500'),
+    import('./data/seeds-985'),
+    import('./data/seeds-exam'),
+    import('./data/seeds-small'),
+    import('./vendor/gaokaoMasterVocab'),
+  ]);
+}
+
+function buildJuniorSeed(words, category, mods) {
+  const lookup = {};
+  // 按 term 合并各内置词库：先命中的提供释义/词性，后续只补齐空缺的考点与例句
+  mods.slice(1).forEach(function (mod) {
+    Object.keys(mod).forEach(function (key) {
+      const arr = mod[key];
+      if (!Array.isArray(arr)) return;
+      arr.forEach(function (row) {
+        if (!Array.isArray(row) || typeof row[0] !== 'string') return;
+        const term = row[0].toLowerCase();
+        const cur = lookup[term];
+        if (!cur) { lookup[term] = row.slice(); return; }
+        [4, 5, 6].forEach(function (i) {
+          if (!(Array.isArray(cur[i]) && cur[i].length) && Array.isArray(row[i]) && row[i].length) cur[i] = row[i];
+        });
+      });
+    });
+  });
+  const extra = (mods[0] && mods[0].JUNIOR_EXTRA) || {};
+  return words.map(function (term) {
+    const row = lookup[term];
+    // JUNIOR_EXTRA 既兜底完全查不到的词，也补齐命中词条里缺的词性/释义
+    const ex = extra[term] || [];
+    const fallback = ex[1] || CORE_MEANINGS[term] || term;
+    if (row) {
+      return [term, row[1] || ex[0] || '', row[2] || fallback, category,
+        Array.isArray(row[4]) ? row[4] : [],
+        Array.isArray(row[5]) ? row[5] : [],
+        Array.isArray(row[6]) ? row[6] : []];
+    }
+    return [term, ex[0] || '', fallback, category, [], [], []];
+  });
+}
+
 
 
 // v2.43.0 人工校对词族补充表：算法无法覆盖的真实词族（含词性+中文）
@@ -1405,6 +1456,28 @@ const BOOK_DEFS = [
     total: 17,
     load: () => import('./data/seeds-small'),
     pick: (m) => m.seedDualSentiment,
+  },
+  /* v2.90.0 初中扩展词库：必考词 + 阅读词汇，词单见 data/seeds-junior.js，
+     词条规格由 buildJuniorSeed 复用现有内置词库数据生成。 */
+  {
+    id: 'junior-core',
+    name: '初中必考词',
+    type: 'word',
+    source: '初中必考词',
+    total: 1902,
+    load: () => loadJuniorData(),
+    pick: (mods) => buildJuniorSeed(mods[0].JUNIOR_CORE_WORDS, '初中必考', mods),
+    after: (mods, book) => { book.name = `初中必考词(${book.items.length}词)`; },
+  },
+  {
+    id: 'junior-reading',
+    name: '初中阅读词汇',
+    type: 'word',
+    source: '初中阅读词汇',
+    total: 406,
+    load: () => loadJuniorData(),
+    pick: (mods) => buildJuniorSeed(mods[0].JUNIOR_READING_WORDS, '初中阅读', mods),
+    after: (mods, book) => { book.name = `初中阅读词汇(${book.items.length}词)`; },
   },
 ];
 
@@ -9807,6 +9880,15 @@ function App() {
                 <p><strong>同源词族</strong>（create / creation / creative）与<strong>易混词辨析</strong>（affect / effect）全部由<strong>内置词根算法</strong>离线判定：词干还原、派生后缀、辅音/元音交替、假同源过滤与人工校对表，并按匹配强度排序；不需要任何配置或联网请求。</p>
                 <p><strong>近义 / 反义 / 语义关联词</strong>来自联网公开语料，单独分区标注「联网参考」，与同源词族互不混用；命中内置词库时同时显示真实中文释义。</p>
                 <p><strong>考频标记</strong>以内置真题语料实测次数优先，联网数据只补等级、绝不生成考查次数。<strong>导出词库默认按考频顺序</strong>（高频优先），与「优先背诵高频词」同一口径，可在词库页导出面板切换回原顺序。</p>
+              </div>
+            </details>
+            <details className="noteDetails">
+              <summary>初中扩展词库数据来源说明</summary>
+              <div className="examFreqNote juniorSourceNote">
+                <p>「初中必考词」「初中阅读词汇」是新增的<strong>扩展词库</strong>，词条规格与高考 3500、985 阅读核心词等<strong>完全一致</strong>：中文释义、词性、考点、例句复用本 App 内置词库数据，同样带考频徽标、关联词检索、例句语境、发音与按考频顺序导出。</p>
+                <p><strong>初中必考词</strong>取自开源项目 <strong>jim-688/zhongkao-english-vocab</strong>（MIT，中考核心词表按词频排序、高频在前）；口径依据教育部《义务教育英语课程标准（2022 年版）》附录 3 三级词汇表 <strong>1600 词</strong>（含小学二级 505 词、初中应掌握 1095 词，允许各地增加 100~300 词）。</p>
+                <p><strong>初中阅读词汇</strong>来自公开中考阅读理解高频词表：易中考《近中考阅读理解高频词汇总》、《中考英语阅读核心高频考点词》（态度 / 逻辑 / 高频动名形 / 熟词生义 / 同义替换），以及开源 <strong>KyleBing/english-vocabulary</strong> 初中词表（MIT）中的拓展词，剔除与必考词重复的部分。</p>
+                <p className="muted">官方课标只给词汇<strong>范围</strong>、明确「不标注单词的词性和中文释义」，也<strong>从未发布逐词考查次数</strong>；中文释义与词性由本 App 内置词库补全，考频徽标沿用全库统一的真题 / 模拟卷语料实测口径，仅用于安排背诵优先级，<strong>不代表官方考查次数</strong>。上述词表均为公开可核验的第三方整理，非官方发布数据。</p>
               </div>
             </details>
 
