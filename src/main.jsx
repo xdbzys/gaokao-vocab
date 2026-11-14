@@ -102,7 +102,7 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.88.0';
+const APP_VERSION = '2.89.0';
 const APP_VERSION_CODE = 318;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
@@ -5068,6 +5068,10 @@ function App() {
   const [extendTab, setExtendTab] = useState('affix');
   // 温习功能
   const [showReview, setShowReview] = useState(false);
+  // v2.89.0：「我的」页设置默认收起，点「设置」入口才展开各种设置内容；状态记在本机，避免每次进入都要重开
+  const [meSettingsOpen, setMeSettingsOpen] = useState(() => {
+    try { return localStorage.getItem('gaokao_me_settings_open') === '1'; } catch (e) { return false; }
+  });
   const [reviewDate, setReviewDate] = useState(getToday());
   const [reviewMode, setReviewMode] = useState('list'); // 'list' or 'practice'
   const [reviewIndex, setReviewIndex] = useState(0);
@@ -9683,10 +9687,28 @@ function App() {
             </div>
           </div>
 
-          {/* v2.84.0：设置集中区 —— 原「自动发音」卡片 /「设置」/「学习辅助与反馈」三处
-              合并为一个区块，并整体移到「我的」页最上方（用户信息之后、学习日历之前）。 */}
-          <div className="settingsGroup meSettingsAll">
-            <h3>设置</h3>
+          {/* v2.89.0：学习概览常驻为「我的」页简介内容，不再被一大片设置项挤到下方 */}
+          <div className="meOverview">
+            <div className="meOverviewItem"><span>首次使用</span><b>{firstUseDate}</b></div>
+            <div className="meOverviewItem"><span>今日日期</span><b>{todayKey}</b></div>
+            <div className="meOverviewItem"><span>总词库</span><b>{books.length} 个</b></div>
+            <div className="meOverviewItem"><span>总词汇量</span><b>{books.reduce((s, b) => s + (b.items.length || b.total || 0), 0)} 条</b></div>
+          </div>
+
+          {/* v2.89.0：设置收进单一入口，点开后才显示各种设置内容；展开状态本机记忆 */}
+          <button type="button" className={'settingsEntry' + (meSettingsOpen ? ' open' : '')}
+            aria-expanded={meSettingsOpen} aria-controls="meSettingsBody"
+            onClick={() => { const v = !meSettingsOpen; setMeSettingsOpen(v); try { localStorage.setItem('gaokao_me_settings_open', v ? '1' : '0'); } catch (e) {} }}>
+            <span className="settingsEntryIcon"><Icon name="sliders" /></span>
+            <span className="settingsEntryText">
+              <b>设置</b>
+              <span>自动发音、护眼模式、艾宾浩斯、词频优先、答题音效与数据来源说明</span>
+            </span>
+            <span className="settingsEntryCaret"><Icon name="chevronDown" /></span>
+          </button>
+
+          {meSettingsOpen && (
+          <div id="meSettingsBody" className="settingsGroup meSettingsAll settingsDrawerBody">
             <p className="muted settingsLead">全部开关集中在此，点按右侧按钮即可开 / 关，修改后自动保存。</p>
 
             <ToggleSwitch label="自动发音" desc="背诵新词与页面跳转时自动朗读" value={settings.autoSpeak !== false} onChange={v => { setSettings(s => ({ ...s, navAutoSpeak: v, autoSpeak: v })); saveSettings({ ...settings, navAutoSpeak: v, autoSpeak: v }); }} />
@@ -9788,14 +9810,8 @@ function App() {
               </div>
             </details>
 
-            <h4 className="settingsSubTitle">学习信息</h4>
-            <div className="settingsInfo">
-              <p>首次使用：{firstUseDate}</p>
-              <p>今日日期：{todayKey}</p>
-              <p>总词库：{books.length} 个</p>
-              <p>总词汇量：{books.reduce((s, b) => s + (b.items.length || b.total || 0), 0)} 条</p>
-            </div>
           </div>
+          )}
 
           {/* 打卡日历 */}
           <div className="calendarSection">
