@@ -1,11 +1,11 @@
 {
-  "version": "2.88.0",
-  "versionCode": 321,
+  "version": "2.89.0",
+  "versionCode": 322,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4601221,
-  "apkSha256": "d91043462a31bd84637e1fb62ff3fad40d217965eccc53ef938b045e957ab53a",
-  "changelog": "【v2.88.0】考频数据权威核验 + 来源可核验\n核对教育部《课标》（只给 3000 词范围、从不发布逐词考频）、北京教育考试院备考建议与清华大学出版社真题语料库方法，确认内置 130+ 份真题/模拟卷语料数据源真实可核验\n用 2021—2026 年 30 套高考真题全文词频做独立交叉校验：72 词全部命中、秩相关 "
+  "apkSize": 4601726,
+  "apkSha256": "187c4a0f8a8bed200f03bfc07a8b6a1ae8e429e9f31fa8cd81ea4ab104e5479f",
+  "changelog": "【v2.89.0】「我的」页设置收进单一入口，简介不再被设置项占用\n「我的」页新增醒目的「设置」入口，默认收起：点开后才显示自动发音、护眼模式、艾宾浩斯、词频优先、答题音效、每日目标、发音语速等全部设置内容与 5 个数据来源说明\n学习信息（首次使用、今日日期、总词库、总词汇量）提为常驻「学习概览」卡片，与用户信息、学习"
 }

@@ -3555,6 +3555,58 @@ body.eye-care .netRelatedBadge {
   background: rgba(180, 140, 70, .08);
 }
 body.eye-care .examFreqTag.examFreqPending { color: #8a6a3a; background: rgba(180, 140, 70, .10); }
+
+/* ============================================================
+   v2.89.0：「我的」页设置入口（默认收起）+ 常驻学习概览
+   目标：简介内容不再被一大片设置项占用
+   ============================================================ */
+.meOverview {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 12px;
+  padding: 13px 14px; border-radius: 16px;
+  background: var(--bg); border: 1px solid var(--border);
+}
+.meOverviewItem { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.meOverviewItem span { font-size: 12px; color: var(--text-tertiary); }
+.meOverviewItem b {
+  font-size: 14px; color: var(--text); font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.settingsEntry {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 13px 14px; border-radius: 16px; cursor: pointer; text-align: left;
+  font-family: inherit; color: inherit;
+  border: 1px solid var(--border); background: var(--bg);
+  -webkit-appearance: none; appearance: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.settingsEntry:active { border-color: var(--primary); }
+.settingsEntry.open { border-color: var(--primary); box-shadow: 0 2px 12px rgba(59, 130, 246, .10); }
+.settingsEntryIcon {
+  flex: 0 0 auto; width: 40px; height: 40px; border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--primary-bg); color: var(--primary);
+}
+.settingsEntryIcon .ic { width: 22px; height: 22px; }
+.settingsEntryText { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.settingsEntryText b { font-size: 15px; color: var(--text); }
+.settingsEntryText > span { font-size: 12px; color: var(--text-tertiary); line-height: 1.45; }
+.settingsEntryCaret {
+  flex: 0 0 auto; display: grid; place-items: center;
+  color: var(--text-tertiary); transition: transform .2s ease;
+}
+.settingsEntryCaret .ic { width: 18px; height: 18px; }
+.settingsEntry.open .settingsEntryCaret { transform: rotate(180deg); color: var(--primary); }
+
+.settingsDrawerBody {
+  margin-top: 0; padding: 14px; border-radius: 16px;
+  border: 1px solid var(--border-light); background: var(--bg);
+}
+body.eye-care .meOverview { background: #f8f0e0; border-color: #e3d2b4; }
+body.eye-care .settingsEntry { background: #f8f0e0; border-color: #e3d2b4; }
+body.eye-care .settingsEntry.open { border-color: #c08a3a; box-shadow: 0 2px 12px rgba(160, 110, 40, .12); }
+body.eye-care .settingsEntryIcon { background: #efe0c4; color: #8a5a1f; }
+body.eye-care .settingsDrawerBody { background: #f8f0e0; border-color: #e3d2b4; }
 </style>
 <style>
   /* ============================================================
@@ -3779,6 +3831,6 @@ setTimeout(function () {
 }, 12000);
 </script>
 
-<script type="module" src="./assets/main.MYJTO3TY.js"></script>
+<script type="module" src="./assets/main.6G4ORE5H.js"></script>
 </body>
 </html>
