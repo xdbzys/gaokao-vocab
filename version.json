@@ -1,11 +1,11 @@
 {
   "version": "2.91.0",
-  "versionCode": 323,
+  "versionCode": 324,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4599122,
-  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d",
-  "changelog": "【v2.91.0】修复闪退 / 无辜刷新 / 无法更新 + 初中词库改为按需下载\n修复打不开与闪退：初中词库不再启动时全量加载，改为「我的」页按需下载（默认不加载、不占词库列表，可随时移除）\n修复无辜刷新界面：删除启动时整页重写与自动 reload，改为仅提示、主动点击才刷新\n修复无法更新：清单请求加超时、移除误报兜底、页面版本基线对齐线上"
+  "apkSize": 4614625,
+  "apkSha256": "92f84da29caf6386a65bf3547021e5a3f4581cb1fc49d9fb5630ff1060e2c327",
+  "changelog": "【v2.91.0】修复闪退 / 无辜刷新 / 无法更新 + 初中词库改为按需下载\n修复打不开、闪退：初中词库不再在启动时全量加载（此前 2308 词条在启动时构造，低端机 WebView 会因内存与主线程占用闪退）\n修复无辜刷新界面：删除网页版启动时用线上 HTML 整页重写 document.write 与自动 re"
 }
