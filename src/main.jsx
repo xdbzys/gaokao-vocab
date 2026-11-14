@@ -102,8 +102,10 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.90.0';
-const APP_VERSION_CODE = 318;
+const APP_VERSION = '2.91.0';
+// v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
+// 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
+const APP_VERSION_CODE = 323;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -1457,17 +1459,22 @@ const BOOK_DEFS = [
     load: () => import('./data/seeds-small'),
     pick: (m) => m.seedDualSentiment,
   },
-  /* v2.90.0 初中扩展词库：必考词 + 阅读词汇，词单见 data/seeds-junior.js，
-     词条规格由 buildJuniorSeed 复用现有内置词库数据生成。 */
+];
+/* ---- v2.91.0 初中「可选扩展词库」------------------------------------------
+   从 BOOK_DEFS 摘出：默认完全不加载、不占词库列表、不参与启动并行数据加载，
+   由用户在「我的」页主动点「下载」后才构建并加入 books（状态记在本机）。
+   这样既满足「按需要选择是否下载」，也消除了 v2.90.0 启动时一次性构造
+   2308 词条（两本各跑一次全库合并循环）导致的低端机 WebView ANR / OOM 闪退。 */
+const JUNIOR_BOOK_IDS = ['junior-core', 'junior-reading'];
+const JUNIOR_STORAGE_KEY = 'gaokao_junior_downloaded';
+const OPTIONAL_BOOK_DEFS = [
   {
     id: 'junior-core',
     name: '初中必考词',
     type: 'word',
     source: '初中必考词',
     total: 1902,
-    load: () => loadJuniorData(),
     pick: (mods) => buildJuniorSeed(mods[0].JUNIOR_CORE_WORDS, '初中必考', mods),
-    after: (mods, book) => { book.name = `初中必考词(${book.items.length}词)`; },
   },
   {
     id: 'junior-reading',
@@ -1475,11 +1482,34 @@ const BOOK_DEFS = [
     type: 'word',
     source: '初中阅读词汇',
     total: 406,
-    load: () => loadJuniorData(),
     pick: (mods) => buildJuniorSeed(mods[0].JUNIOR_READING_WORDS, '初中阅读', mods),
-    after: (mods, book) => { book.name = `初中阅读词汇(${book.items.length}词)`; },
   },
 ];
+
+// 构建结果缓存在内存里：一次会话只构建一次；失败清空以便重试。
+let _juniorBooksPromise = null;
+function buildJuniorBooks() {
+  if (_juniorBooksPromise) return _juniorBooksPromise;
+  _juniorBooksPromise = loadJuniorData().then(function (mods) {
+    return OPTIONAL_BOOK_DEFS.map(function (def) {
+      const seed = def.pick(mods);
+      const items = makeAllItems(seed, def.type, def.source);
+      return {
+        id: def.id,
+        name: def.name + '(' + items.length + '词)',
+        type: def.type,
+        source: def.source,
+        total: items.length,
+        editable: false,
+        items: items,
+      };
+    });
+  }).catch(function (e) {
+    _juniorBooksPromise = null;
+    throw e;
+  });
+  return _juniorBooksPromise;
+}
 
 const BOOK_DEF_BY_ID = {};
 const _bookById = {};
@@ -5112,6 +5142,68 @@ function App() {
     catch { return ''; }
   });
   const updateCheckDone = useRef(false);
+  /* v2.91.0 初中可选扩展词库：本机记住是否下载，默认不加载、不占启动 */
+  const [juniorDownloaded, setJuniorDownloaded] = useState(function () {
+    try { return localStorage.getItem(JUNIOR_STORAGE_KEY) === '1'; } catch (e) { return false; }
+  });
+  const [juniorBusy, setJuniorBusy] = useState(false);
+  // 网页版「新版本就绪」标记（只提示，绝不自动刷新）
+  const [webUpdateReady, setWebUpdateReady] = useState(function () {
+    try { return localStorage.getItem('gaokao_web_update_ready') || ''; } catch (e) { return ''; }
+  });
+
+  function installJuniorBooks() {
+    if (juniorBusy) return;
+    setJuniorBusy(true);
+    buildJuniorBooks().then(function (jb) {
+      try { localStorage.setItem(JUNIOR_STORAGE_KEY, '1'); } catch (e) {}
+      setJuniorDownloaded(true);
+      setBooks(function (prev) {
+        return prev.filter(function (b) { return JUNIOR_BOOK_IDS.indexOf(b.id) < 0; }).concat(jb);
+      });
+      appTip('初中扩展词库已下载：' + jb.map(function (b) { return b.name; }).join('、')
+        + '。现在可在词库选择 / 背诵 / 听读 / 导出中选用。', '下载完成');
+      setJuniorBusy(false);
+    }).catch(function (e) {
+      appTip('下载失败：' + (e && e.message ? e.message : '词库数据加载失败') + '，请稍后重试。', '下载失败');
+      setJuniorBusy(false);
+    });
+  }
+
+  function removeJuniorBooks() {
+    try { localStorage.removeItem(JUNIOR_STORAGE_KEY); } catch (e) {}
+    setJuniorDownloaded(false);
+    setBooks(function (prev) { return prev.filter(function (b) { return JUNIOR_BOOK_IDS.indexOf(b.id) < 0; }); });
+    setStudyBookIds(function (prev) {
+      const n = prev.filter(function (id) { return JUNIOR_BOOK_IDS.indexOf(id) < 0; });
+      const r = n.length ? n : ['gaokao-3500'];
+      try { localStorage.setItem('gaokao_study_books', r.join(',')); } catch (e) {}
+      return r;
+    });
+    setLibraryBookIds(function (prev) {
+      const n = prev.filter(function (id) { return JUNIOR_BOOK_IDS.indexOf(id) < 0; });
+      const r = n.length ? n : ['gaokao-3500'];
+      try { localStorage.setItem('gaokao_library_books', r.join(',')); } catch (e) {}
+      return r;
+    });
+    appTip('已移除初中扩展词库，可随时在「我的」页重新下载。', '已移除');
+  }
+
+  // 已下载过：等首屏稳定后静默重建（不阻塞启动、不影响首屏词库），失败也不影响主流程
+  useEffect(function () {
+    if (!juniorDownloaded) return;
+    var cancelled = false;
+    var timer = setTimeout(function () {
+      buildJuniorBooks().then(function (jb) {
+        if (cancelled) return;
+        setBooks(function (prev) {
+          if (prev.some(function (b) { return b.id === 'junior-core'; })) return prev;
+          return prev.concat(jb);
+        });
+      }).catch(function (e) { console.error('[junior] 启动恢复失败', e); });
+    }, 1800);
+    return function () { cancelled = true; clearTimeout(timer); };
+  }, []);
   // v2.73.0：更新动作互斥锁（原生侧另有原子锁，这里先挡一层，避免连点并发下载写坏临时文件）
   const apkUpdateLockRef = useRef(false);
   const shuffleSeedRef = useRef(Date.now()); // 洗牌种子：仅词库变化时更新，进度变化时保持稳定
@@ -5292,10 +5384,11 @@ function App() {
     }
   }, []);
 
-  // 网页版启动时自动检查更新（静默更新HTML内容，保留localStorage）
+  // v2.91.0：网页版不再 document.open/write 整页重写、也不自动 reload。
+  // 原实现会在启动 1.5s 后用线上 HTML 覆盖整个文档，销毁 React 根节点、
+  // 清空界面状态，表现即「无辜刷新界面 / 白屏 / 像闪退」。现改为只记录
+  // 「新版本就绪」标记，由用户在「我的」页主动点刷新，绝不自动改动 DOM。
   useEffect(() => {
-    // 用 file:// 直接打开本地单文件时 fetch 会被 CORS 挡下，必然失败还会留下
-    // 两条控制台错误；真实 App 走 isNativeApp 分支，本来也不做网页版更新检查。
     if (!isNativeApp && !isFileProtocol && !updateCheckDone.current) {
       updateCheckDone.current = true;
       const timer = setTimeout(async () => {
@@ -5303,46 +5396,15 @@ function App() {
           const resp = await fetch('app-update.json?v=' + Date.now());
           if (!resp.ok) return;
           const data = await resp.json();
-          if (data.version && data.version !== APP_VERSION && data.webHtmlUrl) {
-            console.log('[Web Update] 发现新版本:', data.version, '当前:', APP_VERSION);
-            // v2.72.1：Gitee 镜像随构建更新且国内直连（实测 3 秒），置首；
-            // 并校验正文里的 APP_VERSION 必须等于清单版本，避免任何 CDN 缓存导致「更新到旧页面」
-            const htmlSources = [
-              'https://gitee.com/xdbzys/app/raw/master/web/index.html',
-              data.webHtmlUrl,
-              'https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html',
-              'https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html'
-            ].filter(Boolean);
-            let newHtml = null;
-            for (let si = 0; si < htmlSources.length; si++) {
-              try {
-                const r = await fetch(htmlSources[si], { cache: 'no-store' });
-                if (r.ok) {
-                  const t = await r.text();
-                  if (!t || !(t.includes('<!doctype') || t.includes('<html'))) continue;
-                  // 版本闸门：构建产物会压缩变量名（APP_VERSION → Is），所以两条都试：
-                  // ① 能匹配到 APP_VERSION 赋值就严格比对；② 匹配不到则要求正文出现该版本号字面量。
-                  // 任一不满足即视为陈旧页面，换下一个源，避免「更新到旧页面」。
-                  const vm = /APP_VERSION\s*=\s*['"]([\d.]+)['"]/.exec(t);
-                  const want = String(data.version || '');
-                  const hasVer = want && (t.indexOf('"' + want + '"') >= 0 || t.indexOf("'" + want + "'") >= 0);
-                  if (vm) { if (vm[1] !== want) continue; }
-                  else if (want && !hasVer) continue;
-                  newHtml = t;
-                  break;
-                }
-              } catch (e) { /* 该源失败，尝试下一个 */ }
-            }
-            if (newHtml) {
-              console.log('[Web Update] 更新成功，替换页面内容');
-              document.open();
-              document.write(newHtml);
-              document.close();
-            }
+          if (data.version && data.version !== APP_VERSION) {
+            try { localStorage.setItem('gaokao_web_update_ready', String(data.version)); } catch (e) {}
+            setWebUpdateReady(String(data.version));
+            console.log('[Web Update] 发现新版本 ' + data.version + '（仅提示，不自动刷新）');
+          } else {
+            try { localStorage.removeItem('gaokao_web_update_ready'); } catch (e) {}
+            setWebUpdateReady('');
           }
-        } catch (e) {
-          console.warn('[Web Update] 检查失败:', e);
-        }
+        } catch (e) { /* 静默：网页版拿不到清单也不影响使用 */ }
       }, 1500);
       return () => clearTimeout(timer);
     }
@@ -6817,8 +6879,9 @@ function App() {
     const allBookIds = books.map(b => b.id);
     const beforeStudy = studyBookIds.length;
     const beforeLibrary = libraryBookIds.length;
-    const newStudyIds = studyBookIds.filter(id => allBookIds.includes(id) || id === 'wrong-words');
-    const newLibraryIds = libraryBookIds.filter(id => allBookIds.includes(id));
+    // v2.91.0：初中可选词库即便尚未异步恢复进 books，也先放行，避免启动瞬间被误清
+    const newStudyIds = studyBookIds.filter(id => allBookIds.includes(id) || id === 'wrong-words' || JUNIOR_BOOK_IDS.includes(id));
+    const newLibraryIds = libraryBookIds.filter(id => allBookIds.includes(id) || JUNIOR_BOOK_IDS.includes(id));
     if (newStudyIds.length !== beforeStudy) {
       setStudyBookIds(newStudyIds);
       localStorage.setItem('gaokao_study_books', newStudyIds.join(','));
@@ -7616,7 +7679,13 @@ function App() {
       const fetched = await Promise.all(manifestUrls.map(async (u) => {
         try {
           console.log('[Update] Trying', u);
-          const r = await fetch(u, { cache: 'no-store', redirect: 'follow' });
+          // v2.91.0：单源挂起曾让 Promise.all 永远不落地，「检查更新」一直转圈 → 无法更新
+          const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+          const to = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 6000) : null;
+          let r;
+          try {
+            r = await fetch(u, { cache: 'no-store', redirect: 'follow', signal: ctrl ? ctrl.signal : undefined });
+          } finally { if (to) clearTimeout(to); }
           if (!r.ok) throw new Error('HTTP ' + r.status);
           const j = await r.json();
           if (!j || typeof j.versionCode !== 'number') throw new Error('bad manifest');
@@ -7663,12 +7732,9 @@ function App() {
       // 只认页面版本会漏掉「页面已热更到新号、APK 还是旧的」；只认安装包版本又会让网页版永远不提示。
       const localCode = Math.max(APP_VERSION_CODE, nativeCode > 0 ? nativeCode : 0);
       hasUpdate = data.versionCode > localCode || hasUpdate;
-      // v2.60.0：旧安装包没有系统播放器桥接，能力探测兜底
-      if (isNativeApp && !(window.NativePlayer && typeof window.NativePlayer.playUrl === 'function')
-          && data.versionCode >= 221) {
-        hasUpdate = true;
-        pkgOutdated = true;
-      }
+      // v2.91.0：移除 v2.60.0「NativePlayer 缺失即强制 hasUpdate」兜底。
+      // 该条件中 data.versionCode >= 221 对现在所有版本恒成立，一旦桥接注入稍晚
+      // 或缺失，就会永远判定「需要安装新版安装包」，用户装完仍提示 → 无法更新。
       const changelog = data.changelog || data.updateLog || '';
       let version = data.version || data.versionCode;
       const finalChangelog = hasUpdate ? (data.changelog || data.updateLog || changelog) : changelog;
@@ -7736,18 +7802,12 @@ function App() {
 
       // 静默模式：发现新版本且有APK地址，自动在后台下载
       if (silent && hasUpdate && (data.apkUrl || data.appUrl)) {
-        // 网页版：如果有 webHtmlUrl，静默更新页面内容（保留localStorage）
+        // v2.91.0：网页版只记录「新版本就绪」，绝不自动 reload / document.write。
+        // 自动刷新会打断背诵、清空界面状态，是「无辜刷新界面」的另一处根因。
         if (!isNativeApp && data.webHtmlUrl) {
-          // v2.62.0：不再 document.write 整页重写 —— 那会把用户踢回首页、打断听读播放。
-          // 改为：记录"新版本已就绪"，空闲时刷新（页面位置由 gaokao_section 自动恢复）
-          try { localStorage.setItem('gaokao_web_update_ready', String(data.versionCode || 0)); } catch (e) {}
-          const busy = (function () { try { return !!(window.__listenBusy && window.__listenBusy()); } catch (e) { return false; } })();
-          if (!busy) {
-            setTimeout(function () {
-              try { window.location.reload(); } catch (e) {}
-            }, 1200);
-            return;
-          }
+          try { localStorage.setItem('gaokao_web_update_ready', String(data.version || data.versionCode || 0)); } catch (e) {}
+          setWebUpdateReady(String(data.version || ''));
+          return;
         }
 
         setUpdateVersion(version);
@@ -9780,6 +9840,40 @@ function App() {
             <span className="settingsEntryCaret"><Icon name="chevronDown" /></span>
           </button>
 
+          {/* v2.91.0 初中扩展词库：默认不加载，由用户在这里选择是否下载 */}
+          <div className="juniorPack">
+            <div className="juniorPackHead">
+              <span className="juniorPackIcon"><Icon name="book" /></span>
+              <div className="juniorPackTitle">
+                <b>初中扩展词库</b>
+                <span>必考词 1902 · 阅读词汇 406</span>
+              </div>
+              <span className={'juniorPackState' + (juniorDownloaded ? ' on' : '')}>
+                {juniorDownloaded ? '已下载' : '未下载'}
+              </span>
+            </div>
+            <p className="juniorPackDesc">
+              默认<strong>不加载、不占用启动资源</strong>，也不出现在词库列表。需要时点「下载」，两本词库才会加入词库选择 / 背诵 / 听读 / 导出；数据随应用内置，点下载即在本机启用，<strong>无需联网</strong>，可随时移除。
+            </p>
+            <button className={(juniorDownloaded ? 'smallBtn ghost' : 'primary') + ' juniorPackBtn'}
+              disabled={juniorBusy} onClick={juniorDownloaded ? removeJuniorBooks : installJuniorBooks}>
+              <Icon name={juniorDownloaded ? 'trash' : 'download'} />
+              {juniorBusy ? '正在加载词库…' : (juniorDownloaded ? '移除初中扩展词库' : '下载初中扩展词库')}
+            </button>
+          </div>
+
+          {/* 网页版：只提示，由用户主动点刷新，绝不自动刷新 */}
+          {!isNativeApp && webUpdateReady && webUpdateReady !== APP_VERSION && (
+            <div className="webUpdateBar">
+              <Icon name="refresh" />
+              <span>有新版本 v{webUpdateReady} 可用（当前 v{APP_VERSION}）</span>
+              <button className="smallBtn" onClick={() => {
+                try { localStorage.removeItem('gaokao_web_update_ready'); } catch (e) {}
+                location.reload();
+              }}>刷新到新版本</button>
+            </div>
+          )}
+
           {meSettingsOpen && (
           <div id="meSettingsBody" className="settingsGroup meSettingsAll settingsDrawerBody">
             <p className="muted settingsLead">全部开关集中在此，点按右侧按钮即可开 / 关，修改后自动保存。</p>
@@ -9886,6 +9980,7 @@ function App() {
               <summary>初中扩展词库数据来源说明</summary>
               <div className="examFreqNote juniorSourceNote">
                 <p>「初中必考词」「初中阅读词汇」是新增的<strong>扩展词库</strong>，词条规格与高考 3500、985 阅读核心词等<strong>完全一致</strong>：中文释义、词性、考点、例句复用本 App 内置词库数据，同样带考频徽标、关联词检索、例句语境、发音与按考频顺序导出。</p>
+                <p className="muted">v2.91.0 起这两本词库改为<strong>按需下载</strong>：默认不加载、不占用启动资源，也不会出现在词库列表；在「我的」页点「下载初中扩展词库」后才加入，可随时移除。数据随应用内置，启用无需联网。</p>
                 <p><strong>初中必考词</strong>取自开源项目 <strong>jim-688/zhongkao-english-vocab</strong>（MIT，中考核心词表按词频排序、高频在前）；口径依据教育部《义务教育英语课程标准（2022 年版）》附录 3 三级词汇表 <strong>1600 词</strong>（含小学二级 505 词、初中应掌握 1095 词，允许各地增加 100~300 词）。</p>
                 <p><strong>初中阅读词汇</strong>来自公开中考阅读理解高频词表：易中考《近中考阅读理解高频词汇总》、《中考英语阅读核心高频考点词》（态度 / 逻辑 / 高频动名形 / 熟词生义 / 同义替换），以及开源 <strong>KyleBing/english-vocabulary</strong> 初中词表（MIT）中的拓展词，剔除与必考词重复的部分。</p>
                 <p className="muted">官方课标只给词汇<strong>范围</strong>、明确「不标注单词的词性和中文释义」，也<strong>从未发布逐词考查次数</strong>；中文释义与词性由本 App 内置词库补全，考频徽标沿用全库统一的真题 / 模拟卷语料实测口径，仅用于安排背诵优先级，<strong>不代表官方考查次数</strong>。上述词表均为公开可核验的第三方整理，非官方发布数据。</p>
