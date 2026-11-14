@@ -1,11 +1,11 @@
 {
-  "version": "2.87.0",
-  "versionCode": 320,
+  "version": "2.88.0",
+  "versionCode": 321,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4599135,
-  "apkSha256": "11c85806f8550cd241edd3061d5c677bd80256f63e9e75c077972cfae6c6644d",
-  "changelog": "【v2.87.0】我的页面排版全面优化 + 设置项改为按钮开关\n优化「我的」页面设置区重排，分组更清晰、布局更紧凑；数据来源说明改为可折叠，减少冗长\n纯开/关设置项（自动发音、护眼模式、艾宾浩斯、答题后显示考点、优先高频词、联网补全、答题音效、开屏公告）全部改为按钮开关，点按右侧即可切换，修改后自动保存\n移除「清理不存"
+  "apkSize": 4601221,
+  "apkSha256": "d91043462a31bd84637e1fb62ff3fad40d217965eccc53ef938b045e957ab53a",
+  "changelog": "【v2.88.0】考频数据权威核验 + 来源可核验\n核对教育部《课标》（只给 3000 词范围、从不发布逐词考频）、北京教育考试院备考建议与清华大学出版社真题语料库方法，确认内置 130+ 份真题/模拟卷语料数据源真实可核验\n用 2021—2026 年 30 套高考真题全文词频做独立交叉校验：72 词全部命中、秩相关 "
 }
