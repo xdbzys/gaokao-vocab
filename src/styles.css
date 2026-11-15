@@ -807,8 +807,9 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 }
 .familyCheckHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;             /* v2.95.0：窄屏不再挤出 flex 行 */
   gap: 10px;
   margin-bottom: 8px;
 }
@@ -816,6 +817,8 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   font-weight: 700;
   font-size: 14px;
   color: var(--text);
+  min-width: 0;                /* v2.95.0：允许收缩，避免顶飞按钮 */
+  flex: 1 1 auto;
 }
 .familyCheckBtn {
   flex-shrink: 0;
@@ -828,7 +831,8 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   border: none;
   cursor: pointer;
   transition: all 0.15s;
-  white-space: nowrap;
+  white-space: normal;         /* v2.95.0：不再强制不换行 */
+  max-width: 100%;
 }
 .familyCheckBtn:hover { background: var(--primary-dark); }
 .familyCheckBtn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -3679,3 +3683,29 @@ body.eye-care .juniorPackState.on { color: #4d7a2a; background: rgba(90, 140, 50
 .webUpdateBar span { flex: 1 1 auto; min-width: 130px; line-height: 1.5; }
 .webUpdateBar .smallBtn { flex: 0 0 auto; }
 body.eye-care .webUpdateBar { color: #7a4a12; background: rgba(200, 130, 30, .12); border-color: #d9b47a; }
+
+
+/* ===== v2.95.0：导入页窄屏布局加固（按钮与说明文字不再重叠） ===== */
+@media (max-width: 480px) {
+  .familyCheckHeader { flex-direction: column; align-items: stretch; }
+  .familyCheckBtn { width: 100%; }
+  .familyCheckBox { margin-bottom: 120px; } /* 避开 position:fixed 的底部 tabbar */
+}
+/* 应用内确认 / 输入弹窗（替代原生 confirm/prompt） */
+.tipActions { display: flex; gap: 10px; margin-top: 12px; }
+.tipActions .tipOk { margin-top: 0; flex: 1; }
+.tipActions .tipOk.danger { background: #dc2626; }
+.tipActions .tipCancel {
+  flex: 1; height: 42px; border: 1px solid var(--border);
+  border-radius: 12px; background: var(--bg-card);
+  color: var(--text-secondary); font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.tipActions .tipCancel:active { background: var(--bg); }
+.tipInput {
+  margin-top: 10px; width: 100%; box-sizing: border-box; height: 42px;
+  border: 1px solid var(--border); border-radius: 12px; padding: 0 12px;
+  font-size: 15px; font-family: inherit; color: var(--text); background: var(--bg);
+}
+.tipInput:focus { outline: none; border-color: var(--primary); }
+body.eye-care .tipActions .tipCancel { background: #efe6d2; color: #6b4a1c; border-color: #c9b48d; }
+body.eye-care .tipInput { background: #f6eee0; color: #4a3517; border-color: #c9b48d; }

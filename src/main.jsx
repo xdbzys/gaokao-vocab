@@ -102,10 +102,10 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.94.0';
+const APP_VERSION = '2.95.0';
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
-const APP_VERSION_CODE = 326;
+const APP_VERSION_CODE = 327;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -174,6 +174,42 @@ function appTip(message, title, autoCloseMs) {
     if (_appTipSink) { _appTipSink(text, title || '提示', autoCloseMs || 0); return; }
   } catch (e) {}
   try { console.log('[tip] ' + text); } catch (e) {}
+}
+
+/* v2.95.0：应用内确认 / 输入弹窗，替代 window.confirm / window.prompt。
+   WebView 对 file:// 页面的原生 JS 弹窗会套「网址为"file://"的网页显示：」标题、
+   系统绿色按钮与 favicon 裂图，与 App 风格完全不搭（用户反馈截图2）。
+   模块级 sink 由 App 组件注入，渲染复用 .tipMask/.tipCard 主题。 */
+let _inAppDialogSink = null;
+function confirmInApp(opts) {
+  var o = opts || {};
+  return new Promise(function (resolve) {
+    var payload = {
+      kind: 'confirm', title: o.title || '请确认',
+      body: String(o.body == null ? '' : o.body),
+      okText: o.okText || '确定', cancelText: o.cancelText || '取消',
+      danger: !!o.danger, resolve: resolve
+    };
+    var done = false;
+    try { if (_inAppDialogSink) { _inAppDialogSink(payload); done = true; } } catch (e) {}
+    if (!done) resolve(false); /* 无渲染容器时保守拒绝，绝不误删数据 */
+  });
+}
+function promptInApp(opts) {
+  var o = opts || {};
+  return new Promise(function (resolve) {
+    var payload = {
+      kind: 'prompt', title: o.title || '请输入',
+      body: String(o.body == null ? '' : o.body),
+      defaultValue: String(o.defaultValue == null ? '' : o.defaultValue),
+      placeholder: o.placeholder || '',
+      okText: o.okText || '确定', cancelText: o.cancelText || '取消',
+      danger: false, resolve: resolve
+    };
+    var done = false;
+    try { if (_inAppDialogSink) { _inAppDialogSink(payload); done = true; } } catch (e) {}
+    if (!done) resolve(null);
+  });
 }
 
 const POS_TAG_WORDS = 'vt|vi|v|n|adj|adv|ad|prep|pron|conj|interj|det|art|num|int|aux|modal|abbr|pl|sing|a';
@@ -2211,8 +2247,16 @@ function cleanOcrText(text) {
 }
 
 // 提取词干（去掉常见词性后缀），用于词族关联
+/* v2.95.0：词干还原是纯函数，但内置检索里同一个词会被重复计算上千次
+   （findWordFamily 与 findConfusingWords 都对全库每个 other 调 getStem）。
+   加一层带上限的记忆化缓存，语义完全不变、消除绝大部分重复运算。 */
+const _stemCache = new Map();
+const _STEM_CACHE_MAX = 40000;
 function getStem(word) {
   if (!word || word.length < 3) return word;
+  const _ck = word.toLowerCase();
+  const _hit = _stemCache.get(_ck);
+  if (_hit !== undefined) return _hit;
   // 注意：不包含 'y' 作为独立后缀，因为 rely→rel 会误匹配 relax
   // 不包含 'ation'/'ition'，因为 'tion' 已能处理，避免 creation→cre 过度剥离
   // y→i 的还原在剥离其他后缀时处理（如 happiness→happi→happy）
@@ -2248,6 +2292,8 @@ function getStem(word) {
     }
     rounds++;
   }
+  if (_stemCache.size >= _STEM_CACHE_MAX) _stemCache.clear();
+  _stemCache.set(_ck, result);
   return result;
 }
 
@@ -2956,18 +3002,46 @@ function getCachedConfusing(word) {
 // v2.86.0：全程使用内置词根算法 + 静态词表，不需要任何配置或联网请求。
 // newItems: 新导入的单词列表；allItems: 词库中所有单词
 // onProgress: 进度回调 (current, total, word, found)
-async function autoTagWordFamily(newItems, allItems, onProgress) {
+/* v2.95.0：让出主线程的显式 yield。旧实现虽声明 async 但函数体零 await/yield，
+   对 N≈6503 × M≈15175 词做 O(N×M) 双层同步遍历（含每对 Levenshtein DP 矩阵），
+   主线程冻结数十秒 → 点击「用内置算法检索当前词库」直接 ANR（实测 8s 不返回）。 */
+function yieldToBrowser() {
+  return new Promise(function (resolve) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(resolve, { timeout: 50 });
+      } else {
+        setTimeout(resolve, 0);
+      }
+    } catch (e) { setTimeout(resolve, 0); }
+  });
+}
+
+/* options: { shouldAbort: ()=>bool, timeBudgetMs: number, maxItems: number } */
+async function autoTagWordFamily(newItems, allItems, onProgress, options) {
+  const opts = options || {};
+  const shouldAbort = typeof opts.shouldAbort === 'function' ? opts.shouldAbort : null;
+  const timeBudgetMs = opts.timeBudgetMs || 12;   // 单个时间片预算（≈ 一帧内），与设备速度无关
+  const maxItems = opts.maxItems || 8000;
   const cache = loadWordFamilyCache();
   const confusingCache = loadConfusingCache();
   let totalChecked = 0;
   let totalFound = 0;
   let totalConfusing = 0;
-  const total = newItems.length;
+  let aborted = false;
+  const truncated = newItems.length > maxItems;
+  const total = Math.min(newItems.length, maxItems);
+  let sliceStart = (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
-  for (const item of newItems) {
+  /* v2.95.0 时间片驱动：累计处理耗时超过预算就让出主线程。
+     固定「每 N 词一让出」在低端机仍会产生 ~1s 的 LongTask；按时间预算切分
+     可保证任何设备、任何词库规模下单个任务都不超过约一帧，界面持续可响应。 */
+  for (let i = 0; i < total; i++) {
+    if (shouldAbort && shouldAbort()) { aborted = true; break; }
+    const item = newItems[i];
     const word = item.term.toLowerCase().trim();
     if (!word || word.length < 2) { totalChecked++; continue; }
-    if (cache[word]) { totalChecked++; continue; }   // 已检查过的词直接跳过
+    if (cache[word]) { totalChecked++; continue; }   // 已检查过的词直接跳过（天然断点续跑）
 
     // 同源词族：内置词根算法（含人工校对表、隐藏同源词、假同源过滤）
     const family = findWordFamily(item.term, allItems).map(i => i.term.toLowerCase());
@@ -2980,12 +3054,24 @@ async function autoTagWordFamily(newItems, allItems, onProgress) {
     if (confusing.length) totalConfusing++;
 
     totalChecked++;
-    if (onProgress) onProgress(totalChecked, total, word, family.length + confusing.length);
+
+    // 达到时间预算或到达末尾：上报一次进度并让出主线程
+    const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    if (now - sliceStart >= timeBudgetMs || i === total - 1) {
+      if (onProgress) onProgress(i + 1, total, word, 0);
+      await yieldToBrowser();
+      sliceStart = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    }
   }
 
-  saveWordFamilyCache(cache);
-  saveConfusingCache(confusingCache);
-  return { totalChecked, totalFound, totalConfusing, cache };
+  /* 只在结尾写一次盘；配额异常不再静默吞掉 */
+  try {
+    saveWordFamilyCache(cache);
+    saveConfusingCache(confusingCache);
+  } catch (e) {
+    if (onProgress) onProgress(totalChecked, total, '缓存写入失败：' + (e && e.message), -1);
+  }
+  return { totalChecked, totalFound, totalConfusing, cache, aborted, truncated };
 }
 
 
@@ -3051,6 +3137,10 @@ function findConfusingWords(term, items) {
     for (const item of items) {
       const other = item.term.toLowerCase().trim();
       if (other === key || seen.has(other) || other.length < 3) continue;
+      // v2.95.0：下方命中条件两个分支都要求「长度差 <= 2」，长度差 > 3 的词
+      // 不可能命中，提前跳过可避免为绝大多数词分配 (m+1)×(n+1) 的 DP 矩阵。
+      // 语义与修复前完全一致，仅剪掉无效计算。
+      if (Math.abs(key.length - other.length) > 3) continue;
       // 排除词族成员
       if (familyTerms.has(other)) continue;
       // v2.86.0：词干相同属于同源派生（create / creation 等），
@@ -4979,6 +5069,17 @@ function App() {
     return function () { _appTipSink = null; };
   }, []);
 
+  // v2.95.0：应用内确认 / 输入弹窗（替代原生 confirm/prompt）
+  const [inAppDialog, setInAppDialog] = useState(null);
+  const [inAppDialogValue, setInAppDialogValue] = useState('');
+  useEffect(() => {
+    _inAppDialogSink = function (payload) {
+      setInAppDialogValue(payload.kind === 'prompt' ? (payload.defaultValue || '') : '');
+      setInAppDialog(payload);
+    };
+    return function () { _inAppDialogSink = null; };
+  }, []);
+
   const [showBookPicker, setShowBookPicker] = useState(false);
   const [showBookPicker2, setShowBookPicker2] = useState(false);
 
@@ -5306,6 +5407,8 @@ function App() {
   // 联网关联词检查状态
   const [familyCheckStatus, setFamilyCheckStatus] = useState('');
   const [familyChecking, setFamilyChecking] = useState(false);
+  // v2.95.0：内置检索可中断标志（检索中再次点按钮即取消）
+  const familyCheckAbortRef = useRef(false);
   // v2.85.0：免密钥联网补全（关联词 + 考频）状态
   const [netEnrichStatus, setNetEnrichStatus] = useState('');
   const [netEnriching, setNetEnriching] = useState(false);
@@ -6888,10 +6991,10 @@ function App() {
   }, [settings.eyeCare]);
 
   // 问题5：重置某词库进度
-  function resetBookProgress(bookId) {
+  async function resetBookProgress(bookId) {
     const book = books.find(b => b.id === bookId);
     if (!book) return;
-    if (!confirm(`确定重置「${book.name}」的背诵进度吗？`)) return;
+    if (!await confirmInApp({ title: '重置背诵进度', body: `确定重置「${book.name}」的背诵进度吗？`, danger: true })) return;
     const next = { ...progressRef.current };
     book.items.forEach(item => { delete next[termKey(item.term)]; });
     progressRef.current = next;
@@ -7173,8 +7276,8 @@ function App() {
     });
   }
 
-  function clearWrongWords() {
-    if (!confirm('确定清空错词本吗？')) return;
+  async function clearWrongWords() {
+    if (!await confirmInApp({ title: '清空错词本', body: '确定清空错词本吗？', danger: true })) return;
     setWrongWords([]);
     saveWrongWords([]);
   }
@@ -7338,7 +7441,9 @@ function App() {
 
       if (uniqueFiles.length > 0) {
         const list = uniqueFiles.map((f, i) => `${i + 1}. ${f.name}  (${f.label})`).join('\n');
-        const choice = prompt(`找到以下备份文件（共 ${uniqueFiles.length} 个）：\n\n${list}\n\n请输入序号选择要恢复的文件：\n  • 输入数字序号 → 从对应文件恢复\n  • 输入 0 → 手动选择其他文件\n  • 留空 → 取消`);
+        const choice = await promptInApp({ title: '选择备份文件',
+          body: `找到以下备份文件（共 ${uniqueFiles.length} 个）：\n\n${list}\n\n请输入序号选择要恢复的文件：\n  • 输入数字序号 → 从对应文件恢复\n  • 输入 0 → 手动选择其他文件\n  • 留空 → 取消`,
+          placeholder: '输入序号，留空取消' });
         if (choice === null || choice.trim() === '') return;
         const choiceStr = choice.trim();
 
@@ -7367,14 +7472,13 @@ function App() {
           }
         }
       } else {
-        const goManual = confirm(
-          '未自动找到备份文件。\n\n' +
+        const goManual = await confirmInApp({ title: '未找到备份文件',
+          body: '未自动找到备份文件。\n\n' +
           '可能的原因：\n' +
           '1. 备份文件在其他文件夹中\n' +
           '2. 旧版本备份位置不同\n' +
           '3. 文件被移动或删除\n\n' +
-          '是否手动选择备份文件？'
-        );
+          '是否手动选择备份文件？' });
         if (!goManual) return;
       }
     }
@@ -7442,32 +7546,32 @@ function App() {
     }
   }
 
-  function createBook() {
-    const name = prompt('请输入词库名称', '我的高考词库');
+  async function createBook() {
+    const name = await promptInApp({ title: '新建词库', body: '请输入词库名称', defaultValue: '我的高考词库', placeholder: '词库名称' });
     if (!name) return;
     const nb = { id: `book-${Date.now()}`, name, editable: true, items: [] };
     updateBooks([...books, nb]); switchLibraryBook(nb.id); setSection('library');
   }
 
-  function renameBook() {
+  async function renameBook() {
     if (!activeBook.editable) return appTip('内置词库不可改名');
-    const name = prompt('请输入新名称', activeBook.name);
+    const name = await promptInApp({ title: '重命名词库', body: '请输入新名称', defaultValue: activeBook.name, placeholder: '新名称' });
     if (!name) return;
     updateBooks(books.map(b => b.id === activeBook.id ? { ...b, name } : b));
   }
 
-  function deleteBook() {
+  async function deleteBook() {
     if (!activeBook.editable) return appTip('内置词库不能删除');
-    if (!confirm(`确定删除词库「${activeBook.name}」？`)) return;
+    if (!await confirmInApp({ title: '删除词库', body: `确定删除词库「${activeBook.name}」？`, danger: true })) return;
     const next = books.filter(b => b.id !== activeBook.id);
     updateBooks(next);
     setStudyBookIds(['gaokao-3500']); try { localStorage.setItem('gaokao_study_books', 'gaokao-3500'); } catch {}
     setLibraryBookIds(['gaokao-3500']); try { localStorage.setItem('gaokao_library_books', 'gaokao-3500'); } catch {}
   }
 
-  function deleteItem(itemId) {
+  async function deleteItem(itemId) {
     if (!activeBook.editable) return;
-    if (!confirm('确定删除？')) return;
+    if (!await confirmInApp({ title: '删除词条', body: '确定删除？', danger: true })) return;
     updateBooks(books.map(b => b.id === activeBook.id ? { ...b, items: b.items.filter(i => i.id !== itemId) } : b));
     setIndex(0);
   }
@@ -7515,40 +7619,57 @@ function App() {
     if (settings.netEnrich !== false) {
       runNetEnrichFor(newItems, '导入词联网补全');
     }
-    // 内置算法：同源词族 + 易混词，本地即时计算并写入缓存
+    // 内置算法：同源词族 + 易混词，分片让出主线程（导入后更保守，不抢首屏）
     setFamilyCheckStatus('正在用内置算法检索同源词族与易混词...');
     setFamilyChecking(true);
+    familyCheckAbortRef.current = false;
     try {
       const allItems = books.flatMap(b => b.items);
-      const result = await autoTagWordFamily(newItems, allItems, (cur, total, word, found) => {
-        setFamilyCheckStatus(`内置检索中 ${cur}/${total}：${word} ${found > 0 ? `✓${found}个` : ''}`);
-      });
-      setFamilyCheckStatus(`内置算法检索完成：${result.totalChecked} 个单词，${result.totalFound} 个有同源词族、${result.totalConfusing} 个有易混词`);
+      const result = await autoTagWordFamily(newItems, allItems, (cur, total, word) => {
+        setFamilyCheckStatus(`内置检索中 ${cur}/${total}${word ? '：' + word : ''}`);
+      }, { shouldAbort: () => familyCheckAbortRef.current, timeBudgetMs: 8 });
+      setFamilyCheckStatus(result.aborted
+        ? `已取消：已处理 ${result.totalChecked} 个单词，结果已保存`
+        : `内置算法检索完成：${result.totalChecked} 个单词，${result.totalFound} 个有同源词族、${result.totalConfusing} 个有易混词`);
     } catch (e) {
       setFamilyCheckStatus('关联词检索失败：' + e.message);
     } finally {
       setFamilyChecking(false);
+      familyCheckAbortRef.current = false;
     }
   }
 
   // 手动触发：用内置算法检索当前词库所有单词的同源词族与易混词
   async function runManualFamilyCheck() {
-    if (familyChecking) return;
+    // v2.95.0：检索中再次点击 = 取消（分片循环会在下一个让出点退出）
+    if (familyChecking) {
+      familyCheckAbortRef.current = true;
+      setFamilyCheckStatus('正在取消检索…');
+      return;
+    }
     const itemsToCheck = libraryActiveBook.items;
     if (!itemsToCheck.length) { setFamilyCheckStatus('当前词库没有单词'); return; }
 
+    familyCheckAbortRef.current = false;
     setFamilyChecking(true);
     setFamilyCheckStatus('正在用内置算法检索关联词和易混词...');
     try {
       const allItems = books.flatMap(b => b.items);
-      const result = await autoTagWordFamily(itemsToCheck, allItems, (cur, total, word, found) => {
-        setFamilyCheckStatus(`内置检索中 ${cur}/${total}：${word} ${found > 0 ? `✓${found}个` : ''}`);
-      });
-      setFamilyCheckStatus(`内置算法检索完成：${result.totalChecked} 个单词，${result.totalFound} 个有同源词族、${result.totalConfusing} 个有易混词`);
+      const result = await autoTagWordFamily(itemsToCheck, allItems, (cur, total, word) => {
+        setFamilyCheckStatus(`内置检索中 ${cur}/${total}${word ? '：' + word : ''}`);
+      }, { shouldAbort: () => familyCheckAbortRef.current, timeBudgetMs: 12 });
+      if (result.aborted) {
+        setFamilyCheckStatus(`已取消：已处理 ${result.totalChecked} 个单词，结果已保存，可再次点击继续`);
+      } else if (result.truncated) {
+        setFamilyCheckStatus(`已完成前 ${result.totalChecked} 个单词（${result.totalFound} 个有同源词族、${result.totalConfusing} 个有易混词），可再次点击继续`);
+      } else {
+        setFamilyCheckStatus(`内置算法检索完成：${result.totalChecked} 个单词，${result.totalFound} 个有同源词族、${result.totalConfusing} 个有易混词`);
+      }
     } catch (e) {
       setFamilyCheckStatus('检索失败：' + e.message);
     } finally {
       setFamilyChecking(false);
+      familyCheckAbortRef.current = false;
     }
   }
 
@@ -9926,9 +10047,8 @@ function App() {
                 <button
                   className={`familyCheckBtn${familyChecking ? ' checking' : ''}`}
                   onClick={runManualFamilyCheck}
-                  disabled={familyChecking}
                 >
-                  {familyChecking ? '检索中...' : '用内置算法检索当前词库'}
+                  {familyChecking ? '取消检索' : '用内置算法检索当前词库'}
                 </button>
               </div>
               <p className="familyCheckDesc">
@@ -10364,8 +10484,8 @@ function App() {
                     </div>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       <button className="smallBtn dangerGhost" onClick={() => resetBookProgress(b.id)}>重置</button>
-                      <button className="smallBtn dangerGhost" style={{ color: '#dc2626' }} onClick={() => {
-                        if (!confirm(`确定删除词库「${b.name}」？\n${isBuiltIn ? '内置词库删除后可在下方恢复。' : '自定义词库删除后无法恢复。'}`)) return;
+                      <button className="smallBtn dangerGhost" style={{ color: '#dc2626' }} onClick={async () => {
+                        if (!await confirmInApp({ title: '删除词库', body: `确定删除词库「${b.name}」？\n${isBuiltIn ? '内置词库删除后可在下方恢复。' : '自定义词库删除后无法恢复。'}`, danger: true })) return;
                         if (isBuiltIn) {
                           // 内置词库：加入隐藏列表
                           const next = [...hiddenBookIds, b.id];
@@ -10464,8 +10584,8 @@ function App() {
 
           {/* 危险区域 */}
           <div className="dangerSection">
-            <button className="dangerGhost fullWidth" onClick={() => {
-              if (confirm('确定清除所有自定义词库吗？此操作不可撤销。')) {
+            <button className="dangerGhost fullWidth" onClick={async () => {
+              if (await confirmInApp({ title: '清除所有自定义词库', body: '确定清除所有自定义词库吗？此操作不可撤销。', danger: true })) {
                 localStorage.removeItem('customBooks');
                 setBooks([...builtInBooks]);
                 appTip('已清除所有自定义词库');
@@ -10824,6 +10944,42 @@ function App() {
             </div>
             <pre className="tipBody">{tipMsg.text}</pre>
             <button className="tipOk" onClick={() => setTipMsg(null)}>知道了</button>
+          </div>
+        </div>
+      )}
+
+      {/* v2.95.0 应用内确认 / 输入弹窗（替代 window.confirm / window.prompt，
+          不再出现「网址为 file:// 的网页显示」系统标题与裂图） */}
+      {inAppDialog && (
+        <div className="tipMask" onClick={() => {
+          const r = inAppDialog.resolve; const isPrompt = inAppDialog.kind === 'prompt';
+          setInAppDialog(null);
+          if (r) r(isPrompt ? null : false);
+        }}>
+          <div className="tipCard" onClick={(e) => e.stopPropagation()}>
+            <div className="tipHead">
+              <Icon name="info" />
+              <b>{inAppDialog.title}</b>
+            </div>
+            {inAppDialog.body ? <pre className="tipBody">{inAppDialog.body}</pre> : null}
+            {inAppDialog.kind === 'prompt' ? (
+              <input className="tipInput" autoComplete="off" value={inAppDialogValue}
+                placeholder={inAppDialog.placeholder}
+                onChange={(e) => setInAppDialogValue(e.target.value)} />
+            ) : null}
+            <div className="tipActions">
+              <button className="tipCancel" onClick={() => {
+                const r = inAppDialog.resolve; const isPrompt = inAppDialog.kind === 'prompt';
+                setInAppDialog(null);
+                if (r) r(isPrompt ? null : false);
+              }}>{inAppDialog.cancelText}</button>
+              <button className={'tipOk' + (inAppDialog.danger ? ' danger' : '')} onClick={() => {
+                const r = inAppDialog.resolve; const isPrompt = inAppDialog.kind === 'prompt';
+                const v = inAppDialogValue;
+                setInAppDialog(null);
+                if (r) r(isPrompt ? v : true);
+              }}>{inAppDialog.okText}</button>
+            </div>
           </div>
         </div>
       )}
