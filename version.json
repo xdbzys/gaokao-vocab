@@ -1,11 +1,11 @@
 {
   "version": "2.95.0",
-  "versionCode": 327,
+  "versionCode": 328,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4599122,
-  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d",
-  "changelog": "【v2.95.0】修复「用内置算法检索当前词库」卡死 + 界面显示错误\n① 修复点击「用内置算法检索当前词库」导致应用卡死：内置检索改为分片让出主线程、带进度与可取消，避免超大词库一次性同步遍历拖垮界面。\n② 修复导入页说明卡片在窄屏下的文字与按钮重叠、底部被导航栏遮挡。\n③ 修复删除/清空/重命名等确认框弹出系统原生对话框（暴露「网址为 file:// 的网页显示」、绿色系统按钮与裂图）：全部改为应用内统一弹窗。\n④ 全局排查并加固同类问题：同步全量计算、原生弹窗、相对路径裂图资源；新增 CI 静态门禁（禁止原生弹窗、要求检索必须分片），确保不再复发。\n更新方式：我的 → 版本更新 → 下载安装新 APK（覆盖安装，学习记录保留）。"
+  "apkSize": 4620838,
+  "apkSha256": "6c0d7b1d957eed4e4815d843fe97df11ee19d8d61c86558f8cc267e7a51d5b4a",
+  "changelog": "【v2.95.0】修复「用内置算法检索当前词库」卡死 + 界面显示错误\n① 修复点击「用内置算法检索当前词库」导致应用卡死：内置检索改为分片让出主线程、带进度与可取消，避免超大词库一次性同步遍历拖垮界面。\n② 修复导入页说明卡片在窄屏下的文字与按钮重叠、底部被导航栏遮挡。\n③ 修复删除/清空/重命名等确认框弹出系统原生"
 }
