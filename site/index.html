@@ -1380,13 +1380,15 @@
       <p>持续迭代，精益求精</p>
     </div>
     <div class="changelog-list">
-      <div class="changelog-item" data-ver="2.94.0">
-        <div class="changelog-version">v2.94.0</div>
+      <div class="changelog-item" data-ver="2.95.0">
+        <div class="changelog-version">v2.95.0</div>
         <div class="changelog-content">
           <div class="date">2026年11月</div>
           <ul>
-            <li><span class="changelog-tag tag-new">新增</span>① 移除「设置 → 数据来源说明」里最偏技术/内部的「考频数据真实性核验」整块（含交叉校验 ρ 值、开源项目引用与机构引述等仅开发侧可见的内容），避免对终端用户暴露实现细节。</li>
-            <li><span class="changelog-tag tag-new">新增</span>② 「高考考频数据说明 / 真题文章来源 / 联网补全 / 关联词与导出 / 初中扩展词库」等面向用户的来源说明保留，仅剔除开发内部信息。</li>
+            <li><span class="changelog-tag tag-new">新增</span>① 修复点击「用内置算法检索当前词库」导致应用卡死：内置检索改为分片让出主线程、带进度与可取消，避免超大词库一次性同步遍历拖垮界面。</li>
+            <li><span class="changelog-tag tag-new">新增</span>② 修复导入页说明卡片在窄屏下的文字与按钮重叠、底部被导航栏遮挡。</li>
+            <li><span class="changelog-tag tag-new">新增</span>③ 修复删除/清空/重命名等确认框弹出系统原生对话框（暴露「网址为 file:// 的网页显示」、绿色系统按钮与裂图）：全部改为应用内统一弹窗。</li>
+            <li><span class="changelog-tag tag-new">新增</span>④ 全局排查并加固同类问题：同步全量计算、原生弹窗、相对路径裂图资源；新增 CI 静态门禁（禁止原生弹窗、要求检索必须分片），确保不再复发。</li>
             <li><span class="changelog-tag tag-new">新增</span>更新方式：我的 → 版本更新 → 下载安装新 APK（覆盖安装，学习记录保留）。</li>
           </ul>
         </div>
