@@ -1380,15 +1380,15 @@
       <p>持续迭代，精益求精</p>
     </div>
     <div class="changelog-list">
-      <div class="changelog-item" data-ver="2.95.0">
-        <div class="changelog-version">v2.95.0</div>
+      <div class="changelog-item" data-ver="2.96.0">
+        <div class="changelog-version">v2.96.0</div>
         <div class="changelog-content">
           <div class="date">2026年11月</div>
           <ul>
-            <li><span class="changelog-tag tag-new">新增</span>① 修复点击「用内置算法检索当前词库」导致应用卡死：内置检索改为分片让出主线程、带进度与可取消，避免超大词库一次性同步遍历拖垮界面。</li>
-            <li><span class="changelog-tag tag-new">新增</span>② 修复导入页说明卡片在窄屏下的文字与按钮重叠、底部被导航栏遮挡。</li>
-            <li><span class="changelog-tag tag-new">新增</span>③ 修复删除/清空/重命名等确认框弹出系统原生对话框（暴露「网址为 file:// 的网页显示」、绿色系统按钮与裂图）：全部改为应用内统一弹窗。</li>
-            <li><span class="changelog-tag tag-new">新增</span>④ 全局排查并加固同类问题：同步全量计算、原生弹窗、相对路径裂图资源；新增 CI 静态门禁（禁止原生弹窗、要求检索必须分片），确保不再复发。</li>
+            <li><span class="changelog-tag tag-new">新增</span>① 修复词族/易混词缓存串数据：原缓存键只含「单词+词库长度」，切换成长度相同但内容不同的词库时会命中旧缓存，显示上一个词库才有的关联词及错误释义；现加入词库内容指纹，词库变化即整体失效。</li>
+            <li><span class="changelog-tag tag-new">新增</span>② 修复开启「自动跳转」后延迟窗口内连续答题/手动翻页叠加多个定时器导致连跳多词、乱跳的问题；改为单一定时器 + 令牌校验，翻页即作废旧跳转。</li>
+            <li><span class="changelog-tag tag-new">新增</span>③ 修复后台保存监听器泄漏：visibilitychange 用匿名函数注册导致无法移除，改为具名函数成对注册/移除。</li>
+            <li><span class="changelog-tag tag-new">新增</span>④ 修复网页版更新提示用字符串不等判断，可能把更旧版本误报为新版本；改为语义化版本比较，仅远端更高才提示。</li>
             <li><span class="changelog-tag tag-new">新增</span>更新方式：我的 → 版本更新 → 下载安装新 APK（覆盖安装，学习记录保留）。</li>
           </ul>
         </div>
