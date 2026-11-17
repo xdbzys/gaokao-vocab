@@ -1,11 +1,11 @@
 {
   "version": "2.96.0",
-  "versionCode": 328,
+  "versionCode": 329,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4599122,
-  "apkSha256": "b40318aa6fbd2b35bc02a0bedb1e5dacde5b97418a9b815d0bed54753037dc6d",
-  "changelog": "【v2.96.0】全面排查修复内在 bug\n① 修复词族/易混词缓存串数据：原缓存键只含「单词+词库长度」，切换成长度相同但内容不同的词库时会命中旧缓存，显示上一个词库才有的关联词及错误释义；现加入词库内容指纹，词库变化即整体失效。\n② 修复开启「自动跳转」后延迟窗口内连续答题/手动翻页叠加多个定时器导致连跳多词、乱跳的问题；改为单一定时器 + 令牌校验，翻页即作废旧跳转。\n③ 修复后台保存监听器泄漏：visibilitychange 用匿名函数注册导致无法移除，改为具名函数成对注册/移除。\n④ 修复网页版更新提示用字符串不等判断，可能把更旧版本误报为新版本；改为语义化版本比较，仅远端更高才提示。\n更新方式：我的 → 版本更新 → 下载安装新 APK（覆盖安装，学习记录保留）。"
+  "apkSize": 4621219,
+  "apkSha256": "9cfedfbaa0b69ecfcd7fc30153e7164044740df2083455a144d2a0d5d31b0950",
+  "changelog": "【v2.96.0】全面排查修复内在 bug\n① 修复词族/易混词缓存串数据：原缓存键只含「单词+词库长度」，切换成长度相同但内容不同的词库时会命中旧缓存，显示上一个词库才有的关联词及错误释义；现加入词库内容指纹，词库变化即整体失效。\n② 修复开启「自动跳转」后延迟窗口内连续答题/手动翻页叠加多个定时器导致连跳多词、乱跳"
 }
