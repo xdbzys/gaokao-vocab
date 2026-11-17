@@ -102,10 +102,10 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '2.95.0';
+const APP_VERSION = '2.96.0';
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
-const APP_VERSION_CODE = 327;
+const APP_VERSION_CODE = 328;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -181,6 +181,17 @@ function appTip(message, title, autoCloseMs) {
    系统绿色按钮与 favicon 裂图，与 App 风格完全不搭（用户反馈截图2）。
    模块级 sink 由 App 组件注入，渲染复用 .tipMask/.tipCard 主题。 */
 let _inAppDialogSink = null;
+// v2.96.0：语义化版本比较，仅当远端严格大于本地才提示更新，避免字符串比较把旧版本误报成新版本
+function isNewerVersion(remote, local) {
+  const parse = v => String(v || '').split('.').map(x => { const n = parseInt(x, 10); return isNaN(n) ? 0 : n; });
+  const a = parse(remote), b = parse(local), L = Math.max(a.length, b.length);
+  for (let i = 0; i < L; i++) {
+    const x = a[i] || 0, y = b[i] || 0;
+    if (x > y) return true;
+    if (x < y) return false;
+  }
+  return false;
+}
 function confirmInApp(opts) {
   var o = opts || {};
   return new Promise(function (resolve) {
@@ -2787,8 +2798,18 @@ function getHiddenCognates(word) {
 // 核心原则：只有真正的词根变形才算关联，单纯长得像不算
 // v2.44.0 添加结果缓存，避免低端设备重复计算
 const _wordFamilyCache = new Map();
+// v2.96.0：词库内容指纹。缓存 key 只含 term+length 时，切换成"长度相同但内容不同"的词库会命中旧缓存，
+// 显示上一个词库才有的同源词/易混词。指纹随 books 变化更新，并据此让全部缓存失效。
+let _vocabFingerprint = '';
+function setVocabFingerprint(fp) {
+  if (fp === _vocabFingerprint) return;
+  _vocabFingerprint = fp;
+  _wordFamilyCache.clear();
+  _confusingCache.clear();
+  _stemCache.clear();
+}
 function findWordFamily(term, items) {
-  const cacheKey = term.toLowerCase().trim() + '|' + items.length;
+  const cacheKey = term.toLowerCase().trim() + '|' + items.length + '|' + _vocabFingerprint;
   if (_wordFamilyCache.has(cacheKey)) return _wordFamilyCache.get(cacheKey);
   const seen = new Set([term]);
   const related = [];
@@ -3103,7 +3124,7 @@ function commonPrefixLen(a, b) {
 // v2.44.0 添加结果缓存，避免低端设备重复计算
 const _confusingCache = new Map();
 function findConfusingWords(term, items) {
-  const cacheKey = term.toLowerCase().trim() + '|' + items.length;
+  const cacheKey = term.toLowerCase().trim() + '|' + items.length + '|' + _vocabFingerprint;
   if (_confusingCache.has(cacheKey)) return _confusingCache.get(cacheKey);
   const key = term.toLowerCase().trim();
   const keyStem = getStem(key);
@@ -5529,7 +5550,7 @@ function App() {
           const resp = await fetch('app-update.json?v=' + Date.now());
           if (!resp.ok) return;
           const data = await resp.json();
-          if (data.version && data.version !== APP_VERSION) {
+          if (data.version && isNewerVersion(data.version, APP_VERSION)) {
             try { localStorage.setItem('gaokao_web_update_ready', String(data.version)); } catch (e) {}
             setWebUpdateReady(String(data.version));
             console.log('[Web Update] 发现新版本 ' + data.version + '（仅提示，不自动刷新）');
@@ -6470,6 +6491,8 @@ function App() {
     }
     wordBookMapRef.current = map;
     wordPointsMapRef.current = pointsMap;
+    // v2.96.0：词库内容变化时刷新指纹 → 让词族/易混词/词干缓存整体失效，杜绝跨词库串数据
+    setVocabFingerprint(books.map(b => b.id + ':' + b.items.length).join('|'));
     return items;
   }, [books]);
 
@@ -6943,12 +6966,13 @@ function App() {
   // APP进入后台或关闭时立即保存进度，防止数据丢失
   useEffect(() => {
     const handler = () => { saveProgress(progressRef.current); };
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') handler();
-    });
+    // v2.96.0：具名函数成对注册/移除，修复 visibilitychange 无法清理的泄漏
+    const onVis = () => { if (document.visibilityState === 'hidden') handler(); };
+    document.addEventListener('visibilitychange', onVis);
     window.addEventListener('pagehide', handler);
     window.addEventListener('beforeunload', handler);
     return () => {
+      document.removeEventListener('visibilitychange', onVis);
       window.removeEventListener('pagehide', handler);
       window.removeEventListener('beforeunload', handler);
     };
@@ -7073,6 +7097,9 @@ function App() {
   // 使用 ref 确保异步回调中总是调用最新的 nextCard/prevCard
   const nextCardRef = useRef(() => {});
   const prevCardRef = useRef(() => {});
+  // v2.96.0：自动跳转定时器 + 令牌。防止延迟窗内连续答题/手动翻页叠加多个定时器导致乱跳。
+  const autoJumpTimerRef = useRef(null);
+  const autoJumpTokenRef = useRef(0);
   // 记录最近一次回答的单词，用于"上一个"按钮优先回退
   const lastAnsweredRef = useRef(null);
   // 最近答错的单词（term），短时间内不重复出现
@@ -7177,6 +7204,10 @@ function App() {
   }, [section, showReview]);
 
   function nextCard() {
+    // v2.96.0：手动/自动翻页都让旧的自动跳转定时器失效，避免叠加乱跳
+    if (autoJumpTimerRef.current) { clearTimeout(autoJumpTimerRef.current); autoJumpTimerRef.current = null; }
+    autoJumpTokenRef.current++;
+    setAutoJumping(false);
     // 把当前单词加入"已看"记录
     if (learnItems.length > 0) {
       const currentItem = learnItems[index % learnItems.length];
@@ -7531,7 +7562,12 @@ function App() {
       }
       if (!isWrongWordBook && settings.autoJump) {
         setAutoJumping(true);
-        setTimeout(() => {
+        // v2.96.0：先清掉可能残留的旧定时器，再发放新令牌
+        if (autoJumpTimerRef.current) { clearTimeout(autoJumpTimerRef.current); autoJumpTimerRef.current = null; }
+        const myToken = ++autoJumpTokenRef.current;
+        autoJumpTimerRef.current = setTimeout(() => {
+          autoJumpTimerRef.current = null;
+          if (myToken !== autoJumpTokenRef.current) return;  // 已被更新的答题/手动翻页作废
           nextCardRef.current();  // 使用 ref 确保调用最新版本
           setAutoJumping(false);
         }, settings.autoJumpDelay || 1500);
@@ -10133,7 +10169,7 @@ function App() {
           </div>
 
           {/* 网页版：只提示，由用户主动点刷新，绝不自动刷新 */}
-          {!isNativeApp && webUpdateReady && webUpdateReady !== APP_VERSION && (
+          {!isNativeApp && webUpdateReady && isNewerVersion(webUpdateReady, APP_VERSION) && (
             <div className="webUpdateBar">
               <Icon name="refresh" />
               <span>有新版本 v{webUpdateReady} 可用（当前 v{APP_VERSION}）</span>
