@@ -3864,6 +3864,47 @@ body.eye-care .webUpdateBar { color: #7a4a12; background: rgba(200, 130, 30, .12
 .tipInput:focus { outline: none; border-color: var(--primary); }
 body.eye-care .tipActions .tipCancel { background: #efe6d2; color: #6b4a1c; border-color: #c9b48d; }
 body.eye-care .tipInput { background: #f6eee0; color: #4a3517; border-color: #c9b48d; }
+
+/* ===== v2.97.0：完整更新日志弹窗（应用内，离线可看全部历史版本） ===== */
+.fullLogCard {
+  width: min(560px, 92vw);
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 16px 16px 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.28);
+}
+body.eye-care .fullLogCard { background: #f6eee0; color: #4a3517; }
+.fullLogCard .tipHead { position: relative; justify-content: flex-start; margin-bottom: 10px; }
+.fullLogClose {
+  position: absolute; right: 0; top: -2px;
+  width: 32px; height: 32px; line-height: 28px;
+  border: none; border-radius: 8px; background: transparent;
+  color: var(--text-secondary); font-size: 24px; cursor: pointer;
+}
+.fullLogClose:active { background: var(--bg); }
+.fullLogScroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; }
+.fullLogRel { margin-bottom: 14px; }
+.fullLogVer {
+  font-size: 14px; font-weight: 800; color: var(--primary);
+  padding: 4px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 6px;
+}
+.fullLogItem {
+  display: flex; gap: 8px; align-items: flex-start;
+  font-size: 12.5px; line-height: 1.6; padding: 3px 0; color: var(--text-secondary);
+}
+.fullLogTag {
+  flex: none; font-size: 11px; font-weight: 700; line-height: 1.4;
+  padding: 1px 7px; border-radius: 6px; margin-top: 1px; white-space: nowrap;
+  background: rgba(59,130,246,0.14); color: #2563eb;
+}
+.fullLogTag.tag-fix { background: rgba(249,115,22,0.14); color: #ea580c; }
+.fullLogTag.tag-del { background: rgba(239,68,68,0.14); color: #dc2626; }
+body.eye-care .fullLogTag { color: #1d4ed8; }
+.fullLogCard .tipOk { margin-top: 10px; }
 </style>
 <style>
   /* ============================================================
@@ -4090,6 +4131,6 @@ setTimeout(function () {
 }, 12000);
 </script>
 
-<script type="module" src="./assets/main.TFZYRISQ.js"></script>
+<script type="module" src="./assets/main.4X7A7XJC.js"></script>
 </body>
 </html>

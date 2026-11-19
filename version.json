@@ -1,11 +1,11 @@
 {
-  "version": "2.96.0",
-  "versionCode": 329,
+  "version": "2.97.0",
+  "versionCode": 330,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4621219,
-  "apkSha256": "9cfedfbaa0b69ecfcd7fc30153e7164044740df2083455a144d2a0d5d31b0950",
-  "changelog": "【v2.96.0】全面排查修复内在 bug\n① 修复词族/易混词缓存串数据：原缓存键只含「单词+词库长度」，切换成长度相同但内容不同的词库时会命中旧缓存，显示上一个词库才有的关联词及错误释义；现加入词库内容指纹，词库变化即整体失效。\n② 修复开启「自动跳转」后延迟窗口内连续答题/手动翻页叠加多个定时器导致连跳多词、乱跳"
+  "apkSize": 4628549,
+  "apkSha256": "1ccf163dfaeb05d1a8a4a402393b82c21153e0c4651f605b2aa828ce8ebd864a",
+  "changelog": "【v2.97.0】新增 App 内完整更新日志 + 官网更新日志同步到最新\n新增 「我的 → 版本更新 → 更新日志」入口，可查看全部历史版本的功能变化（离线看近期版本，联网自动补全全部），只列用户能感知的内容、不含技术细节\n新增 官网「更新日志」区同步展示全部历史版本，不再停留在旧版本\n优化 更新日志按「新增 / 优"
 }
