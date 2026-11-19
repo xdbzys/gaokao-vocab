@@ -1,11 +1,11 @@
 {
   "version": "2.97.0",
-  "versionCode": 329,
+  "versionCode": 330,
   "changelog": "【v2.97.0】新增 App 内完整更新日志 + 官网更新日志同步到最新\n新增 「我的 → 版本更新 → 更新日志」入口，可查看全部历史版本的功能变化（离线看近期版本，联网自动补全全部），只列用户能感知的内容、不含技术细节\n新增 官网「更新日志」区同步展示全部历史版本，不再停留在旧版本\n优化 更新日志按「新增 / 优化 / 修复 / 调整 / 删除」分类标注，逐版本清晰可读",
   "devNotes": "v2.97.0: 新增 App 内「我的 → 版本更新 → 更新日志」入口，内联最近 24 版(BUILTIN_CHANGELOG)保证离线可看，点击时后台 fetch 仓库根 changelog.json 补全全部 63 版；应用内弹窗(fullLogCard/.fullLogScroll)渲染，复用 tipMask 主题、无原生 dialog；styles.css 追加 .fullLogCard 系列样式。官网 gaokao-vocab-site.html 的 .changelog-list 改为 id=changelogList 容器，内联 CHANGELOG_RELEASES(全 63 版)首屏渲染 + 后台 fetch changelog.json 刷新；sync-site-changelog.js 重写为从 changelog.json 全量同步 CHANGELOG_RELEASES。列表数据来自仓库根 changelog.json(product=背群英, 63 版 204 条, 用户向)。体积复核: 首屏 gzip 248.8KB(≤250KB)，esbuild 单文件 gzip 1.046MB(≤1.05MB)。Playwright: App 11/11 PASS, 官网 5/5 PASS。versionCode 由 CI 自动 329→330。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4621219,
-  "apkSha256": "9cfedfbaa0b69ecfcd7fc30153e7164044740df2083455a144d2a0d5d31b0950"
+  "apkSize": 4628549,
+  "apkSha256": "1ccf163dfaeb05d1a8a4a402393b82c21153e0c4651f605b2aa828ce8ebd864a"
 }
