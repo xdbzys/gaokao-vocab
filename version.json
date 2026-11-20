@@ -5,7 +5,7 @@
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4629458,
-  "apkSha256": "d6a33cc82c1f23ef8550d54b3b4db3bacebb11387a98bd62a7051f6b40692677",
-  "changelog": "【v2.99.0】听读接入手机媒体系统：现在能被音乐系统识别\n新增 · 听读播放已接入手机系统媒体中心，锁屏面板、下拉通知、车机、蓝牙耳机和智能手表都会识别为正在播放的音频\n新增 · 手机会像识别音乐软件一样识别本应用，可用系统媒体控制统一暂停、继续与切换单词\n优化 · 听读不再只是通知栏里的一张控制卡片，而是真正成为系统认可的音频播放源"
+  "apkSize": 4629846,
+  "apkSha256": "d677d10522ce33b3971ecd5fd1714a479c9d819234f58734d5b08353313b0809",
+  "changelog": "【v2.99.0】听读接入手机媒体系统：现在能被音乐系统识别\n新增 · 听读播放已接入手机系统媒体中心，锁屏面板、下拉通知、车机、蓝牙耳机和智能手表都会识别为正在播放的音频\n新增 · 手机会像识别音乐软件一样识别本应用，可用系统媒体控制统一暂停、继续与切换单词\n优化 · 听读不再只是通知栏里的一张控制卡片，而是真正成为"
 }
