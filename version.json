@@ -1,11 +1,11 @@
 {
-  "version": "2.97.0",
-  "versionCode": 331,
+  "version": "2.98.0",
+  "versionCode": 332,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4628549,
-  "apkSha256": "b54fc806feb2b2d9d83d58f5516caedb4b4b67ced82bc2793ffa8d4f9eec2a54",
-  "changelog": "【v2.97.0】新增 App 内完整更新日志 + 官网更新日志同步到最新\n新增 「我的 → 版本更新 → 更新日志」入口，可查看全部历史版本的功能变化（离线看近期版本，联网自动补全全部），只列用户能感知的内容、不含技术细节\n新增 官网「更新日志」区同步展示全部历史版本，不再停留在旧版本\n优化 更新日志按「新增 / 优"
+  "apkSize": 4629458,
+  "apkSha256": "d6a33cc82c1f23ef8550d54b3b4db3bacebb11387a98bd62a7051f6b40692677",
+  "changelog": "【v2.98.0】听读体验升级：发音更自然、更省内存、耳机更好用\n优化 · 中文朗读更自然：神经语音语速跟随你的设置，不再忽快忽慢；男声/女声各有自然基调，去掉平板机械腔\n优化 · 听读更省内存：整库音频改为边生成边写入，后台合成不再因占用过大导致卡顿或被系统清理\n优化 · 耳机控制更顺手：来电、导航打断后自动恢复播放"
 }
