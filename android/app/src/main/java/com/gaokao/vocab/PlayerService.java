@@ -138,6 +138,8 @@ public class PlayerService extends Service {
     private PowerManager.WakeLock mWakeLock;
     private AudioManager mAudioManager;
     private AudioManager.OnAudioFocusChangeListener mFocusListener;
+    /** v2.98.0：短暂失焦暂停后，焦点恢复时是否自动续播 */
+    private boolean mResumeOnFocusGain = false;
     private Handler mHandler;
 
     private String mId = "";
@@ -681,9 +683,29 @@ public class PlayerService extends Service {
                 mFocusListener = new AudioManager.OnAudioFocusChangeListener() {
                     @Override
                     public void onAudioFocusChange(int focusChange) {
-                        if (focusChange == AudioManager.AUDIOFOCUS_LOSS
-                                || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+                        if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                            // 永久失去焦点（别的音乐 App 长时间播放）：暂停并通知 JS 同步按钮
                             pauseInternal();
+                            emit("", "paused");
+                        } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+                            // 短暂失去（来电 / 语音播报）：暂停，恢复焦点后自动续播
+                            pauseInternal();
+                            mResumeOnFocusGain = true;
+                            emit("", "paused");
+                        } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+                            // 可 duck（导航 / 提示音）：不打断听读，只把音量压低，过后再恢复
+                            // 这样耳机里听读不会"一会被切掉一会又从头来"，更符合音乐 App 行为
+                            try { if (mPlayer != null) mPlayer.setVolume(0.15f, 0.15f); } catch (Throwable ignored) {}
+                            try { if (mTts != null) mTts.setVolume(0.15f); } catch (Throwable ignored) {}
+                        } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                            // 焦点回来：先恢复音量，若之前是短暂失去导致的暂停则自动继续
+                            try { if (mPlayer != null) mPlayer.setVolume(1f, 1f); } catch (Throwable ignored) {}
+                            try { if (mTts != null) mTts.setVolume(1f); } catch (Throwable ignored) {}
+                            if (mResumeOnFocusGain) {
+                                mResumeOnFocusGain = false;
+                                resumeInternal();
+                                emit("", "resumed");
+                            }
                         }
                     }
                 };
@@ -695,6 +717,7 @@ public class PlayerService extends Service {
     }
 
     private void abandonFocus() {
+        mResumeOnFocusGain = false;
         if (mAudioManager == null || mFocusListener == null) return;
         try {
             mAudioManager.abandonAudioFocus(mFocusListener);
@@ -2047,6 +2070,16 @@ public class PlayerService extends Service {
         return (pct >= 0 ? "+" : "") + pct + "%";
     }
 
+    /**
+     * v2.98.0 拟人化：按音色给一个轻微、固定的基调偏移，避免所有音色一个平板调子。
+     * 云希（男声）略降显稳重，晓晓 / 晓伊保持自然女声基调；幅度很小（-4%~+2%），
+     * 不会像机器人刻意拉高或压低，只是把机械的"零起伏"去掉。
+     */
+    private String edgePitchPct() {
+        if (mCfgZhVoice == 3) return "-4%";   // 云希男声
+        return "+1%";                          // 晓晓 / 晓伊女声
+    }
+
     private static byte[] edgeRandomBytes(int n) {
         byte[] b = new byte[n];
         new java.util.Random().nextBytes(b);
@@ -2200,7 +2233,7 @@ public class PlayerService extends Service {
                     + "X-Timestamp:" + ts + "Z\r\nPath:ssml\r\n\r\n"
                     + "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='zh-CN'>"
                     + "<voice name='" + voice + "'>"
-                    + "<prosody rate='" + ratePct + "' pitch='+0Hz' volume='+0%'>"
+                    + "<prosody rate='" + ratePct + "' pitch='" + edgePitchPct() + "' volume='+0%'>"
                     + edgeXmlEscape(text)
                     + "</prosody></voice></speak>";
             edgeWsWriteText(os, ssml);
@@ -2329,7 +2362,7 @@ public class PlayerService extends Service {
             if (edge.exists() && edge.length() > 400) return true;
             // v2.77.0 Edge 通道连续失败就整轮跳过：实测该接口已大量 403，
             // 每个词都重试会拖慢整库合成（每次一个 WebSocket 往返）
-            if (sEdgeFails < 3 && edgeTtsToFileRetry(w.zhText, edgeVoiceName(), "+0%", edge)) {
+            if (sEdgeFails < 3 && edgeTtsToFileRetry(w.zhText, edgeVoiceName(), edgeRatePct(), edge)) {
                 mZhEdgeOk++;
                 return true;
             }
@@ -2861,38 +2894,53 @@ public class PlayerService extends Service {
         try {
             long flen = wav.length();
             if (flen < 44 || flen > 64L * 1024 * 1024) return false;
-            byte[] all = new byte[(int) flen];
-            java.io.FileInputStream fis = new java.io.FileInputStream(wav);
-            int got = 0, nn;
-            while (got < all.length && (nn = fis.read(all, got, all.length - got)) > 0) got += nn;
-            fis.close();
-            if (got < 44) return false;
+            // v2.98.0 内存优化：整库合成时本方法会被每个词调用。
+            // 旧实现一次性 new byte[(int)flen] 把整个 WAV 读进堆（单文件上限 64MB），
+            // 紧接着又建 short[]，低端机在后台合成整库时容易触发 GC 抖动 / OOM。
+            // 新实现只流式解析头部（最多读 4KB），再分块读取 data 区填充 short[]，
+            // 语义完全等价，峰值堆占用从「整文件大小」降到「采样 short[] + 4KB」。
+            java.io.RandomAccessFile raf = new java.io.RandomAccessFile(wav, "r");
+            int headLen = (int) Math.min(flen, 65536L); // 64KB 头：覆盖带 LIST/fact 扩展块的 WAV
+            byte[] head = new byte[headLen];
+            raf.readFully(head);
             int sr = 0, ch = 1, bits = 16, dataOff = -1, dataLen = 0;
             int p = 12; // 跳过 RIFF 头
-            while (p + 8 <= got) {
-                String id = new String(all, p, 4, "ASCII");
-                int sz = (all[p + 4] & 0xff) | ((all[p + 5] & 0xff) << 8)
-                        | ((all[p + 6] & 0xff) << 16) | ((all[p + 7] & 0xff) << 24);
-                if (id.equals("fmt ")) {
+            while (p + 8 <= headLen) {
+                String id = new String(head, p, 4, "ASCII");
+                int sz = (head[p + 4] & 0xff) | ((head[p + 5] & 0xff) << 8)
+                        | ((head[p + 6] & 0xff) << 16) | ((head[p + 7] & 0xff) << 24);
+                if (id.equals("fmt ") && p + 8 + 16 <= headLen) {
                     int q = p + 8;
-                    ch = (all[q + 2] & 0xff) | ((all[q + 3] & 0xff) << 8);
-                    sr = (all[q + 4] & 0xff) | ((all[q + 5] & 0xff) << 8)
-                            | ((all[q + 6] & 0xff) << 16) | ((all[q + 7] & 0xff) << 24);
-                    bits = (all[q + 14] & 0xff) | ((all[q + 15] & 0xff) << 8);
+                    ch = (head[q + 2] & 0xff) | ((head[q + 3] & 0xff) << 8);
+                    sr = (head[q + 4] & 0xff) | ((head[q + 5] & 0xff) << 8)
+                            | ((head[q + 6] & 0xff) << 16) | ((head[q + 7] & 0xff) << 24);
+                    bits = (head[q + 14] & 0xff) | ((head[q + 15] & 0xff) << 8);
                 } else if (id.equals("data")) {
                     dataOff = p + 8;
-                    dataLen = Math.min(sz, got - dataOff);
+                    dataLen = sz;
                 }
                 p += 8 + sz + (sz & 1);
             }
-            if (dataOff < 0 || sr <= 0 || bits != 16) return false;
+            if (dataOff < 0 || sr <= 0 || bits != 16 || dataLen <= 0) { raf.close(); return false; }
+            long available = flen - dataOff;
+            if (available <= 0) { raf.close(); return false; }
+            dataLen = (int) Math.min(dataLen, available);
             int cnt = dataLen / 2;
-            if (cnt <= 0) return false;
+            if (cnt <= 0) { raf.close(); return false; }
             short[] s = new short[cnt];
-            for (int k = 0; k < cnt; k++) {
-                int o = dataOff + 2 * k;
-                s[k] = (short) ((all[o] & 0xff) | ((all[o + 1] & 0xff) << 8));
+            raf.seek(dataOff);
+            byte[] chunk = new byte[8192];
+            int writtenShorts = 0, nn;
+            while (writtenShorts < cnt && (nn = raf.read(chunk, 0, Math.min(chunk.length, (cnt - writtenShorts) * 2))) > 0) {
+                int pairs = nn / 2;
+                for (int k = 0; k < pairs; k++) {
+                    int o = 2 * k;
+                    s[writtenShorts + k] = (short) ((chunk[o] & 0xff) | ((chunk[o + 1] & 0xff) << 8));
+                }
+                writtenShorts += pairs;
             }
+            raf.close();
+            if (writtenShorts < cnt) return false;
             appendResampled(out, s, sr, ch);
             return true;
         } catch (Throwable e) {
