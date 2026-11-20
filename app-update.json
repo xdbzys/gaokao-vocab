@@ -1,11 +1,11 @@
 {
   "version": "3.0.1",
-  "versionCode": 336,
+  "versionCode": 337,
   "changelog": "【v3.0.1】耳机控制正式接入系统媒体会话\n修复 · 耳机/蓝牙的播放、暂停、切词按键通过系统媒体会话正式绑定，像控制音乐软件一样控制听读\n修复 · 中文发音期间保持音频会话活跃，后台播放时耳机按键不再失效\n优化 · 网页版耳机控制按键提前注册，打开即可用",
   "devNotes": "v3.0.0 让系统「正在播放」识别本 App（官方 Media Controls 对齐）：\n【根因】v2.99 虽加了平台 MediaBrowserService，但 onLoadChildren 根 MediaItem 只有 title/subtitle、缺 icon(bitmap/uri)；Android 官方 Media Controls 文档明确要求根项须带 icon + 非空 title/subtitle，否则 SystemUI/厂商控制中心不收录该媒体源。另：setMetadata 缺 METADATA_KEY_MEDIA_ID / DISPLAY_*；无 MediaButtonReceiver（耳机首次按键无法唤醒、系统不登记最近媒体按钮接收者）；音频焦点用废弃 requestAudioFocus 重载，未以 USAGE_MEDIA 明确登记。\n【实现】1) onLoadChildren MediaDescription 补 setIconBitmap(albumArt())/setDescription；2) 通用与 Album 两处 setMetadata 补 MEDIA_ID/DISPLAY_TITLE/DISPLAY_SUBTITLE/DISPLAY_DESCRIPTION/DISPLAY_ICON；3) requestFocus 升级 AudioFocusRequest(USAGE_MEDIA/CONTENT_TYPE_MUSIC, API26+)，低版本保留旧重载；4) 新增 MediaButtonReceiver 处理 MEDIA_BUTTON（play/pause/next/prev/stop），Manifest 声明 intent-filter；5) 真正起播时确保 MediaSession.setActive(true) + claimMediaButton。\n【保留】原有 MediaSession callback/PlaybackState actions/AudioAttributes USAGE_MEDIA/MediaStyle 通知/Edge TTS 合成链路均不改动。\n【验证】静态门禁、Java stub 编译校验（含新 API 签名）、CI Gradle 真编译。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4631856,
-  "apkSha256": "cc383c32cc5e06e4db17ecadc80a467301f34572003cd0fa171e5cb46fc55981"
+  "apkSize": 4632245,
+  "apkSha256": "b53479817969a6ad2f49c8f15c74a168058dcc023ff578d231835d8caf042e22"
 }

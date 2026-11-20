@@ -1,11 +1,11 @@
 {
   "version": "3.0.1",
-  "versionCode": 336,
+  "versionCode": 337,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4631856,
-  "apkSha256": "cc383c32cc5e06e4db17ecadc80a467301f34572003cd0fa171e5cb46fc55981",
+  "apkSize": 4632245,
+  "apkSha256": "b53479817969a6ad2f49c8f15c74a168058dcc023ff578d231835d8caf042e22",
   "changelog": "【v3.0.1】耳机控制正式接入系统媒体会话\n修复 · 耳机/蓝牙的播放、暂停、切词按键通过系统媒体会话正式绑定，像控制音乐软件一样控制听读\n修复 · 中文发音期间保持音频会话活跃，后台播放时耳机按键不再失效\n优化 · 网页版耳机控制按键提前注册，打开即可用"
 }
