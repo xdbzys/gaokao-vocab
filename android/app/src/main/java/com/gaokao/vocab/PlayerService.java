@@ -150,6 +150,7 @@ public class PlayerService extends MediaBrowserService {
     private android.media.AudioFocusRequest mFocusReq = null;
     /** v2.98.0：短暂失焦暂停后，焦点恢复时是否自动续播 */
     private boolean mResumeOnFocusGain = false;
+    private boolean mMediaButtonBound = false;
     private Handler mHandler;
 
     private String mId = "";
@@ -402,6 +403,11 @@ public class PlayerService extends MediaBrowserService {
                     sPosition = 0;
                     sDuration = dur;
                 }
+                // v3.0.1：系统 TTS 朗读期间同样保持会话活跃并持有媒体音频焦点，
+                // 否则系统会把本会话判定为「无活跃音频」并回收，耳机按键随之失效。
+                if (mSession != null) { try { mSession.setActive(true); } catch (Throwable ignored) {} }
+                claimMediaButton();
+                requestFocus();
                 updateSessionState(PlaybackState.STATE_PLAYING);
             } else {
                 mPaused = true;
@@ -731,6 +737,31 @@ public class PlayerService extends MediaBrowserService {
         try {
             mSession.setActive(true);
         } catch (Throwable ignored) {}
+        // v3.0.1：把 MEDIA_BUTTON 接收者正式绑定到本 MediaSession。
+        // 只有 setActive + FLAG_HANDLES_MEDIA_BUTTONS 还不够——系统需要知道当会话
+        // 失活/被回收时该把耳机按键发给谁来唤醒。绑定后，按键优先经本会话的
+        // Callback(onPlay/onPause/onSkipToNext/onSkipToPrevious)，失活时经该组件唤醒。
+        if (!mMediaButtonBound) {
+            try {
+                android.content.ComponentName cn =
+                        new android.content.ComponentName(this, MediaButtonReceiver.class);
+                if (android.os.Build.VERSION.SDK_INT >= 35) {
+                    // API 35+ 推荐用 ComponentName 绑定 BroadcastReceiver
+                    mSession.setMediaButtonBroadcastReceiver(cn);
+                } else {
+                    // 兼容 API 21~34：显式 PendingIntent 指向本应用的接收组件
+                    android.content.Intent mb = new android.content.Intent(
+                            android.content.Intent.ACTION_MEDIA_BUTTON);
+                    mb.setComponent(cn);
+                    int fl = android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+                    if (android.os.Build.VERSION.SDK_INT >= 23) fl |= android.app.PendingIntent.FLAG_IMMUTABLE;
+                    android.app.PendingIntent pi =
+                            android.app.PendingIntent.getBroadcast(this, 99, mb, fl);
+                    mSession.setMediaButtonReceiver(pi);
+                }
+                mMediaButtonBound = true;
+            } catch (Throwable ignored) {}
+        }
     }
 
     private void requestFocus() {
