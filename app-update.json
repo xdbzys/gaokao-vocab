@@ -1,11 +1,11 @@
 {
-  "version": "2.99.0",
-  "versionCode": 333,
-  "changelog": "【v2.99.0】听读接入手机媒体系统：现在能被音乐系统识别\n新增 · 听读播放已接入手机系统媒体中心，锁屏面板、下拉通知、车机、蓝牙耳机和智能手表都会识别为正在播放的音频\n新增 · 手机会像识别音乐软件一样识别本应用，可用系统媒体控制统一暂停、继续与切换单词\n优化 · 听读不再只是通知栏里的一张控制卡片，而是真正成为系统认可的音频播放源",
-  "devNotes": "v2.99.0 被手机音乐系统检测（MediaBrowserService）：\n【根因】旧版 PlayerService 继承普通 Service + 裸 MediaSession + MediaStyle 通知，只是「通知栏控制中心」；系统媒体框架/车机/Wear OS/蓝牙 AVRCP 无法通过标准 MediaBrowser 协议发现并连接应用。\n【实现】PlayerService 改为继承原生 android.service.media.MediaBrowserService（API21+，无新增依赖）；onCreate 内 ensureSession() 创建会话后 setSessionToken()；实现 onGetRoot 返回 \"gaokao_listen_root\"（允许所有客户端）、onLoadChildren 返回当前播放项 MediaItem；删除旧 onBind 返回 null 的覆盖（否则系统永远连不上）。\n【Manifest】PlayerService exported=true 并声明 intent-filter android.media.browse.MediaBrowserService。\n【保留】MediaSession setActive/flags/callback/metadata/playbackState、AudioAttributes USAGE_MEDIA/CONTENT_TYPE_MUSIC、音频焦点 duck、MediaStyle 前台通知、耳机线控回调均不改动。\n【验证】静态门禁、三构建、Playwright、原生 Java 由 CI Gradle 编译；setSessionToken/onGetRoot/onLoadChildren 均按官方 API21 签名核对。",
+  "version": "3.0.0",
+  "versionCode": 335,
+  "changelog": "【v3.0.0】听读真正出现在手机系统「正在播放」\n修复 · 补齐系统识别媒体源所需的封面图标与媒体信息，听读现在会像网易云/酷狗一样出现在 vivo/OPPO 等手机的系统媒体中心\n新增 · 耳机 / 蓝牙首次按播放键可直接唤醒听读，无需先打开应用\n优化 · 播放时更明确地以「媒体音频」身份登记，锁屏与下拉面板控制更稳定",
+  "devNotes": "v3.0.0 让系统「正在播放」识别本 App（官方 Media Controls 对齐）：\n【根因】v2.99 虽加了平台 MediaBrowserService，但 onLoadChildren 根 MediaItem 只有 title/subtitle、缺 icon(bitmap/uri)；Android 官方 Media Controls 文档明确要求根项须带 icon + 非空 title/subtitle，否则 SystemUI/厂商控制中心不收录该媒体源。另：setMetadata 缺 METADATA_KEY_MEDIA_ID / DISPLAY_*；无 MediaButtonReceiver（耳机首次按键无法唤醒、系统不登记最近媒体按钮接收者）；音频焦点用废弃 requestAudioFocus 重载，未以 USAGE_MEDIA 明确登记。\n【实现】1) onLoadChildren MediaDescription 补 setIconBitmap(albumArt())/setDescription；2) 通用与 Album 两处 setMetadata 补 MEDIA_ID/DISPLAY_TITLE/DISPLAY_SUBTITLE/DISPLAY_DESCRIPTION/DISPLAY_ICON；3) requestFocus 升级 AudioFocusRequest(USAGE_MEDIA/CONTENT_TYPE_MUSIC, API26+)，低版本保留旧重载；4) 新增 MediaButtonReceiver 处理 MEDIA_BUTTON（play/pause/next/prev/stop），Manifest 声明 intent-filter；5) 真正起播时确保 MediaSession.setActive(true) + claimMediaButton。\n【保留】原有 MediaSession callback/PlaybackState actions/AudioAttributes USAGE_MEDIA/MediaStyle 通知/Edge TTS 合成链路均不改动。\n【验证】静态门禁、Java stub 编译校验（含新 API 签名）、CI Gradle 真编译。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4629846,
-  "apkSha256": "d677d10522ce33b3971ecd5fd1714a479c9d819234f58734d5b08353313b0809"
+  "apkSize": 4631856,
+  "apkSha256": "cc383c32cc5e06e4db17ecadc80a467301f34572003cd0fa171e5cb46fc55981"
 }
