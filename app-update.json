@@ -1,11 +1,11 @@
 {
   "version": "2.98.0",
-  "versionCode": 331,
+  "versionCode": 332,
   "changelog": "【v2.98.0】听读体验升级：发音更自然、更省内存、耳机更好用\n优化 · 中文朗读更自然：神经语音语速跟随你的设置，不再忽快忽慢；男声/女声各有自然基调，去掉平板机械腔\n优化 · 听读更省内存：整库音频改为边生成边写入，后台合成不再因占用过大导致卡顿或被系统清理\n优化 · 耳机控制更顺手：来电、导航打断后自动恢复播放，进度条拖动真正生效，锁屏/车机/蓝牙耳机均可控制\n优化 · 切到别的音频时会先压低音量而非直接打断，听读不再被频繁切掉重来",
   "devNotes": "v2.98.0 听读功能完善（4 方面）：\n【拟人化】ensureZhAudio 的 Edge 预取语速由写死 +0% 改为 edgeRatePct()，与播放链路一致；新增 edgePitchPct() 按音色给轻微基调偏移（云希 -4%、晓晓/晓伊 +1%），Edge SSML 的 pitch 由固定 +0Hz 改为动态值；系统 TTS/Edge 均保留最高品质中文音色选择。\n【内存】appendWavPcm 由 new byte[(int)flen] 整文件读入改为 RandomAccessFile 流式读 64KB 头 + 8192 分块读 data 区填充 short[]，峰值堆从整文件大小降到 short[]+64KB，语义等价。\n【音频识别/耳机】onAudioFocusChange 完善 LOSS(pause+emit)/LOSS_TRANSIENT(pause+emit+标记)/CAN_DUCK(降音量 0.15 不打断)/GAIN(恢复音量+按标记续播+emit)；新增 mResumeOnFocusGain 成员，abandonFocus 清除；JS mediaSession 补 seekto/seekbackward/seekforward handler，_mediaCurPos 优先读原生 getPosition。\n【回归防护】pauseListen(true)/resumeListen(true) skipNative 已确认阻止反弹循环，新增 emit 安全。\n【验证】静态门禁 PASS；Vite/多文件/esbuild 三构建 PASS，首屏 248.9KB(≤250)、单文件 1.046MB(≤1.05)；Playwright 5/5 PASS；原生 Java 由 CI Gradle 真实编译。versionCode 由 CI 自动递增。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4628549,
-  "apkSha256": "b54fc806feb2b2d9d83d58f5516caedb4b4b67ced82bc2793ffa8d4f9eec2a54"
+  "apkSize": 4629458,
+  "apkSha256": "d6a33cc82c1f23ef8550d54b3b4db3bacebb11387a98bd62a7051f6b40692677"
 }
