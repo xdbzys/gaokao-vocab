@@ -693,14 +693,13 @@ public class PlayerService extends Service {
                             mResumeOnFocusGain = true;
                             emit("", "paused");
                         } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
-                            // 可 duck（导航 / 提示音）：不打断听读，只把音量压低，过后再恢复
+                            // 可 duck（导航 / 提示音）：不打断听读，只把 MediaPlayer 音量压低，过后再恢复
+                            // （系统 TTS 段的音量由 SSML volume 控制，无法在运行时改动，保持原样）
                             // 这样耳机里听读不会"一会被切掉一会又从头来"，更符合音乐 App 行为
                             try { if (mPlayer != null) mPlayer.setVolume(0.15f, 0.15f); } catch (Throwable ignored) {}
-                            try { if (mTts != null) mTts.setVolume(0.15f); } catch (Throwable ignored) {}
                         } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
-                            // 焦点回来：先恢复音量，若之前是短暂失去导致的暂停则自动继续
+                            // 焦点回来：先恢复 MediaPlayer 音量，若之前是短暂失去导致的暂停则自动继续
                             try { if (mPlayer != null) mPlayer.setVolume(1f, 1f); } catch (Throwable ignored) {}
-                            try { if (mTts != null) mTts.setVolume(1f); } catch (Throwable ignored) {}
                             if (mResumeOnFocusGain) {
                                 mResumeOnFocusGain = false;
                                 resumeInternal();
