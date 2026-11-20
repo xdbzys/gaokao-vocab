@@ -1,11 +1,11 @@
 {
   "version": "3.0.0",
-  "versionCode": 334,
+  "versionCode": 335,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4629846,
-  "apkSha256": "d677d10522ce33b3971ecd5fd1714a479c9d819234f58734d5b08353313b0809",
-  "changelog": "【v3.0.0】听读真正出现在手机系统「正在播放」\n修复 · 补齐系统识别媒体源所需的封面图标与媒体信息，听读现在会像网易云/酷狗一样出现在 vivo/OPPO 等手机的系统媒体中心\n新增 · 耳机 / 蓝牙首次按播放键可直接唤醒听读，无需先打开应用\n优化 · 播放时更明确地以「媒体音频」身份登记，锁屏与下拉面板控制更稳定"
+  "apkSize": 4631856,
+  "apkSha256": "cc383c32cc5e06e4db17ecadc80a467301f34572003cd0fa171e5cb46fc55981",
+  "changelog": "【v3.0.0】听读真正出现在手机系统「正在播放」\n修复 · 补齐系统识别媒体源所需的封面图标与媒体信息，听读现在会像网易云/酷狗一样出现在 vivo/OPPO 等手机的系统媒体中心\n新增 · 耳机 / 蓝牙首次按播放键可直接唤醒听读，无需先打开应用\n优化 · 播放时更明确地以「媒体音频」身份登记，锁屏与下拉面板控制更"
 }
