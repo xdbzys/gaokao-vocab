@@ -51,6 +51,16 @@
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
+
+        <!-- v3.0.0：媒体按钮接收器 —— 耳机 / 蓝牙 / 车机按键唤醒播放，
+             并在系统侧登记本 App 为最近媒体源（系统「正在播放」识别所需）。 -->
+        <receiver
+            android:name=".MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
     </application>
 
     <!-- Permissions -->

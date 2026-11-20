@@ -145,6 +145,9 @@ public class PlayerService extends MediaBrowserService {
     private PowerManager.WakeLock mWakeLock;
     private AudioManager mAudioManager;
     private AudioManager.OnAudioFocusChangeListener mFocusListener;
+    // v3.0.0：API26+ 用 AudioFocusRequest 明确登记媒体属性，系统据此把本 App
+    // 识别为「媒体播放者」（vivo/OPPO 的音频焦点与媒体卡片归属判断依赖此属性）。
+    private android.media.AudioFocusRequest mFocusReq = null;
     /** v2.98.0：短暂失焦暂停后，焦点恢复时是否自动续播 */
     private boolean mResumeOnFocusGain = false;
     private Handler mHandler;
@@ -471,8 +474,16 @@ public class PlayerService extends MediaBrowserService {
         try {
             MediaDescription.Builder d = new MediaDescription.Builder();
             d.setMediaId("now_playing");
-            d.setTitle(mTitle);
-            d.setSubtitle(mArtist);
+            d.setTitle(mTitle != null ? mTitle : "背群英 · 听读");
+            d.setSubtitle(mArtist != null ? mArtist : "高考词汇");
+            d.setDescription(mAlbum != null ? mAlbum : "听读中");
+            // v3.0.0：Android 官方 Media Controls 要求 onLoadChildren 根项必须带
+            // icon(bitmap/uri) + 非空 title/subtitle，SystemUI / vivo / OPPO 控制中心
+            // 才会把这个媒体源收录进「正在播放」轮播卡片。缺 icon 时系统会忽略该源。
+            try {
+                android.graphics.Bitmap art = albumArt();
+                if (art != null && !art.isRecycled()) d.setIconBitmap(art);
+            } catch (Throwable ignored) {}
             items.add(new MediaBrowser.MediaItem(d.build(), MediaBrowser.MediaItem.FLAG_PLAYABLE));
         } catch (Throwable ignored) {}
         result.sendResult(items);
@@ -556,6 +567,10 @@ public class PlayerService extends MediaBrowserService {
                         mDuration = 0;
                     }
                     try {
+                        // v3.0.0：真正起播时确保会话处于 active，系统控制中心据此认定
+                        // 「本 App 正在播放媒体」（部分 ROM 会回收长期 inactive 的会话）。
+                        if (mSession != null) { try { mSession.setActive(true); } catch (Throwable ignored) {} }
+                        claimMediaButton();
                         mp.start();
                         mPaused = false;
                         updateSessionState(PlaybackState.STATE_PLAYING);
@@ -703,6 +718,21 @@ public class PlayerService extends MediaBrowserService {
 
     // ================= 音频焦点 / 唤醒锁 =================
 
+    /**
+     * v3.0.0：起播时向系统登记「当前媒体按钮接收者」。
+     * 官方 troubleshooting 指出：若 active 播放器未认领 media button receiver，
+     * 耳机的播放/暂停键会错误地发给上一次播放的 App，且控制中心不把本 App
+     * 当作当前媒体源。这里通过 MediaSession 的 FLAG_HANDLES_MEDIA_BUTTONS
+     * + setActive(true) 让系统把媒体按键路由到本会话；独立 MEDIA_BUTTON
+     * 广播接收器在 Manifest 中声明，供息屏/进程未起时唤醒。
+     */
+    private void claimMediaButton() {
+        if (mSession == null) return;
+        try {
+            mSession.setActive(true);
+        } catch (Throwable ignored) {}
+    }
+
     private void requestFocus() {
         if (mAudioManager == null) return;
         try {
@@ -736,6 +766,22 @@ public class PlayerService extends MediaBrowserService {
                     }
                 };
             }
+            if (Build.VERSION.SDK_INT >= 26) {
+                try {
+                    android.media.AudioAttributes aa = new android.media.AudioAttributes.Builder()
+                            .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build();
+                    mFocusReq = new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                            .setAudioAttributes(aa)
+                            .setOnAudioFocusChangeListener(mFocusListener)
+                            .build();
+                    mAudioManager.requestAudioFocus(mFocusReq);
+                    return;
+                } catch (Throwable e) {
+                    // 低版本 / 部分 ROM 不支持 AudioFocusRequest → 回退旧重载
+                }
+            }
             mAudioManager.requestAudioFocus(mFocusListener, AudioManager.STREAM_MUSIC,
                     AudioManager.AUDIOFOCUS_GAIN);
         } catch (Throwable ignored) {
@@ -746,7 +792,11 @@ public class PlayerService extends MediaBrowserService {
         mResumeOnFocusGain = false;
         if (mAudioManager == null || mFocusListener == null) return;
         try {
-            mAudioManager.abandonAudioFocus(mFocusListener);
+            if (Build.VERSION.SDK_INT >= 26 && mFocusReq != null) {
+                mAudioManager.abandonAudioFocusRequest(mFocusReq);
+            } else {
+                mAudioManager.abandonAudioFocus(mFocusListener);
+            }
         } catch (Throwable ignored) {
         }
     }
@@ -934,13 +984,22 @@ public class PlayerService extends MediaBrowserService {
             mb.putString(MediaMetadata.METADATA_KEY_TITLE, mTitle);
             mb.putString(MediaMetadata.METADATA_KEY_ARTIST, mArtist);
             mb.putString(MediaMetadata.METADATA_KEY_ALBUM, mAlbum);
+            // v3.0.0：系统「正在播放」控制中心读取这些键来展示媒体卡片，
+            // 尤其是 MEDIA_ID 与 DISPLAY_* —— 缺失时部分 ROM（vivo/OPPO）不收录会话。
+            mb.putString(MediaMetadata.METADATA_KEY_MEDIA_ID, "gaokao_listen_now");
+            mb.putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, mTitle);
+            mb.putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, mArtist);
+            mb.putString(MediaMetadata.METADATA_KEY_DISPLAY_DESCRIPTION, mAlbum);
             if (mDuration > 0) {
                 mb.putLong(MediaMetadata.METADATA_KEY_DURATION, mDuration);
             }
-            // v2.72.0：专辑封面 → 锁屏 / 控制中心 / 车机像音乐软件一样显示图标
+            // v2.72.0 + v3.0.0：专辑封面 → 锁屏 / 控制中心 / 车机像音乐软件一样显示图标
             try {
                 android.graphics.Bitmap art = albumArt();
-                if (art != null && !art.isRecycled()) mb.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
+                if (art != null && !art.isRecycled()) {
+                    mb.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
+                    mb.putBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON, art);
+                }
             } catch (Throwable ignored) {}
             mSession.setMetadata(mb.build());
         } catch (Throwable ignored) {
@@ -1744,10 +1803,18 @@ public class PlayerService extends MediaBrowserService {
             mb.putString(MediaMetadata.METADATA_KEY_TITLE, mTitle);
             mb.putString(MediaMetadata.METADATA_KEY_ARTIST, mArtist);
             mb.putString(MediaMetadata.METADATA_KEY_ALBUM, mAlbum);
+            // v3.0.0：控制中心读取的媒体标识键（与通用态一致）
+            mb.putString(MediaMetadata.METADATA_KEY_MEDIA_ID, "gaokao_listen_now");
+            mb.putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, mTitle);
+            mb.putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, mArtist);
+            mb.putString(MediaMetadata.METADATA_KEY_DISPLAY_DESCRIPTION, mAlbum);
             mb.putLong(MediaMetadata.METADATA_KEY_DURATION, dur);
             try {
                 android.graphics.Bitmap art = albumArt();
-                if (art != null && !art.isRecycled()) mb.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
+                if (art != null && !art.isRecycled()) {
+                    mb.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
+                    mb.putBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON, art);
+                }
             } catch (Throwable ignored) {}
             mSession.setMetadata(mb.build());
         } catch (Throwable ignored) {}
