@@ -42,10 +42,15 @@
         </provider>
 
         <!-- v2.60.0 听读系统播放器：前台服务 + MediaSession（后台 / 锁屏 / 通知栏播放） -->
+        <!-- v2.99.0：MediaBrowserService 让系统音乐/媒体框架发现并连接听读播放 -->
         <service
             android:name=".PlayerService"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback" />
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
     </application>
 
     <!-- Permissions -->

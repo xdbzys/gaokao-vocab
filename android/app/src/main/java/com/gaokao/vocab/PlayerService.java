@@ -11,15 +11,21 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaMetadata;
 import android.media.MediaPlayer;
+import android.media.MediaDescription;
+import android.media.browse.MediaBrowser;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.provider.MediaStore;
+import android.service.media.MediaBrowserService;
+import android.service.media.MediaBrowserService.BrowserRoot;
+import android.service.media.MediaBrowserService.Result;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
@@ -32,6 +38,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -56,7 +63,7 @@ import java.util.Locale;
  *  - 前台服务类型 mediaPlayback：API 29+ 才需要
  *  - 通知渠道：API 26+ 才需要
  */
-public class PlayerService extends Service {
+public class PlayerService extends MediaBrowserService {
 
     public static final String ACTION_PLAY = "com.gaokao.vocab.player.PLAY";
     public static final String ACTION_PAUSE = "com.gaokao.vocab.player.PAUSE";
@@ -303,6 +310,9 @@ public class PlayerService extends Service {
             } catch (Throwable ignored) {}
         }
         if (mHandler != null) mHandler.post(mProgressTask);
+        // v2.99.0：服务创建即向系统媒体框架注册会话 token，
+        // 使系统音乐控件 / 车机 / 蓝牙 / Wear OS 能发现并连接本应用（而非仅通知栏卡片）。
+        ensureSession();
     }
 
     @Override
@@ -446,9 +456,26 @@ public class PlayerService extends Service {
         return START_STICKY;
     }
 
+    // v2.99.0：onBind 由 MediaBrowserService 父类实现，供系统媒体框架连接。
+    // 旧版覆盖并返回 null，导致车机 / 系统媒体控件永远连不上本服务。
+
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public BrowserRoot onGetRoot(String clientPackageName, int clientUid, Bundle rootHints) {
+        // 允许系统媒体控件、车机、蓝牙耳机、Wear OS 等发现并连接本媒体源
+        return new BrowserRoot("gaokao_listen_root", null);
+    }
+
+    @Override
+    public void onLoadChildren(String parentId, Result<List<MediaBrowser.MediaItem>> result) {
+        List<MediaBrowser.MediaItem> items = new ArrayList<MediaBrowser.MediaItem>();
+        try {
+            MediaDescription.Builder d = new MediaDescription.Builder();
+            d.setMediaId("now_playing");
+            d.setTitle(mTitle);
+            d.setSubtitle(mArtist);
+            items.add(new MediaBrowser.MediaItem(d.build(), MediaBrowser.MediaItem.FLAG_PLAYABLE));
+        } catch (Throwable ignored) {}
+        result.sendResult(items);
     }
 
     @Override
@@ -853,6 +880,8 @@ public class PlayerService extends Service {
                 if (Build.VERSION.SDK_INT >= 23) f |= PendingIntent.FLAG_IMMUTABLE;
                 mSession.setSessionActivity(PendingIntent.getActivity(this, 9, open, f));
             } catch (Throwable ignored) {}
+            // v2.99.0：向 MediaBrowserService 注册会话 token，外部客户端据此连接控制
+            try { setSessionToken(mSession.getSessionToken()); } catch (Throwable ignored) {}
             mSession.setActive(true);
         } catch (Throwable e) {
             Log.w(TAG, "MediaSession unavailable", e);
