@@ -1389,7 +1389,7 @@ var Eg = "modulepreload",
     return new URL(r, u).href;
   },
   Fp = {},
-  Bn = function Bn(u, c, d) {
+  Dn = function Dn(u, c, d) {
     var h = Promise.resolve();
     if (c && c.length > 0) {
       var y = document.getElementsByTagName("link"),
@@ -3680,29 +3680,29 @@ function Dg() {
     gn = [],
     Hn = 0,
     Mn = null,
-    Nn = 1,
+    Bn = 1,
     _t = "";
   function Li(e, n) {
     za[va++] = Nt, za[va++] = cr, cr = e, Nt = n;
   }
   function Xc(e, n, t) {
-    gn[Hn++] = Nn, gn[Hn++] = _t, gn[Hn++] = Mn, Mn = e;
-    var i = Nn;
+    gn[Hn++] = Bn, gn[Hn++] = _t, gn[Hn++] = Mn, Mn = e;
+    var i = Bn;
     e = _t;
     var s = 32 - Un(i) - 1;
     i &= ~(1 << s), t += 1;
     var l = 32 - Un(n) + s;
     if (30 < l) {
       var b = s - s % 5;
-      l = (i & (1 << b) - 1).toString(32), i >>= b, s -= b, Nn = 1 << 32 - Un(n) + s | t << s | i, _t = l + e;
-    } else Nn = 1 << l | t << s | i, _t = e;
+      l = (i & (1 << b) - 1).toString(32), i >>= b, s -= b, Bn = 1 << 32 - Un(n) + s | t << s | i, _t = l + e;
+    } else Bn = 1 << l | t << s | i, _t = e;
   }
   function tt(e) {
     e.return !== null && (Li(e, 1), Xc(e, 1, 0));
   }
   function hs(e) {
     for (; e === cr;) cr = za[--va], za[va] = null, Nt = za[--va], za[va] = null;
-    for (; e === Mn;) Mn = gn[--Hn], gn[Hn] = null, _t = gn[--Hn], gn[Hn] = null, Nn = gn[--Hn], gn[Hn] = null;
+    for (; e === Mn;) Mn = gn[--Hn], gn[Hn] = null, _t = gn[--Hn], gn[Hn] = null, Bn = gn[--Hn], gn[Hn] = null;
   }
   var yt = null,
     Cn = null,
@@ -4070,30 +4070,30 @@ function Dg() {
   function qs() {
     Ye(Vi, ao), Ye(ca, ca.current);
   }
-  function _n() {
+  function Nn() {
     ao = Vi.current, Le(ca), Le(Vi);
   }
   var gt = _e(null),
     _a = null;
   function pa(e) {
     var n = e.alternate;
-    Ye(Dn, Dn.current & 1), Ye(gt, e), _a === null && (n === null || ca.current !== null || n.memoizedState !== null) && (_a = e);
+    Ye(_n, _n.current & 1), Ye(gt, e), _a === null && (n === null || ca.current !== null || n.memoizedState !== null) && (_a = e);
   }
   function fn(e) {
     if (e.tag === 22) {
-      if (Ye(Dn, Dn.current), Ye(gt, e), _a === null) {
+      if (Ye(_n, _n.current), Ye(gt, e), _a === null) {
         var n = e.alternate;
         n !== null && n.memoizedState !== null && (_a = e);
       }
     } else Kn();
   }
   function Kn() {
-    Ye(Dn, Dn.current), Ye(gt, gt.current);
+    Ye(_n, _n.current), Ye(gt, gt.current);
   }
   function ti(e) {
-    Le(gt), _a === e && (_a = null), Le(Dn);
+    Le(gt), _a === e && (_a = null), Le(_n);
   }
-  var Dn = _e(0);
+  var _n = _e(0);
   function Ne(e) {
     for (var n = e; n !== null;) {
       if (n.tag === 13) {
@@ -4975,7 +4975,7 @@ function Dg() {
         n = Sn.identifierPrefix;
       if (tn) {
         var t = _t,
-          i = Nn;
+          i = Bn;
         t = (i & ~(1 << 32 - Un(i) - 1)).toString(32) + t, n = ":" + n + "R" + t, t = fr++, 0 < t && (n += "H" + t.toString(32)), n += ":";
       } else t = Fl++, n = ":" + n + "r" + t.toString(32) + ":";
       return e.memoizedState = n;
@@ -5341,7 +5341,7 @@ function Dg() {
       s = !1,
       l = (n.flags & 128) !== 0,
       b;
-    if ((b = l) || (b = e !== null && e.memoizedState === null ? !1 : (Dn.current & 2) !== 0), b && (s = !0, n.flags &= -129), b = (n.flags & 32) !== 0, n.flags &= -33, e === null) {
+    if ((b = l) || (b = e !== null && e.memoizedState === null ? !1 : (_n.current & 2) !== 0), b && (s = !0, n.flags &= -129), b = (n.flags & 32) !== 0, n.flags &= -33, e === null) {
       if (tn) {
         if (s ? pa(n) : Kn(), tn) {
           var C = Cn,
@@ -5363,7 +5363,7 @@ function Dg() {
             C !== null ? (n.memoizedState = {
               dehydrated: C,
               treeContext: Mn !== null ? {
-                id: Nn,
+                id: Bn,
                 overflow: _t
               } : null,
               retryLane: 536870912
@@ -5432,7 +5432,7 @@ function Dg() {
           if (i = i & (b.suspendedLanes | t) ? 0 : i, i !== 0 && i !== R.retryLane) throw R.retryLane = i, Hi(e, i), ea(b, e, i), Xh;
         }
         C.data === "$?" || gm(), n = Lu(e, n, t);
-      } else C.data === "$?" ? (n.flags |= 128, n.child = e.child, n = Ny.bind(null, e), C._reactRetry = n, n = null) : (e = R.treeContext, Cn = li(C.nextSibling), yt = n, tn = !0, Tt = null, la = !1, e !== null && (gn[Hn++] = Nn, gn[Hn++] = _t, gn[Hn++] = Mn, Nn = e.id, _t = e.overflow, Mn = n), n = Iu(n, i.children), n.flags |= 4096);
+      } else C.data === "$?" ? (n.flags |= 128, n.child = e.child, n = Ny.bind(null, e), C._reactRetry = n, n = null) : (e = R.treeContext, Cn = li(C.nextSibling), yt = n, tn = !0, Tt = null, la = !1, e !== null && (gn[Hn++] = Bn, gn[Hn++] = _t, gn[Hn++] = Mn, Bn = e.id, _t = e.overflow, Mn = n), n = Iu(n, i.children), n.flags |= 4096);
       return n;
     }
     return s ? (Kn(), s = i.fallback, C = n.mode, R = e.child, K = R.sibling, i = _o(R, {
@@ -5481,7 +5481,7 @@ function Dg() {
     var i = n.pendingProps,
       s = i.revealOrder,
       l = i.tail;
-    if (Et(e, n, i.children, t), i = Dn.current, i & 2) i = i & 1 | 2, n.flags |= 128;else {
+    if (Et(e, n, i.children, t), i = _n.current, i & 2) i = i & 1 | 2, n.flags |= 128;else {
       if (e !== null && e.flags & 128) e: for (e = n.child; e !== null;) {
         if (e.tag === 13) e.memoizedState !== null && lv(e, t, n);else if (e.tag === 19) lv(e, t, n);else if (e.child !== null) {
           e.child.return = e, e = e.child;
@@ -5496,7 +5496,7 @@ function Dg() {
       }
       i &= 1;
     }
-    switch (Ye(Dn, i), s) {
+    switch (Ye(_n, i), s) {
       case "forwards":
         for (t = n.child, s = null; t !== null;) e = t.alternate, e !== null && Ne(e) === null && (s = t), t = t.sibling;
         t = s, t === null ? (s = n.child, n.child = null) : (s = t.sibling, t.sibling = null), Gu(n, !1, s, t, l);
@@ -5559,7 +5559,7 @@ function Dg() {
           if (i) return cv(e, n, t);
           n.flags |= 128;
         }
-        if (s = n.memoizedState, s !== null && (s.rendering = null, s.tail = null, s.lastEffect = null), Ye(Dn, Dn.current), i) break;
+        if (s = n.memoizedState, s !== null && (s.rendering = null, s.tail = null, s.lastEffect = null), Ye(_n, _n.current), i) break;
         return null;
       case 22:
       case 23:
@@ -7150,13 +7150,13 @@ function Dg() {
       case 10:
         return Ji(n.type), Ln(n), null;
       case 19:
-        if (Le(Dn), s = n.memoizedState, s === null) return Ln(n), null;
+        if (Le(_n), s = n.memoizedState, s === null) return Ln(n), null;
         if (i = (n.flags & 128) !== 0, l = s.rendering, l === null) {
           if (i) Jl(s, !1);else {
             if (Xn !== 0 || e !== null && e.flags & 128) for (e = n.child; e !== null;) {
               if (l = Ne(e), l !== null) {
                 for (n.flags |= 128, Jl(s, !1), e = l.updateQueue, n.updateQueue = e, vd(n, e), n.subtreeFlags = 0, e = t, t = n.child; t !== null;) Fv(t, e), t = t.sibling;
-                return Ye(Dn, Dn.current & 1 | 2), n.child;
+                return Ye(_n, _n.current & 1 | 2), n.child;
               }
               e = e.sibling;
             }
@@ -7168,10 +7168,10 @@ function Dg() {
           } else 2 * Se() - s.renderingStartTime > pd && t !== 536870912 && (n.flags |= 128, i = !0, Jl(s, !1), n.lanes = 4194304);
           s.isBackwards ? (l.sibling = n.child, n.child = l) : (e = s.last, e !== null ? e.sibling = l : n.child = l, s.last = l);
         }
-        return s.tail !== null ? (n = s.tail, s.rendering = n, s.tail = n.sibling, s.renderingStartTime = Se(), n.sibling = null, e = Dn.current, Ye(Dn, i ? e & 1 | 2 : e & 1), n) : (Ln(n), null);
+        return s.tail !== null ? (n = s.tail, s.rendering = n, s.tail = n.sibling, s.renderingStartTime = Se(), n.sibling = null, e = _n.current, Ye(_n, i ? e & 1 | 2 : e & 1), n) : (Ln(n), null);
       case 22:
       case 23:
-        return ti(n), _n(), i = n.memoizedState !== null, e !== null ? e.memoizedState !== null !== i && (n.flags |= 8192) : i && (n.flags |= 8192), i ? t & 536870912 && !(n.flags & 128) && (Ln(n), n.subtreeFlags & 6 && (n.flags |= 8192)) : Ln(n), t = n.updateQueue, t !== null && vd(n, t.retryQueue), t = null, e !== null && e.memoizedState !== null && e.memoizedState.cachePool !== null && (t = e.memoizedState.cachePool.pool), i = null, n.memoizedState !== null && n.memoizedState.cachePool !== null && (i = n.memoizedState.cachePool.pool), i !== t && (n.flags |= 2048), e !== null && Le(Yi), null;
+        return ti(n), Nn(), i = n.memoizedState !== null, e !== null ? e.memoizedState !== null !== i && (n.flags |= 8192) : i && (n.flags |= 8192), i ? t & 536870912 && !(n.flags & 128) && (Ln(n), n.subtreeFlags & 6 && (n.flags |= 8192)) : Ln(n), t = n.updateQueue, t !== null && vd(n, t.retryQueue), t = null, e !== null && e.memoizedState !== null && e.memoizedState.cachePool !== null && (t = e.memoizedState.cachePool.pool), i = null, n.memoizedState !== null && n.memoizedState.cachePool !== null && (i = n.memoizedState.cachePool.pool), i !== t && (n.flags |= 2048), e !== null && Le(Yi), null;
       case 24:
         return t = null, e !== null && (t = e.memoizedState.cache), n.memoizedState.cache !== t && (n.flags |= 2048), Ji(Pn), Ln(n), null;
       case 25:
@@ -7196,14 +7196,14 @@ function Dg() {
         }
         return e = n.flags, e & 65536 ? (n.flags = e & -65537 | 128, n) : null;
       case 19:
-        return Le(Dn), null;
+        return Le(_n), null;
       case 4:
         return re(), null;
       case 10:
         return Ji(n.type), null;
       case 22:
       case 23:
-        return ti(n), _n(), e !== null && Le(Yi), e = n.flags, e & 65536 ? (n.flags = e & -65537 | 128, n) : null;
+        return ti(n), Nn(), e !== null && Le(Yi), e = n.flags, e & 65536 ? (n.flags = e & -65537 | 128, n) : null;
       case 24:
         return Ji(Pn), null;
       case 25:
@@ -7229,14 +7229,14 @@ function Dg() {
         ti(n);
         break;
       case 19:
-        Le(Dn);
+        Le(_n);
         break;
       case 10:
         Ji(n.type);
         break;
       case 22:
       case 23:
-        ti(n), _n(), e !== null && Le(Yi);
+        ti(n), Nn(), e !== null && Le(Yi);
         break;
       case 24:
         Ji(Pn);
@@ -15372,8 +15372,11 @@ function Wg() {
     }, _callee9);
   }));
 }
-var Bs = "3.0.0",
+var Bs = "3.0.1",
   Kg = [{
+    v: "v3.0.1",
+    i: ["修复 · 耳机 / 蓝牙的播放、暂停、切词按键现在通过系统媒体会话正式绑定，像控制音乐软件一样控制听读", "修复 · 中文发音期间保持音频会话活跃，后台播放时耳机按键不再失效", "优化 · 网页版耳机控制按键提前注册，打开即可用"]
+  }, {
     v: "v3.0.0",
     i: ["修复 · 听读在 vivo / OPPO 等手机系统「正在播放」里找不到：补齐系统识别媒体源所需的封面图标与媒体信息，现在会像音乐软件一样出现在系统媒体中心", "新增 · 耳机 / 蓝牙首次按播放键可直接唤醒听读，无需先打开应用", "优化 · 播放时更明确地以「媒体音频」身份登记，锁屏与下拉面板的控制更稳定"]
   }, {
@@ -15449,7 +15452,7 @@ var Bs = "3.0.0",
     v: "v2.78.0",
     i: ["新增 · 背诵页可开关「音量键翻页」，音量上 / 下键切换上一个 / 下一个词", "新增 · 释义以高考高频义项为主，选项只显示最常用中文", "新增 · 听读联网时在线播放，不再把每个词音频存到手机", "优化 · 四选一自动去重，困难模式不再出现两个几乎一样的中文", "优化 · 全库释义清理，去掉与高考无关内容；词形变化、缩略语注释不再混进释义", "优化 · 老版本遗留听读音频缓存自动清理一次"]
   }],
-  Ai = 335,
+  Ai = 337,
   Zg = [{
     name: "Gitee 镜像（国内最快、随构建更新）",
     url: "https://gitee.com/xdbzys/app/raw/master/gaokao-vocab.apk"
@@ -16220,27 +16223,27 @@ function iu(r, u, c) {
   });
 }
 function b0() {
-  return Promise.all([Bn(function () {
+  return Promise.all([Dn(function () {
     return Promise.resolve().then(function () {
       return cb;
     });
-  }, void 0, ""), Bn(function () {
+  }, void 0, ""), Dn(function () {
     return Promise.resolve().then(function () {
       return uy;
     });
-  }, void 0, ""), Bn(function () {
+  }, void 0, ""), Dn(function () {
     return Promise.resolve().then(function () {
       return my;
     });
-  }, void 0, ""), Bn(function () {
+  }, void 0, ""), Dn(function () {
     return Promise.resolve().then(function () {
       return hy;
     });
-  }, void 0, ""), Bn(function () {
+  }, void 0, ""), Dn(function () {
     return Promise.resolve().then(function () {
       return ro;
     });
-  }, void 0, ""), Bn(function () {
+  }, void 0, ""), Dn(function () {
     return Promise.resolve().then(function () {
       return py;
     });
@@ -16415,7 +16418,7 @@ function Zp(r) {
   }
 }
 function x0() {
-  Vc || Ud || (Ud = !0, Bn(function () {
+  Vc || Ud || (Ud = !0, Dn(function () {
     return Promise.resolve().then(function () {
       return jb;
     });
@@ -16446,7 +16449,7 @@ var yc = [],
   Jp = !1,
   Id = !1;
 function j0() {
-  Jp || Id || (Id = !0, Bn(function () {
+  Jp || Id || (Id = !0, Dn(function () {
     return Promise.resolve().then(function () {
       return Fb;
     });
@@ -16460,7 +16463,7 @@ var If = "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg xmlns="h
   Hd = !1,
   Xp = !1;
 function k0() {
-  Xp || Hd || (Hd = !0, Bn(function () {
+  Xp || Hd || (Hd = !0, Dn(function () {
     return Promise.resolve().then(function () {
       return Mb;
     });
@@ -16477,7 +16480,7 @@ var Hf = [{
     source: "高考3500词",
     total: 3599,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return uy;
         });
@@ -16493,7 +16496,7 @@ var Hf = [{
     source: "高考总汇词库",
     total: 6503,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return py;
         });
@@ -16512,7 +16515,7 @@ var Hf = [{
     source: "688高频词",
     total: 687,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return _b;
         });
@@ -16528,7 +16531,7 @@ var Hf = [{
     source: "",
     total: 977,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return my;
         });
@@ -16544,7 +16547,7 @@ var Hf = [{
     source: "",
     total: 93,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return ro;
         });
@@ -16560,7 +16563,7 @@ var Hf = [{
     source: "",
     total: 508,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return hy;
         });
@@ -16576,7 +16579,7 @@ var Hf = [{
     source: "",
     total: 89,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return ro;
         });
@@ -16592,7 +16595,7 @@ var Hf = [{
     source: "",
     total: 80,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return ro;
         });
@@ -16608,7 +16611,7 @@ var Hf = [{
     source: "",
     total: 98,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return ro;
         });
@@ -16624,7 +16627,7 @@ var Hf = [{
     source: "",
     total: 13,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return ro;
         });
@@ -16640,7 +16643,7 @@ var Hf = [{
     source: "",
     total: 31,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return ro;
         });
@@ -16656,7 +16659,7 @@ var Hf = [{
     source: "",
     total: 172,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return ro;
         });
@@ -16672,7 +16675,7 @@ var Hf = [{
     source: "",
     total: 17,
     load: function load() {
-      return Bn(function () {
+      return Dn(function () {
         return Promise.resolve().then(function () {
           return ro;
         });
@@ -18343,7 +18346,7 @@ function bq(r) {
 }
 var Wd = null;
 function iy() {
-  return Wd ? Promise.resolve(Wd) : Bn(function () {
+  return Wd ? Promise.resolve(Wd) : Dn(function () {
     return Promise.resolve().then(function () {
       return Rb;
     });
@@ -20637,7 +20640,7 @@ function ib() {
     f = _G$useState5[1];
   G.useEffect(function () {
     var o = !0;
-    return Bn(function () {
+    return Dn(function () {
       return Promise.resolve().then(function () {
         return Gb;
       });
@@ -20659,7 +20662,7 @@ function ib() {
     q = _G$useState7[1];
   G.useEffect(function () {
     var o = !0;
-    return Bn(function () {
+    return Dn(function () {
       return Promise.resolve().then(function () {
         return Kb;
       });
@@ -21601,7 +21604,7 @@ function ib() {
       })), Je.shuffle && (o = jf(o, el.current)), o;
     }, [gn, ja, dn, Je.shuffle]),
     Mn = ct && nt.current.length ? nt.current : Hn,
-    Nn = Mn[Lt] || null,
+    Bn = Mn[Lt] || null,
     _t = G.useMemo(function () {
       var o = gn.items.length;
       var v = 0;
@@ -21954,10 +21957,10 @@ function ib() {
       window.NativePlayer && window.NativePlayer.setRate && window.NativePlayer.setRate(Je.rate);
     } catch (o) {}
   }, [Je.rate, ct]), G.useEffect(function () {
-    if (Nn && "mediaSession" in navigator) try {
+    if ("mediaSession" in navigator) try {
       if (window.MediaMetadata && (navigator.mediaSession.metadata = new window.MediaMetadata({
-        title: Nn.term || "背群英 · 听读",
-        artist: Nn.meaning || "",
+        title: Bn.term || "背群英 · 听读",
+        artist: Bn.meaning || "",
         album: "背群英 · 听读模式"
       })), navigator.mediaSession.playbackState = qn.current ? "paused" : ct ? "playing" : "paused", navigator.mediaSession.setActionHandler) {
         var o = function o() {
@@ -22092,7 +22095,7 @@ function ib() {
         o === "nexttrack" ? dr() : o === "previoustrack" ? ur() : o === "paused" ? tn(!0) : o === "resumed" ? Tt(!0) : o === "pause" ? tn() : o === "play" || o === "resume" ? qn.current ? Tt() : mn.current || Ma() : o === "playpause" ? mn.current ? qn.current ? Tt() : tn() : Ma() : o === "stop" && Cn();
       };
     } catch (o) {}
-  }, [Nn, ct, Si]), G.useEffect(function () {
+  }, [Bn, ct, Si]), G.useEffect(function () {
     try {
       window.__nativeProgress = function (o, v) {
         try {
@@ -22126,8 +22129,8 @@ function ib() {
       } catch (v) {}
     },
     ps = function ps() {
-      if (Nn) {
-        var o = String(Nn.term || "word"),
+      if (Bn) {
+        var o = String(Bn.term || "word"),
           v = (jc(o) || [])[0];
         v && (Sq(v, o.replace(/[^0-9a-zA-Z\-]/g, "_") + ".mp3"), lt({
           done: 0,
@@ -22447,7 +22450,7 @@ function ib() {
       }
       return o;
     }, [r]),
-    _n = G.useMemo(function () {
+    Nn = G.useMemo(function () {
       var o = za.items.filter(function (v) {
         var p = Qa === "全部" || Os(v.pos) === Qa,
           V = Qt === "全部" || v.type === Qt,
@@ -22544,11 +22547,11 @@ function ib() {
       }
       return v;
     }, [va, Qa, Qt, Oc]),
-    fn = _n[di % Math.max(_n.length, 1)],
+    fn = Nn[di % Math.max(Nn.length, 1)],
     Kn = G.useRef(null),
     _G$useState120 = G.useState(null),
     ti = _G$useState120[0],
-    Dn = _G$useState120[1],
+    _n = _G$useState120[1],
     Ne = ti || (ot || Ta) && Kn.current || fn,
     Tu = (Ne ? Ke(Ne.term) : "") + "|" + nn + "|" + (de.difficulty || "easy") + "|" + za.id,
     vr = G.useMemo(function () {
@@ -22860,7 +22863,7 @@ function ib() {
   }, []);
   var Vs = G.useRef(null);
   Vs.current = function (o) {
-    z === "learn" && _n.length !== 0 && (nn === "flashcard" && !Ta ? (Kn.current || (Kn.current = fn), Aa(!0), Ba(Ne)) : o === "up" ? xs() : Ao());
+    z === "learn" && Nn.length !== 0 && (nn === "flashcard" && !Ta ? (Kn.current || (Kn.current = fn), Aa(!0), Ba(Ne)) : o === "up" ? xs() : Ao());
   }, G.useEffect(function () {
     return window.__volumeKeyNav = function (o) {
       Vs.current && Vs.current(o);
@@ -22997,13 +23000,13 @@ function ib() {
     Qi.current = [], ai.current = [];
   }, [za.id]), G.useEffect(function () {
     var o = (fn == null ? void 0 : fn.term) || "";
-    Fl.current && Fl.current !== o && !Kn.current && (Ta || ot) && (Aa(!1), Ka(""), Dn(null)), Fl.current = o;
+    Fl.current && Fl.current !== o && !Kn.current && (Ta || ot) && (Aa(!1), Ka(""), _n(null)), Fl.current = o;
   }, [fn == null ? void 0 : fn.term]), G.useEffect(function () {
     z === "learn" && fn != null && fn.term && (ii.current = fn.term);
   }, [fn == null ? void 0 : fn.term, z]), G.useEffect(function () {
     var o;
-    if (z === "learn" && ii.current && _n.length > 0 && ((o = _n[di % Math.max(_n.length, 1)]) == null ? void 0 : o.term) !== ii.current) {
-      var p = _n.findIndex(function (V) {
+    if (z === "learn" && ii.current && Nn.length > 0 && ((o = Nn[di % Math.max(Nn.length, 1)]) == null ? void 0 : o.term) !== ii.current) {
+      var p = Nn.findIndex(function (V) {
         return V.term === ii.current;
       });
       p !== -1 && ia(p);
@@ -23031,45 +23034,45 @@ function ib() {
     ml.current = z;
   }, [z, ss]);
   function Ao() {
-    if (Vn.current && (clearTimeout(Vn.current), Vn.current = null), To.current++, es(!1), _n.length > 0) {
-      var v = _n[di % _n.length];
+    if (Vn.current && (clearTimeout(Vn.current), Vn.current = null), To.current++, es(!1), Nn.length > 0) {
+      var v = Nn[di % Nn.length];
       if (v && v.term) {
         var p = Qi.current;
         p.includes(v.term) || p.push(v.term);
-        var V = Math.min(50, Math.max(3, Math.floor(_n.length * .6)));
+        var V = Math.min(50, Math.max(3, Math.floor(Nn.length * .6)));
         for (; p.length > V;) p.shift();
       }
     }
-    var o = (di + 1) % Math.max(_n.length, 1);
-    if (_n.length > 3) {
+    var o = (di + 1) % Math.max(Nn.length, 1);
+    if (Nn.length > 3) {
       var _v7 = Qi.current,
         _p2 = ai.current;
       var _V = 0;
-      for (; _V < _n.length;) {
-        var S = _n[o];
-        if (_n.every(function (Y) {
+      for (; _V < Nn.length;) {
+        var S = Nn[o];
+        if (Nn.every(function (Y) {
           return _v7.includes(Y.term) || _p2.includes(Y.term);
         }) || !_v7.includes(S.term) && !_p2.includes(S.term)) break;
-        o = (o + 1) % _n.length, _V++;
+        o = (o + 1) % Nn.length, _V++;
       }
     }
-    ia(o), Aa(!1), Ka(""), Kn.current = null, Dn(null);
+    ia(o), Aa(!1), Ka(""), Kn.current = null, _n(null);
   }
   function xs() {
     if (Ra.current) {
       var o = Ra.current.item,
-        v = _n.findIndex(function (p) {
+        v = Nn.findIndex(function (p) {
           return p.term === o.term;
         });
       if (v !== -1 && v !== di) {
-        ia(v), Aa(!1), Ka(""), Kn.current = null, Dn(null), Ra.current = null;
+        ia(v), Aa(!1), Ka(""), Kn.current = null, _n(null), Ra.current = null;
         return;
       }
-      ia(0), Aa(!1), Ka(""), Kn.current = null, Dn(o), Ra.current = null;
+      ia(0), Aa(!1), Ka(""), Kn.current = null, _n(o), Ra.current = null;
       return;
     }
-    Dn(null), ia(function (o) {
-      return (o - 1 + _n.length) % Math.max(_n.length, 1);
+    _n(null), ia(function (o) {
+      return (o - 1 + Nn.length) % Math.max(Nn.length, 1);
     }), Aa(!1), Ka(""), Kn.current = null;
   }
   Xe.current = Ao, bn.current = xs;
@@ -24762,7 +24765,7 @@ function ib() {
           })]
         }), a.jsx("span", {
           className: "progressTag",
-          children: nn === "passage" && y && so.length ? "\u7B2C " + (g % so.length + 1) + "/" + so.length + " \u7BC7" : di + 1 + "/" + _n.length
+          children: nn === "passage" && y && so.length ? "\u7B2C " + (g % so.length + 1) + "/" + so.length + " \u7BC7" : di + 1 + "/" + Nn.length
         })]
       }), a.jsxs("div", {
         className: "quickToggleRow",
@@ -25786,23 +25789,23 @@ function ib() {
             })
           }), a.jsx("div", {
             className: "listenCoverMain",
-            children: Nn ? a.jsxs(It.Fragment, {
+            children: Bn ? a.jsxs(It.Fragment, {
               children: [a.jsx("div", {
                 className: "listenWord",
-                children: Nn.term
-              }, "w_" + Lt + "_" + (Nn.term || "")), a.jsxs("div", {
+                children: Bn.term
+              }, "w_" + Lt + "_" + (Bn.term || "")), a.jsxs("div", {
                 className: "listenSubRow",
-                children: [Nn.phonetic ? a.jsx("span", {
+                children: [Bn.phonetic ? a.jsx("span", {
                   className: "listenPhonetic",
-                  children: Nn.phonetic
-                }) : null, Nn.pos ? a.jsx("span", {
+                  children: Bn.phonetic
+                }) : null, Bn.pos ? a.jsx("span", {
                   className: "listenPosTag",
-                  children: Nn.pos
+                  children: Bn.pos
                 }) : null]
               }), a.jsx("div", {
                 className: "listenMeaning",
                 children: a.jsx(Lr, {
-                  text: Nn.meaning
+                  text: Bn.meaning
                 })
               })]
             }) : a.jsx("div", {
@@ -25876,7 +25879,7 @@ function ib() {
         }), a.jsx("button", {
           className: "listenMp3Btn",
           onClick: ps,
-          disabled: !Nn,
+          disabled: !Bn,
           title: "下载本词 MP3",
           children: a.jsx(Ae, {
             name: "download"
