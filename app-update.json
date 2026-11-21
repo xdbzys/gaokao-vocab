@@ -1,8 +1,8 @@
 {
-  "version": "3.4.0",
+  "version": "3.4.1",
   "versionCode": 338,
-  "changelog": "【v3.4.0】词库按需下载与重命名\n新增 · 词库精简：初始仅保留高考3500词、高考总汇、688高频词、985核心词汇四本，其余词库改为按需下载\n新增 · 「我的」页新增扩展词库下载区，9 本内置扩展词库逐本下载/移除，数据随应用内置无需联网，状态记在本机\n新增 · 词库重命名：在词库管理页可对任意词库（内置/下载/自建）重命名，名字重启后保留\n优化 · 仅加载已下载词库的数据，启动更快、占用更少；删除下载词库会同步清除下载标记，避免重启后又出现",
-  "devNotes": "v3.4.0：①CORE_BOOK_IDS 默认四本，OPTIONAL_EXTRA_BOOK_DEFS 从 BOOK_DEFS 派生9本可选，builtInBooks 只映射核心（_allDefBooks 仍为全部建映射保证 ensureBookData 可用）。②我的页下载区 downloadOptionalBook/removeOptionalBook 复用 ensureBookData，下载状态存 OPTIONAL_EXTRA_STORAGE_KEY，启动空闲期恢复 applyNameOverride。③重命名 renameBookById：自定义存 customBooks，内置/可选存 BOOK_NAME_OVERRIDE_KEY，原地改运行时对象保持引用一致；词库管理页加重命名按钮。④删除可选词库同步清下载标记避免重启恢复。⑤后台只加载核心+已下载。验证：20项源码断言+12项流程模拟+首屏249.1KB+ES5+Chromium37+CI门禁全过。",
+  "changelog": "【v3.4.1】修复「检查不到新版本」\n① 根治版本基线脱节：此前发版只把版本号写进安装包和清单，未同步回源码，导致源码版本长期停在旧号，检查更新误判「已是最新」；现已让流水线每次发版自动回写源码并设置一致性门禁。\n② 修正更新判定：检查更新改为以「本机已安装版本」为基准（不再被页面缓存版本抬高），旧安装包一定能检出新版本。\n③ 网页版同时比对版本号与构建号，任一更新即提示。\n更新方式：我的 → 版本更新 → 下载安装（覆盖安装，学习记录保留）。",
+  "devNotes": "v3.4.0：①CORE_BOOK_IDS 默认四本，OPTIONAL_EXTRA_BOOK_DEFS 从 BOOK_DEFS 派生9本可选，builtInBooks 只映射核心（_allDefBooks 仍为全部建映射保证 ensureBookData 可用）。②我的页下载区 downloadOptionalBook/removeOptionalBook 复用 ensureBookData，下载状态存 OPTIONAL_EXTRA_STORAGE_KEY，启动空闲期恢复 applyNameOverride。③重命名 renameBookById：自定义存 customBooks，内置/可选存 BOOK_NAME_OVERRIDE_KEY，原地改运行时对象保持引用一致；词库管理页加重命名按钮。④删除可选词库同步清下载标记避免重启恢复。⑤后台只加载核心+已下载。验证：20项源码断言+12项流程模拟+首屏249.1KB+ES5+Chromium37+CI门禁全过。\nv3.4.1: 修复「检查不到新版本」根因。(a) 真因: CI 的 Bump 步骤只在构建工作区把版本号写入 APK/web/app-update.json，Gitee/mirror 提交步骤从未把 main.jsx 的 APP_VERSION_CODE、build.gradle 的 versionCode/versionName 提交回仓库，导致源码版本长期停在 v2.96/328、gradle 停在 286/2.74.0，与线上清单永久脱节。(b) 客户端 checkCloudUpdate 用 localCode=Math.max(APP_VERSION_CODE, nativeCode) 作基线，页面常量被抬高时会掩盖旧 APK，误判已最新；改为原生 App 只以本机安装包真实 versionCode 为基线，页面常量仅在读不到真实版本时回退。(c) 网页版更新检查增加 versionCode 数值比较，避免只比版本字符串时漏检。(d) CI mirror 步骤把 Bump 后的源码三处一并回写 master；新增 Version baseline consistency gate，源码/gradle/清单任一版本不一致即让流水线失败，从机制上杜绝复发。版本 3.4.1 / versionCode 339。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",

@@ -115,6 +115,31 @@ jobs:
           console.log('[guard] PASS: 无原生弹窗 / 检索真分片 / 版本一致');
           NODE
 
+      # v3.4.1 版本一致性门禁：源码三处（APP_VERSION / APP_VERSION_CODE、build.gradle、
+      # app-update.json）必须在 Bump 后严格一致。任一处脱节就让流水线变红，
+      # 从机制上杜绝「源码基线停在旧版 → 客户端检查不到新版本」再次发生。
+      - name: Version baseline consistency gate
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const src = fs.readFileSync('src/main.jsx', 'utf8');
+          const mv = /const\s+APP_VERSION\s*=\s*['"]([\d.]+)['"]/.exec(src);
+          const mc = /const\s+APP_VERSION_CODE\s*=\s*(\d+)/.exec(src);
+          const upd = JSON.parse(fs.readFileSync('app-update.json', 'utf8'));
+          const gradle = fs.readFileSync('android/app/build.gradle', 'utf8');
+          const gc = /versionCode\s+(\d+)/.exec(gradle);
+          const gn = /versionName\s+"([^"]+)"/.exec(gradle);
+          const fail = [];
+          if (!mv || !mc) fail.push('cannot parse APP_VERSION/APP_VERSION_CODE from src/main.jsx');
+          if (!gc || !gn) fail.push('cannot parse versionCode/versionName from build.gradle');
+          if (mv && String(upd.version) !== mv[1]) fail.push('app-update.version ' + upd.version + ' != APP_VERSION ' + mv[1]);
+          if (mc && Number(upd.versionCode) !== Number(mc[1])) fail.push('app-update.versionCode ' + upd.versionCode + ' != APP_VERSION_CODE ' + mc[1]);
+          if (gc && Number(upd.versionCode) !== Number(gc[1])) fail.push('app-update.versionCode ' + upd.versionCode + ' != gradle.versionCode ' + gc[1]);
+          if (gn && String(upd.version) !== gn[1]) fail.push('app-update.version ' + upd.version + ' != gradle.versionName ' + gn[1]);
+          if (fail.length) { console.error('[version-gate] FAIL: ' + fail.join('; ')); process.exit(1); }
+          console.log('[version-gate] PASS: version=' + upd.version + ' code=' + upd.versionCode + ' consistent across source/gradle/manifest');
+          NODE
+
       - name: Install dependencies
         run: npm ci
 
@@ -323,6 +348,16 @@ jobs:
           cp android/app/build/outputs/apk/release/app-release.apk /tmp/mirror/app-release.apk
           cp dist/index.html /tmp/mirror/index.html
           cp version.json app-update.json /tmp/mirror/
+          # v3.4.1 根因修复：Bump 步骤已把版本号写进源码三处（src/main.jsx 的
+          # APP_VERSION_CODE / APP_VERSION、android/app/build.gradle、app-update.json），
+          # 但 checkout 会重置工作区，且旧流程从未把这些源码改动提交回仓库 —— 导致源码
+          # 长期停在旧号（APP_VERSION_CODE 328 / gradle 286），与线上清单永久脱节，
+          # 客户端检查更新误判「已是最新」。这里连同源码一起备份，checkout 后还原并提交，
+          # 使仓库成为版本号的唯一事实来源，保证下一版从正确的基线递增。
+          mkdir -p /tmp/mirror/src /tmp/mirror/android/app
+          for f in main.jsx src/main.jsx android/app/build.gradle; do
+            if [ -f "$f" ]; then cp "$f" "/tmp/mirror/$f"; fi
+          done
           git fetch origin master
           git checkout -B mirror-sync origin/master
           cp /tmp/mirror/app-release.apk gaokao-vocab.apk
@@ -331,11 +366,21 @@ jobs:
           # 才是本次的值，否则版本号会重复，客户端会认为「没有更新」
           cp /tmp/mirror/version.json version.json
           cp /tmp/mirror/app-update.json app-update.json
+          # 还原 Bump 后的源码版本号（含目录，避免目标目录不存在）
+          mkdir -p src android/app
+          for f in main.jsx src/main.jsx android/app/build.gradle; do
+            if [ -f "/tmp/mirror/$f" ]; then cp "/tmp/mirror/$f" "$f"; fi
+          done
+          # 先 add 一定存在的产物文件
           git add -f gaokao-vocab.apk web/index.html version.json app-update.json
+          # 再逐个 add 存在的源码文件（git add 对不存在的路径会整体失败，须分开调用）
+          for f in main.jsx src/main.jsx android/app/build.gradle; do
+            if [ -f "$f" ]; then git add -f "$f"; fi
+          done
           if git diff --cached --quiet; then
             echo "Files unchanged, skip mirror commit"
           else
-            git commit -m "chore: mirror APK + web for jsDelivr [skip ci]"
+            git commit -m "chore: mirror APK + web + versioned source for jsDelivr [skip ci]"
             git push origin mirror-sync:master
           fi
 

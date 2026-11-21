@@ -103,14 +103,19 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '3.4.0';
+const APP_VERSION = '3.4.1';
 
 // v3.1.0 内置更新日志改为按需加载（离线兜底），见挂载时的动态 import
 let BUILTIN_CHANGELOG = [];
-const CHANGELOG_TOTAL = 72;
+const CHANGELOG_TOTAL = 73;
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
-const APP_VERSION_CODE = 328;
+// v3.4.1 根因修复：此前 CI 每版只把 Bump 后的版本号写进构建产物（APK/清单），
+// 从未提交回源码，导致本文件长期停在 328（v2.96），与线上清单 versionCode 永久脱节。
+// 现与 APP_VERSION 严格对齐到同一版本；CI 新增「源码/清单版本一致性」门禁，
+// 此后任何发版都必须三处（本文件 APP_VERSION_CODE、build.gradle、app-update.json）同步，
+// 否则流水线直接失败，杜绝再次脱节。
+const APP_VERSION_CODE = 339;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -5843,10 +5848,21 @@ function App() {
           const resp = await fetch('app-update.json?v=' + Date.now());
           if (!resp.ok) return;
           const data = await resp.json();
-          if (data.version && isNewerVersion(data.version, APP_VERSION)) {
-            try { localStorage.setItem('gaokao_web_update_ready', String(data.version)); } catch (e) {}
-            setWebUpdateReady(String(data.version));
-            console.log('[Web Update] 发现新版本 ' + data.version + '（仅提示，不自动刷新）');
+          // v3.4.1：版本字符串与数值双判定，任一表明远端更新即提示。
+          // 历史只比字符串，遇到「只 bump versionCode、未改 versionName」的发版会漏检。
+          const remoteCode = Number(data.versionCode || 0);
+          const remoteName = String(data.version || '');
+          const isNewer = isNewerVersion(remoteName, APP_VERSION)
+            || (remoteCode > 0 && remoteCode > APP_VERSION_CODE);
+          if (isNewer) {
+            // 始终存版本名字符串，保证下方 isNewerVersion(webUpdateReady, APP_VERSION) 渲染判断口径一致。
+            // 若远端恰好只 bump 了 code、versionName 未变，则构造显示名避免「有更新但不显示」。
+            const readyName = remoteName && isNewerVersion(remoteName, APP_VERSION)
+              ? remoteName
+              : APP_VERSION + '.' + remoteCode;
+            try { localStorage.setItem('gaokao_web_update_ready', readyName); } catch (e) {}
+            setWebUpdateReady(readyName);
+            console.log('[Web Update] 发现新版本 ' + (remoteName || remoteCode) + '（仅提示，不自动刷新）');
           } else {
             try { localStorage.removeItem('gaokao_web_update_ready'); } catch (e) {}
             setWebUpdateReady('');
@@ -8308,19 +8324,19 @@ function App() {
       const nativeCode = nativePkgVersionCode();
       const nativeName = nativePkgVersionName();
       console.log('[Update] Installed package versionCode:', nativeCode, nativeName);
-      let hasUpdate = data.versionCode > APP_VERSION_CODE;
-      // v2.67.0 关键修复：页面会被云端热更新抬高到最新版本号，App 便误以为"已是最新版本"，
-      // 但本机安装的 APK 仍是旧的 —— 所有依赖原生代码的功能都不生效（听读配音 / 参数 / 立即出声）。
-      // 所以本机安装包的真实版本必须参与比对：只要比远端旧，就一定提示安装新安装包。
-      let pkgOutdated = false;
-      if (isNativeApp && data.versionCode > nativeCode) {
-        hasUpdate = true;
-        pkgOutdated = true;
-      }
-      // v2.73.0：本机基线取「页面版本」与「安装包真实版本」的较大者。
-      // 只认页面版本会漏掉「页面已热更到新号、APK 还是旧的」；只认安装包版本又会让网页版永远不提示。
-      const localCode = Math.max(APP_VERSION_CODE, nativeCode > 0 ? nativeCode : 0);
-      hasUpdate = data.versionCode > localCode || hasUpdate;
+
+      // v3.4.1 根因修复 —— 「检查不到新版本」的直接原因。
+      // 历史口径 localCode = Math.max(页面常量 APP_VERSION_CODE, 本机版本 nativeCode)：
+      // 页面常量会随云端热更/构建产物被抬高到最新，一旦它等于远端版本，就永远算出
+      // 「已是最新」，即使本机 APK 仍是旧版 —— 用户点检查更新毫无反应，无从升级。
+      // 正确口径：原生 App 只以【本机安装包真实 versionCode】为基线，页面常量不得抬高基线；
+      // 只有桥接读不到真实版本(nativeCode<=0)时才回退页面常量。网页版无安装包，用页面常量。
+      const hasNativeCode = isNativeApp && nativeCode > 0;
+      const localCode = hasNativeCode ? nativeCode : APP_VERSION_CODE;
+      let hasUpdate = data.versionCode > localCode;
+      // 页面已到/超过远端版本，但本机 APK 落后 → 需安装新安装包（原生功能只随 APK 更新）。
+      const pkgOutdated = hasNativeCode && data.versionCode > nativeCode && data.versionCode <= APP_VERSION_CODE;
+      console.log('[Update] baseline=', localCode, 'hasUpdate=', hasUpdate, 'pkgOutdated=', pkgOutdated);
       // v2.91.0：移除 v2.60.0「NativePlayer 缺失即强制 hasUpdate」兜底。
       // 该条件中 data.versionCode >= 221 对现在所有版本恒成立，一旦桥接注入稍晚
       // 或缺失，就会永远判定「需要安装新版安装包」，用户装完仍提示 → 无法更新。
