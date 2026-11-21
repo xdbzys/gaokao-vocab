@@ -2103,7 +2103,69 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   line-height: 1.5;
 }
 
-/* ===== 情景记忆 ===== */
+/* ===== 情景记忆 v3.5.0：逐句对照 + 中文开关 ===== */
+.sceneToolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.sceneToolbar .muted { flex: 1 1 auto; min-width: 140px; }
+.sceneCounter { font-size: 13px; color: var(--text-secondary); font-weight: 500; white-space: nowrap; }
+.sceneCnToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--primary);
+  background: transparent;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .2s;
+}
+.sceneCnToggle .ic { width: 15px; height: 15px; }
+.sceneCnToggle.on { background: var(--primary); color: #fff; }
+.sceneWordChips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.sceneSentences { display: flex; flex-direction: column; gap: 2px; }
+.sceneSentence {
+  padding: 10px 12px;
+  border-radius: 12px;
+  transition: background .15s;
+}
+.sceneSentence:nth-child(even) { background: var(--primary-bg); }
+.sceneEnSentence {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text);
+}
+.sceneSentenceNo {
+  display: inline-block;
+  min-width: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  opacity: .65;
+  vertical-align: 1px;
+}
+.sceneHitWord { color: #2563eb; font-weight: 600; cursor: pointer; }
+.sceneHitWord:active { opacity: .6; }
+.sceneZhSentence {
+  margin: 5px 0 0 20px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  padding-left: 10px;
+  border-left: 3px solid var(--primary);
+}
+.sceneSentences.cnHidden .sceneZhSentence { display: none; }
+
+/* ===== 情景记忆（旧卡片/分页，保留兼容） ===== */
 .sceneCard {
   padding: 20px;
   border-radius: 20px;

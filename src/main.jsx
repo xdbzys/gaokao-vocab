@@ -103,11 +103,11 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '3.4.1';
+const APP_VERSION = '3.5.0';
 
 // v3.1.0 内置更新日志改为按需加载（离线兜底），见挂载时的动态 import
 let BUILTIN_CHANGELOG = [];
-const CHANGELOG_TOTAL = 73;
+const CHANGELOG_TOTAL = 74;
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
 // v3.4.1 根因修复：此前 CI 每版只把 Bump 后的版本号写进构建产物（APK/清单），
@@ -115,7 +115,7 @@ const CHANGELOG_TOTAL = 73;
 // 现与 APP_VERSION 严格对齐到同一版本；CI 新增「源码/清单版本一致性」门禁，
 // 此后任何发版都必须三处（本文件 APP_VERSION_CODE、build.gradle、app-update.json）同步，
 // 否则流水线直接失败，杜绝再次脱节。
-const APP_VERSION_CODE = 339;
+const APP_VERSION_CODE = 340;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -353,6 +353,38 @@ const sceneWordCn = {
   discover: '发现', methodology: '方法论', analyze: '分析', conclusion: '结论', persist: '坚持'
 };
 
+
+/* v3.5.0 情景记忆：把整段英文/中文按句对齐切分，做到「中文直接显示在原文旁边」。
+   难点：英文缩写(Dr./Mr./e.g. 等)的句点不能切；中文引号在句号后会被单独切成一句。 */
+var SCENE_EN_ABBREV = /\b(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr|St|vs|etc|e\.g|i\.e|No|Fig|approx)\.$/i;
+function splitSceneEn(text) {
+  var parts = String(text || '').split(/(\s+)/);
+  var sents = [], cur = '';
+  for (var i = 0; i < parts.length; i++) {
+    var p = parts[i];
+    cur += p;
+    if (/[.!?]["'）)]?\s*$/.test(p)) {
+      var probe = cur.trim();
+      var next = (parts[i + 1] || '').trim();
+      if (SCENE_EN_ABBREV.test(probe)) continue;                 // 缩写结尾不切
+      if (next && /^[a-z]/.test(next) && !/^[a-z]+\.$/.test(probe)) continue; // 句号后接小写，多半为缩写
+      sents.push(probe); cur = '';
+    }
+  }
+  if (cur.trim()) sents.push(cur.trim());
+  return sents;
+}
+function splitSceneZh(text) {
+  var arr = String(text || '').split(/(?<=[。！？；])/).map(function (x) { return x.trim(); }).filter(Boolean);
+  var out = [];
+  for (var i = 0; i < arr.length; i++) {
+    var x = arr[i];
+    // 纯引号/括号碎片合并回上一句（如「……武器。"」被切成两句）
+    if (/^["'”’）)]+$/.test(x) && out.length) out[out.length - 1] += x;
+    else out.push(x);
+  }
+  return out;
+}
 
 // 自定义拼写纠错（localStorage 扩展）
 function loadCustomSpelling() {
@@ -5696,8 +5728,11 @@ function App() {
   const [compareIndex, setCompareIndex] = useState(0);
   const [numberDateSubTab, setNumberDateSubTab] = useState('months');
   const [transformTab, setTransformTab] = useState('adjToAdverb');
-  const [spellingSearch, setSpellingSearch] = useState('');
   const [scenePage, setScenePage] = useState(0);
+  // v3.5.0：情景记忆「显示/隐藏中文」开关（默认显示，本机记忆）
+  const [sceneShowCn, setSceneShowCn] = useState(function () {
+    try { return localStorage.getItem('scene_show_cn') !== '0'; } catch (e) { return true; }
+  });
   // 词库详情
   const [detailItem, setDetailItem] = useState(null);
   // 详情弹窗导航历史栈（点击关联词跳转后，关闭返回上一个而非全部关闭）
@@ -9934,9 +9969,7 @@ function App() {
           <div className="segmented">
             <button className={extendTab === 'affix' ? 'active' : ''} onClick={() => setExtendTab('affix')}>词根词缀</button>
             <button className={extendTab === 'compare' ? 'active' : ''} onClick={() => setExtendTab('compare')}>对比记忆</button>
-            <button className={extendTab === 'errors' ? 'active' : ''} onClick={() => setExtendTab('errors')}>易错词</button>
             <button className={extendTab === 'scene' ? 'active' : ''} onClick={() => setExtendTab('scene')}>情景记忆</button>
-            <button className={extendTab === 'spelling' ? 'active' : ''} onClick={() => setExtendTab('spelling')}>拼写纠错</button>
             <button className={extendTab === 'numberdate' ? 'active' : ''} onClick={() => setExtendTab('numberdate')}>数字日期</button>
             <button className={extendTab === 'transform' ? 'active' : ''} onClick={() => setExtendTab('transform')}>变形扩展</button>
           </div>
@@ -10029,81 +10062,68 @@ function App() {
             </>
           )}
 
-          {/* 易错词 */}
-          {extendTab === 'errors' && (() => {
-            const errorBooks = ['gaokao-familiar-new', 'gaokao-dual-sentiment'];
-            return (
-            <div className="errorBookList">
-              {errorBooks.map(bookId => {
-                const b = books.find(bk => bk.id === bookId);
-                if (!b) return null;
-                return (
-                  <div key={bookId} className="errorSection">
-                    <h3 className="errorSectionTitle">{b.name}</h3>
-                    <div className="list">
-                      {b.items.map(item => (
-                        <article key={item.id} className="listItem" onClick={() => openDetailItem(item)}>
-                          <div>
-                            <h3 style={{ color: freqColor(item.frequency) }}>{item.term}</h3>
-                            <p>{getShortMeaning(item.meaning)}</p>
-                          </div>
-                          <div className="listActions">
-                            <button className="smallBtn" onClick={(e) => { e.stopPropagation(); speak(item.term, settings.speakRate); }}><Icon name="speaker" /></button>
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            );
-          })()}
-
-          {/* 情景记忆 */}
+          {/* 情景记忆 —— v3.5.0：逐句对照，中文紧跟原文，可一键显示/隐藏中文 */}
           {extendTab === 'scene' && (() => {
             const SCENE_PAGE_SIZE = 3;
             const totalScenePages = Math.ceil(sceneData.length / SCENE_PAGE_SIZE);
             const safePage = Math.min(scenePage, totalScenePages - 1);
             const startIdx = safePage * SCENE_PAGE_SIZE;
             const currentScenes = sceneData.slice(startIdx, startIdx + SCENE_PAGE_SIZE);
+            const toggleCn = function () {
+              setSceneShowCn(function (v) {
+                var next = !v;
+                try { localStorage.setItem('scene_show_cn', next ? '1' : '0'); } catch (e) {}
+                return next;
+              });
+            };
             return (
             <div style={{ marginTop: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <p className="muted" style={{ margin: 0 }}>高考真题主题文章 · 点击单词查看详情</p>
-                <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>{startIdx + 1}-{Math.min(startIdx + SCENE_PAGE_SIZE, sceneData.length)} / {sceneData.length}</span>
+              <div className="sceneToolbar">
+                <p className="muted" style={{ margin: 0 }}>高考真题主题文章 · 点击蓝色单词查看详情</p>
+                <button className={'sceneCnToggle' + (sceneShowCn ? ' on' : '')} onClick={toggleCn}
+                  aria-pressed={sceneShowCn} title={sceneShowCn ? '隐藏中文翻译' : '显示中文翻译'}>
+                  <Icon name="book" />
+                  {sceneShowCn ? '隐藏中文' : '显示中文'}
+                </button>
+                <span className="sceneCounter">{startIdx + 1}-{Math.min(startIdx + SCENE_PAGE_SIZE, sceneData.length)} / {sceneData.length}</span>
               </div>
-              {currentScenes.map((scene, i) => (
+              {currentScenes.map((scene, i) => {
+                const enSents = splitSceneEn(scene.text);
+                const zhSents = splitSceneZh(scene.textCn);
+                const targetWords = scene.words.map(function (w) { return w.toLowerCase(); });
+                return (
                 <div key={startIdx + i} className="sceneCard">
                   <h3>{scene.title}</h3>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                  <div className="sceneWordChips">
                     {scene.words.map((w, j) => {
                       const wordItem = findWordInBank(w);
                       let meaning = wordItem ? getShortMeaning(wordItem.meaning) : '';
                       if (!meaning) meaning = sceneWordCn[w.toLowerCase()] || '';
                       return (
-                        <span key={j} className="sceneWord"
-                          onClick={() => speakOrNavigate(w)}>
+                        <span key={j} className="sceneWord" onClick={() => speakOrNavigate(w)}>
                           {w}{meaning && <span className="sceneWordMeaning">（{meaning}）</span>}
                         </span>
                       );
                     })}
                   </div>
-                  <div className="sceneText">
-                    {(() => {
-                      const words = scene.words.map(w => w.toLowerCase());
-                      const tokens = scene.text.split(/(\b[a-zA-Z][a-zA-Z'-]*\b)/g);
-                      return tokens.map((tok, i) => {
-                        if (words.includes(tok.toLowerCase())) {
-                          return <span key={i} style={{ color: '#2563eb', cursor: 'pointer', fontWeight: 600 }} onClick={() => speakOrNavigate(tok)}>{tok}</span>;
-                        }
-                        return <span key={i}>{tok}</span>;
-                      });
-                    })()}
+                  <div className={'sceneSentences' + (sceneShowCn ? '' : ' cnHidden')}>
+                    {enSents.map((sent, si) => (
+                      <div key={si} className="sceneSentence">
+                        <p className="sceneEnSentence">
+                          <span className="sceneSentenceNo">{si + 1}</span>
+                          {sent.split(/(\b[a-zA-Z][a-zA-Z'-]*\b)/g).map((tok, ti) =>
+                            targetWords.indexOf(tok.toLowerCase()) >= 0
+                              ? <span key={ti} className="sceneHitWord" onClick={() => speakOrNavigate(tok)}>{tok}</span>
+                              : <span key={ti}>{tok}</span>
+                          )}
+                        </p>
+                        {zhSents[si] && <p className="sceneZhSentence">{zhSents[si]}</p>}
+                      </div>
+                    ))}
                   </div>
-                  <div className="sceneTextCn">{scene.textCn}</div>
                 </div>
-              ))}
+                );
+              })}
               {/* 分页控件 */}
               {totalScenePages > 1 && (
                 <div className="scenePagination">
@@ -10131,40 +10151,6 @@ function App() {
             </div>
             );
           })()}
-
-          {/* 拼写纠错 */}
-          {extendTab === 'spelling' && (
-            <div className="spellingList">
-              <input
-                type="text"
-                className="searchInput"
-                placeholder="搜索拼写单词..."
-                value={spellingSearch}
-                onChange={e => setSpellingSearch(e.target.value)}
-              />
-              <p className="muted">以下是高考英语中常见的拼写错误对比，蓝色为正确拼写，红色删除线为常见错误。</p>
-              {[...spellingData, ...loadCustomSpelling()]
-                .filter(item =>
-                  item.correct.toLowerCase().includes(spellingSearch.toLowerCase()) ||
-                  item.wrong.toLowerCase().includes(spellingSearch.toLowerCase())
-                )
-                .map((item, i) => {
-                  const wItem = findWordInBank(item.correct);
-                  const wMeaning = wItem ? getShortMeaning(wItem.meaning) : '';
-                  return (
-                  <div key={i} className="spellingCard">
-                    <div className="spellingRow">
-                      <span className="spellingCorrect" style={{ cursor: 'pointer' }} onClick={() => speakOrNavigate(item.correct)}>{item.correct}</span>
-                      {wMeaning && <span className="sceneWordMeaning">（{wMeaning}）</span>}
-                      <span style={{ color: 'var(--text-tertiary)' }}>/</span>
-                      <span className="spellingWrong">{item.wrong}</span>
-                    </div>
-                    <div className="spellingTip">{item.tip}</div>
-                  </div>
-                  );
-                })}
-            </div>
-          )}
 
           {/* 数字日期 */}
           {extendTab === 'numberdate' && (
