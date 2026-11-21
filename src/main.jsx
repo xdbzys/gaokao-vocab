@@ -4,6 +4,7 @@ import { Capacitor, Filesystem, Directory, Encoding } from './vendor/native-brid
 import './styles.css';
 import { adjToAdverbRules, comparativeRules, pastTenseRules, irregularVerbs, presentParticipleRules, nounPluralRules } from './vendor/wordTransformations';
 import { CORE_MEANINGS } from './coreMeanings';
+
 import { SFX_CORRECT, SFX_WRONG } from './sfx';
 
 /* v2.79.0：jszip（96KB）只在导入 pptx/docx 时用到，改为用时再 import，
@@ -102,11 +103,11 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '3.0.1';
+const APP_VERSION = '3.1.0';
 
-/* v2.99.0 内置更新日志（离线可看最近 24 版，联网 fetch changelog.json 看全部 66 版） */
-const BUILTIN_CHANGELOG = [{"v":"v3.0.1","i":["修复 · 耳机 / 蓝牙的播放、暂停、切词按键现在通过系统媒体会话正式绑定，像控制音乐软件一样控制听读","修复 · 中文发音期间保持音频会话活跃，后台播放时耳机按键不再失效","优化 · 网页版耳机控制按键提前注册，打开即可用"]},{"v":"v3.0.0","i":["修复 · 听读在 vivo / OPPO 等手机系统「正在播放」里找不到：补齐系统识别媒体源所需的封面图标与媒体信息，现在会像音乐软件一样出现在系统媒体中心","新增 · 耳机 / 蓝牙首次按播放键可直接唤醒听读，无需先打开应用","优化 · 播放时更明确地以「媒体音频」身份登记，锁屏与下拉面板的控制更稳定"]},{"v":"v2.99.0","i":["新增 · 听读接入手机系统媒体中心：锁屏、车机、蓝牙耳机、智能手表都能识别为正在播放的音频","新增 · 手机像识别音乐软件一样识别本应用，系统媒体控制可统一暂停、继续、切词","优化 · 听读不再只是通知栏控制卡片，而是系统认可的音频播放源"]},{"v":"v2.96.0","i":["修复 · 切换词库后关联词串数据：内容长度相同但内容不同的词库会显示上一个词库的关联词与错误释义，现按词库内容识别，词库一变立即刷新","修复 · 开启「自动跳转」后连答几题或手动翻页会连跳、乱跳：改为同一时刻只有一个有效跳转，翻页即作废旧跳转","修复 · 后台保存监听重复注册导致的重复保存","修复 · 网页版更新提示可能把更旧版本误报为新版本：改为按版本号大小比较，只有确实更新才提示"]},{"v":"v2.95.0","i":["修复 · 点击「用内置算法检索当前词库」会卡死：检索改为分片进行、显示进度且可随时取消，超大词库也能顺畅使用","修复 · 导入页说明卡片在窄屏上文字与按钮重叠、底部被导航栏挡住","修复 · 删除/清空/重命名等确认框弹出系统原生对话框（暴露 file 网址标题、绿色系统按钮和裂图）：统一改为应用内弹窗","优化 · 全局排查同类问题：耗时计算让出界面、统一应用内弹窗、修复相对路径裂图，并加发布前检查防止再犯"]},{"v":"v2.94.0","i":["调整 · 移除「设置 → 数据来源说明」里纯技术内部内容（考频交叉校验值、开源项目引用、机构引述等），只保留用户看得懂的说明","调整 · 高考考频、真题文章、联网补全、关联词与导出、初中词库等面向用户的来源说明保留"]},{"v":"v2.93.0","i":["新增 · 「设置」改为独立整屏界面：「我的」页只留学习简介、设置入口和初中词库下载卡片，设置项不再堆在「我的」页里","调整 · 设置界面顶部有返回按钮和标题，底部导航栏自动隐藏，与「我的」页彻底分开","修复 · 返回按钮和手机返回键都先回到「我的」页，不会直接退出应用"]},{"v":"v2.92.0","i":["修复 · 彻底解决闪退、打不开、无故刷新：启动不再下载并整页替换界面，只加载安装包内置且验证过的页面，历史坏缓存自动清除","新增 · 启动自愈守卫：连续两次启动异常自动进安全模式，跳过耗资源的后台加载","新增 · 不依赖界面的恢复面板：页面起不来时可直接「安全模式启动 / 清数据重启 / 重新加载 / 下载安装包」自救","优化 · 初中词库改为空闲时分批加载，不再一次生成全部词条导致低端机卡死"]},{"v":"v2.91.0","i":["修复 · 闪退打不开：初中词库不再在启动时一次性加载，避免低端机内存不足闪退","修复 · 无故刷新界面：改为只提示「有新版本」，由你主动点击才刷新","修复 · 无法更新：更新检查加超时，移除会误报「必须装新版」的旧逻辑","调整 · 初中必考词(1902) / 初中阅读词汇(406) 改为「我的」页按需下载：默认不占词库列表，点下载后才可用，可随时移除，无需联网"]},{"v":"v2.90.0","i":["新增 · 初中扩展词库：初中必考词(1902词，按中考词频排序) 和 初中阅读词汇(406词)，可在词库选择 / 背诵 / 听读 / 导出中自由选用","新增 · 新词库与其他词库规格完全一致：中文释义、词性、考点、例句、考频徽标、关联词、发音、按考频导出一样不少","新增 · 「我的 → 设置 → 数据来源说明」增加初中扩展词库来源说明，如实标注官方只给范围、不逐词标释义考频"]},{"v":"v2.89.0","i":["新增 · 「我的」页新增醒目「设置」入口，默认收起，点开才显示全部设置与来源说明","调整 · 学习信息（首次使用、日期、总词库、总词汇量）提为常驻「学习概览」卡片，一屏可见","优化 · 设置展开状态记在本机，下次进入保持上次选择"]},{"v":"v2.88.0","i":["新增 · 考频数据来源核验：核对教育部课标、北京教育考试院建议与真题语料方法，确认 130+ 份真题/模拟语料来源真实可核验","优化 · 考频口径更诚实：如实说明课标只给词范围、官方不发布逐词次数、语料含模拟卷，不冒充官方考频","调整 · 「我的」页新增考频数据真实性核验说明（来源＋结论）"]},{"v":"v2.87.0","i":["优化 · 「我的」页设置区重排，分组更清晰、布局更紧凑；数据来源说明改为可折叠","调整 · 纯开关类设置（自动发音、护眼、艾宾浩斯、答后考点、优先高频、联网补全、答题音效等）全部改为按钮开关，点按即切换、自动保存","删除 · 移除「清理不存在的词库」冗余按钮"]},{"v":"v2.86.0","i":["新增 · 导出词库默认按高考考频顺序（高频→中频→低频），与「优先背诵高频词」同一口径；导出面板可切换「按考频 / 词库原顺序」","优化 · 内置关联词检索更准：同源词族按匹配强度排序、易混词排除同源派生词，命中词库补真实中文释义","优化 · 考频标记更诚实：真题实测次数优先，联网词频只给等级、不编造次数，没取到标「待补全」","删除 · AI 大模型识别功能（服务商配置、API Key、AI 标注徽标等），内置解析照常可用、无需任何配置"]},{"v":"v2.85.0","i":["新增 · 免密钥联网补全：内置词表没收录的词（含自行导入生词）自动获取通用语料词频与同义/反义/语义关联词，无需配置","新增 · 导入词也有高/中/低频徽标与关联词，明确标注「联网参考」，不伪装成高考真题次数","新增 · 「我的 → 设置」增加联网补全开关、立即补全全部、清除缓存与来源说明；结果存本机、离线可用","优化 · 全局界面细节：统一按钮 / 输入框焦点与悬浮反馈、细滚动条、徽标与卡片层次、护眼一致性，不改布局尺寸"]},{"v":"v2.84.0","i":["新增 · 背诵页「真题文章」模式：一篇高考真题原文多个单词一起作答，可选「选项」或「填空」","新增 · 文章取自 2008-2026 历年高考真题阅读原文，逐字保留并标注年份卷别","新增 · 填空只做宽松语义判断，大致意思相符即算对，答后显示正确单词与释义","优化 · 「我的」页把分散的设置与反馈合并为一个集中设置区，并移到页面顶部"]},{"v":"v2.83.0","i":["新增 · 全库单词标注高频 / 中频 / 低频 / 基础四档，背诵页、词库列表、详情页显示等级与真题出现次数","新增 · 近五年真题高频词单独显示「近五年 N 次」，数据来自 130+ 份真题语料逐词统计","新增 · 「优先背诵高频词」开关，开启后高频词优先、同档按真题次数推进","优化 · 未被真题收录的词次数显示「—」，按考纲与通用词频标等级，不编造次数"]},{"v":"v2.82.1","i":["优化 · 答题选项恢复原来单列大按钮，题卡、题目、进度区与答后面板恢复原间距","优化 · 仅保留背诵页六个设置开关的紧凑排布","调整 · 「答题后显示全部考点」开关保持不变"]},{"v":"v2.82.0","i":["新增 · 「答题后显示全部考点」开关：开启后答完题展示该词全部考点、搭配、词族与例句，关闭只看其他选项中文","优化 · 背诵页选项改两列紧凑胶囊按钮，题目与选项一打开即可完整看到","优化 · 背诵页快捷按钮、进度区与题卡纵向空间收紧，减少滚动"]},{"v":"v2.81.3","i":["优化 · 补齐 985 核心词汇遗漏 / 残缺的词性（如 billion、million 标数词，ought、would 标助动词）","优化 · 高考3500 词库词性标签剥离误混入的音标，只显示干净词性","优化 · 所有词库与导入数据入库时统一校验词性，缺词性不再显示占位字样"]},{"v":"v2.81.2","i":["优化 · 例句语境模式改用真实高考真题双语例句（英文原句高亮目标词，答题后揭示译文），优先近五年真题高频词","调整 · 自动发音开关回到「我的」页，各模式快捷按钮数量保持一致","优化 · 护眼模式按视觉工效学重做低蓝光暖色主题（暖纸色背景、暖近黑文字、暖琥珀主色）"]},{"v":"v2.81.1","i":["修复 · 更新检测：修正版本号匹配，旧安装包能正确收到新版本提示（此前部分旧版版本撞车收不到更新）","调整 · 自动发音开关移到背诵页快捷栏，做题时随时开关"]},{"v":"v2.81.0","i":["新增 · 自动发音开关移到背诵页快捷栏，做题时随时开关","优化 · 「我的」页去冗余：背诵模式、难度、自动掌握、自动跳转、自动发音、音量键翻页都在背诵页快捷栏调"]},{"v":"v2.80.0","i":["新增 · 护眼模式开关（暖色低蓝光），在「我的 → 设置 → 学习辅助与反馈」开启","新增 · 艾宾浩斯记忆法开关：按遗忘曲线安排复习，到期词优先出现","新增 · 答题音效：答对 / 答错用不同音效，各 4 套可试听切换，带总开关，离线可用","新增 · 例句语境背诵模式：在英文搭配语境中判断义项，高亮目标词、隐去中文答案"]},{"v":"v2.79.0","i":["新增 · 网页版首屏只加载轻量骨架，不再一口气下载全部词库","新增 · 词库分片下载失败给出原因和「重试」按钮，不用刷新整页","新增 · 网页版内置图标和更新清单，少两次多余请求","优化 · 词库「加载中」「加载失败」分开显示；热更包压缩，下载体积更小"]},{"v":"v2.78.0","i":["新增 · 背诵页可开关「音量键翻页」，音量上 / 下键切换上一个 / 下一个词","新增 · 释义以高考高频义项为主，选项只显示最常用中文","新增 · 听读联网时在线播放，不再把每个词音频存到手机","优化 · 四选一自动去重，困难模式不再出现两个几乎一样的中文","优化 · 全库释义清理，去掉与高考无关内容；词形变化、缩略语注释不再混进释义","优化 · 老版本遗留听读音频缓存自动清理一次"]}];
-const CHANGELOG_TOTAL = 68;
+// v3.1.0 内置更新日志改为按需加载（离线兜底），见挂载时的动态 import
+let BUILTIN_CHANGELOG = [];
+const CHANGELOG_TOTAL = 69;
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
 const APP_VERSION_CODE = 328;
@@ -1034,6 +1035,8 @@ function batchNetEnrich(items, onProgress, opts) {
    未就绪时不显示徽标、不参与排序，失败也不影响原有功能。
    ================================================================ */
 let EXAM_FREQ = null;
+// v3.1.0 熟词生义索引：与考频一样按需异步载入，不进首屏包
+let FAMILIAR_MAP = {};
 const EXAM_LEVEL_LABEL = ['基础', '低频', '中频', '高频'];
 function getExamFreq(term) {
   if (!EXAM_FREQ || !term) return null;
@@ -1059,6 +1062,93 @@ function getExamFreq(term) {
 }
 function examLevelOf(term) { const f = getExamFreq(term); return f ? f.level : 1; }
 function examCountOf(term) { const f = getExamFreq(term); return f ? f.count : 0; }
+
+/* ===== v3.1.0 义项级考频标注 / 高考义项精简 =====
+   数据口径（诚实声明）：官方与内置语料只提供「单词级」真题次数（word|等级|次数），
+   没有「某个中文义项考了几次」的逐义项计数。因此这里不编造义项考次，而是用两份
+   真实存在的高考数据给义项分级：
+     ① CORE_MEANINGS：由高考3500 / 真题核心高频 / 牛津3000 词库提炼的核心释义 → 「高频核心义」
+     ② FAMILIAR_MAP：内置的「熟词生义(172个)」词库 → 该词的高考生义 → 「熟词生义」
+   其余义项标为「一般义项」。词级真题次数由 ExamFreqTag 单独显示，不与义项混淆。 */
+function splitSenses(text) {
+  return String(text || '')
+    .replace(/[;；]/g, '；')
+    .split('；')
+    .map(x => x.trim())
+    .filter(Boolean);
+}
+function normSense(s) {
+  return String(s || '')
+    .replace(/^[a-zA-Z]+\.\s*/, '')       // 去词性前缀 n. v. adj.
+    .replace(/[（(][^）)]*[）)]/g, '')      // 去括号注释
+    .replace(/[\s,，、.．]/g, '')
+    .trim();
+}
+// 把义项组拆成中文词片段（逗号/顿号分隔），逐片段比对，避免整组拼接后匹配失败
+function senseTokens(s) {
+  return String(s || '')
+    .replace(/^[a-zA-Z]+\.\s*/, '')
+    .replace(/[（(][^）)]*[）)]/g, '')
+    .split(/[，,、\s]+/)
+    .map(function (x) { return x.trim(); })
+    .filter(function (x) { return /[\u4e00-\u9fa5]/.test(x) && x.length >= 2; });
+}
+function tokensOverlap(aTerms, bTerms) {
+  return aTerms.some(function (a) {
+    return bTerms.some(function (b) {
+      return a === b || (a.length >= 2 && b.indexOf(a) >= 0) || (b.length >= 2 && a.indexOf(b) >= 0);
+    });
+  });
+}
+// 判断某个义项是否为该词的高频核心义（与核心释义串逐片段比对）
+function isCoreSense(term, sense) {
+  var core = CORE_MEANINGS[String(term || '').toLowerCase().trim()] || '';
+  if (!core) return false;
+  var a = senseTokens(core), b = senseTokens(sense);
+  return a.length > 0 && b.length > 0 && tokensOverlap(a, b);
+}
+// 判断某个义项是否为该词的高考熟词生义
+function isFamiliarSense(term, sense) {
+  var fam = FAMILIAR_MAP[String(term || '').toLowerCase().trim()] || '';
+  if (!fam) return false;
+  var a = senseTokens(fam), b = senseTokens(sense);
+  return a.length > 0 && b.length > 0 && tokensOverlap(a, b);
+}
+// 义项类别：'core' 高频核心义 / 'familiar' 熟词生义 / 'normal' 一般义项
+function senseClass(term, sense) {
+  if (isFamiliarSense(term, sense)) return 'familiar';
+  if (isCoreSense(term, sense)) return 'core';
+  return 'normal';
+}
+// 出题用的中文答案（简短）：高频义=核心释义；熟词生义=生义首片段；随机=从义项里稳定取一个
+function pickSenseForQuiz(term, meaning, scope, salt) {
+  if (scope === 'familiar') {
+    var fam = FAMILIAR_MAP[String(term || '').toLowerCase().trim()] || '';
+    var ft = senseTokens(fam);
+    if (ft.length) return sanitizeCore(ft[0]);
+    return coreOf(term, meaning);
+  }
+  if (scope === 'random') {
+    var senses = splitSenses(meaning);
+    var toks = [];
+    senses.forEach(function (x) { toks = toks.concat(senseTokens(x)); });
+    if (!toks.length) return coreOf(term, meaning);
+    var key = String(salt || '') + '|' + String(term || '');
+    var h = 0; for (var i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0;
+    return sanitizeCore(toks[Math.abs(h) % toks.length]);
+  }
+  return coreOf(term, meaning); // highfreq 默认：核心高频义
+}
+// 高考义项精简：仅保留可判定为「核心义 / 熟词生义」的义项。
+// 若该词根本没有核心/生义数据（如用户导入词），则保留原义项，绝不臆断删除。
+function trimToExamSenses(term, meaning) {
+  var senses = splitSenses(meaning);
+  if (senses.length <= 1) return meaning;
+  var hasSignal = !!(CORE_MEANINGS[String(term || '').toLowerCase().trim()] || FAMILIAR_MAP[String(term || '').toLowerCase().trim()]);
+  if (!hasSignal) return meaning;
+  var kept = senses.filter(function (x) { return senseClass(term, x) !== 'normal'; });
+  return kept.length ? kept.join('；') : meaning;
+}
 /* 词卡 / 词库列表 / 详情页共用：等级徽标 + 真题出现次数（未覆盖显示「—」） */
 function ExamFreqTag({ term, compact }) {
   if (!EXAM_FREQ || !term) return null;
@@ -1095,7 +1185,9 @@ function makeItem(row, type, index, source) {
     type, term, pos,
     // v2.76.0：入库即清洗词性标记（"a. 能干的" → "能干的"），
     // 显示 / 搜索 / 朗读三处共用同一份文本，避免同一条释义在不同页面表现不一致
-    meaning: (dirty && core) ? core : cleanMeaning(meaning),
+    meaning: trimToExamSenses(term, (dirty && core) ? core : cleanMeaning(meaning)),
+    // v3.1.0：保留完整义项串，供「显示全部义项」时查看（高考义项为默认精简视图）
+    meaningFull: cleanMeaning(meaning),
     // v2.78.0：核心释义（高频、1~2 个义项），背诵页选项与卡片主释义使用
     core: core,
     // v2.43.0 修复闪退：4元素精简词条（总汇词库）解构后 corePoints 等为 undefined，
@@ -2028,6 +2120,8 @@ function loadSettings() {
       answerFullPoints: false,
       // v2.83.0：优先背诵高考高频词（默认关，保持词库原顺序）
       freqFirst: false,
+      // v3.1.0：背诵中文义项范围 highfreq 高考频中文 / familiar 熟词生义 / random 随机
+      meaningScope: 'highfreq',
       // v2.84.0：真题文章联答的默认回答方式（choice=四选一英文词 / blank=宽松语义填空）
       passageWay: 'choice',
       // v2.85.0：导入生词后自动联网补全关联词与考频（免密钥，可关闭）
@@ -2047,7 +2141,7 @@ function loadSettings() {
     return merged;
   } catch {
     const savedMode = localStorage.getItem(MODE_KEY);
-    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: true, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false, eyeCare: false, ebbinghaus: false, soundEnabled: false, soundCorrect: 'c1', soundWrong: 'w1', answerFullPoints: false, freqFirst: false, passageWay: 'choice', netEnrich: true };
+    return { dailyGoal: 50, speakRate: 0.78, mode: savedMode || 'en-to-cn', difficulty: 'easy', detailMode: 'brief', shuffleMode: false, autoJump: false, autoJumpDelay: 1500, showAnnouncement: true, autoSpeak: true, autoMaster: false, navAutoSpeak: true, volumeKeyNav: false, eyeCare: false, ebbinghaus: false, soundEnabled: false, soundCorrect: 'c1', soundWrong: 'w1', answerFullPoints: false, freqFirst: false, meaningScope: 'highfreq', passageWay: 'choice', netEnrich: true };
   }
 }
 
@@ -4971,6 +5065,35 @@ function Meanings(props) {
   );
 }
 
+/* v3.1.0 义项考频标注：逐义项显示高考考查类别徽标 + 词级真题次数。
+   口径诚实：类别来自核心释义/熟词生义两份真实高考数据；无逐义项考次数据故不编造次数，
+   词级真题次数单独以真实数字展示。 */
+function MeaningFreqList(props) {
+  var term = props.term || '';
+  var text = props.text || '';
+  var senses = splitSenses(text);
+  if (!senses.length) return <span className={props.className || ''}>{text}</span>;
+  var f = getExamFreq(term);
+  var countTxt = f && f.basis === 'corpus' && f.count > 0 ? ('真题 ' + f.count + ' 次') : '词级次数 —';
+  var tip = '官方与真题语料只提供单词级考查次数，不提供逐义项考次，故此处不编造每个意思的具体次数。'
+    + '义项类别来自两高考数据：高频核心义（高考核心释义词库）、熟词生义（熟词生义词库），其余为一般义项。'
+    + '当前词级真题次数：' + countTxt + '。';
+  var label = { core: '高频核心义', familiar: '熟词生义', normal: '一般义项' };
+  return (
+    <span className={'mfList' + (props.className ? ' ' + props.className : '')} title={tip}>
+      {senses.map(function (sense, i) {
+        var cls = senseClass(term, sense);
+        return (
+          <span className={'mfItem mf-' + cls} key={i}>
+            <span className="mfText">{sense}</span>
+            <span className={'mfTag mfTag-' + cls}>{label[cls]}</span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 // v2.69.0 全局错误边界：任何渲染异常不再白屏，给出错误摘要与一键重载
 class AppErrorBoundary extends React.Component {
   constructor(props) {
@@ -5028,6 +5151,11 @@ function App() {
   const [examFreqReady, setExamFreqReady] = useState(false);
   useEffect(() => {
     let alive = true;
+    import('./data/familiar-map').then(function (fm) { FAMILIAR_MAP = fm.FAMILIAR_MAP || {}; }).catch(function () {});
+    import('./data/builtin-changelog').then(function (cm) {
+      BUILTIN_CHANGELOG = cm.BUILTIN_CHANGELOG || [];
+      setFullLogData(function (prev) { return (prev && prev.length) ? prev : BUILTIN_CHANGELOG; });
+    }).catch(function () {});
     import('./data/exam-freq').then(function (m) {
       if (!alive) return;
       EXAM_FREQ = { map: m.EXAM_FREQ_MAP, recent: m.EXAM_RECENT_MAP, meta: m.EXAM_FREQ_META };
@@ -5281,7 +5409,7 @@ function App() {
   const [updateVersion, setUpdateVersion] = useState('');
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
   const [showFullLog, setShowFullLog] = useState(false);
-  const [fullLogData, setFullLogData] = useState(BUILTIN_CHANGELOG);
+  const [fullLogData, setFullLogData] = useState([]);
   const [announcementData, setAnnouncementData] = useState(null);
   const [dismissedVersion, setDismissedVersion] = useState(() => {
     try { return localStorage.getItem('gaokao_dismissed_version') || ''; }
@@ -5374,6 +5502,11 @@ function App() {
   const [libraryLimit, setLibraryLimit] = useState(60); // 词库页懒加载条数
   const [importText, setImportText] = useState('');
   const [importStatus, setImportStatus] = useState('');
+  // v3.1.0 按考频汇编新词库
+  const [freqThreshold, setFreqThreshold] = useState('100');
+  const [freqScope, setFreqScope] = useState('all'); // all | study 全部词库/背诵词库
+  const [freqTrim, setFreqTrim] = useState(true);     // 汇编时是否剔除高考不考义项
+  const [freqCompileMsg, setFreqCompileMsg] = useState('');
   const [lastFile, setLastFile] = useState(null);
   const [importTargetBookId, setImportTargetBookId] = useState(null); // 导入目标词库
   const [progress, setProgress] = useState(loadProgress);
@@ -6753,6 +6886,10 @@ function App() {
   const [forceShowItem, setForceShowItem] = useState(null);
   // 显示用的当前单词：答题后或闪卡展示释义后使用锁定的单词，防止 toggleProgress 改变 current 导致显示不匹配
   const displayCurrent = forceShowItem || ((selected || showBack) && lockedCurrent.current) || current;
+  // v3.1.0 背诵中文义项范围：highfreq 高考频中文 / familiar 熟词生义 / random 随机。
+  // 统一入口，题目、选项、判分三处共用同一答案，保证一致。
+  const meaningScopeNow = settings.meaningScope || 'highfreq';
+  const quizAnswer = (item) => pickSenseForQuiz(item && item.term, item && item.meaning, meaningScopeNow, learnActiveBook && learnActiveBook.id);
 
   // 问题1：4个选项（1正确+3干扰项）—— 根据难度模式选择干扰项策略
   // v2.56.0 修复：答题前后选项刷新（困难模式"选项词汇"与答题选项不一致）。
@@ -6761,7 +6898,7 @@ function App() {
   //       任何一项变化都会重新 shuffle，生成一套全新的干扰项。
   // 方案：以"显示单词 + 模式 + 难度 + 词库组合"为缓存键（optionsKey），
   //       同一单词在答题期间（含答题后展示选项词汇）绝不重新生成选项。
-  const optionsKey = (displayCurrent ? termKey(displayCurrent.term) : '') + '|' + practiceMode + '|' + (settings.difficulty || 'easy') + '|' + learnActiveBook.id;
+  const optionsKey = (displayCurrent ? termKey(displayCurrent.term) : '') + '|' + practiceMode + '|' + (settings.difficulty || 'easy') + '|' + learnActiveBook.id + '|' + meaningScopeNow;
   const options = useMemo(() => {
     const item = displayCurrent || current;
     if (!item) return [];
@@ -6804,7 +6941,7 @@ function App() {
     }
 
     // 英文选中文：选项一律用「核心释义」（短、高频），而不是整条词典释义
-    const correctCore = coreOf(item.term, item.meaning);
+    const correctCore = quizAnswer(item);
     const seenCores = [correctCore];
     const picked = [];
     const tryAdd = (w) => {
@@ -6864,7 +7001,7 @@ function App() {
     const meaningIdx = new Map();
     books.forEach(b => b.items.forEach(w => {
       if (w.term && !termIdx.has(w.term.toLowerCase())) termIdx.set(w.term.toLowerCase(), w);
-      const ck = coreOf(w.term, w.meaning);
+      const ck = quizAnswer(w);
       if (ck && !meaningIdx.has(ck)) meaningIdx.set(ck, w);
     }));
     const map = new Map();
@@ -6874,7 +7011,7 @@ function App() {
         const w = termIdx.get(opt.toLowerCase());
         if (w) map.set(opt, w);
       } else {
-        if (opt === coreOf(item.term, item.meaning)) { map.set(opt, item); return; }
+        if (opt === quizAnswer(item)) { map.set(opt, item); return; }
         const w = meaningIdx.get(opt);
         if (w) map.set(opt, w);
       }
@@ -7576,7 +7713,7 @@ function App() {
     setSessionTotal(t => t + 1);
     // 记录最近一次回答的单词（用于"上一个"回退）
     lastAnsweredRef.current = { item: c, index };
-    const right = practiceMode === 'cn-to-en' ? c.term : coreOf(c.term, c.meaning);
+    const right = practiceMode === 'cn-to-en' ? c.term : quizAnswer(c);
     const isCorrect = option === right;
     // v2.80.0：答题音效（正确/错误分开，可在设置里开关与切换）
     if (settings.soundEnabled) playAnswerSfx(isCorrect, settings.soundCorrect, settings.soundWrong);
@@ -7677,6 +7814,54 @@ function App() {
     }
     // 导入后：内置算法检索同源词族/易混词 + 免密钥联网补全考频与语义关联（异步、不阻塞）
     autoCheckFamilyAfterImport(items);
+  }
+
+  // v3.1.0 按考频汇编新词库：扫描全部词库（内置 + 用户导入），按自定义真题次数阈值筛选，
+  // 生成一本新词库。阈值无档位限制，纯数字输入；次数为真实语料统计，未收录词（联网参考/0次）不纳入。
+  function compileFreqBook() {
+    if (!examFreqReady) { setFreqCompileMsg('考频数据尚未加载完成，请稍候再试'); return; }
+    var th = parseInt(freqThreshold, 10);
+    if (!isFinite(th) || th < 0) { setFreqCompileMsg('请输入 ≥0 的整数次数阈值'); return; }
+    var srcBooks = freqScope === 'all' ? books : books.filter(function (b) { return studyBookIds.indexOf(b.id) >= 0; });
+    // 去重：同一 term 在所有词库里只取信息最全的那条
+    var byTerm = {};
+    srcBooks.forEach(function (b) {
+      (b.items || []).forEach(function (it) {
+        var k = termKey(it.term);
+        if (!k) return;
+        var prev = byTerm[k];
+        if (!prev) { byTerm[k] = it; return; }
+        // 优先保留有完整释义/考点的条目
+        var score = function (x) { return (x.meaningFull || x.meaning || '').length + (x.corePoints || []).length * 10 + (x.examples || []).length * 3; };
+        if (score(it) > score(prev)) byTerm[k] = it;
+      });
+    });
+    var picked = [];
+    Object.keys(byTerm).forEach(function (k) {
+      var f = getExamFreq(byTerm[k].term);
+      // 只用真实语料次数（basis=corpus），联网参考/未覆盖词计次为0，不冒充真题次数
+      if (f && f.basis === 'corpus' && f.count >= th) picked.push(byTerm[k]);
+    });
+    if (!picked.length) { setFreqCompileMsg('没有单词达到 ≥' + th + ' 次的真题考频，试试降低阈值'); return; }
+    picked.sort(function (a, b) { return examCountOf(b.term) - examCountOf(a.term); });
+    var items = picked.map(function (it, i) {
+      return Object.assign({}, it, {
+        id: 'freqbook-' + Date.now() + '-' + i + '-' + termKey(it.term),
+        meaning: freqTrim ? trimToExamSenses(it.term, it.meaningFull || it.meaning) : (it.meaningFull || it.meaning),
+        sourceBooks: [it.source || '汇编']
+      });
+    });
+    var name = '高考真题≥' + th + '次词库(' + items.length + '词)';
+    var nb = { id: 'book-' + Date.now(), name: name, editable: true, items: items };
+    updateBooks([...books, nb]);
+    setFreqCompileMsg('已汇编「' + name + '」：从全部选中词库中筛出 ' + items.length + ' 个真题出现 ≥' + th + ' 次的单词，已按考频降序排列');
+    try {
+      setLibraryBookIds(function (prev) { return prev.indexOf(nb.id) >= 0 ? prev : [...prev, nb.id]; });
+      localStorage.setItem('gaokao_library_books', JSON.stringify((() => {
+        var cur = []; try { cur = JSON.parse(localStorage.getItem('gaokao_library_books') || '[]'); } catch (e) {}
+        return cur.indexOf(nb.id) >= 0 ? cur : [...cur, nb.id];
+      })()));
+    } catch (e) {}
   }
 
   // 导入后关联词检索：内置算法即时完成，联网数据异步补全。
@@ -8442,6 +8627,22 @@ function App() {
                 <span>{settings.difficulty === 'hard' ? '困难模式' : '简单模式'}</span>
               </button>
             )}
+            {/* v3.1.0 中文义项范围：高考频中文 / 熟词生义 / 随机 */}
+            <button
+              className={`quickToggleBtn ${meaningScopeNow !== 'highfreq' ? 'scopeOn' : 'scopeOff'}`}
+              title="选择背诵时考查哪个中文义项：高考频中文（核心高频义）/ 熟词生义 / 随机义项"
+              onClick={() => {
+                const scopes = ['highfreq', 'familiar', 'random'];
+                const cur = scopes.indexOf(meaningScopeNow);
+                const next = scopes[(cur + 1) % scopes.length];
+                setSettings(s => ({ ...s, meaningScope: next }));
+                saveSettings({ ...settings, meaningScope: next });
+                setSelected(''); setShowBack(false);
+              }}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16M4 12h16M4 18.5h10"/><circle cx="18" cy="18.5" r="2"/></svg>
+              <span>{meaningScopeNow === 'highfreq' ? '高考频中文' : (meaningScopeNow === 'familiar' ? '熟词生义' : '随机义项')}</span>
+            </button>
             <button
               className={`quickToggleBtn ${settings.shuffleMode ? 'shuffleOn' : 'shuffleOff'}`}
               onClick={() => { setSettings(s => ({ ...s, shuffleMode: !s.shuffleMode })); saveSettings({ ...settings, shuffleMode: !settings.shuffleMode }); }}
@@ -8585,7 +8786,7 @@ function App() {
                 }
                 return <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{displayCurrent.term}</h2>;
               })() : (
-                <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? coreOf(displayCurrent.term, displayCurrent.meaning) : displayCurrent.term}</h2>
+                <h2 style={{ color: wordStatusColor(displayCurrent, progress, wrongWords) || undefined }}>{practiceMode === 'cn-to-en' ? quizAnswer(displayCurrent) : displayCurrent.term}</h2>
               )}
                 {displayCurrent.pos && <p className="posText" style={{ color: posColor(displayCurrent.pos), fontWeight: 600, fontSize: '1.1em', margin: '4px 0' }}>{displayCurrent.pos}</p>}
                 {practiceMode !== 'cn-to-en' && practiceMode !== 'sentence' && displayCurrent.phonetic && <p className="phoneticText">{displayCurrent.phonetic}</p>}
@@ -8596,7 +8797,7 @@ function App() {
               {practiceMode !== 'flashcard' && !selected && (
                 <div className="options">
                   {options.map(option => {
-                    const right = practiceMode === 'cn-to-en' ? current.term : coreOf(current.term, current.meaning);
+                    const right = practiceMode === 'cn-to-en' ? current.term : quizAnswer(current);
                     // v2.78.0：选项本身就是核心释义（短、高频），不需要再截断
                     return <button key={option} onClick={() => handleSelect(option)}>{option}</button>;
                   })}
@@ -8611,7 +8812,7 @@ function App() {
               {/* 答题后选项消失，解释内容顶替选项位置 */}
               {(showBack || selected) && (() => {
                 const isFlashcard = practiceMode === 'flashcard';
-                const isCorrect = selected && (practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning)) === selected;
+                const isCorrect = selected && (practiceMode === 'cn-to-en' ? displayCurrent.term : quizAnswer(displayCurrent)) === selected;
                 // v2.82.0：默认答题后只给「其他选项单词的中文对照」，保持首屏紧凑；
                 // 在「我的 → 学习辅助与反馈」开启「答题后显示全部考点」后，才展开该单词全部考点。
                 const fullPoints = settings.answerFullPoints === true;
@@ -8622,13 +8823,13 @@ function App() {
                 return (
                 <div className="answerBox">
                   {selected && (
-                    <p style={{ fontWeight: 600, marginBottom: 8, color: (practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning)) === selected ? '#16a34a' : '#dc2626' }}>
-                      {selected === (practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning)) ? '回答正确' : `回答错误（你选了：${selected}）`}
+                    <p style={{ fontWeight: 600, marginBottom: 8, color: (practiceMode === 'cn-to-en' ? displayCurrent.term : quizAnswer(displayCurrent)) === selected ? '#16a34a' : '#dc2626' }}>
+                      {selected === (practiceMode === 'cn-to-en' ? displayCurrent.term : quizAnswer(displayCurrent)) ? '回答正确' : `回答错误（你选了：${selected}）`}
                     </p>
                   )}
                   {/* v2.82.0：答题后展示「其他选项单词的中文对照」；开启全部考点后带考点跳转入口 */}
                   {selected && practiceMode !== 'flashcard' && (() => {
-                    const right = practiceMode === 'cn-to-en' ? displayCurrent.term : coreOf(displayCurrent.term, displayCurrent.meaning);
+                    const right = practiceMode === 'cn-to-en' ? displayCurrent.term : quizAnswer(displayCurrent);
                     return (
                       <div className="points" style={{ marginTop: 8, marginBottom: 10 }}>
                         <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 6 }}><Icon name="target" />{fullPoints ? '选项词汇 · 点击查看考点' : '其他选项单词 · 中文对照'}</p>
@@ -8673,7 +8874,7 @@ function App() {
                       </div>
                     );
                   })()}
-                  <h3>{displayCurrent.term} &middot; {showDetail ? <Meanings text={displayCurrent.meaning} /> : coreOf(displayCurrent.term, displayCurrent.meaning)}</h3>
+                  <h3>{displayCurrent.term} &middot; {showDetail ? <Meanings text={displayCurrent.meaningFull || displayCurrent.meaning} /> : quizAnswer(displayCurrent)}</h3>
                   {showDetail && <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>}
                   {showDetail && <div className="points">
                     {/* v2.56.0: 跨词库整合考点——同一单词在所有词库的考点一并展示 */}
@@ -10107,6 +10308,37 @@ function App() {
             </div>
             <p className="status">{importStatus || '粘贴或上传文件后点击导入，未选词库时自动创建新词库'}</p>
 
+            {/* v3.1.0 按考频汇编新词库：自定义次数阈值，无档位限制，覆盖内置+用户导入全部词库 */}
+            <div className="familyCheckBox freqCompileBox">
+              <div className="familyCheckHeader">
+                <span className="familyCheckTitle"><Icon name="target" />按考频汇编新词库</span>
+              </div>
+              <p className="familyCheckDesc">
+                从<strong>软件内所有词库（含你后续导入的词库）</strong>中，按高考真题出现次数汇编成一本新词库。次数阈值<strong>完全自定义、无档位限制</strong>，例如输入 100 即收录真题出现 ≥100 次的单词。只使用真实语料统计次数，未收录词不冒充次数。
+              </p>
+              <div className="netEnrichRow" style={{ flexWrap: 'wrap', gap: 8 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>真题出现 ≥</span>
+                  <input type="number" min="0" step="1" value={freqThreshold}
+                    onChange={e => setFreqThreshold(e.target.value)}
+                    style={{ width: 96, padding: '6px 8px', borderRadius: 8, border: '1px solid var(--border, #ccc)', background: 'var(--bg-elev, #fff)', color: 'var(--text, #222)' }} />
+                  <span>次</span>
+                </label>
+                <InlineSelect style={{ flex: 1, minWidth: 130 }} value={freqScope}
+                  options={[{ value: 'all', label: '全部词库' }, { value: 'study', label: '仅背诵词库' }]}
+                  onChange={v => setFreqScope(v)} />
+              </div>
+              <div className="netEnrichRow" style={{ marginTop: 8, flexWrap: 'wrap', gap: 8 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={freqTrim} onChange={e => setFreqTrim(e.target.checked)} />同时剔除高考不考义项
+                </label>
+                <button className="familyCheckBtn" disabled={!examFreqReady} onClick={compileFreqBook}>汇编为新词库</button>
+              </div>
+              {!examFreqReady && <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>考频数据加载中…</p>}
+              {freqCompileMsg && <p className="familyCheckStatus active">{freqCompileMsg}</p>}
+            </div>
+            <p className="status">{importStatus || '粘贴或上传文件后点击导入，未选词库时自动创建新词库'}</p>
+
             {/* 关联词检索与考频补全（内置算法 + 免密钥联网数据） */}
             <div className="familyCheckBox">
               <div className="familyCheckHeader">
@@ -10788,7 +11020,9 @@ function App() {
                   })()}
                   {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag"><Icon name="check" />已掌握</span>}
                 </div>
-                <h3 className="detailMeaning"><Meanings text={detailItem.meaning} /></h3>
+                <h3 className="detailMeaning"><MeaningFreqList term={detailItem.term} text={detailItem.meaningFull || detailItem.meaning} /></h3>
+                {/* v3.1.0 义项考频说明 */}
+                <p className="mfNote">每个中文义项的高考考查类别（高频核心义 / 熟词生义 / 一般义项）；官方不发布逐义项考查次数，故不标注每条义项的具体次数。</p>
 
                 {/* 例句（紧跟释义显示，确保每个单词详情都有例句） */}
                 {detailItem.examples && detailItem.examples.length > 0 && (

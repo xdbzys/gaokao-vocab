@@ -1,8 +1,8 @@
 {
-  "version": "3.0.1",
+  "version": "3.1.0",
   "versionCode": 337,
-  "changelog": "【v3.0.1】耳机控制正式接入系统媒体会话\n修复 · 耳机/蓝牙的播放、暂停、切词按键通过系统媒体会话正式绑定，像控制音乐软件一样控制听读\n修复 · 中文发音期间保持音频会话活跃，后台播放时耳机按键不再失效\n优化 · 网页版耳机控制按键提前注册，打开即可用",
-  "devNotes": "v3.0.0 让系统「正在播放」识别本 App（官方 Media Controls 对齐）：\n【根因】v2.99 虽加了平台 MediaBrowserService，但 onLoadChildren 根 MediaItem 只有 title/subtitle、缺 icon(bitmap/uri)；Android 官方 Media Controls 文档明确要求根项须带 icon + 非空 title/subtitle，否则 SystemUI/厂商控制中心不收录该媒体源。另：setMetadata 缺 METADATA_KEY_MEDIA_ID / DISPLAY_*；无 MediaButtonReceiver（耳机首次按键无法唤醒、系统不登记最近媒体按钮接收者）；音频焦点用废弃 requestAudioFocus 重载，未以 USAGE_MEDIA 明确登记。\n【实现】1) onLoadChildren MediaDescription 补 setIconBitmap(albumArt())/setDescription；2) 通用与 Album 两处 setMetadata 补 MEDIA_ID/DISPLAY_TITLE/DISPLAY_SUBTITLE/DISPLAY_DESCRIPTION/DISPLAY_ICON；3) requestFocus 升级 AudioFocusRequest(USAGE_MEDIA/CONTENT_TYPE_MUSIC, API26+)，低版本保留旧重载；4) 新增 MediaButtonReceiver 处理 MEDIA_BUTTON（play/pause/next/prev/stop），Manifest 声明 intent-filter；5) 真正起播时确保 MediaSession.setActive(true) + claimMediaButton。\n【保留】原有 MediaSession callback/PlaybackState actions/AudioAttributes USAGE_MEDIA/MediaStyle 通知/Edge TTS 合成链路均不改动。\n【验证】静态门禁、Java stub 编译校验（含新 API 签名）、CI Gradle 真编译。",
+  "changelog": "【v3.1.0】义项考频标注与按考频汇编词库\n新增 · 显示每个单词不同中文意思的高考考查类别（高频核心义 / 熟词生义 / 一般义项），词级真题次数照实显示\n新增 · 背诵页可切换「高考频中文 / 熟词生义 / 随机义项」三种考查范围，按类别出题、判分一致\n新增 · 导入页「按考频汇编新词库」：扫描全部词库（含后续导入的），自定义真题次数阈值（无档位限制），一键汇编成新词库\n优化 · 入库时剔除明确非高考的义项，只保留核心义与熟词生义；无高考数据的导入词保留原义项，不臆断删除\n说明 · 官方不发布逐义项考次，故义项只标类别、不编造每个意思的具体次数",
+  "devNotes": "v3.1.0 四项功能：①义项考频标注（核心义/熟词生义/一般义项，类别来自 CORE_MEANINGS 与 FAMILIAR_MAP 两份真实高考数据，不编造逐义项次数）；②背诵义项范围三选项（meaningScope，出题/选项/判分统一走 quizAnswer）；③入库按高考义项精简（trimToExamSenses，无信号词不删）；④导入页按考频汇编（compileFreqBook，自定义阈值、basis=corpus 真实次数）。体积：内置更新日志与熟词生义索引改按需加载，首屏 gzip 246.5KB。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
