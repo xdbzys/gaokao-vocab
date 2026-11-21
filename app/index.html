@@ -3905,6 +3905,37 @@ body.eye-care .fullLogCard { background: #f6eee0; color: #4a3517; }
 .fullLogTag.tag-del { background: rgba(239,68,68,0.14); color: #dc2626; }
 body.eye-care .fullLogTag { color: #1d4ed8; }
 .fullLogCard .tipOk { margin-top: 10px; }
+
+/* ===== v3.1.0 义项考频标注 / 背诵义项范围 / 按考频汇编 ===== */
+.quickToggleBtn.scopeOn {
+  background: rgba(147, 51, 234, .12);
+  color: #9333ea;
+  border-color: rgba(147, 51, 234, .26);
+  font-weight: 700;
+}
+.quickToggleBtn.scopeOff {
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+  border-color: transparent;
+}
+.mfList { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.mfItem {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  padding: 6px 8px; border-radius: 8px; background: var(--bg-secondary);
+  line-height: 1.5;
+}
+.mfText { flex: 1 1 auto; min-width: 0; }
+.mfTag {
+  flex: 0 0 auto; font-size: 11px; font-weight: 700; padding: 2px 7px;
+  border-radius: 999px; white-space: nowrap;
+}
+.mfTag-core { background: rgba(220, 38, 38, .12); color: #dc2626; }
+.mfTag-familiar { background: rgba(147, 51, 234, .12); color: #9333ea; }
+.mfTag-normal { background: rgba(100, 116, 139, .14); color: #64748b; }
+.mfNote { font-size: 12px; color: var(--text-tertiary); margin: 6px 0 0; line-height: 1.5; }
+body.eye-care .mfTag-core { color: #b91c1c; }
+body.eye-care .mfTag-familiar { color: #7e22ce; }
+.freqCompileBox { margin-top: 16px; }
 </style>
 <style>
   /* ============================================================
@@ -4131,6 +4162,6 @@ setTimeout(function () {
 }, 12000);
 </script>
 
-<script type="module" src="./assets/main.DR7BI3MY.js"></script>
+<script type="module" src="./assets/main.UVBY6LET.js"></script>
 </body>
 </html>

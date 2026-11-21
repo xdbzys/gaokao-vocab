@@ -1,11 +1,11 @@
 {
-  "version": "3.0.1",
-  "versionCode": 337,
+  "version": "3.1.0",
+  "versionCode": 338,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4632245,
-  "apkSha256": "b53479817969a6ad2f49c8f15c74a168058dcc023ff578d231835d8caf042e22",
-  "changelog": "【v3.0.1】耳机控制正式接入系统媒体会话\n修复 · 耳机/蓝牙的播放、暂停、切词按键通过系统媒体会话正式绑定，像控制音乐软件一样控制听读\n修复 · 中文发音期间保持音频会话活跃，后台播放时耳机按键不再失效\n优化 · 网页版耳机控制按键提前注册，打开即可用"
+  "apkSize": 4639176,
+  "apkSha256": "22eeafa056716d73d4b555abef97bc356d975123a895aeb0b0dc5c2a62ef3335",
+  "changelog": "【v3.1.0】义项考频标注与按考频汇编词库\n新增 · 显示每个单词不同中文意思的高考考查类别（高频核心义 / 熟词生义 / 一般义项），词级真题次数照实显示\n新增 · 背诵页可切换「高考频中文 / 熟词生义 / 随机义项」三种考查范围，按类别出题、判分一致\n新增 · 导入页「按考频汇编新词库」：扫描全部词库（含后续导"
 }
