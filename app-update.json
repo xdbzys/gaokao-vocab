@@ -1,11 +1,11 @@
 {
-  "version": "3.3.0",
-  "versionCode": 338,
-  "changelog": "【v3.3.0】汇编词库增强与 UI 修复\n优化 · 按考频汇编词库新增「自选词库」，可勾选具体要汇编的词库，不再只能全部或背诵词库\n新增 · 汇编时可自定义新词库名称，留空则自动生成；创建成功后弹窗明确提示词数、阈值与来源\n修复 · 词库名内嵌的固定数量与真实数量对不上（如褒义词92个/熟词生义150个），改为名称不内嵌数字，数量由列表按实际实时显示\n修复 · 导入页状态提示重复显示两行的问题\n修复 · 关联词区域「已就绪」状态写死不随加载变化的问题；背诵义项范围按钮高亮反转问题",
-  "devNotes": "v3.3.0：①compileFreqBook 支持 freqScope=custom 按 freqSelectedIds 勾选具体词库过滤；②新增 freqBookName 用户自定义命名，留空回退默认名，创建成功用 confirmInApp 弹窗提示（词数/阈值/来源）；③移除 BOOK_DEFS 与初中词库名内嵌的固定数量（原硬编码与 items.length 对不上），数量统一由列表 bookCount 实时显示，保留3500/688/985及105年份标注；④删除导入页重复的 importStatus 行；⑤写死\"已就绪\"文案改为随 examFreqReady 动态显示；⑥义项范围按钮高亮反转修复为恒高亮。验证：19项源码/逻辑断言+构建+首屏247.8KB+ES5+Chromium37+CI门禁全过。",
+  "version": "3.4.0",
+  "versionCode": 337,
+  "changelog": "【v3.4.0】词库按需下载与重命名\n新增 · 词库精简：初始仅保留高考3500词、高考总汇、688高频词、985核心词汇四本，其余词库改为按需下载\n新增 · 「我的」页新增扩展词库下载区，9 本内置扩展词库逐本下载/移除，数据随应用内置无需联网，状态记在本机\n新增 · 词库重命名：在词库管理页可对任意词库（内置/下载/自建）重命名，名字重启后保留\n优化 · 仅加载已下载词库的数据，启动更快、占用更少；删除下载词库会同步清除下载标记，避免重启后又出现",
+  "devNotes": "v3.4.0：①CORE_BOOK_IDS 默认四本，OPTIONAL_EXTRA_BOOK_DEFS 从 BOOK_DEFS 派生9本可选，builtInBooks 只映射核心（_allDefBooks 仍为全部建映射保证 ensureBookData 可用）。②我的页下载区 downloadOptionalBook/removeOptionalBook 复用 ensureBookData，下载状态存 OPTIONAL_EXTRA_STORAGE_KEY，启动空闲期恢复 applyNameOverride。③重命名 renameBookById：自定义存 customBooks，内置/可选存 BOOK_NAME_OVERRIDE_KEY，原地改运行时对象保持引用一致；词库管理页加重命名按钮。④删除可选词库同步清下载标记避免重启恢复。⑤后台只加载核心+已下载。验证：20项源码断言+12项流程模拟+首屏249.1KB+ES5+Chromium37+CI门禁全过。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4705336,
-  "apkSha256": "2c15fa565ac09fc97b63bc12d82546b26603fb52c0a43d8dcf47959e815d8965"
+  "apkSize": 4632245,
+  "apkSha256": "b53479817969a6ad2f49c8f15c74a168058dcc023ff578d231835d8caf042e22"
 }

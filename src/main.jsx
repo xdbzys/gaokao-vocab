@@ -103,11 +103,11 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '3.3.0';
+const APP_VERSION = '3.4.0';
 
 // v3.1.0 内置更新日志改为按需加载（离线兜底），见挂载时的动态 import
 let BUILTIN_CHANGELOG = [];
-const CHANGELOG_TOTAL = 71;
+const CHANGELOG_TOTAL = 72;
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
 const APP_VERSION_CODE = 328;
@@ -1636,6 +1636,37 @@ const BOOK_DEFS = [
    由用户在「我的」页主动点「下载」后才构建并加入 books（状态记在本机）。
    这样既满足「按需要选择是否下载」，也消除了 v2.90.0 启动时一次性构造
    2308 词条（两本各跑一次全库合并循环）导致的低端机 WebView ANR / OOM 闪退。 */
+/* ===== v3.4.0 词库默认集与按需下载集 =====
+   默认只保留 3500 / 高考总汇 / 688 / 985 四本；其余内置词库改为在「我的」页按需下载。
+   下载词库仍复用 ensureBookData（数据随应用内置，无需联网），下载状态记在本机。 */
+const CORE_BOOK_IDS = ['gaokao-3500', 'gaokao-master', 'gaokao-688', 'gaokao-985'];
+const OPTIONAL_EXTRA_BOOK_DEFS = BOOK_DEFS.filter(function (d) { return CORE_BOOK_IDS.indexOf(d.id) < 0; });
+const OPTIONAL_EXTRA_BOOK_IDS = OPTIONAL_EXTRA_BOOK_DEFS.map(function (d) { return d.id; });
+const OPTIONAL_EXTRA_STORAGE_KEY = 'gaokao_optional_books_downloaded';
+const BOOK_NAME_OVERRIDE_KEY = 'gaokao_book_name_overrides';
+
+function getDownloadedOptionalIds() {
+  try {
+    var arr = JSON.parse(localStorage.getItem(OPTIONAL_EXTRA_STORAGE_KEY) || '[]');
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) { return []; }
+}
+function setDownloadedOptionalIds(ids) {
+  try { localStorage.setItem(OPTIONAL_EXTRA_STORAGE_KEY, JSON.stringify(ids)); } catch (e) {}
+}
+function getBookNameOverrides() {
+  try {
+    var o = JSON.parse(localStorage.getItem(BOOK_NAME_OVERRIDE_KEY) || '{}');
+    return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {};
+  } catch (e) { return {}; }
+}
+// 原地应用词库名覆盖，保持与 _bookById 的引用共享（items 更新依赖此引用）
+function applyNameOverride(book) {
+  var ov = getBookNameOverrides();
+  if (book && ov[book.id]) book.name = ov[book.id];
+  return book;
+}
+
 const JUNIOR_BOOK_IDS = ['junior-core', 'junior-reading'];
 const JUNIOR_STORAGE_KEY = 'gaokao_junior_downloaded';
 const OPTIONAL_BOOK_DEFS = [
@@ -1695,12 +1726,15 @@ function buildJuniorBooks() {
 const BOOK_DEF_BY_ID = {};
 const _bookById = {};
 
-const builtInBooks = BOOK_DEFS.map(function (def) {
+// v3.4.0：为全部词库建立对象与映射（保证 ensureBookData 可按需加载可选词库），
+// 但 builtInBooks 默认只含核心 4 本；可选词库由用户在「我的」页下载后才加入列表。
+const _allDefBooks = BOOK_DEFS.map(function (def) {
   const book = { id: def.id, name: def.name, editable: false, items: [], total: def.total };
   BOOK_DEF_BY_ID[def.id] = def;
   _bookById[def.id] = book;
   return book;
 });
+const builtInBooks = _allDefBooks.filter(function (b) { return CORE_BOOK_IDS.indexOf(b.id) >= 0; });
 // 已掌握词库始终排在最后（内容由 progress 动态计算，见 App 里的 useEffect）
 builtInBooks.push({ id: 'mastered-words', name: '已掌握词库', editable: false, items: [], total: 0 });
 
@@ -1844,7 +1878,9 @@ function loadBookDataInBackground() {
     /* 其余词库等默认词库就绪后再并行拉：
        小水管（2G/弱 4G）上并发 6 个大 chunk 会互相抢带宽，把「背诵页出第一题」
        拖慢好几秒；串行化这一步之后，首屏词库能独享带宽。 */
-    BOOK_DEFS.forEach(function (d) { if (d.id !== 'gaokao-3500') ensureBookData(d.id); });
+    // v3.4.0：默认只加载核心词库；可选词库仅加载用户已下载的，避免启动时拉全部数据
+    CORE_BOOK_IDS.forEach(function (id) { if (id !== 'gaokao-3500') ensureBookData(id); });
+    getDownloadedOptionalIds().forEach(function (id) { ensureBookData(id); });
     setTimeout(loadEnrichment, 1200);
     setTimeout(loadToolData, 1600);
   });
@@ -2180,6 +2216,9 @@ function saveSettings(settings) {
 }
 
 function loadBooks() {
+  // v3.4.0：应用用户重命名（内置/可选词库名覆盖持久化在 BOOK_NAME_OVERRIDE_KEY）
+  var ov = getBookNameOverrides();
+  builtInBooks.forEach(function (b) { if (ov[b.id]) b.name = ov[b.id]; });
   try {
     const saved = JSON.parse(localStorage.getItem('customBooks') || '[]');
     return [...builtInBooks, ...saved];
@@ -5540,6 +5579,66 @@ function App() {
     }, 3500);
     return function () { cancelled = true; clearTimeout(timer); };
   }, []);
+
+  /* ===== v3.4.0 可选词库（3500/总汇/688/985 之外的内置词库）按需下载 ===== */
+  const [downloadedOptionalIds, setDownloadedOptionalIds] = useState(getDownloadedOptionalIds);
+  const [optionalBusyId, setOptionalBusyId] = useState('');
+
+  function downloadOptionalBook(id) {
+    if (optionalBusyId) return;
+    setOptionalBusyId(id);
+    ensureBookData(id).then(function (book) {
+      if (!book) { appTip('下载失败：词库数据加载出错，请稍后重试', '下载失败'); setOptionalBusyId(''); return; }
+      var ids = getDownloadedOptionalIds();
+      if (ids.indexOf(id) < 0) ids.push(id);
+      setDownloadedOptionalIds(ids);
+      setDownloadedOptionalIdsRaw(ids);
+      applyNameOverride(book);
+      setBooks(function (prev) { return prev.some(function (b) { return b.id === id; }) ? prev : prev.concat(book); });
+      appTip('已下载「' + book.name + '」，现在可在词库选择 / 背诵 / 听读 / 导出中选用。', '下载完成');
+      setOptionalBusyId('');
+    }).catch(function () {
+      appTip('下载失败：词库数据加载出错，请稍后重试', '下载失败');
+      setOptionalBusyId('');
+    });
+  }
+  function setDownloadedOptionalIdsRaw(ids) { try { localStorage.setItem(OPTIONAL_EXTRA_STORAGE_KEY, JSON.stringify(ids)); } catch (e) {} }
+
+  function removeOptionalBook(id) {
+    var ids = getDownloadedOptionalIds().filter(function (x) { return x !== id; });
+    setDownloadedOptionalIds(ids);
+    setDownloadedOptionalIdsRaw(ids);
+    setBooks(function (prev) { return prev.filter(function (b) { return b.id !== id; }); });
+    var fallback = function (prev) {
+      var n = prev.filter(function (x) { return x !== id; });
+      return n.length ? n : ['gaokao-3500'];
+    };
+    setStudyBookIds(function (prev) { var r = fallback(prev); try { localStorage.setItem('gaokao_study_books', r.join(',')); } catch (e) {} return r; });
+    setLibraryBookIds(function (prev) { var r = fallback(prev); try { localStorage.setItem('gaokao_library_books', r.join(',')); } catch (e) {} return r; });
+    appTip('已移除「' + (_bookById[id] ? _bookById[id].name : id) + '」，可随时在「我的」页重新下载。', '已移除');
+  }
+
+  // 已下载词库在启动后空闲期恢复（复用已加载数据，不重复构造）
+  useEffect(function () {
+    var ids = getDownloadedOptionalIds();
+    if (!ids.length || window.__safeMode) return;
+    var cancelled = false;
+    var timer = setTimeout(function () {
+      var run = function () {
+        ids.forEach(function (id) {
+          ensureBookData(id).then(function (book) {
+            if (cancelled || !book) return;
+            applyNameOverride(book);
+            setBooks(function (prev) { return prev.some(function (b) { return b.id === id; }) ? prev : prev.concat(book); });
+          }).catch(function () {});
+        });
+      };
+      if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(run, { timeout: 8000 });
+      else setTimeout(run, 1200);
+    }, 3800);
+    return function () { cancelled = true; clearTimeout(timer); };
+  }, []);
+
   // v2.73.0：更新动作互斥锁（原生侧另有原子锁，这里先挡一层，避免连点并发下载写坏临时文件）
   const apkUpdateLockRef = useRef(false);
   const shuffleSeedRef = useRef(Date.now()); // 洗牌种子：仅词库变化时更新，进度变化时保持稳定
@@ -7812,12 +7911,26 @@ function App() {
     updateBooks([...books, nb]); switchLibraryBook(nb.id); setSection('library');
   }
 
-  async function renameBook() {
-    if (!activeBook.editable) return appTip('内置词库不可改名');
-    const name = await promptInApp({ title: '重命名词库', body: '请输入新名称', defaultValue: activeBook.name, placeholder: '新名称' });
-    if (!name) return;
-    updateBooks(books.map(b => b.id === activeBook.id ? { ...b, name } : b));
+  // v3.4.0 词库重命名：内置 / 可选下载 / 自定义词库均可改名。
+  // 自定义词库名存 customBooks；内置与可选词库名存 BOOK_NAME_OVERRIDE_KEY（重启后 loadBooks 应用）。
+  async function renameBookById(id) {
+    var target = books.find(function (b) { return b.id === id; });
+    if (!target) return;
+    const name = await promptInApp({ title: '重命名词库', body: '给词库起一个新名字', defaultValue: target.name, placeholder: '新名称' });
+    var finalName = String(name || '').trim();
+    if (!finalName || finalName === target.name) return;
+    if (target.editable) {
+      updateBooks(books.map(function (b) { return b.id === id ? Object.assign({}, b, { name: finalName }) : b; }));
+    } else {
+      // 原地改运行时对象，保持与 _bookById / builtInBooks 的引用一致
+      if (_bookById[id]) _bookById[id].name = finalName;
+      var ov = getBookNameOverrides(); ov[id] = finalName;
+      try { localStorage.setItem(BOOK_NAME_OVERRIDE_KEY, JSON.stringify(ov)); } catch (e) {}
+      setBooks(books.slice());
+    }
+    appTip('词库已重命名为「' + finalName + '」', '重命名成功');
   }
+  async function renameBook() { if (activeBook) return renameBookById(activeBook.id); }
 
   async function deleteBook() {
     if (!activeBook.editable) return appTip('内置词库不能删除');
@@ -10533,6 +10646,36 @@ function App() {
             </button>
           </div>
 
+          {/* v3.4.0 可选词库：3500/总汇/688/985 之外的内置词库，按需下载 */}
+          <div className="juniorPack optionalPack">
+            <div className="juniorPackHead">
+              <span className="juniorPackIcon"><Icon name="book" /></span>
+              <div className="juniorPackTitle">
+                <b>扩展词库</b>
+                <span>已下载 {downloadedOptionalIds.length}/{OPTIONAL_EXTRA_BOOK_IDS.length} 本</span>
+              </div>
+            </div>
+            <p className="juniorPackDesc">
+              以下词库默认<strong>不加载、不出现在词库列表</strong>。需要哪本点「下载」即加入词库选择 / 背诵 / 听读 / 导出；数据随应用内置，<strong>无需联网</strong>，可随时移除。默认保留高考3500词、高考总汇、688高频词、985核心词汇四本。
+            </p>
+            <div className="optionalBookList">
+              {OPTIONAL_EXTRA_BOOK_DEFS.map(function (def) {
+                var on = downloadedOptionalIds.indexOf(def.id) >= 0;
+                var busy = optionalBusyId === def.id;
+                return (
+                  <div className="optionalBookRow" key={def.id}>
+                    <span className="optionalBookName">{def.name} <span className="bookCount">({def.total})</span></span>
+                    <button className={on ? 'smallBtn ghost' : 'smallBtn'} disabled={!!optionalBusyId}
+                      onClick={on ? function () { removeOptionalBook(def.id); } : function () { downloadOptionalBook(def.id); }}>
+                      <Icon name={on ? 'trash' : 'download'} />
+                      {busy ? '加载中…' : (on ? '移除' : '下载')}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* 网页版：只提示，由用户主动点刷新，绝不自动刷新 */}
           {!isNativeApp && webUpdateReady && isNewerVersion(webUpdateReady, APP_VERSION) && (
             <div className="webUpdateBar">
@@ -10909,9 +11052,16 @@ function App() {
                     </div>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       <button className="smallBtn dangerGhost" onClick={() => resetBookProgress(b.id)}>重置</button>
+                      <button className="smallBtn" onClick={() => renameBookById(b.id)}>重命名</button>
                       <button className="smallBtn dangerGhost" style={{ color: '#dc2626' }} onClick={async () => {
-                        if (!await confirmInApp({ title: '删除词库', body: `确定删除词库「${b.name}」？\n${isBuiltIn ? '内置词库删除后可在下方恢复。' : '自定义词库删除后无法恢复。'}`, danger: true })) return;
-                        if (isBuiltIn) {
+                        var isOptional = OPTIONAL_EXTRA_BOOK_IDS.indexOf(b.id) >= 0 || JUNIOR_BOOK_IDS.indexOf(b.id) >= 0;
+                        var delTip = isBuiltIn ? '内置词库删除后可在下方恢复。' : (isOptional ? '这是按需下载的词库，删除后可随时在「我的」页重新下载。' : '自定义词库删除后无法恢复。');
+                        if (!await confirmInApp({ title: '删除词库', body: `确定删除词库「${b.name}」？\n${delTip}`, danger: true })) return;
+                        if (isOptional) {
+                          // 可选下载词库：彻底移除并清下载标记，避免重启后又自动恢复
+                          if (JUNIOR_BOOK_IDS.indexOf(b.id) >= 0) { removeJuniorBooks(); }
+                          else { removeOptionalBook(b.id); }
+                        } else if (isBuiltIn) {
                           // 内置词库：加入隐藏列表
                           const next = [...hiddenBookIds, b.id];
                           setHiddenBookIds(next);
