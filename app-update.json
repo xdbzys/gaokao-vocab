@@ -1,11 +1,11 @@
 {
   "version": "3.4.0",
-  "versionCode": 337,
+  "versionCode": 338,
   "changelog": "【v3.4.0】词库按需下载与重命名\n新增 · 词库精简：初始仅保留高考3500词、高考总汇、688高频词、985核心词汇四本，其余词库改为按需下载\n新增 · 「我的」页新增扩展词库下载区，9 本内置扩展词库逐本下载/移除，数据随应用内置无需联网，状态记在本机\n新增 · 词库重命名：在词库管理页可对任意词库（内置/下载/自建）重命名，名字重启后保留\n优化 · 仅加载已下载词库的数据，启动更快、占用更少；删除下载词库会同步清除下载标记，避免重启后又出现",
   "devNotes": "v3.4.0：①CORE_BOOK_IDS 默认四本，OPTIONAL_EXTRA_BOOK_DEFS 从 BOOK_DEFS 派生9本可选，builtInBooks 只映射核心（_allDefBooks 仍为全部建映射保证 ensureBookData 可用）。②我的页下载区 downloadOptionalBook/removeOptionalBook 复用 ensureBookData，下载状态存 OPTIONAL_EXTRA_STORAGE_KEY，启动空闲期恢复 applyNameOverride。③重命名 renameBookById：自定义存 customBooks，内置/可选存 BOOK_NAME_OVERRIDE_KEY，原地改运行时对象保持引用一致；词库管理页加重命名按钮。④删除可选词库同步清下载标记避免重启恢复。⑤后台只加载核心+已下载。验证：20项源码断言+12项流程模拟+首屏249.1KB+ES5+Chromium37+CI门禁全过。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4632245,
-  "apkSha256": "b53479817969a6ad2f49c8f15c74a168058dcc023ff578d231835d8caf042e22"
+  "apkSize": 4707200,
+  "apkSha256": "85aa61094af78be5e093ce50179c4d4a2f1fea41e908fd0eadce85841822ebec"
 }

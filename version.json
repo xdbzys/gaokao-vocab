@@ -1,11 +1,11 @@
 {
-  "version": "3.3.0",
+  "version": "3.4.0",
   "versionCode": 338,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4705336,
-  "apkSha256": "2c15fa565ac09fc97b63bc12d82546b26603fb52c0a43d8dcf47959e815d8965",
-  "changelog": "【v3.3.0】汇编词库增强与 UI 修复\n优化 · 按考频汇编词库新增「自选词库」，可勾选具体要汇编的词库，不再只能全部或背诵词库\n新增 · 汇编时可自定义新词库名称，留空则自动生成；创建成功后弹窗明确提示词数、阈值与来源\n修复 · 词库名内嵌的固定数量与真实数量对不上（如褒义词92个/熟词生义150个），改为名称不"
+  "apkSize": 4707200,
+  "apkSha256": "85aa61094af78be5e093ce50179c4d4a2f1fea41e908fd0eadce85841822ebec",
+  "changelog": "【v3.4.0】词库按需下载与重命名\n新增 · 词库精简：初始仅保留高考3500词、高考总汇、688高频词、985核心词汇四本，其余词库改为按需下载\n新增 · 「我的」页新增扩展词库下载区，9 本内置扩展词库逐本下载/移除，数据随应用内置无需联网，状态记在本机\n新增 · 词库重命名：在词库管理页可对任意词库（内置/下载"
 }
