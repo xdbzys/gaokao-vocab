@@ -103,11 +103,11 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '3.1.0';
+const APP_VERSION = '3.2.0';
 
 // v3.1.0 内置更新日志改为按需加载（离线兜底），见挂载时的动态 import
 let BUILTIN_CHANGELOG = [];
-const CHANGELOG_TOTAL = 69;
+const CHANGELOG_TOTAL = 70;
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
 const APP_VERSION_CODE = 328;
@@ -1037,6 +1037,9 @@ function batchNetEnrich(items, onProgress, opts) {
 let EXAM_FREQ = null;
 // v3.1.0 熟词生义索引：与考频一样按需异步载入，不进首屏包
 let FAMILIAR_MAP = {};
+// v3.2.0 义项级真题考频证据库（源自真实高考真题挖空点，按需载入，不进首屏包）
+let SENSE_FREQ = {};
+let SENSE_FREQ_META = null;
 const EXAM_LEVEL_LABEL = ['基础', '低频', '中频', '高频'];
 function getExamFreq(term) {
   if (!EXAM_FREQ || !term) return null;
@@ -1120,6 +1123,31 @@ function senseClass(term, sense) {
   if (isCoreSense(term, sense)) return 'core';
   return 'normal';
 }
+
+/* ===== v3.2.0 义项级真题考频证据（有依据、可追溯） =====
+   数据来自真实高考真题阅读挖空点：每条记录 = {s:义项, c:真题考查次数, e:[[年份,卷别,题号,真题原句],...]}。
+   一个词的义项串里的某条义项，与证据库里的义项做词片段级匹配：
+   命中即返回该义项的真实考次与全部出处；未命中返回 null（表示此真题样本未直接考到该义项，不编造）。 */
+function senseExamEvidence(term, sense) {
+  var arr = SENSE_FREQ[String(term || '').toLowerCase().trim()];
+  if (!arr || !arr.length) return null;
+  var toks = senseTokens(sense);
+  if (!toks.length) return null;
+  var best = null, bestScore = 0;
+  for (var i = 0; i < arr.length; i++) {
+    var rec = arr[i];
+    var recToks = senseTokens(rec.s);
+    if (!recToks.length) continue;
+    var ov = 0;
+    for (var a = 0; a < toks.length; a++) for (var b = 0; b < recToks.length; b++) {
+      if (toks[a] === recToks[b] || (toks[a].length >= 2 && recToks[b].indexOf(toks[a]) >= 0) || (recToks[b].length >= 2 && toks[a].indexOf(recToks[b]) >= 0)) ov++;
+    }
+    if (ov > bestScore) { bestScore = ov; best = rec; }
+  }
+  return best; // 返回 {s,c,e}，由调用方决定是否展示
+}
+// 某词是否有义项级真题证据（用于界面上切换标注口径）
+function hasSenseEvidence(term) { return !!(SENSE_FREQ[String(term || '').toLowerCase().trim()] || []).length; }
 // 出题用的中文答案（简短）：高频义=核心释义；熟词生义=生义首片段；随机=从义项里稳定取一个
 function pickSenseForQuiz(term, meaning, scope, salt) {
   if (scope === 'familiar') {
@@ -5072,28 +5100,49 @@ function MeaningFreqList(props) {
   var term = props.term || '';
   var text = props.text || '';
   var senses = splitSenses(text);
+  var [openIdx, setOpenIdx] = React.useState(-1);
   if (!senses.length) return <span className={props.className || ''}>{text}</span>;
   var f = getExamFreq(term);
-  var countTxt = f && f.basis === 'corpus' && f.count > 0 ? ('真题 ' + f.count + ' 次') : '词级次数 —';
-  var tip = '官方与真题语料只提供单词级考查次数，不提供逐义项考次，故此处不编造每个意思的具体次数。'
-    + '义项类别来自两高考数据：高频核心义（高考核心释义词库）、熟词生义（熟词生义词库），其余为一般义项。'
-    + '当前词级真题次数：' + countTxt + '。';
+  var wordCount = f && f.basis === 'corpus' && f.count > 0 ? f.count : 0;
+  var anyEv = hasSenseEvidence(term);
   var label = { core: '高频核心义', familiar: '熟词生义', normal: '一般义项' };
   return (
-    <span className={'mfList' + (props.className ? ' ' + props.className : '')} title={tip}>
+    <span className={'mfList' + (props.className ? ' ' + props.className : '')}>
       {senses.map(function (sense, i) {
         var cls = senseClass(term, sense);
+        var ev = senseExamEvidence(term, sense); // {s,c,e} 或 null，真凭实据
         return (
           <span className={'mfItem mf-' + cls} key={i}>
-            <span className="mfText">{sense}</span>
-            <span className={'mfTag mfTag-' + cls}>{label[cls]}</span>
+            <span className="mfTop" onClick={function () { setOpenIdx(openIdx === i ? -1 : i); }}>
+              <span className="mfText">{sense}</span>
+              {ev && ev.c > 0
+                ? <span className="mfCount" title="点击展开真题出处">真题 {ev.c} 次 ▾</span>
+                : <span className={'mfTag mfTag-' + cls}>{label[cls]}</span>}
+            </span>
+            {openIdx === i && (
+              <span className="mfEvidence">
+                {ev && ev.c > 0 ? (
+                  <React.Fragment>
+                    <span className="mfEvidenceHead">义项「{ev.s}」· 真题考查 {ev.c} 次 · 依据（年份·卷别·题号·原句）：</span>
+                    {ev.e.map(function (row, k) {
+                      return <span className="mfEvRow" key={k}>
+                        <span className="mfEvMeta">{row[0]} · {row[1]} · {row[2]}</span>
+                        <span className="mfEvQuote">{row[3]}</span>
+                      </span>;
+                    })}
+                  </React.Fragment>
+                ) : (
+                  <span className="mfEvidenceHead">该义项在此真题样本（{SENSE_FREQ_META ? SENSE_FREQ_META.passages + ' 篇' : '200 篇'}）中未发现挖空考查证据；词级真题次数：{wordCount > 0 ? wordCount + ' 次' : '—'}。类别判定来自核心释义/熟词生义词库。</span>
+                )}
+              </span>
+            )}
           </span>
         );
       })}
+      <span className="mfNote">真题考次来自 {SENSE_FREQ_META ? SENSE_FREQ_META.passages + ' 篇' : '200 篇'} 高考真题阅读挖空点逐条提取，点「真题 N 次」看具体出处；非官方逐义项统计，无出处不标注。</span>
     </span>
   );
 }
-
 // v2.69.0 全局错误边界：任何渲染异常不再白屏，给出错误摘要与一键重载
 class AppErrorBoundary extends React.Component {
   constructor(props) {
@@ -5152,6 +5201,10 @@ function App() {
   useEffect(() => {
     let alive = true;
     import('./data/familiar-map').then(function (fm) { FAMILIAR_MAP = fm.FAMILIAR_MAP || {}; }).catch(function () {});
+    import('./data/sense-freq').then(function (sf) {
+      SENSE_FREQ = sf.SENSE_FREQ || {};
+      SENSE_FREQ_META = sf.SENSE_FREQ_META || null;
+    }).catch(function () {});
     import('./data/builtin-changelog').then(function (cm) {
       BUILTIN_CHANGELOG = cm.BUILTIN_CHANGELOG || [];
       setFullLogData(function (prev) { return (prev && prev.length) ? prev : BUILTIN_CHANGELOG; });

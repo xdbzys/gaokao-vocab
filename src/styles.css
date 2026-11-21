@@ -3781,3 +3781,20 @@ body.eye-care .fullLogTag { color: #1d4ed8; }
 body.eye-care .mfTag-core { color: #b91c1c; }
 body.eye-care .mfTag-familiar { color: #7e22ce; }
 .freqCompileBox { margin-top: 16px; }
+
+/* ===== v3.2.0 义项真题考频依据展开 ===== */
+.mfTop { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; width: 100%; cursor: pointer; }
+.mfCount {
+  flex: 0 0 auto; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+  color: #dc2626; background: rgba(220, 38, 38, .1); border: 1px solid rgba(220, 38, 38, .22);
+}
+body.eye-care .mfCount { color: #b91c1c; }
+.mfEvidence {
+  display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: 6px; padding: 8px 10px;
+  border-radius: 8px; background: var(--bg-elev, rgba(0,0,0,.03)); font-size: 12px; line-height: 1.55;
+}
+.mfEvidenceHead { color: var(--text-secondary); font-weight: 600; }
+.mfEvRow { display: flex; flex-direction: column; gap: 1px; padding: 5px 8px; border-left: 2px solid rgba(220,38,38,.4); background: var(--bg-secondary); border-radius: 4px; }
+.mfEvMeta { color: #dc2626; font-weight: 700; font-size: 11px; }
+body.eye-care .mfEvMeta { color: #b91c1c; }
+.mfEvQuote { color: var(--text-secondary); word-break: break-word; }
