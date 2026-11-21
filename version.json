@@ -1,11 +1,11 @@
 {
   "version": "3.4.1",
-  "versionCode": 338,
+  "versionCode": 339,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4707200,
-  "apkSha256": "85aa61094af78be5e093ce50179c4d4a2f1fea41e908fd0eadce85841822ebec",
+  "apkSize": 4707356,
+  "apkSha256": "8b974accdbcbc2c0f492627cc164c2c6bb04190acd7e45e53a3b0ea467b1ac24",
   "changelog": "【v3.4.1】修复「检查不到新版本」\n① 根治版本基线脱节：此前发版只把版本号写进安装包和清单，未同步回源码，导致源码版本长期停在旧号，检查更新误判「已是最新」；现已让流水线每次发版自动回写源码并设置一致性门禁。\n② 修正更新判定：检查更新改为以「本机已安装版本」为基准（不再被页面缓存版本抬高），旧安装包一定能检出新"
 }
