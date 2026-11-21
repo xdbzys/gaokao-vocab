@@ -103,11 +103,11 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '3.2.0';
+const APP_VERSION = '3.3.0';
 
 // v3.1.0 内置更新日志改为按需加载（离线兜底），见挂载时的动态 import
 let BUILTIN_CHANGELOG = [];
-const CHANGELOG_TOTAL = 70;
+const CHANGELOG_TOTAL = 71;
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
 const APP_VERSION_CODE = 328;
@@ -1528,7 +1528,7 @@ const BOOK_DEFS = [
     total: 6503,
     load: () => import('./vendor/gaokaoMasterVocab'),
     pick: (m) => { initMasterVocab(m); return MASTER_VOCAB_ALL; },
-    after: (m, book) => { book.name = `高考总汇词库(${MASTER_VOCAB_ALL.length}词)`; },
+    // v3.3.0：词库名不再内嵌数量（数量由列表按 items.length 实时显示，避免与真实数量对不上）
   },
   {
     // 688高频词：从高频词文档解析，按高考出现频次排序
@@ -1569,7 +1569,7 @@ const BOOK_DEFS = [
   },
   {
     id: 'gaokao-positive',
-    name: '褒义词(92个)',
+    name: '褒义词',
     type: 'word',
     source: '',
     total: 89,
@@ -1578,7 +1578,7 @@ const BOOK_DEFS = [
   },
   {
     id: 'gaokao-negative',
-    name: '贬义词(83个)',
+    name: '贬义词',
     type: 'word',
     source: '',
     total: 80,
@@ -1587,7 +1587,7 @@ const BOOK_DEFS = [
   },
   {
     id: 'gaokao-super',
-    name: '超纲高频词(99个)',
+    name: '超纲高频词',
     type: 'word',
     source: '',
     total: 98,
@@ -1596,7 +1596,7 @@ const BOOK_DEFS = [
   },
   {
     id: 'gaokao-conclusion',
-    name: '逻辑结论词(13个)',
+    name: '逻辑结论词',
     type: 'phrase',
     source: '',
     total: 13,
@@ -1605,7 +1605,7 @@ const BOOK_DEFS = [
   },
   {
     id: 'gaokao-topic',
-    name: '高考高频主题词(30个)',
+    name: '高考高频主题词',
     type: 'phrase',
     source: '',
     total: 31,
@@ -1614,7 +1614,7 @@ const BOOK_DEFS = [
   },
   {
     id: 'gaokao-familiar-new',
-    name: '熟词生义(150个)',
+    name: '熟词生义',
     type: 'phrase',
     source: '',
     total: 172,
@@ -1623,7 +1623,7 @@ const BOOK_DEFS = [
   },
   {
     id: 'gaokao-dual-sentiment',
-    name: '褒贬双性词(17个)',
+    name: '褒贬双性词',
     type: 'phrase',
     source: '',
     total: 17,
@@ -1673,7 +1673,7 @@ function buildJuniorBooks() {
           const items = makeAllItems(seed, def.type, def.source);
           out.push({
             id: def.id,
-            name: def.name + '(' + items.length + '词)',
+            name: def.name,
             type: def.type,
             source: def.source,
             total: items.length,
@@ -5555,9 +5555,11 @@ function App() {
   const [libraryLimit, setLibraryLimit] = useState(60); // 词库页懒加载条数
   const [importText, setImportText] = useState('');
   const [importStatus, setImportStatus] = useState('');
-  // v3.1.0 按考频汇编新词库
+  // v3.3.0 按考频汇编新词库：可选具体词库 + 用户自定义命名
   const [freqThreshold, setFreqThreshold] = useState('100');
-  const [freqScope, setFreqScope] = useState('all'); // all | study 全部词库/背诵词库
+  const [freqScope, setFreqScope] = useState('all'); // all | study | custom 全部/背诵/自选具体词库
+  const [freqSelectedIds, setFreqSelectedIds] = useState([]); // 自选词库 id 列表
+  const [freqBookName, setFreqBookName] = useState('');        // 用户自定义新词库名
   const [freqTrim, setFreqTrim] = useState(true);     // 汇编时是否剔除高考不考义项
   const [freqCompileMsg, setFreqCompileMsg] = useState('');
   const [lastFile, setLastFile] = useState(null);
@@ -7875,8 +7877,19 @@ function App() {
     if (!examFreqReady) { setFreqCompileMsg('考频数据尚未加载完成，请稍候再试'); return; }
     var th = parseInt(freqThreshold, 10);
     if (!isFinite(th) || th < 0) { setFreqCompileMsg('请输入 ≥0 的整数次数阈值'); return; }
-    var srcBooks = freqScope === 'all' ? books : books.filter(function (b) { return studyBookIds.indexOf(b.id) >= 0; });
-    // 去重：同一 term 在所有词库里只取信息最全的那条
+
+    // v3.3.0 自选具体词库：scope=custom 时只用用户勾选的词库；否则全部/背诵词库
+    var srcBooks;
+    if (freqScope === 'custom') {
+      srcBooks = books.filter(function (b) { return freqSelectedIds.indexOf(b.id) >= 0; });
+      if (!srcBooks.length) { setFreqCompileMsg('请先在下方勾选至少一个要汇编的词库'); return; }
+    } else if (freqScope === 'study') {
+      srcBooks = books.filter(function (b) { return studyBookIds.indexOf(b.id) >= 0; });
+    } else {
+      srcBooks = books.slice();
+    }
+
+    // 去重：同一 term 在所有选中词库里只取信息最全的那条
     var byTerm = {};
     srcBooks.forEach(function (b) {
       (b.items || []).forEach(function (it) {
@@ -7884,7 +7897,6 @@ function App() {
         if (!k) return;
         var prev = byTerm[k];
         if (!prev) { byTerm[k] = it; return; }
-        // 优先保留有完整释义/考点的条目
         var score = function (x) { return (x.meaningFull || x.meaning || '').length + (x.corePoints || []).length * 10 + (x.examples || []).length * 3; };
         if (score(it) > score(prev)) byTerm[k] = it;
       });
@@ -7895,8 +7907,11 @@ function App() {
       // 只用真实语料次数（basis=corpus），联网参考/未覆盖词计次为0，不冒充真题次数
       if (f && f.basis === 'corpus' && f.count >= th) picked.push(byTerm[k]);
     });
-    if (!picked.length) { setFreqCompileMsg('没有单词达到 ≥' + th + ' 次的真题考频，试试降低阈值'); return; }
+    if (!picked.length) { setFreqCompileMsg('所选词库中没有单词达到 ≥' + th + ' 次的真题考频，试试降低阈值或换选词库'); return; }
     picked.sort(function (a, b) { return examCountOf(b.term) - examCountOf(a.term); });
+
+    // v3.3.0 用户自定义命名：留空时用默认名，不阻断
+    var name = String(freqBookName || '').trim() || ('高考真题≥' + th + '次词库(' + picked.length + '词)');
     var items = picked.map(function (it, i) {
       return Object.assign({}, it, {
         id: 'freqbook-' + Date.now() + '-' + i + '-' + termKey(it.term),
@@ -7904,10 +7919,9 @@ function App() {
         sourceBooks: [it.source || '汇编']
       });
     });
-    var name = '高考真题≥' + th + '次词库(' + items.length + '词)';
     var nb = { id: 'book-' + Date.now(), name: name, editable: true, items: items };
     updateBooks([...books, nb]);
-    setFreqCompileMsg('已汇编「' + name + '」：从全部选中词库中筛出 ' + items.length + ' 个真题出现 ≥' + th + ' 次的单词，已按考频降序排列');
+    setFreqCompileMsg('已汇编「' + name + '」：从 ' + srcBooks.length + ' 本所选词库中筛出 ' + items.length + ' 个真题出现 ≥' + th + ' 次的单词，已按考频降序排列');
     try {
       setLibraryBookIds(function (prev) { return prev.indexOf(nb.id) >= 0 ? prev : [...prev, nb.id]; });
       localStorage.setItem('gaokao_library_books', JSON.stringify((() => {
@@ -7915,6 +7929,12 @@ function App() {
         return cur.indexOf(nb.id) >= 0 ? cur : [...cur, nb.id];
       })()));
     } catch (e) {}
+    // v3.3.0 创建成功明确提示（应用内弹窗，不用系统原生弹窗）
+    confirmInApp({
+      title: '汇编完成',
+      body: '已创建新词库「' + name + '」\n\n单词数：' + items.length + ' 个\n真题阈值：≥' + th + ' 次\n来源词库：' + srcBooks.length + ' 本\n排序：按真题考频从高到低\n\n可在「词库管理 / Library」中找到它。',
+      okText: '知道了', cancelText: '关闭'
+    });
   }
 
   // 导入后关联词检索：内置算法即时完成，联网数据异步补全。
@@ -8682,7 +8702,7 @@ function App() {
             )}
             {/* v3.1.0 中文义项范围：高考频中文 / 熟词生义 / 随机 */}
             <button
-              className={`quickToggleBtn ${meaningScopeNow !== 'highfreq' ? 'scopeOn' : 'scopeOff'}`}
+              className={`quickToggleBtn scopeOn`}
               title="选择背诵时考查哪个中文义项：高考频中文（核心高频义）/ 熟词生义 / 随机义项"
               onClick={() => {
                 const scopes = ['highfreq', 'familiar', 'random'];
@@ -10361,26 +10381,57 @@ function App() {
             </div>
             <p className="status">{importStatus || '粘贴或上传文件后点击导入，未选词库时自动创建新词库'}</p>
 
-            {/* v3.1.0 按考频汇编新词库：自定义次数阈值，无档位限制，覆盖内置+用户导入全部词库 */}
+            {/* v3.3.0 按考频汇编新词库：可选具体词库 + 用户自定义命名 + 成功提示 */}
             <div className="familyCheckBox freqCompileBox">
               <div className="familyCheckHeader">
                 <span className="familyCheckTitle"><Icon name="target" />按考频汇编新词库</span>
               </div>
               <p className="familyCheckDesc">
-                从<strong>软件内所有词库（含你后续导入的词库）</strong>中，按高考真题出现次数汇编成一本新词库。次数阈值<strong>完全自定义、无档位限制</strong>，例如输入 100 即收录真题出现 ≥100 次的单词。只使用真实语料统计次数，未收录词不冒充次数。
+                从选定词库中按高考真题出现次数汇编成一本新词库。次数阈值<strong>完全自定义、无档位限制</strong>，例如输入 100 即收录真题出现 ≥100 次的单词。只使用真实语料统计次数，未收录词不冒充次数。
               </p>
               <div className="netEnrichRow" style={{ flexWrap: 'wrap', gap: 8 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>新词库名称</span>
+                  <input type="text" value={freqBookName}
+                    onChange={e => setFreqBookName(e.target.value)}
+                    placeholder="留空则自动生成"
+                    style={{ flex: 1, minWidth: 120, padding: '6px 8px', borderRadius: 8, border: '1px solid var(--border, #ccc)', background: 'var(--bg-elev, #fff)', color: 'var(--text, #222)' }} />
+                </label>
+              </div>
+              <div className="netEnrichRow" style={{ flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>真题出现 ≥</span>
                   <input type="number" min="0" step="1" value={freqThreshold}
                     onChange={e => setFreqThreshold(e.target.value)}
-                    style={{ width: 96, padding: '6px 8px', borderRadius: 8, border: '1px solid var(--border, #ccc)', background: 'var(--bg-elev, #fff)', color: 'var(--text, #222)' }} />
+                    style={{ width: 90, padding: '6px 8px', borderRadius: 8, border: '1px solid var(--border, #ccc)', background: 'var(--bg-elev, #fff)', color: 'var(--text, #222)' }} />
                   <span>次</span>
                 </label>
-                <InlineSelect style={{ flex: 1, minWidth: 130 }} value={freqScope}
-                  options={[{ value: 'all', label: '全部词库' }, { value: 'study', label: '仅背诵词库' }]}
+                <InlineSelect style={{ flex: 1, minWidth: 120 }} value={freqScope}
+                  options={[{ value: 'all', label: '全部词库' }, { value: 'study', label: '背诵词库' }, { value: 'custom', label: '自选词库' }]}
                   onChange={v => setFreqScope(v)} />
               </div>
+              {/* 自选词库：勾选具体要汇编的词库 */}
+              {freqScope === 'custom' && (
+                <div className="freqBookPicker">
+                  <div className="freqBookPickerHead">
+                    <span>勾选要汇编的词库（已选 {freqSelectedIds.length} 本）</span>
+                    <span className="freqBookPickerOps">
+                      <button type="button" onClick={() => setFreqSelectedIds(books.map(b => b.id))}>全选</button>
+                      <button type="button" onClick={() => setFreqSelectedIds([])}>清空</button>
+                    </span>
+                  </div>
+                  <div className="freqBookPickerList">
+                    {books.filter(b => (b.items.length || 0) > 0).map(b => (
+                      <label key={b.id} className="freqBookPickerItem">
+                        <input type="checkbox" checked={freqSelectedIds.indexOf(b.id) >= 0}
+                          onChange={() => setFreqSelectedIds(prev => prev.indexOf(b.id) >= 0 ? prev.filter(x => x !== b.id) : [...prev, b.id])} />
+                        <span>{b.name}</span>
+                        <span className="bookCount">({b.items.length || 0})</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="netEnrichRow" style={{ marginTop: 8, flexWrap: 'wrap', gap: 8 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
                   <input type="checkbox" checked={freqTrim} onChange={e => setFreqTrim(e.target.checked)} />同时剔除高考不考义项
@@ -10390,8 +10441,6 @@ function App() {
               {!examFreqReady && <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>考频数据加载中…</p>}
               {freqCompileMsg && <p className="familyCheckStatus active">{freqCompileMsg}</p>}
             </div>
-            <p className="status">{importStatus || '粘贴或上传文件后点击导入，未选词库时自动创建新词库'}</p>
-
             {/* 关联词检索与考频补全（内置算法 + 免密钥联网数据） */}
             <div className="familyCheckBox">
               <div className="familyCheckHeader">
@@ -10406,7 +10455,7 @@ function App() {
               <p className="familyCheckDesc">
                 <strong>同源词族与易混词由内置词根算法即时检索</strong>，不需要任何配置；内置真题考频表未收录的词（含你自行导入的生词）再通过<strong>免密钥公开接口</strong>（Datamuse / Free Dictionary API）补全考频等级与近义 / 反义 / 语义关联词。两类关系分开标注、互不混淆，结果缓存本机、离线可用。
                 {' '}
-                <span style={{color: 'var(--text-tertiary)'}}><Icon name="check" />内置算法 + 联网数据已就绪</span>
+                <span style={{color: 'var(--text-tertiary)'}}><Icon name="check" />{examFreqReady ? '内置算法与考频数据已就绪' : '内置算法与考频数据加载中…'}</span>
               </p>
               <div className="netEnrichRow">
                 <button className="familyCheckBtn" disabled={netEnriching} onClick={() => runNetEnrichFor(libraryActiveBook.items, '当前词库补全')}>{netEnriching ? '补全中…' : '补全当前词库（免密钥联网数据）'}</button>
