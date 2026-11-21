@@ -1,11 +1,11 @@
 {
   "version": "3.3.0",
-  "versionCode": 337,
+  "versionCode": 338,
   "changelog": "【v3.3.0】汇编词库增强与 UI 修复\n优化 · 按考频汇编词库新增「自选词库」，可勾选具体要汇编的词库，不再只能全部或背诵词库\n新增 · 汇编时可自定义新词库名称，留空则自动生成；创建成功后弹窗明确提示词数、阈值与来源\n修复 · 词库名内嵌的固定数量与真实数量对不上（如褒义词92个/熟词生义150个），改为名称不内嵌数字，数量由列表按实际实时显示\n修复 · 导入页状态提示重复显示两行的问题\n修复 · 关联词区域「已就绪」状态写死不随加载变化的问题；背诵义项范围按钮高亮反转问题",
   "devNotes": "v3.3.0：①compileFreqBook 支持 freqScope=custom 按 freqSelectedIds 勾选具体词库过滤；②新增 freqBookName 用户自定义命名，留空回退默认名，创建成功用 confirmInApp 弹窗提示（词数/阈值/来源）；③移除 BOOK_DEFS 与初中词库名内嵌的固定数量（原硬编码与 items.length 对不上），数量统一由列表 bookCount 实时显示，保留3500/688/985及105年份标注；④删除导入页重复的 importStatus 行；⑤写死\"已就绪\"文案改为随 examFreqReady 动态显示；⑥义项范围按钮高亮反转修复为恒高亮。验证：19项源码/逻辑断言+构建+首屏247.8KB+ES5+Chromium37+CI门禁全过。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4632245,
-  "apkSha256": "b53479817969a6ad2f49c8f15c74a168058dcc023ff578d231835d8caf042e22"
+  "apkSize": 4705336,
+  "apkSha256": "2c15fa565ac09fc97b63bc12d82546b26603fb52c0a43d8dcf47959e815d8965"
 }
