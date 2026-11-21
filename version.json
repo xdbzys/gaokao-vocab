@@ -1,11 +1,11 @@
 {
-  "version": "3.2.0",
+  "version": "3.3.0",
   "versionCode": 338,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4704165,
-  "apkSha256": "a5075d9af7454e7427421cf7a83d27869a98ce6f68ea9b5fe894212ac5879dfd",
-  "changelog": "【v3.2.0】义项真题考频（有依据）\n新增 · 每个中文义项显示高考真题考查次数，点击可展开具体出处（年份·卷别·题号·真题原句），全部来自真实真题、可追溯\n升级 · 义项考频基于内置 200 篇 2008-2026 高考真题阅读挖空点逐条提取，共 1016 条真题证据，非官方统计、无出处不标注\n保留 · 高频核心义"
+  "apkSize": 4705336,
+  "apkSha256": "2c15fa565ac09fc97b63bc12d82546b26603fb52c0a43d8dcf47959e815d8965",
+  "changelog": "【v3.3.0】汇编词库增强与 UI 修复\n优化 · 按考频汇编词库新增「自选词库」，可勾选具体要汇编的词库，不再只能全部或背诵词库\n新增 · 汇编时可自定义新词库名称，留空则自动生成；创建成功后弹窗明确提示词数、阈值与来源\n修复 · 词库名内嵌的固定数量与真实数量对不上（如褒义词92个/熟词生义150个），改为名称不"
 }

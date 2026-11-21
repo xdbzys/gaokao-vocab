@@ -1,11 +1,11 @@
 {
-  "version": "3.2.0",
+  "version": "3.3.0",
   "versionCode": 338,
-  "changelog": "【v3.2.0】义项真题考频（有依据）\n新增 · 每个中文义项显示高考真题考查次数，点击可展开具体出处（年份·卷别·题号·真题原句），全部来自真实真题、可追溯\n升级 · 义项考频基于内置 200 篇 2008-2026 高考真题阅读挖空点逐条提取，共 1016 条真题证据，非官方统计、无出处不标注\n保留 · 高频核心义 / 熟词生义 / 一般义项分类与背诵三选项（高考频中文/熟词生义/随机）不变",
-  "devNotes": "v3.2.0：新增义项级真题考频证据库 sense-freq.js——从 src/data/exam-passages.js（200篇2008-2026真题阅读、1016个挖空点）逐条提取，每条记录含 {义项,真题考查次数,出处[[年份,卷别,题号,真题原句]]}。senseExamEvidence 用词片段级匹配把词条义项映射到证据；MeaningFreqList 点击「真题N次」展开全部出处，无出处不标注、不编造。独立分片按需加载（59.8KB gzip），首屏仍247.2KB。口径：样本为200篇真题挖空点，非官方逐义项统计。验证：9项证据测试+5项v3.1.0回归+CI门禁+ES5+Chromium37+首屏预算全过。",
+  "changelog": "【v3.3.0】汇编词库增强与 UI 修复\n优化 · 按考频汇编词库新增「自选词库」，可勾选具体要汇编的词库，不再只能全部或背诵词库\n新增 · 汇编时可自定义新词库名称，留空则自动生成；创建成功后弹窗明确提示词数、阈值与来源\n修复 · 词库名内嵌的固定数量与真实数量对不上（如褒义词92个/熟词生义150个），改为名称不内嵌数字，数量由列表按实际实时显示\n修复 · 导入页状态提示重复显示两行的问题\n修复 · 关联词区域「已就绪」状态写死不随加载变化的问题；背诵义项范围按钮高亮反转问题",
+  "devNotes": "v3.3.0：①compileFreqBook 支持 freqScope=custom 按 freqSelectedIds 勾选具体词库过滤；②新增 freqBookName 用户自定义命名，留空回退默认名，创建成功用 confirmInApp 弹窗提示（词数/阈值/来源）；③移除 BOOK_DEFS 与初中词库名内嵌的固定数量（原硬编码与 items.length 对不上），数量统一由列表 bookCount 实时显示，保留3500/688/985及105年份标注；④删除导入页重复的 importStatus 行；⑤写死\"已就绪\"文案改为随 examFreqReady 动态显示；⑥义项范围按钮高亮反转修复为恒高亮。验证：19项源码/逻辑断言+构建+首屏247.8KB+ES5+Chromium37+CI门禁全过。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4704165,
-  "apkSha256": "a5075d9af7454e7427421cf7a83d27869a98ce6f68ea9b5fe894212ac5879dfd"
+  "apkSize": 4705336,
+  "apkSha256": "2c15fa565ac09fc97b63bc12d82546b26603fb52c0a43d8dcf47959e815d8965"
 }
