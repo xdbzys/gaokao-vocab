@@ -115,7 +115,7 @@ const CHANGELOG_TOTAL = 75;
 // 现与 APP_VERSION 严格对齐到同一版本；CI 新增「源码/清单版本一致性」门禁，
 // 此后任何发版都必须三处（本文件 APP_VERSION_CODE、build.gradle、app-update.json）同步，
 // 否则流水线直接失败，杜绝再次脱节。
-const APP_VERSION_CODE = 343;
+const APP_VERSION_CODE = 344;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
