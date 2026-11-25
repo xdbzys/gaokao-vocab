@@ -3957,9 +3957,18 @@ body.eye-care .mfEvMeta { color: #b91c1c; }
 .essaySentenceEn { font-size: 14px; font-weight: 600; color: var(--primary-dark); line-height: 1.5; word-break: break-word; }
 
 /* --- 修复：长按单词复制出现系统选区/放大镜导致 UI 错乱。
-       正文文本不弹原生选区，长按由应用内「发音/详情」承接；输入框仍可正常选择。 --- */
-.card, .detailSection, .phraseRow, .mfList, .mfItem, .listItem, h1, h2, h3, h4, p, span {
+       正文文本彻底关闭原生选区与长按菜单（只加 touch-callout 在安卓 WebView 无效，
+       长按仍会弹系统放大镜 + 浮动工具条，盖住底部导航）；
+       长按复制改由应用内处理（见 useLongPressCopy），输入框/文本域仍可正常选择粘贴。 --- */
+.card, .modalContent, .detailSection, .phraseRow, .mfList, .mfItem, .listItem, h1, h2, h3, h4, p, span {
   -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+textarea, input, select, .selectable, .selectable * {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* --- 修复：点开单词详情后内容可左右滑动（横向溢出）。

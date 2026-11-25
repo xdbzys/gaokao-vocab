@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -59,6 +60,10 @@ public class MainActivity extends Activity {
        一旦选中，MP3 / 压缩包 / 备份 JSON 优先写到该目录，用户可自己指定到内存卡或任意文件夹；
        未选择时保持原行为（下载/背群英、音乐/背群英）。 */
     private static final int REQ_SAVE_DIR = 1003;
+    /* v3.6.1 文件导入：<input type="file"> 必须由宿主 Activity 转发到系统文件选择器。
+       Android WebView 默认不处理，页面上的「TXT / PDF-DOCX / 图片」按钮会点了完全没反应。 */
+    private static final int REQ_FILE_CHOOSER = 1004;
+    private ValueCallback<Uri[]> sFileChooserCallback = null;
     private static final String PREF_SAVE_DIR_URI = "save_dir_uri";
     private static final String PREF_SAVE_DIR_LABEL = "save_dir_label";
     private static final String SAVE_PREFS = "gaokao_save";
@@ -621,6 +626,22 @@ public class MainActivity extends Activity {
                     return false;
                 }
             }
+
+            /** v3.6.1 读取剪贴板：导入页「粘贴」按钮使用（file:// 下 navigator.clipboard.readText 不可用） */
+            @JavascriptInterface
+            public String read() {
+                try {
+                    android.content.ClipboardManager cm = (android.content.ClipboardManager)
+                            getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+                    if (cm == null || !cm.hasPrimaryClip()) return "";
+                    android.content.ClipData clip = cm.getPrimaryClip();
+                    if (clip == null || clip.getItemCount() == 0) return "";
+                    CharSequence cs = clip.getItemAt(0).coerceToText(MainActivity.this);
+                    return cs == null ? "" : cs.toString();
+                } catch (Throwable e) {
+                    return "";
+                }
+            }
         }, "NativeClipboard");
 
         // v2.63.0 文本保存桥接：词库导出 txt 直接写入「下载/背群英」
@@ -826,6 +847,52 @@ public class MainActivity extends Activity {
                     resultMsg.sendToTarget();
                 } catch (Throwable ignored) {}
                 return true;
+            }
+
+            /**
+             * v3.6.1：接管页面里的 <input type="file">。
+             * 不重写这个方法时 WebView 默认返回 false，点击「图片 / TXT / PDF」按钮毫无反应。
+             */
+            @Override
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePathCallback,
+                                             WebChromeClient.FileChooserParams fileChooserParams) {
+                if (sFileChooserCallback != null) {
+                    try { sFileChooserCallback.onReceiveValue(null); } catch (Throwable ignored) {}
+                    sFileChooserCallback = null;
+                }
+                sFileChooserCallback = filePathCallback;
+                try {
+                    Intent intent = null;
+                    try {
+                        if (fileChooserParams != null) intent = fileChooserParams.createIntent();
+                    } catch (Throwable ignored) {}
+                    if (intent == null) {
+                        intent = new Intent(Intent.ACTION_GET_CONTENT);
+                        String[] accept = fileChooserParams == null ? null : fileChooserParams.getAcceptTypes();
+                        intent.setType((accept != null && accept.length > 0) ? mimeOfAccept(accept[0]) : "*/*");
+                    }
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    if (fileChooserParams != null
+                            && fileChooserParams.getMode() == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) {
+                        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    }
+                    try {
+                        startActivityForResult(intent, REQ_FILE_CHOOSER);
+                        return true;
+                    } catch (Throwable e) {
+                        Log.w("GaokaoVocab", "file chooser failed: " + e.getMessage());
+                        // 部分定制 ROM 对 createIntent 的类型/来源有限制，退回最通用的「选择文件」
+                        Intent fallback = new Intent(Intent.ACTION_GET_CONTENT);
+                        fallback.addCategory(Intent.CATEGORY_OPENABLE);
+                        fallback.setType("*/*");
+                        startActivityForResult(Intent.createChooser(fallback, "选择文件"), REQ_FILE_CHOOSER);
+                        return true;
+                    }
+                } catch (Throwable e) {
+                    Log.w("GaokaoVocab", "onShowFileChooser failed: " + e.getMessage());
+                    sFileChooserCallback = null;
+                    return false;
+                }
             }
 
         });
@@ -1215,8 +1282,46 @@ public class MainActivity extends Activity {
         return "已选目录";
     }
 
+    /** 页面 <input accept> 传进来常是扩展名（.txt），转成 MIME 才能让选择器正确过滤 */
+    private String mimeOfAccept(String accept) {
+        if (accept == null || accept.trim().length() == 0) return "*/*";
+        String a = accept.trim().toLowerCase();
+        if (!a.startsWith(".")) return accept;
+        if (a.equals(".txt")) return "text/plain";
+        if (a.equals(".csv")) return "text/comma-separated-values";
+        if (a.equals(".pdf")) return "application/pdf";
+        if (a.equals(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        if (a.equals(".pptx")) return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+        if (a.equals(".png")) return "image/png";
+        if (a.equals(".jpg") || a.equals(".jpeg")) return "image/jpeg";
+        if (a.equals(".webp")) return "image/webp";
+        return "*/*";
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQ_FILE_CHOOSER) {
+            Uri[] results = null;
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                try {
+                    android.content.ClipData clip = data.getClipData();
+                    if (clip != null && clip.getItemCount() > 0) {
+                        results = new Uri[clip.getItemCount()];
+                        for (int i = 0; i < clip.getItemCount(); i++) {
+                            results[i] = clip.getItemAt(i).getUri();
+                        }
+                    } else if (data.getData() != null) {
+                        results = new Uri[]{ data.getData() };
+                    }
+                } catch (Throwable ignored) {}
+            }
+            ValueCallback<Uri[]> cb = sFileChooserCallback;
+            sFileChooserCallback = null;
+            if (cb != null) {
+                try { cb.onReceiveValue(results); } catch (Throwable ignored) {}
+            }
+            return;
+        }
         if (requestCode == REQ_SAVE_DIR) {
             if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
                 Uri tree = data.getData();
@@ -2065,6 +2170,11 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        // 未完成的文件选择回调必须释放，否则 WebView 会一直等待并可能泄漏
+        if (sFileChooserCallback != null) {
+            try { sFileChooserCallback.onReceiveValue(null); } catch (Throwable ignored) {}
+            sFileChooserCallback = null;
+        }
         // 应用真正退出（用户划掉卡片 / 系统回收）时停止系统播放器，避免残留通知
         try { stopService(new Intent(this, PlayerService.class)); } catch (Throwable ignored) {}
         try { PlayerService.setCallback(null); } catch (Throwable ignored) {}

@@ -2401,8 +2401,11 @@ function getStudyDays(log) {
 const POS_WORDS = ['modal v', 'phrasal v', 'vt', 'vi', 'n', 'v', 'a', 'ad', 'adj', 'adv', 'prep', 'conj', 'pron', 'num', 'art', 'interj', 'aux', 'pl', 'abbr'];
 const POS_ALIASES = { a: 'adj', ad: 'adv' };
 const POS_REGEX_SOURCE = '(?:modal\\s*v|phrasal\\s*v|vt|vi|adj|adv|prep|conj|pron|num|art|interj|aux|abbr|pl|ad|a|n|v)';
-const POS_REGEX = new RegExp(`(?:^|[\\s,，;；|/])((?:${POS_REGEX_SOURCE})(?:\\s*[/&、]\\s*(?:${POS_REGEX_SOURCE}))*)`, 'i');
-const POS_GLOBAL_REGEX = new RegExp(`(?:^|[\\s,，;；|/])(${POS_REGEX_SOURCE})`, 'gi');
+/* v3.6.1：词性必须与后面的字母断开，否则会把单词首字母误当词性：
+   「apple」的 a、「name」的 n、「very」的 v、「plan」的 pl 都被当成词性，
+   导致 term 为空、整条词被丢弃（用户导入后条目莫名变少）。 */
+const POS_REGEX = new RegExp(`(?:^|[\\s,，;；|/])((?:${POS_REGEX_SOURCE})(?:\\s*[/&、]\\s*(?:${POS_REGEX_SOURCE}))*)(?![A-Za-z])`, 'i');
+const POS_GLOBAL_REGEX = new RegExp(`(?:^|[\\s,，;；|/])(${POS_REGEX_SOURCE})(?![A-Za-z])`, 'gi');
 const LABEL_REGEX = /(考点|重点|核心|用法|搭配|短语|例句|易错|辨析|派生|同义|反义|词组|固定搭配|语法)\s*[:：]?/g;
 
 /* 词性分类标签 */
@@ -2460,8 +2463,26 @@ function normalizePos(posText, isPhrase) {
     .filter((v, i, arr) => arr.indexOf(v) === i).join('/') || '';
 }
 
+/* v3.6.1：旧 WebView（Chromium < 73）没有 String.prototype.matchAll；更关键的是
+   单文件 App 产物会经过 Babel ES5 转译，[...str.matchAll(re)] 会被错误转成
+   [].concat(str.matchAll(re))（迭代器被当成单个元素），运行期直接抛
+   「Cannot read properties of undefined (reading 'length')」，导入解析全部失败。
+   统一改用 exec 循环，语义与 matchAll 一致，且新旧 WebView 都能跑。 */
+function matchAllSafe(re, text) {
+  var out = [];
+  var s = String(text == null ? '' : text);
+  if (!re || !re.global) return out;
+  re.lastIndex = 0;
+  var m;
+  while ((m = re.exec(s)) !== null) {
+    out.push(m);
+    if (m[0] === '') re.lastIndex++;
+  }
+  return out;
+}
+
 function collectPosText(text) {
-  return [...text.matchAll(POS_GLOBAL_REGEX)].map(m => m[1]).filter(Boolean).join('/');
+  return matchAllSafe(POS_GLOBAL_REGEX, text).map(m => m[1]).filter(Boolean).join('/');
 }
 
 function cleanOcrText(text) {
@@ -3473,7 +3494,7 @@ function extractMeaning(text) {
 
 function extractPoints(text, meaning) {
   const points = [];
-  const matches = [...text.matchAll(LABEL_REGEX)];
+  const matches = matchAllSafe(LABEL_REGEX, text);
   matches.forEach((match, i) => {
     const s = match.index + match[0].length;
     const e = matches[i + 1]?.index ?? text.length;
@@ -3735,17 +3756,74 @@ function parseImportedText(text, defaultType = 'word') {
    用户不需要配置任何服务商或模型。
    ============================ */
 
-async function readFileText(file) {
-  if (!file) return '';
-  const ext = file.name.split('.').pop().toLowerCase();
+/* v3.6.1 文本编码自动识别。
+   旧实现对所有 txt/csv 直接 file.text()（只按 UTF-8 解码），而 Windows 记事本、
+   安卓文件管理器导出的中文文本大量是 GBK/GB18030，解出来就是成片的「�」乱码。
+   这里先按 BOM → 严格 UTF-8 → GB18030 的顺序识别；
+   老 WebView（Chromium < 38，没有 TextDecoder）用 FileReader 指定编码做兜底。 */
+function _replacementCount(s) {
+  var m = String(s || '').match(/\uFFFD/g);
+  return m ? m.length : 0;
+}
+
+function readAsTextWithEncoding(file, encoding) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var fr = new FileReader();
+      fr.onload = function () { resolve(String(fr.result || '')); };
+      fr.onerror = function () { reject(fr.error || new Error('文件读取失败')); };
+      fr.readAsText(file, encoding);
+    } catch (e) { reject(e); }
+  });
+}
+
+async function decodeTextFile(file) {
+  if (typeof TextDecoder !== 'undefined' && typeof file.arrayBuffer === 'function') {
+    var bytes = new Uint8Array(await file.arrayBuffer());
+    // BOM 优先
+    if (bytes.length >= 3 && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
+      return new TextDecoder('utf-8').decode(bytes.subarray(3));
+    }
+    if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xFE) {
+      try { return new TextDecoder('utf-16le').decode(bytes.subarray(2)); } catch (e) {}
+    }
+    if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) {
+      try { return new TextDecoder('utf-16be').decode(bytes.subarray(2)); } catch (e) {}
+    }
+    try {
+      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch (e) {
+      // UTF-8 非法 → 大概率是 GBK/GB18030 中文文本
+    }
+    try {
+      return new TextDecoder('gb18030').decode(bytes);
+    } catch (e) {}
+  }
+  // 老 WebView 兜底：按 UTF-8 与 GB18030 各读一次，取乱码更少的
+  var utf8 = await readAsTextWithEncoding(file, 'utf-8');
+  if (_replacementCount(utf8) === 0) return utf8;
   try {
-    if (ext === 'txt' || ext === 'csv') return await file.text();
-    if (ext === 'pptx') return await extractPptxText(file);
-    if (ext === 'pdf') return await extractPdfText(file);
-    if (ext === 'docx') return await extractDocxText(file);
-    if (ext === 'doc') throw new Error('不支持旧版 .doc 格式，请用 Word 另存为 .docx 或将内容复制为文本后粘贴导入');
-    if (['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'].includes(ext)) return await extractImageText(file);
-    return await file.text();
+    var gbk = await readAsTextWithEncoding(file, 'gb18030');
+    if (_replacementCount(gbk) < _replacementCount(utf8)) return gbk;
+  } catch (e) {}
+  return utf8;
+}
+
+async function readFileText(file) {
+  if (!file) throw new Error('没有选择文件');
+  if (file.size === 0) throw new Error('文件内容为空');
+  const ext = String(file.name || '').split('.').pop().toLowerCase();
+  try {
+    let text;
+    if (ext === 'txt' || ext === 'csv') text = await decodeTextFile(file);
+    else if (ext === 'pptx') text = await extractPptxText(file);
+    else if (ext === 'pdf') text = await extractPdfText(file);
+    else if (ext === 'docx') text = await extractDocxText(file);
+    else if (ext === 'doc') throw new Error('不支持旧版 .doc 格式，请用 Word 另存为 .docx 或将内容复制为文本后粘贴导入');
+    else if (['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'].includes(ext)) text = await extractImageText(file);
+    else text = await decodeTextFile(file);
+    // 去掉 BOM，避免首个单词粘连不可见字符
+    return String(text == null ? '' : text).replace(/^\uFEFF/, '');
   } catch (e) {
     throw new Error(`解析文件失败：${e.message}。建议将文件内容复制后粘贴到文本框中导入。`);
   }
@@ -3773,7 +3851,7 @@ async function extractPptxText(file) {
     const chunks = [];
     for (const name of slides) {
       const xml = await zip.files[name].async('text');
-      chunks.push([...xml.matchAll(/<a:t>(.*?)<\/a:t>/g)].map(m => m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')).join(' '));
+      chunks.push(matchAllSafe(/<a:t>(.*?)<\/a:t>/g, xml).map(m => m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')).join(' '));
     }
     return cleanOcrText(chunks.join('\n'));
   } catch (e) { throw new Error('PPTX 解析失败: ' + e.message); }
@@ -4027,6 +4105,66 @@ function copyTextToClipboard(text) {
     document.body.removeChild(ta);
     return !!ok;
   } catch (e) { return false; }
+}
+
+// v3.6.1 读取剪贴板：原生桥接 → 浏览器 API → 空字符串（调用方提示手动长按粘贴）
+async function readClipboardText() {
+  try {
+    if (window.NativeClipboard && typeof window.NativeClipboard.read === 'function') {
+      var t = window.NativeClipboard.read();
+      if (t) return String(t);
+    }
+  } catch (e) {}
+  try {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      var b = await navigator.clipboard.readText();
+      if (b) return String(b);
+    }
+  } catch (e) {}
+  return '';
+}
+
+// v3.6.1 应用内长按复制：
+// 阅读区关闭了系统选区/放大镜（避免长按弹系统菜单盖住底部导航），
+// 长按单词改为应用内复制，并给出轻提示，保证「长按复制」仍然可用。
+function useLongPressCopy(getText) {
+  const timerRef = useRef(null);
+  const movedRef = useRef(false);
+  const clear = useCallback(function () {
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+  }, []);
+  const onTouchStart = useCallback(function (e) {
+    movedRef.current = false;
+    const t = (e.touches && e.touches[0]) ? e.touches[0] : e;
+    const x0 = t ? t.clientX : 0, y0 = t ? t.clientY : 0;
+    clear();
+    timerRef.current = setTimeout(function () {
+      timerRef.current = null;
+      if (movedRef.current) return;
+      const text = String(getText() || '').trim();
+      if (!text) return;
+      const ok = copyTextToClipboard(text);
+      appTip(ok ? ('已复制：' + text) : '复制失败，请到「词库 → 导出词库」使用复制按钮', '长按复制', 1600);
+    }, 520);
+    const onMove = function (ev) {
+      const p = (ev.touches && ev.touches[0]) ? ev.touches[0] : ev;
+      if (p && (Math.abs(p.clientX - x0) > 10 || Math.abs(p.clientY - y0) > 10)) {
+        movedRef.current = true;
+        clear();
+      }
+    };
+    const onEnd = function () {
+      clear();
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+      document.removeEventListener('touchcancel', onEnd);
+    };
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onEnd);
+    document.addEventListener('touchcancel', onEnd);
+  }, [getText, clear]);
+  const onContextMenu = useCallback(function (e) { e.preventDefault(); }, []);
+  return { onTouchStart: onTouchStart, onContextMenu: onContextMenu };
 }
 
 // 触发浏览器 / 系统下载
@@ -5682,6 +5820,12 @@ function App() {
   const [libraryLimit, setLibraryLimit] = useState(60); // 词库页懒加载条数
   const [importText, setImportText] = useState('');
   const [importStatus, setImportStatus] = useState('');
+  const [importBusy, setImportBusy] = useState(false);
+  // v3.6.1 导入文件入口改为 button + 隐藏 input（旧结构把 textarea 塞进 button 里，
+  // 且 label 在部分 WebView 上点不到真正的 input），统一用 ref 触发并允许重复选择同一文件
+  const txtFileRef = useRef(null);
+  const docFileRef = useRef(null);
+  const imgFileRef = useRef(null);
   // v3.3.0 按考频汇编新词库：可选具体词库 + 用户自定义命名
   const [freqThreshold, setFreqThreshold] = useState('100');
   const [freqScope, setFreqScope] = useState('all'); // all | study | custom 全部/背诵/自选具体词库
@@ -7085,6 +7229,9 @@ function App() {
   const [forceShowItem, setForceShowItem] = useState(null);
   // 显示用的当前单词：答题后或闪卡展示释义后使用锁定的单词，防止 toggleProgress 改变 current 导致显示不匹配
   const displayCurrent = forceShowItem || ((selected || showBack) && lockedCurrent.current) || current;
+  // v3.6.1 长按复制：卡片与详情弹窗的单词由应用内处理，不再弹系统选区/放大镜
+  const studyLongPress = useLongPressCopy(function () { return displayCurrent && displayCurrent.term; });
+  const detailLongPress = useLongPressCopy(function () { return detailItem && detailItem.term; });
   // v3.1.0 背诵中文义项范围：highfreq 高考频中文 / familiar 熟词生义 / random 随机。
   // 统一入口，题目、选项、判分三处共用同一答案，保证一致。
   const meaningScopeNow = settings.meaningScope || 'highfreq';
@@ -8191,13 +8338,45 @@ function App() {
   }
 
   async function handleFile(file) {
+    if (!file) { setImportStatus('未选择文件，请重新点击按钮选择'); return; }
+    setImportBusy(true);
     try {
       setLastFile(file || null); setImportStatus('正在识别...');
       const text = await readFileText(file); setImportText(text);
-      const items = parseImportedText(text, 'word');
-      const _dup = parseImportedText.lastDupCount || 0;
-      setImportStatus(`识别完成：${items.length} 条` + (_dup ? `（自动合并重复 ${_dup} 条）` : '') + '。请确认后导入。');
+      let items = null;
+      try { items = parseImportedText(text, 'word'); } catch (e2) { items = null; }
+      if (items) {
+        const _dup = parseImportedText.lastDupCount || 0;
+        setImportStatus(`识别完成：${items.length} 条` + (_dup ? `（自动合并重复 ${_dup} 条）` : '') + '。请确认后导入。');
+      } else {
+        setImportStatus(`已读取 ${text.length} 个字符，但自动识别未成功，请检查文本格式后直接点击「导入到词库」。`);
+      }
     } catch (e) { setImportStatus(`失败：${e.message}`); }
+    setImportBusy(false);
+  }
+
+  // v3.6.1 粘贴按钮：读取系统剪贴板并追加到文本框（旧实现只 .click() 一个空 textarea，什么都没发生）
+  async function pasteFromClipboard() {
+    if (importBusy) return;
+    setImportBusy(true);
+    setImportStatus('正在读取剪贴板...');
+    try {
+      const text = await readClipboardText();
+      if (!text || !text.trim()) {
+        setImportStatus('剪贴板为空或系统不允许读取。请在下方文本框内长按，选择「粘贴」即可。');
+        return;
+      }
+      setImportText(function (prev) { return prev ? (prev.replace(/\s+$/, '') + '\n' + text) : text; });
+      let items = null;
+      try { items = parseImportedText(text, 'word'); } catch (e2) { items = null; }
+      setImportStatus(items
+        ? `已粘贴 ${text.length} 个字符，识别 ${items.length} 条。请确认后导入。`
+        : `已粘贴 ${text.length} 个字符，但自动识别未成功，请检查文本格式后直接点击「导入到词库」。`);
+    } catch (e) {
+      setImportStatus('读取剪贴板失败：' + ((e && e.message) || '未知错误') + '。请在下方文本框内长按，选择「粘贴」。');
+    } finally {
+      setImportBusy(false);
+    }
   }
 
   // 反馈通过 Gitee Issues 提交（仅APP使用）
@@ -8947,7 +9126,7 @@ function App() {
                 {progress[termKey(displayCurrent.term)] === 'mastered' && <span className="masteredTag">已掌握</span>}
               </div>
 
-              <div className="questionArea">
+              <div className="questionArea" {...studyLongPress}>
               {practiceMode === 'sentence' ? (() => {
                 const sent = sentenceMap[String(displayCurrent.term).toLowerCase()];
                 if (sent) {
@@ -10492,24 +10671,29 @@ function App() {
             <p className="muted">支持 TXT、复制粘贴、图片、PDF、PPTX、DOCX，全部使用内置解析与内置算法，无需任何配置。</p>
             {/* v2.70.0 百词斩同步已并入「词库 → 导出词库」面板，导出入口唯一 */}
 
-            {/* 上方4个按钮 */}
+            {/* 上方4个按钮（v3.6.1：button + ref 触发隐藏 input，修复点击无反应） */}
             <div className="importBtnRow">
-              <button className="fileButton" onClick={() => document.getElementById('paste-btn')?.click()}>
-                <Icon name="clipboard" />粘贴
-                <textarea id="paste-btn" style={{position:'absolute',opacity:0,width:0,height:0}} autoFocus onChange={e => setImportText(e.target.value)} />
+              <button className="fileButton" disabled={importBusy} onClick={pasteFromClipboard}>
+                <Icon name="clipboard" />{importBusy ? '处理中' : '粘贴'}
               </button>
-              <label className="fileButton">
+              <button className="fileButton" disabled={importBusy} onClick={() => txtFileRef.current && txtFileRef.current.click()}>
                 <Icon name="file" />TXT
-                <input type="file" accept=".txt" style={{display:'none'}} onChange={e => handleFile(e.target.files[0])} />
-              </label>
-              <label className="fileButton">
+              </button>
+              <button className="fileButton" disabled={importBusy} onClick={() => docFileRef.current && docFileRef.current.click()}>
                 <Icon name="file" />PDF/DOCX
-                <input type="file" accept=".pdf,.docx,.pptx" style={{display:'none'}} onChange={e => handleFile(e.target.files[0])} />
-              </label>
-              <label className="fileButton">
+              </button>
+              <button className="fileButton" disabled={importBusy} onClick={() => imgFileRef.current && imgFileRef.current.click()}>
                 <Icon name="image" />图片
-                <input type="file" accept=".png,.jpg,.jpeg,.webp" style={{display:'none'}} onChange={e => handleFile(e.target.files[0])} />
-              </label>
+              </button>
+              <input ref={txtFileRef} type="file" accept=".txt,.csv,text/plain"
+                style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); }} />
+              <input ref={docFileRef} type="file" accept=".pdf,.docx,.pptx"
+                style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); }} />
+              <input ref={imgFileRef} type="file" accept=".png,.jpg,.jpeg,.webp"
+                style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); }} />
             </div>
 
             <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder="在此粘贴词表文本..." />
@@ -11293,7 +11477,7 @@ function App() {
             return (
             <div className="modal" style={{ zIndex: 1100 }} onClick={() => { setDetailHistory([]); setDetailItem(null); }}>
               <div className="modalContent" onClick={e => e.stopPropagation()}>
-                <div className="modalHeader">
+                <div className="modalHeader" {...detailLongPress}>
                   <h2>{detailItem.term}</h2>
                   {detailItem.phonetic && <p className="phoneticText">{detailItem.phonetic}</p>}
                   <button className="closeBtn" onClick={() => closeDetailItem()} title={detailHistory.length > 0 ? '返回上一个（' + detailHistory.length + '层）' : '关闭'}>{detailHistory.length > 0 ? <Icon name="chevronLeft" /> : <Icon name="close" />}</button>
