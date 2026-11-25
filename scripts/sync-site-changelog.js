@@ -34,6 +34,18 @@ function main() {
     return;
   }
   html = html.replace(re, 'var CHANGELOG_RELEASES = ' + data + ';');
+
+  // v3.5.1：同步首屏「最新版本」静态文案，避免网络请求失败时官网停留在旧版本号。
+  // changelog.json 的 latest 形如 v3.5.0，页面里写的是「v3.5.0」（去掉前缀空白即可）。
+  const latest = String(hist.latest || (releases[0] && releases[0].version) || '').replace(/^v/, '');
+  if (latest) {
+    html = html.replace(/(<span id="heroVersion">[^<]*<\/span>)/,
+      '<span id="heroVersion">最新版本 v' + latest + '</span>');
+    html = html.replace(/(<p class="version-info" id="latestVersion">[^<]*<\/p>)/,
+      '<p class="version-info" id="latestVersion">当前版本 v' + latest + ' | Android 5.0+ | 约 5 MB</p>');
+    console.log('[site-changelog] hero version text -> v' + latest);
+  }
+
   fs.writeFileSync(SITE, html);
   console.log('[site-changelog] synced ' + slim.length + ' releases into official site');
 }

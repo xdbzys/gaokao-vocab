@@ -103,11 +103,11 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '3.5.0';
+const APP_VERSION = '3.5.1';
 
 // v3.1.0 内置更新日志改为按需加载（离线兜底），见挂载时的动态 import
 let BUILTIN_CHANGELOG = [];
-const CHANGELOG_TOTAL = 74;
+const CHANGELOG_TOTAL = 75;
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
 // v3.4.1 根因修复：此前 CI 每版只把 Bump 后的版本号写进构建产物（APK/清单），
@@ -115,7 +115,7 @@ const CHANGELOG_TOTAL = 74;
 // 现与 APP_VERSION 严格对齐到同一版本；CI 新增「源码/清单版本一致性」门禁，
 // 此后任何发版都必须三处（本文件 APP_VERSION_CODE、build.gradle、app-update.json）同步，
 // 否则流水线直接失败，杜绝再次脱节。
-const APP_VERSION_CODE = 340;
+const APP_VERSION_CODE = 341;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -1518,6 +1518,52 @@ let DEFAULT_AVATAR = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
 );
 let _avatarLoading = false;
 let _avatarReady = false;
+
+/**
+ * v3.5.1：可靠的头像更换。
+ * 旧实现直接把相册原图 readAsDataURL 存 localStorage，手机大图常超 5MB 配额，
+ * setItem 静默失败、刷新即丢失，用户感觉「换了没效果」。现在先压到 160×160 JPEG，
+ * 体积降到几十 KB，网页端与 App 端都能稳定保存。
+ */
+function compressAvatarImage(file, cb) {
+  try {
+    var reader = new FileReader();
+    reader.onload = function (ev) {
+      try {
+        var img = new Image();
+        img.onload = function () {
+          try {
+            var size = 160;
+            var canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            var ctx = canvas.getContext('2d');
+            // 居中裁剪成正方形再缩放，避免头像变形
+            var iw = img.width || size, ih = img.height || size;
+            var side = Math.min(iw, ih);
+            var sx = (iw - side) / 2, sy = (ih - side) / 2;
+            ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+            var dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            cb(dataUrl);
+          } catch (e) { cb(String(ev.target.result || '')); }
+        };
+        img.onerror = function () { cb(String(ev.target.result || '')); };
+        img.src = String(ev.target.result || '');
+      } catch (e) { cb(''); }
+    };
+    reader.onerror = function () { cb(''); };
+    reader.readAsDataURL(file);
+  } catch (e) { cb(''); }
+}
+
+/** 真正把头像 dataURL 落盘并更新界面（两平台共用）。 */
+function applyAvatar(dataUrl) {
+  if (!dataUrl || typeof dataUrl !== 'string') return;
+  try { localStorage.setItem('gaokao_avatar', dataUrl); } catch (e) {}
+  try {
+    var ev = new CustomEvent('gaokao-avatar-changed', { detail: dataUrl });
+    window.dispatchEvent(ev);
+  } catch (e) {}
+}
 
 /** 后台加载内置头像图片（我的页用），到货后重渲染替换占位图。 */
 function loadDefaultAvatar() {
@@ -5778,6 +5824,28 @@ function App() {
     try { return localStorage.getItem('gaokao_avatar') || ''; }
     catch { return ''; }
   });
+  // v3.5.1：接收原生选图回调 / 网页端压缩后的头像，统一更新界面
+  useEffect(() => {
+    function onAvatar(e) {
+      var url = (e && e.detail) || '';
+      if (!url) return;
+      try { localStorage.setItem('gaokao_avatar', url); } catch (err) {}
+      setAvatarUrl(url);
+    }
+    try { window.addEventListener('gaokao-avatar-changed', onAvatar); } catch (e) {}
+    // 原生图片选择完成后回调：window.__avatarBridge(dataUrl)
+    try {
+      window.__avatarBridge = function (dataUrl) {
+        if (!dataUrl) return;
+        try { localStorage.setItem('gaokao_avatar', dataUrl); } catch (err) {}
+        setAvatarUrl(dataUrl);
+        try { appTip('头像已更换，重启后仍会保留。', '已更新'); } catch (e) {}
+      };
+    } catch (e) {}
+    return function () {
+      try { window.removeEventListener('gaokao-avatar-changed', onAvatar); } catch (e) {}
+    };
+  }, []);
   // 首次使用日期
   const [firstUseDate] = useState(() => {
     try { return localStorage.getItem('gaokao_first_use') || getToday(); }
@@ -10592,10 +10660,28 @@ function App() {
         <section className="panel mePage">
           {/* 顶部用户信息 */}
           <div className="meHeader">
-            <div className="meAvatar" style={isNativeApp ? {} : { cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
-              {...(!isNativeApp ? { onClick: () => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = ev => { const url = ev.target.result; setAvatarUrl(url); try { localStorage.setItem('gaokao_avatar', url); } catch {} }; reader.readAsDataURL(file); }; input.click(); }} : {})}>
-              {/* v2.76.0：内置默认头像（用户指定图片），网页端仍可点按更换自己的图 */}
+            <div className="meAvatar" style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+              onClick={() => {
+                // v3.5.1：网页端与 App 端统一走隐藏 file input。
+                // App 内由 WebView 的 onShowFileChooser 弹出系统相册；网页端用浏览器文件框。
+                // 选到的图先压缩再存，避免大图超 localStorage 配额。
+                const input = document.createElement('input');
+                input.type = 'file'; input.accept = 'image/*';
+                input.onchange = e => {
+                  const file = e.target.files && e.target.files[0];
+                  if (!file) return;
+                  compressAvatarImage(file, dataUrl => {
+                    if (!dataUrl) { appTip('头像读取失败，请换一张图片重试。', '提示'); return; }
+                    setAvatarUrl(dataUrl);
+                    applyAvatar(dataUrl);
+                    appTip('头像已更换，重启后仍会保留。', '已更新');
+                  });
+                };
+                try { input.click(); } catch (e) { appTip('无法打开图片选择，请换个浏览器重试。', '提示'); }
+              }}>
+              {/* v3.5.1：内置默认头像，点按可更换自己的图（网页版 / App 均可用） */}
               <img src={avatarUrl || DEFAULT_AVATAR} alt="头像" className="meAvatarImg" />
+              <span className="meAvatarEdit" aria-label="更换头像">＋</span>
             </div>
             <div className="meInfo">
               <h2>高考词汇学习</h2>
@@ -10729,27 +10815,15 @@ function App() {
             <h3>今日学习</h3>
             <div className="ringProgress">
               <svg viewBox="0 0 100 100" className="ringSvg">
-                {isNativeApp ? (
-                  <>
-                    {/* APP: 圆形进度 */}
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="8" />
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="#22c55e" strokeWidth="8"
-                      strokeDasharray={`${Math.min(todayCount / Math.max(settings.dailyGoal, 1), 1) * 264} 264`}
-                      strokeDashoffset="66" strokeLinecap="round" transform="rotate(-90 50 50)" />
-                  </>
-                ) : (
-                  <>
-                    {/* 网页版: 爱心形状进度 */}
-                    <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
-                      fill="none" stroke="#e5e7eb" strokeWidth="5" />
-                    <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
-                      fill="none" stroke="#ef4444" strokeWidth="5"
-                      strokeDasharray="283"
-                      strokeDashoffset={283 * (1 - Math.min(todayCount / Math.max(settings.dailyGoal, 1), 1))}
-                      strokeLinecap="round" />
-                  </>
-                )}
-                <text x="50" y={isNativeApp ? 50 : 48} textAnchor="middle" dy="6" fontSize="18" fill="#111827" fontWeight="bold">{todayCount}</text>
+                {/* v3.5.1：网页版与 App 统一为爱心脏进度条（描边按完成度填充） */}
+                <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
+                  fill="none" stroke="#e5e7eb" strokeWidth="5" />
+                <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
+                  fill="none" stroke="#ef4444" strokeWidth="5"
+                  strokeDasharray="283"
+                  strokeDashoffset={283 * (1 - Math.min(todayCount / Math.max(settings.dailyGoal, 1), 1))}
+                  strokeLinecap="round" />
+                <text x="50" y="48" textAnchor="middle" dy="6" fontSize="18" fill="#111827" fontWeight="bold">{todayCount}</text>
               </svg>
               <div className="ringLabel">/ {settings.dailyGoal} 词</div>
             </div>
