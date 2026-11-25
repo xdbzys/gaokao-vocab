@@ -130,6 +130,14 @@ function nodePaths() {
   const entryRel = path.relative(OUTDIR, path.resolve(process.cwd(), entryOutput)).split(path.sep).join('/');
 
   if (template.indexOf('<!--APP_BOOT_GUARD-->') < 0) throw new Error('index.web.html 缺少 APP_BOOT_GUARD 占位');
+  // v3.5.3：多文件版图标改用独立 PNG 文件（不再内联 base64），
+  // 既省首屏体积（base64 4KB+），也让手机浏览器正确识别/缓存软件图标。
+  const ICON_SRC = path.join(ROOT, 'assets-src', 'icon.png');
+  if (fs.existsSync(ICON_SRC)) {
+    fs.mkdirSync(path.join(OUTDIR, 'assets'), { recursive: true });
+    fs.copyFileSync(ICON_SRC, path.join(OUTDIR, 'assets', 'icon.png'));
+    template = template.replace(/href="data:image\/png;base64,[^"]*"/, 'href="./assets/icon.png"');
+  }
   template = template
     .replace('<!--APP_BOOT_GUARD-->', '<script>' + BOOT_GUARD + '</script>')
     .replace('<!--APP_CSS-->', '<style>' + css + '</style>')

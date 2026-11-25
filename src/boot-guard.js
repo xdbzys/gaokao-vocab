@@ -31,16 +31,30 @@
   var safe = !!st.forced || (st.crashes || 0) >= 2;
   try { window.localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {}
   window.__safeMode = safe;
+
+  /* 恢复面板引用；hidePanel 保证「面板一旦弹出、React 随后挂载成功」时自动退场。
+     历史上面板只弹不收，慢网下 16s 超时弹面板后即使业务已挂载也永久遮挡，
+     用户看到「应用没能正常启动」误以为打不开。 */
+  var panelEl = null;
+  function hidePanel() {
+    try {
+      window.__bootPanelShown = 0;
+      if (panelEl && panelEl.parentNode) { panelEl.parentNode.removeChild(panelEl); }
+      panelEl = null;
+    } catch (e) {}
+  }
+
   window.__bootGuard = {
     crashes: st.crashes || 0,
     safeMode: safe,
-    /* 业务挂载成功后调用：清掉「未完成启动」标记与连续异常计数 */
+    /* 业务挂载成功后调用：清掉「未完成启动」标记与连续异常计数，并移除可能已弹出的恢复面板 */
     markReady: function () {
       try {
         var s = JSON.parse(window.localStorage.getItem(KEY) || '{}');
         s.pending = 0; s.crashes = 0; s.ts = Date.now();
         window.localStorage.setItem(KEY, JSON.stringify(s));
       } catch (e) {}
+      hidePanel();
     },
     /* 恢复面板按钮：清本机数据后重启 */
     clearAndReload: function () {
@@ -85,10 +99,13 @@
     } catch (e2) {}
   });
 
-  /* 9s（单文件版）/ 16s（多文件版，要等分片）后仍没挂载 → 显示恢复面板 */
+  /* 单文件版 12s / 多文件版 24s 后仍没挂载 → 显示恢复面板。
+     v3.5.3：给慢网（弱 4G/2G，多个大分片串行下载）更充裕的时间，避免
+     业务其实正在加载却被误判为「启动失败」弹出面板挡住；配合 MutationObserver
+     兜底，即便面板弹出，只要随后挂载成功也会立即自动收起。 */
   var hasSkeleton = true;
   try { hasSkeleton = !!document.getElementById('appSkeleton'); } catch (e) {}
-  var WAIT = hasSkeleton ? 16000 : 9000;
+  var WAIT = hasSkeleton ? 24000 : 12000;
   setTimeout(function () {
     try {
       var root = document.getElementById('root');
@@ -140,6 +157,16 @@
       card.appendChild(tip);
       box.appendChild(card);
       document.body.appendChild(box);
+      panelEl = box;
+      /* 面板弹出后仍持续兜底：一旦业务挂载成功就自动收起，
+         避免慢网下「其实已启动、面板却永久遮挡」的误判。 */
+      var tries = 0;
+      var poll = setInterval(function () {
+        var r = document.getElementById('root');
+        if ((r && r.children && r.children.length > 0) || ++tries > 40) {
+          hidePanel(); clearInterval(poll);
+        }
+      }, 500);
     } catch (e) { /* 守卫自身绝不能抛错 */ }
   }, WAIT);
 })();
