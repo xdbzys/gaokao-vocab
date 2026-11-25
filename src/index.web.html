@@ -77,11 +77,11 @@
     100% { transform: translateX(0); }
   }
   /* 三段状态互斥：同一时刻只有一段可见（visibility:hidden 会同时从 innerText 里消失）。
-     同属性上后声明的 animation 在结束后优先，因此 20s 起 skStageOut 会覆盖 5s 的 skStageIn。 */
+     同属性上后声明的 animation 在结束后优先，因此 30s 起 skStageOut 会覆盖 5s 的 skStageIn。 */
   #skLoading, #skSlow, #skFail { visibility: hidden; opacity: 0; }
   #skLoading { visibility: visible; opacity: 1; animation: skStageOut 0s linear 5s forwards; }
-  #skSlow { animation: skStageIn 0s linear 5s forwards, skStageOut 0s linear 20s forwards; }
-  #skFail { animation: skStageIn 0s linear 20s forwards; }
+  #skSlow { animation: skStageIn 0s linear 5s forwards, skStageOut 0s linear 30s forwards; }
+  #skFail { animation: skStageIn 0s linear 30s forwards; }
   @keyframes skStageIn { to { visibility: visible; opacity: 1; } }
   @keyframes skStageOut { to { visibility: hidden; opacity: 0; } }
   #skFail { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 16px; }
@@ -91,11 +91,11 @@
     color: #2563eb;
     text-decoration: underline;
     pointer-events: none;
-    animation: skEnable 0s linear 20s forwards;
+    animation: skEnable 0s linear 30s forwards;
   }
   #skFail button {
     pointer-events: none;
-    animation: skEnable 0s linear 20s forwards;
+    animation: skEnable 0s linear 30s forwards;
     padding: 9px 22px;
     font-size: 14px;
     font-weight: 600;
@@ -205,8 +205,8 @@ window.__removeSkeleton = function () {
   window.__reportBootError = report;
 })();
 
-/* 3) 20s 兜底：旧 WebView 上 CSS 动画不一定生效，这里再用 JS 兜一层，三段文案永远互斥。
-      v3.5.4：12s → 20s，弱网下入口包常要 15s+，过早判失败会被当成「打不开」。 */
+/* 3) 30s 兜底：旧 WebView 上 CSS 动画不一定生效，这里再用 JS 兜一层，三段文案永远互斥。
+      v3.5.4：12s → 30s，GitHub Pages 冷缓存实测可到 25s，过早判失败会被当成「打不开」。 */
 setTimeout(function () {
   var sk = document.getElementById('appSkeleton');
   if (!sk || sk.className === 'skGone') return;
@@ -224,7 +224,7 @@ setTimeout(function () {
     var links = fail.querySelectorAll('.skLegacy');
     for (var li = 0; li < links.length; li++) links[li].style.pointerEvents = 'auto';
   }
-}, 20000);
+}, 30000);
 </script>
 
 <!--APP_SCRIPT-->
