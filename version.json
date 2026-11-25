@@ -1,11 +1,11 @@
 {
   "version": "3.6.0",
-  "versionCode": 348,
+  "versionCode": 349,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4712134,
-  "apkSha256": "3e141eed37099bedc3e47a90cd5c07f9cc08ca4eee9e4ed290aa9271ff56fa46",
+  "apkSize": 4714567,
+  "apkSha256": "9d10f124262f7586f42155b76fe70331190207e7b8ebc52b752ee5ee5100cede",
   "changelog": "【v3.6.0】短语归类、作文素材与体验优化\n· 新增 · 扩展页新增「高考短语」，同一介词、同一单词的不同介词搭配归类在一起，逐条标注考频，方便成组背诵\n· 新增 · 扩展页新增「作文素材」：节日英文名、新历/农历日期表达、衔接词与高分句型，写作直接套用\n· 新增 · 答题后每个选项都可点击查看该词考点，并标注英文单"
 }
