@@ -407,6 +407,172 @@ export const numberDateData = {
   ]
 };
 
+// ===== v3.6.0 高考英语作文素材：节日英文名 + 新历/农历日期表达 + 作文衔接与句型 =====
+// 说明：节日与日期表达为英语课程标准/高考写作常考内容；农历日期用 "lunar + 月份 + 序数" 表达。
+export const essayData = {
+  festivals: [
+    { word: 'the Spring Festival', cn: '春节（农历正月初一）', date: '农历正月初一 · the first day of the first lunar month', usage: 'The Spring Festival falls on the first day of the first lunar month.', usageCn: '春节在农历正月初一。' },
+    { word: 'the Lantern Festival', cn: '元宵节（农历正月十五）', date: '农历正月十五 · the 15th day of the first lunar month', usage: 'People eat sweet dumplings on the Lantern Festival.', usageCn: '人们在元宵节吃汤圆。' },
+    { word: 'Qingming Festival', cn: '清明节（公历4月4/5日）', date: '公历4月4日或5日 · April 4th or 5th', usage: 'Qingming Festival is a time to honor our ancestors.', usageCn: '清明节是祭奠先人的日子。' },
+    { word: 'the Dragon Boat Festival', cn: '端午节（农历五月初五）', date: '农历五月初五 · the fifth day of the fifth lunar month', usage: 'We hold dragon boat races to celebrate the Dragon Boat Festival.', usageCn: '我们赛龙舟来庆祝端午节。' },
+    { word: 'the Mid-Autumn Festival', cn: '中秋节（农历八月十五）', date: '农历八月十五 · the 15th day of the eighth lunar month', usage: 'Families get together to admire the full moon on the Mid-Autumn Festival.', usageCn: '家人在中秋之夜聚在一起赏月。' },
+    { word: 'the Double Ninth Festival', cn: '重阳节（农历九月初九）', date: '农历九月初九 · the ninth day of the ninth lunar month', usage: 'The Double Ninth Festival is a day to respect the elderly.', usageCn: '重阳节是敬老的日子。' },
+    { word: "New Year's Day", cn: '元旦（公历1月1日）', date: '公历1月1日 · January 1st', usage: "New Year's Day marks the beginning of a new year.", usageCn: '元旦标志着新一年的开始。' },
+    { word: "Valentine's Day", cn: '情人节（公历2月14日）', date: '公历2月14日 · February 14th', usage: "Valentine's Day falls on February 14th.", usageCn: '情人节在2月14日。' },
+    { word: "Women's Day", cn: '妇女节（公历3月8日）', date: '公历3月8日 · March 8th', usage: "Women's Day is celebrated on March 8th.", usageCn: '妇女节在3月8日庆祝。' },
+    { word: 'Arbor Day', cn: '植树节（公历3月12日）', date: '公历3月12日 · March 12th', usage: 'We plant trees on Arbor Day.', usageCn: '我们在植树节种树。' },
+    { word: "April Fools' Day", cn: '愚人节（公历4月1日）', date: '公历4月1日 · April 1st', usage: "April Fools' Day is on April 1st.", usageCn: '愚人节在4月1日。' },
+    { word: 'Labour Day', cn: '劳动节（公历5月1日）', date: '公历5月1日 · May 1st', usage: 'Labour Day is a public holiday in many countries.', usageCn: '劳动节在许多国家是公共假日。' },
+    { word: "Mother's Day", cn: '母亲节（5月第二个周日）', date: '5月第二个星期日 · the second Sunday in May', usage: "Mother's Day falls on the second Sunday in May.", usageCn: '母亲节在五月第二个星期天。' },
+    { word: "Children's Day", cn: '儿童节（公历6月1日）', date: '公历6月1日 · June 1st', usage: "Children's Day is on June 1st in China.", usageCn: '中国的儿童节在6月1日。' },
+    { word: "Father's Day", cn: '父亲节（6月第三个周日）', date: '6月第三个星期日 · the third Sunday in June', usage: "Father's Day falls on the third Sunday in June.", usageCn: '父亲节在六月第三个星期天。' },
+    { word: "Teachers' Day", cn: '教师节（公历9月10日）', date: '公历9月10日 · September 10th', usage: "Teachers' Day is on September 10th in China.", usageCn: '中国的教师节在9月10日。' },
+    { word: 'National Day', cn: '国庆节（公历10月1日）', date: '公历10月1日 · October 1st', usage: 'National Day is celebrated on October 1st in China.', usageCn: '中国的国庆节在10月1日。' },
+    { word: 'Halloween', cn: '万圣节前夜（公历10月31日）', date: '公历10月31日 · October 31st', usage: 'Children dress up on Halloween.', usageCn: '孩子们在万圣节前夜装扮起来。' },
+    { word: 'Thanksgiving Day', cn: '感恩节（11月第四个周四）', date: '11月第四个星期四 · the fourth Thursday in November', usage: 'Thanksgiving Day falls on the fourth Thursday in November.', usageCn: '感恩节在十一月第四个星期四。' },
+    { word: 'Christmas', cn: '圣诞节（公历12月25日）', date: '公历12月25日 · December 25th', usage: 'Christmas is one of the most important festivals in the West.', usageCn: '圣诞节是西方最重要的节日之一。' },
+  ],
+  dateExpressions: [
+    { word: 'the solar calendar', cn: '公历（阳历）', usage: 'The solar calendar is based on the earth\'s movement around the sun.', usageCn: '公历以地球绕太阳的运行规律为基础。' },
+    { word: 'the lunar calendar', cn: '农历（阴历）', usage: 'Traditional Chinese festivals are based on the lunar calendar.', usageCn: '中国传统节日以农历为依据。' },
+    { word: 'fall on', cn: '（节日）适逢，落在（某日）', usage: 'The Mid-Autumn Festival falls on the 15th day of the eighth lunar month.', usageCn: '中秋节在农历八月十五。' },
+    { word: 'the first lunar month', cn: '农历正月', usage: 'The Spring Festival is in the first lunar month.', usageCn: '春节在农历正月。' },
+    { word: 'a lunar month', cn: '一个农历月', usage: 'A lunar month is about 29.5 days long.', usageCn: '一个农历月约29.5天。' },
+    { word: 'on the fifth of May', cn: '在五月五日（新历）', usage: 'The concert will be held on the fifth of May.', usageCn: '音乐会将在5月5日举行。' },
+    { word: 'in early / late', cn: '在……初 / 末', usage: 'The exam will take place in early June.', usageCn: '考试将在六月初举行。' },
+    { word: 'the day before / after', cn: '前一天 / 后一天', usage: 'We visited the museum the day before yesterday.', usageCn: '我们前天参观了博物馆。' },
+  ],
+  connectors: [
+    { word: 'first of all', cn: '首先', usage: 'First of all, we should make a plan.', usageCn: '首先，我们应该制定计划。' },
+    { word: 'in addition / besides', cn: '此外', usage: 'In addition, reading broadens our horizons.', usageCn: '此外，阅读开阔我们的眼界。' },
+    { word: 'however / nevertheless', cn: '然而', usage: 'However, not everyone agrees with this view.', usageCn: '然而，并非所有人都同意这一观点。' },
+    { word: 'therefore / thus', cn: '因此', usage: 'Therefore, we must take action immediately.', usageCn: '因此，我们必须立即行动。' },
+    { word: 'for example / for instance', cn: '例如', usage: 'For example, we can recycle paper and plastic.', usageCn: '例如，我们可以回收纸张和塑料。' },
+    { word: 'what is more', cn: '而且', usage: 'What is more, it helps us relax.', usageCn: '而且，它有助于我们放松。' },
+    { word: 'as a result', cn: '结果', usage: 'As a result, our environment will be cleaner.', usageCn: '结果，我们的环境会更干净。' },
+    { word: 'in conclusion / to sum up', cn: '总之', usage: 'In conclusion, hard work leads to success.', usageCn: '总之，努力带来成功。' },
+  ],
+  sentences: [
+    { en: 'It is widely acknowledged that hard work is the key to success.', cn: '人们普遍认为，努力是成功的关键。' },
+    { en: 'There is no doubt that reading plays an important role in our growth.', cn: '毫无疑问，阅读在我们的成长中起重要作用。' },
+    { en: 'As far as I am concerned, we should protect the environment.', cn: '就我而言，我们应该保护环境。' },
+    { en: 'Not only can it broaden our horizons, but it can also enrich our minds.', cn: '它不仅能开阔眼界，还能丰富思想。' },
+    { en: 'Only in this way can we achieve our goal.', cn: '只有这样，我们才能实现目标。' },
+    { en: 'It is high time that we took action to protect our planet.', cn: '是我们采取行动保护地球的时候了。' },
+  ],
+};
+
+// ===== v3.6.0 高考短语：同一介词 / 同一单词不同介词搭配聚集，逐条标注考频 =====
+// 考频口径：依据高考真题与《普通高中英语课程标准》常考搭配的常见度分级（高频/中频/低频），
+// 为教学参考分级，非官方逐次统计。所有短语均为高考写作与阅读理解高频考点。
+export const gaokaoPhraseData = {
+  byPreposition: [
+    { name: 'in', label: 'in 搭配', items: [
+      ['in addition', '另外', '高频'], ['in advance', '提前', '中频'], ['in case', '万一；以防', '中频'],
+      ['in charge of', '负责', '高频'], ['in common', '共有；共同', '高频'], ['in detail', '详细地', '中频'],
+      ['in favour of', '支持；赞成', '中频'], ['in general', '通常；大体上', '高频'], ['in honour of', '为纪念', '低频'],
+      ['in no time', '立刻；马上', '中频'], ['in order to', '为了', '高频'], ['in particular', '尤其；特别', '高频'],
+      ['in place of', '代替', '中频'], ['in public', '公开地', '中频'], ['in return', '作为回报', '中频'],
+      ['in search of', '寻找', '中频'], ['in short', '总之；简言之', '高频'], ['in spite of', '尽管', '高频'],
+      ['in terms of', '就……而言', '高频'], ['in the end', '最后', '高频'], ['in time', '及时', '高频'],
+      ['in total', '总共', '中频'], ['in turn', '依次；反过来', '中频'], ['in vain', '徒劳；白费', '中频'],
+      ['in view of', '鉴于；考虑到', '低频'],
+    ] },
+    { name: 'on', label: 'on 搭配', items: [
+      ['on account of', '由于；因为', '中频'], ['on behalf of', '代表', '低频'], ['on board', '在船/飞机/车上', '低频'],
+      ['on condition that', '条件是', '低频'], ['on duty', '值班；值日', '中频'], ['on purpose', '故意地', '高频'],
+      ['on sale', '出售；打折', '中频'], ['on schedule', '按时', '中频'], ['on strike', '罢工', '低频'],
+      ['on the whole', '总体上', '高频'], ['on time', '准时', '高频'], ['on top of', '除……之外；在……顶部', '中频'],
+    ] },
+    { name: 'at', label: 'at 搭配', items: [
+      ['at a loss', '困惑；不知所措', '中频'], ['at all costs', '不惜一切代价', '中频'], ['at any rate', '无论如何', '低频'],
+      ['at first', '起初', '高频'], ['at hand', '在手边；即将到来', '中频'], ['at last', '最后', '高频'],
+      ['at least', '至少', '高频'], ['at most', '至多', '中频'], ['at once', '立刻', '高频'],
+      ['at one time', '曾经；一度', '中频'], ['at present', '目前', '高频'], ['at random', '随机地', '中频'],
+      ['at risk', '处于危险中', '中频'], ['at the cost of', '以……为代价', '中频'], ['at the mercy of', '受……支配', '低频'],
+    ] },
+    { name: 'for', label: 'for 搭配', items: [
+      ['for fear of', '唯恐；担心', '中频'], ['for good', '永久地', '低频'], ['for instance', '例如', '高频'],
+      ['for lack of', '因缺乏', '中频'], ['for long', '长久地', '中频'], ['for one thing', '一方面', '中频'],
+      ['for sale', '代售', '中频'], ['for short', '简称', '低频'], ['for the benefit of', '为了……的利益', '中频'],
+      ['for the sake of', '为了……的缘故', '中频'], ['for the time being', '暂时', '中频'],
+    ] },
+    { name: 'by', label: 'by 搭配', items: [
+      ['by accident', '偶然地', '高频'], ['by all means', '务必；当然可以', '中频'], ['by and by', '不久以后', '低频'],
+      ['by chance', '偶然地', '高频'], ['by contrast', '相比之下', '高频'], ['by far', '到目前为止；……得多', '中频'],
+      ['by heart', '凭记忆', '中频'], ['by means of', '借助；通过', '高频'], ['by no means', '绝不', '中频'],
+      ['by the way', '顺便说一下', '高频'], ['by turns', '轮流', '低频'], ['by virtue of', '凭借', '低频'],
+    ] },
+    { name: 'out of', label: 'out of 搭配', items: [
+      ['out of breath', '上气不接下气', '中频'], ['out of control', '失去控制', '高频'], ['out of date', '过时的', '中频'],
+      ['out of order', '出故障；秩序混乱', '中频'], ['out of place', '不合适；不在位', '中频'], ['out of reach', '够不着', '中频'],
+      ['out of sight', '看不见', '中频'], ['out of work', '失业', '中频'],
+    ] },
+    { name: 'with', label: 'with 搭配', items: [
+      ['with regard to', '关于', '中频'], ['with respect to', '关于；尊重', '中频'], ['with the exception of', '除……之外', '低频'],
+      ['with the help of', '在……的帮助下', '高频'], ['with a view to', '为了；着眼于', '低频'],
+    ] },
+  ],
+  byVerb: [
+    { name: 'look', label: 'look 搭配', items: [
+      ['look after', '照顾', '高频'], ['look at', '看', '高频'], ['look for', '寻找', '高频'],
+      ['look forward to', '期待；盼望（to 为介词）', '高频'], ['look into', '调查', '中频'], ['look like', '看起来像', '高频'],
+      ['look out', '小心；当心', '中频'], ['look up', '查阅；抬头看', '高频'], ['look down upon', '看不起', '中频'],
+    ] },
+    { name: 'get', label: 'get 搭配', items: [
+      ['get along with', '与……相处；进展', '高频'], ['get away', '逃离；离开', '中频'], ['get down to', '开始认真做（to 为介词）', '高频'],
+      ['get in', '进入；收获', '中频'], ['get into', '进入；陷入', '中频'], ['get off', '下车；脱下', '高频'],
+      ['get on', '上车；进展', '高频'], ['get over', '克服；恢复', '高频'], ['get through', '完成；接通；通过', '高频'],
+      ['get up', '起床；站起来', '高频'],
+    ] },
+    { name: 'make', label: 'make 搭配', items: [
+      ['make for', '走向；有助于', '中频'], ['make out', '辨认出；理解', '中频'], ['make up', '组成；编造；化妆', '高频'],
+      ['make up for', '弥补', '高频'], ['make sense', '有意义；讲得通', '高频'], ['make a difference', '有影响；起作用', '高频'],
+    ] },
+    { name: 'turn', label: 'turn 搭配', items: [
+      ['turn down', '拒绝；调低', '高频'], ['turn in', '上交', '中频'], ['turn into', '变成', '高频'],
+      ['turn off', '关掉', '高频'], ['turn on', '打开', '高频'], ['turn out', '结果是；证明是', '高频'],
+      ['turn over', '翻转；移交', '中频'], ['turn to', '转向；求助于', '高频'], ['turn up', '出现；调高', '高频'],
+      ['turn against', '反对；背叛', '低频'],
+    ] },
+    { name: 'put', label: 'put 搭配', items: [
+      ['put aside', '把……放在一边；储蓄', '中频'], ['put away', '收起来；储存', '中频'], ['put down', '写下；镇压', '中频'],
+      ['put forward', '提出', '高频'], ['put off', '推迟', '高频'], ['put on', '穿上；上演', '高频'],
+      ['put out', '熄灭；出版', '中频'], ['put up', '张贴；搭建；举起', '高频'], ['put up with', '忍受；容忍', '高频'],
+    ] },
+    { name: 'take', label: 'take 搭配', items: [
+      ['take after', '与……相像', '中频'], ['take apart', '拆开', '低频'], ['take away', '拿走', '高频'],
+      ['take back', '收回；带回', '中频'], ['take in', '吸收；理解；欺骗', '中频'], ['take off', '起飞；脱下；成功', '高频'],
+      ['take on', '承担；呈现', '高频'], ['take over', '接管', '高频'], ['take up', '开始从事；占据', '高频'],
+    ] },
+    { name: 'come', label: 'come 搭配', items: [
+      ['come about', '发生；产生', '中频'], ['come across', '偶遇；被理解', '高频'], ['come along', '出现；一起来', '中频'],
+      ['come out', '出版；结果是', '高频'], ['come to', '苏醒；总计；达到', '中频'], ['come up with', '想出；提出', '高频'],
+    ] },
+    { name: 'go', label: 'go 搭配', items: [
+      ['go against', '违背；反对', '中频'], ['go ahead', '继续；开始', '高频'], ['go by', '经过；遵循', '中频'],
+      ['go in for', '从事；喜欢', '中频'], ['go off', '离开；爆炸；响', '中频'], ['go on', '继续', '高频'],
+      ['go over', '复习；仔细检查', '高频'], ['go through', '经历；仔细检查', '高频'],
+    ] },
+    { name: 'break', label: 'break 搭配', items: [
+      ['break away', '脱离；逃脱', '中频'], ['break down', '出故障；分解；崩溃', '高频'], ['break into', '闯入', '中频'],
+      ['break out', '爆发（战争、火灾）', '高频'], ['break through', '突破', '中频'], ['break up', '解散；破裂；分手', '中频'],
+    ] },
+    { name: 'carry', label: 'carry 搭配', items: [
+      ['carry away', '运走；使着迷', '低频'], ['carry on', '继续', '高频'], ['carry out', '执行；实施', '高频'],
+      ['carry through', '完成；使渡过难关', '低频'],
+    ] },
+    { name: 'bring', label: 'bring 搭配', items: [
+      ['bring about', '带来；引起', '高频'], ['bring back', '带回；使想起', '中频'], ['bring down', '降低；使倒下', '中频'],
+      ['bring in', '引进；赚得', '中频'], ['bring out', '使显现；出版', '中频'], ['bring up', '抚养；提出', '高频'],
+    ] },
+    { name: 'set', label: 'set 搭配', items: [
+      ['set about', '开始做', '中频'], ['set aside', '留出；把……放在一边', '中频'], ['set off', '出发；引爆', '高频'],
+      ['set out', '出发；着手', '高频'], ['set up', '建立；设立', '高频'],
+    ] },
+  ],
+};
+
 // spellingData
 export const spellingData = [
   { correct: 'receive', wrong: 'recieve', tip: 'i 在 e 前，除了在 c 后：re-cei-ve' },

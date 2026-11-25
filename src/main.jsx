@@ -103,11 +103,11 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '3.5.4';
+const APP_VERSION = '3.6.0';
 
 // v3.1.0 内置更新日志改为按需加载（离线兜底），见挂载时的动态 import
 let BUILTIN_CHANGELOG = [];
-const CHANGELOG_TOTAL = 76;
+const CHANGELOG_TOTAL = 78;
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
 // v3.4.1 根因修复：此前 CI 每版只把 Bump 后的版本号写进构建产物（APK/清单），
@@ -1489,6 +1489,9 @@ let numberDateData = { months: [], weekdays: [], seasons: [], dateWords: [], num
 let spellingData = [];
 let seedSynonyms = [];
 let seedAntonyms = [];
+// v3.6.0：作文素材（节日/日期/衔接/句型）与高考短语（按介词、按动词分组，含考频）
+let essayData = { festivals: [], dateExpressions: [], connectors: [], sentences: [] };
+let gaokaoPhraseData = { byPreposition: [], byVerb: [] };
 let _toolDataReady = false;
 let _toolDataLoading = false;
 
@@ -1507,6 +1510,8 @@ function loadToolData() {
     spellingData = mod.spellingData || [];
     seedSynonyms = mod.seedSynonyms || [];
     seedAntonyms = mod.seedAntonyms || [];
+    essayData = mod.essayData || essayData;
+    gaokaoPhraseData = mod.gaokaoPhraseData || gaokaoPhraseData;
     _toolDataReady = true;
     _toolDataLoading = false;
     _emitBookData();
@@ -5185,46 +5190,23 @@ function MeaningFreqList(props) {
   var term = props.term || '';
   var text = props.text || '';
   var senses = splitSenses(text);
-  var [openIdx, setOpenIdx] = React.useState(-1);
   if (!senses.length) return <span className={props.className || ''}>{text}</span>;
-  var f = getExamFreq(term);
-  var wordCount = f && f.basis === 'corpus' && f.count > 0 ? f.count : 0;
-  var anyEv = hasSenseEvidence(term);
+  // v3.6.0：简介化——义项只保留「高频核心义 / 熟词生义 / 一般义项」标签，
+  // 不再展示考频的具体次数、真题出处（年份·卷别·题号·原句）与数据来源说明。
   var label = { core: '高频核心义', familiar: '熟词生义', normal: '一般义项' };
   return (
     <span className={'mfList' + (props.className ? ' ' + props.className : '')}>
       {senses.map(function (sense, i) {
         var cls = senseClass(term, sense);
-        var ev = senseExamEvidence(term, sense); // {s,c,e} 或 null，真凭实据
         return (
           <span className={'mfItem mf-' + cls} key={i}>
-            <span className="mfTop" onClick={function () { setOpenIdx(openIdx === i ? -1 : i); }}>
+            <span className="mfTop">
               <span className="mfText">{sense}</span>
-              {ev && ev.c > 0
-                ? <span className="mfCount" title="点击展开真题出处">真题 {ev.c} 次 ▾</span>
-                : <span className={'mfTag mfTag-' + cls}>{label[cls]}</span>}
+              <span className={'mfTag mfTag-' + cls}>{label[cls]}</span>
             </span>
-            {openIdx === i && (
-              <span className="mfEvidence">
-                {ev && ev.c > 0 ? (
-                  <React.Fragment>
-                    <span className="mfEvidenceHead">义项「{ev.s}」· 真题考查 {ev.c} 次 · 依据（年份·卷别·题号·原句）：</span>
-                    {ev.e.map(function (row, k) {
-                      return <span className="mfEvRow" key={k}>
-                        <span className="mfEvMeta">{row[0]} · {row[1]} · {row[2]}</span>
-                        <span className="mfEvQuote">{row[3]}</span>
-                      </span>;
-                    })}
-                  </React.Fragment>
-                ) : (
-                  <span className="mfEvidenceHead">该义项在此真题样本（{SENSE_FREQ_META ? SENSE_FREQ_META.passages + ' 篇' : '200 篇'}）中未发现挖空考查证据；词级真题次数：{wordCount > 0 ? wordCount + ' 次' : '—'}。类别判定来自核心释义/熟词生义词库。</span>
-                )}
-              </span>
-            )}
           </span>
         );
       })}
-      <span className="mfNote">真题考次来自 {SENSE_FREQ_META ? SENSE_FREQ_META.passages + ' 篇' : '200 篇'} 高考真题阅读挖空点逐条提取，点「真题 N 次」看具体出处；非官方逐义项统计，无出处不标注。</span>
     </span>
   );
 }
@@ -5736,6 +5718,9 @@ function App() {
   const [compareTab, setCompareTab] = useState('synonym');
   const [compareIndex, setCompareIndex] = useState(0);
   const [numberDateSubTab, setNumberDateSubTab] = useState('months');
+  // v3.6.0：作文素材子tab 与高考短语子tab（按介词 / 按动词分组）
+  const [essaySubTab, setEssaySubTab] = useState('festivals');
+  const [phraseGroupBy, setPhraseGroupBy] = useState('preposition');
   const [transformTab, setTransformTab] = useState('adjToAdverb');
   const [scenePage, setScenePage] = useState(0);
   // v3.5.0：情景记忆「显示/隐藏中文」开关（默认显示，本机记忆）
@@ -7215,8 +7200,10 @@ function App() {
     const meaningIdx = new Map();
     books.forEach(b => b.items.forEach(w => {
       if (w.term && !termIdx.has(w.term.toLowerCase())) termIdx.set(w.term.toLowerCase(), w);
-      const ck = quizAnswer(w);
-      if (ck && !meaningIdx.has(ck)) meaningIdx.set(ck, w);
+      // v3.6.0：选项既可能来自 quizAnswer(w)（依赖义项范围），也可能来自 coreOf(w)（干扰项池），
+      // 两种 key 都建索引，否则答题后「其他选项」映射不到条目 → 不显示英文单词、点不动考点。
+      const keys = [quizAnswer(w), coreOf(w.term, w.meaning)];
+      keys.forEach(function (ck) { if (ck && !meaningIdx.has(ck)) meaningIdx.set(ck, w); });
     }));
     const map = new Map();
     options.forEach(opt => {
@@ -8727,7 +8714,7 @@ function App() {
             )}
 
             <h4 className="settingsSubTitle">学习辅助与反馈</h4>
-            <ToggleSwitch label="护眼模式" desc="暖色低蓝光，夜间护眼" value={settings.eyeCare} onChange={v => { setSettings(s => ({ ...s, eyeCare: v })); saveSettings({ ...settings, eyeCare: v }); }} />
+            <ToggleSwitch label="护眼模式" desc="绿色低蓝光，长时间阅读更舒适" value={settings.eyeCare} onChange={v => { setSettings(s => ({ ...s, eyeCare: v })); saveSettings({ ...settings, eyeCare: v }); }} />
             <ToggleSwitch label="艾宾浩斯记忆法" desc="按遗忘曲线智能安排复习" value={settings.ebbinghaus} onChange={v => { setSettings(s => ({ ...s, ebbinghaus: v })); saveSettings({ ...settings, ebbinghaus: v }); }} />
             <ToggleSwitch label="答题后显示全部考点" desc="关闭时仅显示其他选项单词的中文对照；开启后展示该单词全部考点、搭配、词族与例句" value={settings.answerFullPoints} onChange={v => { setSettings(s => ({ ...s, answerFullPoints: v })); saveSettings({ ...settings, answerFullPoints: v }); }} />
             <ToggleSwitch label="优先背诵高频词" desc="按高考真题考频分档推进：高频 → 中频 → 低频，同档内按出现次数降序" value={settings.freqFirst} onChange={v => { setSettings(s => ({ ...s, freqFirst: v })); saveSettings({ ...settings, freqFirst: v }); }} />
@@ -8758,51 +8745,6 @@ function App() {
                 </label>
               </div>
             )}
-
-            <h4 className="settingsSubTitle">数据来源说明</h4>
-            <details className="noteDetails">
-              <summary>高考考频数据说明</summary>
-              <div className="examFreqNote">
-                <p>全库单词已标注 <strong>高频 / 中频 / 低频 / 基础</strong> 四档，并在背诵页、词库列表与单词详情页显示 <strong>历年真题 / 模拟卷语料出现次数</strong>。</p>
-                <p className="muted">词卡上原有的「基础 / 真题 / 985」等标签是<strong>词库分类</strong>，与带次数的考频徽标是不同维度，两者并存不代表矛盾。</p>
-                <p>次数来自 <strong>130+ 份历年高考全国卷及各省份高三模拟卷（约 50 万词次）</strong>的逐词统计，<strong>含模拟卷、并非纯高考真题</strong>；未被语料收录的词次数显示「—」，等级按<strong>《普通高中英语课程标准》词汇范围</strong>与通用语料库词频标注，<strong>不编造考查次数</strong>。「近五年 N 次」来自内置近五年真题高频词表（508 条）。</p>
-                <p className="muted">教育部《课标》附录 2 只给 3000 词的考查范围，明确不标注词性与释义；课标与《中国高考评价体系》<strong>从未发布逐词考查次数</strong>。公开资料也无法覆盖全部年份、全部省份的逐词精确次数，本表用于安排背诵优先级，<strong>不代表官方考查次数</strong>。</p>
-              </div>
-            </details>
-
-            <details className="noteDetails">
-              <summary>真题文章来源说明</summary>
-              <div className="examFreqNote passageSourceNote">
-                <p>「真题文章」模式的文章<strong>全部取自历年高考英语真题阅读原文</strong>，来自 GitHub 开源数据库 <strong>ZhangYixuan-in-BUPT/gaokao-english-exam-database</strong>（2008–2026 年 233 套试卷、739+ 篇阅读理解）。</p>
-                <p>每篇为真题原文的<strong>连续片段，逐字保留、未改写、未编造、未拼接</strong>；挖空词及其释义来自本 App 内置词库。原文保留试卷扫描排版原貌，个别处可能有扫描识别的笔误，请以真题试卷为准。</p>
-              </div>
-            </details>
-            <details className="noteDetails">
-              <summary>联网补全数据来源说明</summary>
-              <div className="examFreqNote netEnrichNote">
-                <p>内置真题表未收录的词（含自行导入单词）可通过<strong>免密钥公开接口</strong>补全关联词与考频等级：词频、同义 / 反义 / 语义关联词来自 <strong>Datamuse API</strong>（Google Books Ngram 通用英语语料），音标、词性与英文释义来自 <strong>Free Dictionary API</strong>。</p>
-                <p>两者均<strong>无需任何配置</strong>（本版本已彻底移除 AI 大模型依赖）；结果按词缓存在本机，离线可用、已缓存不重复请求，无网络时静默跳过，词频未取到时标「待补全」而不冒充低频。在上方开关可随时关闭自动补全或清除缓存。</p>
-                <p className="muted">联网词频是通用英语语料的出现频率，界面标注「联网参考」，<strong>不是高考真题考查次数</strong>，也不估算具体次数；等级仅用于安排背诵优先级。</p>
-              </div>
-            </details>
-            <details className="noteDetails">
-              <summary>关联词检索与导出顺序说明</summary>
-              <div className="examFreqNote builtinAlgoNote">
-                <p><strong>同源词族</strong>（create / creation / creative）与<strong>易混词辨析</strong>（affect / effect）全部由<strong>内置词根算法</strong>离线判定：词干还原、派生后缀、辅音/元音交替、假同源过滤与人工校对表，并按匹配强度排序；不需要任何配置或联网请求。</p>
-                <p><strong>近义 / 反义 / 语义关联词</strong>来自联网公开语料，单独分区标注「联网参考」，与同源词族互不混用；命中内置词库时同时显示真实中文释义。</p>
-                <p><strong>考频标记</strong>以内置真题语料实测次数优先，联网数据只补等级、绝不生成考查次数。<strong>导出词库默认按考频顺序</strong>（高频优先），与「优先背诵高频词」同一口径，可在词库页导出面板切换回原顺序。</p>
-              </div>
-            </details>
-            <details className="noteDetails">
-              <summary>初中扩展词库数据来源说明</summary>
-              <div className="examFreqNote juniorSourceNote">
-                <p>「初中必考词」「初中阅读词汇」是新增的<strong>扩展词库</strong>，词条规格与高考 3500、985 阅读核心词等<strong>完全一致</strong>：中文释义、词性、考点、例句复用本 App 内置词库数据，同样带考频徽标、关联词检索、例句语境、发音与按考频顺序导出。</p>
-                <p className="muted">v2.91.0 起这两本词库改为<strong>按需下载</strong>：默认不加载、不占用启动资源，也不会出现在词库列表；在「我的」页点「下载初中扩展词库」后才加入，可随时移除。数据随应用内置，启用无需联网。</p>
-                <p><strong>初中必考词</strong>取自开源项目 <strong>jim-688/zhongkao-english-vocab</strong>（MIT，中考核心词表按词频排序、高频在前）；口径依据教育部《义务教育英语课程标准（2022 年版）》附录 3 三级词汇表 <strong>1600 词</strong>（含小学二级 505 词、初中应掌握 1095 词，允许各地增加 100~300 词）。</p>
-                <p><strong>初中阅读词汇</strong>来自公开中考阅读理解高频词表：易中考《近中考阅读理解高频词汇总》、《中考英语阅读核心高频考点词》（态度 / 逻辑 / 高频动名形 / 熟词生义 / 同义替换），以及开源 <strong>KyleBing/english-vocabulary</strong> 初中词表（MIT）中的拓展词，剔除与必考词重复的部分。</p>
-                <p className="muted">官方课标只给词汇<strong>范围</strong>、明确「不标注单词的词性和中文释义」，也<strong>从未发布逐词考查次数</strong>；中文释义与词性由本 App 内置词库补全，考频徽标沿用全库统一的真题 / 模拟卷语料实测口径，仅用于安排背诵优先级，<strong>不代表官方考查次数</strong>。上述词表均为公开可核验的第三方整理，非官方发布数据。</p>
-              </div>
-            </details>
 
           </div>
           </div>
@@ -8910,18 +8852,15 @@ function App() {
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5v11l7-5.5-7-5.5Z"/><path d="M17 6.5v11"/></svg>
               <span>自动跳转</span>
             </button>
-            {/* v2.81.2：自动发音开关回到「我的」页（原始位置）；背诵页仅在闪卡模式保留此按钮，
-                因为闪卡模式不显示「难度」按钮，用它顶位可使背诵页快捷按钮始终保持六个 */}
-            {practiceMode === 'flashcard' && (
+            {/* v3.6.0：自动发音按钮常驻背诵页（所有模式），做题时随手即可开关，无需再去设置页 */}
             <button
               className={`quickToggleBtn ${settings.autoSpeak !== false ? 'speakOn' : 'speakOff'}`}
               title="开启后背诵页出现新单词时自动发音"
               onClick={() => { const v = settings.autoSpeak === false; setSettings(s => ({ ...s, autoSpeak: v, navAutoSpeak: v })); saveSettings({ ...settings, autoSpeak: v, navAutoSpeak: v }); }}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 6v12L7.2 14.5H4z" /><path d="M15.5 8.5a4 4 0 0 1 0 7" /><path d="M18 6a7.5 7.5 0 0 1 0 12" /></svg>
-              <span>自动发音</span>
+              <span>{settings.autoSpeak !== false ? '发音开' : '发音关'}</span>
             </button>
-            )}
             {/* v2.78.0 音量键翻页开关放到背诵页：原来只在「我的-设置」里，做题时想开还得退出背诵页 */}
             {isNativeApp && (
               <button
@@ -9078,7 +9017,7 @@ function App() {
                     const right = practiceMode === 'cn-to-en' ? displayCurrent.term : quizAnswer(displayCurrent);
                     return (
                       <div className="points" style={{ marginTop: 8, marginBottom: 10 }}>
-                        <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 6 }}><Icon name="target" />{fullPoints ? '选项词汇 · 点击查看考点' : '其他选项单词 · 中文对照'}</p>
+                        <p style={{ fontWeight: 600, color: 'var(--primary-dark)', marginBottom: 6 }}><Icon name="target" />选项词汇 · 点击查看考点</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {options.map(opt => {
                             const w = optionItemMap.get(opt);
@@ -9100,19 +9039,16 @@ function App() {
                                   {isRight ? '✓' : (isPicked ? '✗' : '•')}
                                 </span>
                                 <span style={{ fontSize: 15, fontWeight: 600 }}>
-                                  {practiceMode === 'cn-to-en'
-                                    ? mainText
-                                    : <span style={{ fontWeight: 600 }}>{mainText}</span>}
+                                  {mainText}
                                 </span>
-                                {w && (
-                                  <span style={{ fontSize: 13, opacity: 0.8 }}>
-                                    {practiceMode === 'cn-to-en'
-                                      ? `— ${getShortMeaning(w.meaning)}`
-                                      : `— ${w.term}`}
-                                    {w.pos ? <small style={{ opacity: 0.7 }}>（{w.pos}）</small> : null}
-                                  </span>
-                                )}
-                                {fullPoints && w && <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--primary)', fontWeight: 600, whiteSpace: 'nowrap' }}>考点 ›</span>}
+                                {/* v3.6.0：每个选项都标注「英文单词 + 中文释义」，不再因模式或映射缺失而漏掉英文 */}
+                                <span style={{ fontSize: 13, opacity: 0.8 }}>
+                                  {practiceMode === 'cn-to-en'
+                                    ? (w ? `— ${w.term}${w.meaning ? '（' + getShortMeaning(w.meaning) + '）' : ''}` : '')
+                                    : (w ? `— ${w.term}` : '')}
+                                  {w && w.pos ? <small style={{ opacity: 0.7 }}>（{w.pos}）</small> : null}
+                                </span>
+                                {w && <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--primary)', fontWeight: 600, whiteSpace: 'nowrap' }}>考点 ›</span>}
                               </div>
                             );
                           })}
@@ -9976,12 +9912,91 @@ function App() {
       {section === 'extend' && (
         <section className="panel">
           <div className="segmented">
+            <button className={extendTab === 'phrase' ? 'active' : ''} onClick={() => setExtendTab('phrase')}>高考短语</button>
+            <button className={extendTab === 'essay' ? 'active' : ''} onClick={() => setExtendTab('essay')}>作文素材</button>
             <button className={extendTab === 'affix' ? 'active' : ''} onClick={() => setExtendTab('affix')}>词根词缀</button>
             <button className={extendTab === 'compare' ? 'active' : ''} onClick={() => setExtendTab('compare')}>对比记忆</button>
             <button className={extendTab === 'scene' ? 'active' : ''} onClick={() => setExtendTab('scene')}>情景记忆</button>
             <button className={extendTab === 'numberdate' ? 'active' : ''} onClick={() => setExtendTab('numberdate')}>数字日期</button>
             <button className={extendTab === 'transform' ? 'active' : ''} onClick={() => setExtendTab('transform')}>变形扩展</button>
           </div>
+
+          {/* 高考短语 —— v3.6.0：同一介词 / 同一单词不同介词搭配聚集，逐条标注考频 */}
+          {extendTab === 'phrase' && (() => {
+            const groups = (phraseGroupBy === 'verb' ? gaokaoPhraseData.byVerb : gaokaoPhraseData.byPreposition) || [];
+            const totalPhrases = groups.reduce((s, g) => s + (g.items ? g.items.length : 0), 0);
+            const freqColor = f => f === '高频' ? '#dc2626' : (f === '中频' ? '#ea580c' : '#64748b');
+            return (
+              <div style={{ marginTop: 16 }}>
+                <div className="segmented" style={{ marginBottom: 8 }}>
+                  <button className={phraseGroupBy === 'preposition' ? 'active' : ''} onClick={() => setPhraseGroupBy('preposition')}>按介词归类</button>
+                  <button className={phraseGroupBy === 'verb' ? 'active' : ''} onClick={() => setPhraseGroupBy('verb')}>按动词归类</button>
+                </div>
+                <p className="muted" style={{ margin: '4px 0 12px' }}>全部选自高考考点 · 共 {totalPhrases} 条 · 同类搭配已归类，点按听发音。</p>
+                {groups.map((g, gi) => (
+                  <div key={g.name} className="card phraseGroupCard">
+                    <div className="phraseGroupHead">
+                      <span className="phraseGroupTitle">{g.label || g.name}</span>
+                      <span className="phraseGroupCount">{g.items.length} 条</span>
+                    </div>
+                    {g.items.map((it, i) => (
+                      <div key={i} className="phraseRow" onClick={() => speak(it[0], settings.speakRate)}>
+                        <span className="phraseEn">{it[0]}</span>
+                        <span className="phraseCn">{it[1]}</span>
+                        <span className="phraseFreq" style={{ color: freqColor(it[2]) }}>{it[2]}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+
+          {/* 作文素材 —— v3.6.0：节日英文名 + 新历/农历日期 + 衔接词 + 高分句型，为写作服务 */}
+          {extendTab === 'essay' && (
+            <div style={{ marginTop: 16 }}>
+              <div className="segmented" style={{ marginBottom: 12 }}>
+                {[
+                  { key: 'festivals', label: '节日英文名' },
+                  { key: 'dates', label: '日期表达' },
+                  { key: 'connectors', label: '衔接词' },
+                  { key: 'sentences', label: '高分句型' },
+                ].map(t => (
+                  <button key={t.key} className={essaySubTab === t.key ? 'active' : ''} onClick={() => setEssaySubTab(t.key)}>{t.label}</button>
+                ))}
+              </div>
+              <p className="muted" style={{ margin: '4px 0 12px' }}>高考写作常用素材，点击英文可听发音。</p>
+              <div className="list">
+                {(() => {
+                  const cfg = essaySubTab === 'festivals' ? { list: essayData.festivals, color: '#2563eb', date: true }
+                    : essaySubTab === 'dates' ? { list: essayData.dateExpressions, color: '#16a34a' }
+                    : essaySubTab === 'connectors' ? { list: essayData.connectors, color: '#7c3aed' } : null;
+                  if (!cfg) return null;
+                  return (cfg.list || []).map((m, i) => (
+                    <div key={i} className="listItem">
+                      <div className="listItemMain">
+                        <div className="listItemTitle" onClick={() => speak(m.word, settings.speakRate)} style={{ cursor: 'pointer' }}><h3>{m.word}</h3></div>
+                        <p style={{ fontWeight: 600, color: cfg.color }}>{m.cn}</p>
+                        {cfg.date && <p className="essayDateLine">{m.date}</p>}
+                        <div className="examplePair" style={{ padding: '4px 8px', marginTop: 4 }}>
+                          <p style={{ margin: 0, fontSize: '0.85em', cursor: 'pointer' }} onClick={() => speak(m.usage, settings.speakRate)}>• {m.usage}</p>
+                          <p style={{ margin: '0 0 0 10px', fontSize: '0.78em', color: 'var(--text-tertiary)' }}>{m.usageCn}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ));
+                })()}
+                {essaySubTab === 'sentences' && (essayData.sentences || []).map((m, i) => (
+                  <div key={i} className="listItem">
+                    <div className="listItemMain">
+                      <p className="essaySentenceEn" style={{ margin: 0, cursor: 'pointer' }} onClick={() => speak(m.en, settings.speakRate)}>• {m.en}</p>
+                      <p style={{ margin: '2px 0 0 10px', fontSize: '0.82em', color: 'var(--text-secondary)' }}>{m.cn}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* 词根词缀 */}
           {extendTab === 'affix' && (
@@ -10647,62 +10662,10 @@ function App() {
             <span className="settingsEntryIcon"><Icon name="sliders" /></span>
             <span className="settingsEntryText">
               <b>设置</b>
-              <span>点击进入独立设置界面 · 自动发音、护眼模式、艾宾浩斯、词频优先、答题音效</span>
+              <span>点击进入独立设置界面 · 护眼模式、艾宾浩斯、词频优先、答题音效（发音按钮在背诵页）</span>
             </span>
             <span className="settingsEntryCaret"><Icon name="chevronRight" /></span>
           </button>
-
-          {/* v2.91.0 初中扩展词库：默认不加载，由用户在这里选择是否下载 */}
-          <div className="juniorPack">
-            <div className="juniorPackHead">
-              <span className="juniorPackIcon"><Icon name="book" /></span>
-              <div className="juniorPackTitle">
-                <b>初中扩展词库</b>
-                <span>必考词 1902 · 阅读词汇 406</span>
-              </div>
-              <span className={'juniorPackState' + (juniorDownloaded ? ' on' : '')}>
-                {juniorDownloaded ? '已下载' : '未下载'}
-              </span>
-            </div>
-            <p className="juniorPackDesc">
-              默认<strong>不加载、不占用启动资源</strong>，也不出现在词库列表。需要时点「下载」，两本词库才会加入词库选择 / 背诵 / 听读 / 导出；数据随应用内置，点下载即在本机启用，<strong>无需联网</strong>，可随时移除。
-            </p>
-            <button className={(juniorDownloaded ? 'smallBtn ghost' : 'primary') + ' juniorPackBtn'}
-              disabled={juniorBusy} onClick={juniorDownloaded ? removeJuniorBooks : installJuniorBooks}>
-              <Icon name={juniorDownloaded ? 'trash' : 'download'} />
-              {juniorBusy ? '正在加载词库…' : (juniorDownloaded ? '移除初中扩展词库' : '下载初中扩展词库')}
-            </button>
-          </div>
-
-          {/* v3.4.0 可选词库：3500/总汇/688/985 之外的内置词库，按需下载 */}
-          <div className="juniorPack optionalPack">
-            <div className="juniorPackHead">
-              <span className="juniorPackIcon"><Icon name="book" /></span>
-              <div className="juniorPackTitle">
-                <b>扩展词库</b>
-                <span>已下载 {downloadedOptionalIds.length}/{OPTIONAL_EXTRA_BOOK_IDS.length} 本</span>
-              </div>
-            </div>
-            <p className="juniorPackDesc">
-              以下词库默认<strong>不加载、不出现在词库列表</strong>。需要哪本点「下载」即加入词库选择 / 背诵 / 听读 / 导出；数据随应用内置，<strong>无需联网</strong>，可随时移除。默认保留高考3500词、高考总汇、688高频词、985核心词汇四本。
-            </p>
-            <div className="optionalBookList">
-              {OPTIONAL_EXTRA_BOOK_DEFS.map(function (def) {
-                var on = downloadedOptionalIds.indexOf(def.id) >= 0;
-                var busy = optionalBusyId === def.id;
-                return (
-                  <div className="optionalBookRow" key={def.id}>
-                    <span className="optionalBookName">{def.name} <span className="bookCount">({def.total})</span></span>
-                    <button className={on ? 'smallBtn ghost' : 'smallBtn'} disabled={!!optionalBusyId}
-                      onClick={on ? function () { removeOptionalBook(def.id); } : function () { downloadOptionalBook(def.id); }}>
-                      <Icon name={on ? 'trash' : 'download'} />
-                      {busy ? '加载中…' : (on ? '移除' : '下载')}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
 
           {/* 网页版：只提示，由用户主动点刷新，绝不自动刷新 */}
           {!isNativeApp && webUpdateReady && isNewerVersion(webUpdateReady, APP_VERSION) && (
@@ -10793,6 +10756,59 @@ function App() {
               const totalWords = studyDates.reduce((sum, d) => sum + studyWordsLog[d].length, 0);
               return <p className="muted" style={{ textAlign: 'center', marginTop: 6, fontSize: 13 }}>共 {studyDates.length} 天、{totalWords} 词可温习</p>;
             })()}
+          </div>
+
+          {/* v3.6.0：重要功能（学习概览/日历/今日进度/温习/设置）在上，扩展词库下载类次要功能下放到学习数据区之后 */}
+          {/* v2.91.0 初中扩展词库：默认不加载，由用户在这里选择是否下载 */}
+          <div className="juniorPack" style={{ marginTop: 16 }}>
+            <div className="juniorPackHead">
+              <span className="juniorPackIcon"><Icon name="book" /></span>
+              <div className="juniorPackTitle">
+                <b>初中扩展词库</b>
+                <span>必考词 1902 · 阅读词汇 406</span>
+              </div>
+              <span className={'juniorPackState' + (juniorDownloaded ? ' on' : '')}>
+                {juniorDownloaded ? '已下载' : '未下载'}
+              </span>
+            </div>
+            <p className="juniorPackDesc">
+              默认<strong>不加载、不占用启动资源</strong>，也不出现在词库列表。需要时点「下载」，两本词库才会加入词库选择 / 背诵 / 听读 / 导出；数据随应用内置，点下载即在本机启用，<strong>无需联网</strong>，可随时移除。
+            </p>
+            <button className={(juniorDownloaded ? 'smallBtn ghost' : 'primary') + ' juniorPackBtn'}
+              disabled={juniorBusy} onClick={juniorDownloaded ? removeJuniorBooks : installJuniorBooks}>
+              <Icon name={juniorDownloaded ? 'trash' : 'download'} />
+              {juniorBusy ? '正在加载词库…' : (juniorDownloaded ? '移除初中扩展词库' : '下载初中扩展词库')}
+            </button>
+          </div>
+
+          {/* v3.4.0 可选词库：3500/总汇/688/985 之外的内置词库，按需下载 */}
+          <div className="juniorPack optionalPack">
+            <div className="juniorPackHead">
+              <span className="juniorPackIcon"><Icon name="book" /></span>
+              <div className="juniorPackTitle">
+                <b>扩展词库</b>
+                <span>已下载 {downloadedOptionalIds.length}/{OPTIONAL_EXTRA_BOOK_IDS.length} 本</span>
+              </div>
+            </div>
+            <p className="juniorPackDesc">
+              以下词库默认<strong>不加载、不出现在词库列表</strong>。需要哪本点「下载」即加入词库选择 / 背诵 / 听读 / 导出；数据随应用内置，<strong>无需联网</strong>，可随时移除。默认保留高考3500词、高考总汇、688高频词、985核心词汇四本。
+            </p>
+            <div className="optionalBookList">
+              {OPTIONAL_EXTRA_BOOK_DEFS.map(function (def) {
+                var on = downloadedOptionalIds.indexOf(def.id) >= 0;
+                var busy = optionalBusyId === def.id;
+                return (
+                  <div className="optionalBookRow" key={def.id}>
+                    <span className="optionalBookName">{def.name} <span className="bookCount">({def.total})</span></span>
+                    <button className={on ? 'smallBtn ghost' : 'smallBtn'} disabled={!!optionalBusyId}
+                      onClick={on ? function () { removeOptionalBook(def.id); } : function () { downloadOptionalBook(def.id); }}>
+                      <Icon name={on ? 'trash' : 'download'} />
+                      {busy ? '加载中…' : (on ? '移除' : '下载')}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* 数据备份与恢复 */}
@@ -11301,8 +11317,6 @@ function App() {
                   {progress[termKey(detailItem.term)] === 'mastered' && <span className="detailMasteredTag"><Icon name="check" />已掌握</span>}
                 </div>
                 <h3 className="detailMeaning"><MeaningFreqList term={detailItem.term} text={detailItem.meaningFull || detailItem.meaning} /></h3>
-                {/* v3.1.0 义项考频说明 */}
-                <p className="mfNote">每个中文义项的高考考查类别（高频核心义 / 熟词生义 / 一般义项）；官方不发布逐义项考查次数，故不标注每条义项的具体次数。</p>
 
                 {/* 例句（紧跟释义显示，确保每个单词详情都有例句） */}
                 {detailItem.examples && detailItem.examples.length > 0 && (
@@ -11463,12 +11477,11 @@ function App() {
                           </div>
                         </div>
                       ))}
-                      <p className="netRelatedTip">来自 Datamuse 公开语料接口（近义 / 反义 / 语义关联），与内置算法给出的「同源词族」是不同关系，两类不混用；不是高考真题考查次数。可在「我的 → 设置」关闭联网补全或清除缓存。</p>
                     </div>
                   );
                 })()}
 
-                {/* 同源词族（内置词根算法，只有同源派生词） */}
+                {/* 同源词族 */}
                 {(() => {
                   const family = findWordFamily(detailItem.term, allWords);
                   if (family.length === 0) return null;
@@ -11476,7 +11489,6 @@ function App() {
                     <div className="detailSection detailWordFamily">
                       <p className="detailSectionTitle">
                         <Icon name="link" />同源词族
-                        <span className="builtinBadge">内置算法</span>
                       </p>
                       <div className="detailTagWrap">
                         {family.map(item => {
@@ -11507,7 +11519,6 @@ function App() {
                     <div className="detailSection detailConfusing">
                       <p className="detailSectionTitle">
                         <Icon name="warn" />易混词辨析
-                        {tagged.length > 0 && <span className="builtinBadge">内置算法</span>}
                       </p>
                       {note && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 8px' }}>{note}</p>}
                       <div className="detailTagWrap">
@@ -11520,7 +11531,6 @@ function App() {
                               style={confBtnStyle}
                               onClick={() => openDetailItem(item)}>
                               {item.term} <small>{item.pos}</small>
-                              {isTagged && <span className="tagDot">算法</span>}
                             </button>
                           );
                         })}
