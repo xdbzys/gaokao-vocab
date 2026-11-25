@@ -1,11 +1,11 @@
 {
   "version": "3.5.3",
-  "versionCode": 345,
+  "versionCode": 346,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4708994,
-  "apkSha256": "aee2f46f468a54e150f3f87ab856e293046f6d39453ea68f658965541b1198f9",
-  "changelog": "【v3.5.3】启动与速度优化\n· 修复 · 部分网络环境下「应用没能正常启动」面板弹出后不消失、专属版网页打不开的问题\n· 优化 · 网页版启动速度：慢网下延长加载等待，页面就绪后自动收起提示，首屏更快可交互\n· 修复 · 官网图标更新为软件同款图标（更高手机浏览器兼容性）\n更新方式：我的 → 版本更新 → 下载安装（覆盖安装，学习记录保留）。"
+  "apkSize": 4709499,
+  "apkSha256": "8f5dc577f7c0464734dbad53f5eddf5efec610b46a8391c4cc86b2055ec550dd",
+  "changelog": "【v3.5.3】启动与速度优化\n· 修复 · 部分网络环境下「应用没能正常启动」面板弹出后不消失、专属版网页打不开的问题\n· 优化 · 网页版启动速度：慢网下延长加载等待，页面就绪后自动收起提示，首屏更快可交互\n· 修复 · 官网图标更新为软件同款图标（更高手机浏览器兼容性）\n更新方式：我的 → 版本更新 → 下载安装"
 }
