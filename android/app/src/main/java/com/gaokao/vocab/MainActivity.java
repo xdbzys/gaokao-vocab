@@ -59,9 +59,6 @@ public class MainActivity extends Activity {
        一旦选中，MP3 / 压缩包 / 备份 JSON 优先写到该目录，用户可自己指定到内存卡或任意文件夹；
        未选择时保持原行为（下载/背群英、音乐/背群英）。 */
     private static final int REQ_SAVE_DIR = 1003;
-    // v3.5.1：头像更换 —— 相册选图回调
-    private static final int REQ_PICK_AVATAR = 1004;
-    private android.webkit.ValueCallback<android.net.Uri[]> mAvatarFilePathCallback = null;
     private static final String PREF_SAVE_DIR_URI = "save_dir_uri";
     private static final String PREF_SAVE_DIR_LABEL = "save_dir_label";
     private static final String SAVE_PREFS = "gaokao_save";
@@ -831,27 +828,6 @@ public class MainActivity extends Activity {
                 return true;
             }
 
-            // v3.5.1：让网页里的 <input type="file" accept="image/*"> 在 App 内也能打开系统相册，
-            // 这样「我的 → 点头像换图」在安装包里同样可用。
-            @Override
-            public boolean onShowFileChooser(WebView webView,
-                                             android.webkit.ValueCallback<android.net.Uri[]> filePathCallback,
-                                             android.webkit.WebChromeClient.FileChooserParams fileChooserParams) {
-                try {
-                    if (mAvatarFilePathCallback != null) {
-                        mAvatarFilePathCallback.onReceiveValue(null);
-                    }
-                    mAvatarFilePathCallback = filePathCallback;
-                    Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    intent.setType("image/*");
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivityForResult(Intent.createChooser(intent, "选择头像"), REQ_PICK_AVATAR);
-                    return true;
-                } catch (Throwable e) {
-                    mAvatarFilePathCallback = null;
-                    return false;
-                }
-            }
         });
 
         // 恢复状态（旋转等）
@@ -1241,39 +1217,6 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // v3.5.1：头像选图结果 —— 缩放压缩成 base64 后回调前端 window.__avatarBridge
-        if (requestCode == REQ_PICK_AVATAR) {
-            android.net.Uri[] result = null;
-            if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
-                result = new android.net.Uri[] { data.getData() };
-            }
-            try {
-                if (mAvatarFilePathCallback != null) {
-                    mAvatarFilePathCallback.onReceiveValue(result);
-                }
-            } catch (Throwable ignored) {}
-            mAvatarFilePathCallback = null;
-            if (result != null && result.length > 0) {
-                try {
-                    android.graphics.Bitmap src = android.provider.MediaStore.Images.Media.getBitmap(getContentResolver(), result[0]);
-                    // 居中裁剪成正方形再缩放到 160×160，避免头像变形与大图超存储配额
-                    int side = Math.min(src.getWidth(), src.getHeight());
-                    int sx = (src.getWidth() - side) / 2, sy = (src.getHeight() - side) / 2;
-                    android.graphics.Bitmap square = android.graphics.Bitmap.createBitmap(src, sx, sy, side, side);
-                    android.graphics.Bitmap small = android.graphics.Bitmap.createScaledBitmap(square, 160, 160, true);
-                    java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-                    small.compress(android.graphics.Bitmap.CompressFormat.JPEG, 82, bos);
-                    String b64 = android.util.Base64.encodeToString(bos.toByteArray(), android.util.Base64.NO_WRAP);
-                    // dataUrl 只含 base64 字符，作为 JS 字符串字面量安全（无引号/反斜杠）
-                    String dataUrl = "data:image/jpeg;base64," + b64;
-                    notifyJs("window.__avatarBridge && window.__avatarBridge('" + dataUrl + "')");
-                    src.recycle();
-                } catch (Throwable e) {
-                    Log.e("GaokaoVocab", "avatar pick failed", e);
-                }
-            }
-            return;
-        }
         if (requestCode == REQ_SAVE_DIR) {
             if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
                 Uri tree = data.getData();

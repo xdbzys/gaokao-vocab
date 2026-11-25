@@ -1,8 +1,15 @@
 {
   "product": "背群英",
   "packageName": "com.gaokao.vocab",
-  "latest": "v3.5.1",
+  "latest": "v3.5.2",
   "releases": [
+    {
+      "version": "v3.5.2",
+      "items": [
+        "调整 · 头像更换与爱心脏进度条仅「李群雁专属版」网页版保留，手机 App 与 App 同款网页版恢复为不可更换头像、圆形学习进度",
+        "调整 · 手机 App 与 App 同款网页版的头像恢复为应用内置默认头像"
+      ]
+    },
     {
       "version": "v3.5.1",
       "items": [

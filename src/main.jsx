@@ -103,7 +103,7 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '3.5.1';
+const APP_VERSION = '3.5.2';
 
 // v3.1.0 内置更新日志改为按需加载（离线兜底），见挂载时的动态 import
 let BUILTIN_CHANGELOG = [];
@@ -115,7 +115,7 @@ const CHANGELOG_TOTAL = 75;
 // 现与 APP_VERSION 严格对齐到同一版本；CI 新增「源码/清单版本一致性」门禁，
 // 此后任何发版都必须三处（本文件 APP_VERSION_CODE、build.gradle、app-update.json）同步，
 // 否则流水线直接失败，杜绝再次脱节。
-const APP_VERSION_CODE = 342;
+const APP_VERSION_CODE = 343;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -165,6 +165,10 @@ const isFileProtocol = (function () {
 })();
 // 「功能完整版」= 原生 App 或新网页版；原生专属能力（装 APK、系统通知）仍只用 isNativeApp 判定
 const isFullApp = isNativeApp || isFullWeb;
+/* v3.5.2：「李群雁专属版」= 根路径网页版（非原生 App、非 /app/ 普通网页版）。
+   换头像 + 爱心进度条只在此版本提供；原生 App 与 /app/ 普通网页版退回 v3.5.0 行为
+   （默认头像不可换、圆形进度条）。 */
+const isExclusiveWeb = !isNativeApp && !isFullWeb;
 
 /* 词性标记表（v2.76.0）：内置词库大量释义形如「a. 能干的, 能够的」「n. 能力；[经] 才能」，
    旧白名单漏了 a. 等标记，界面与朗读里就留下无意义的字母 "a"。
@@ -5783,15 +5787,6 @@ function App() {
     try { return localStorage.getItem('gaokao_avatar') || ''; }
     catch { return ''; }
   });
-  // v3.5.1：头像桥接（原生选图回调 / 网页端变更）懒加载注册，不占首屏体积
-  useEffect(() => {
-    var cleanup = null, disposed = false;
-    import('./avatar-helper.js').then(function (m) {
-      if (disposed) return;
-      cleanup = m.initAvatarBridge(setAvatarUrl, appTip);
-    }).catch(function () {});
-    return function () { disposed = true; if (cleanup) cleanup(); };
-  }, []);
   // 首次使用日期
   const [firstUseDate] = useState(() => {
     try { return localStorage.getItem('gaokao_first_use') || getToday(); }
@@ -10606,10 +10601,9 @@ function App() {
         <section className="panel mePage">
           {/* 顶部用户信息 */}
           <div className="meHeader">
-            <div className="meAvatar" style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+            <div className="meAvatar" style={{ position: 'relative', overflow: 'hidden', cursor: isExclusiveWeb ? 'pointer' : 'default' }}
               onClick={() => {
-                // v3.5.1：网页端与 App 端统一走隐藏 file input（App 内由 WebView 的
-                // onShowFileChooser 弹相册）。压缩逻辑懒加载，选到的图先压到 160×160 再存。
+                if (!isExclusiveWeb) return;
                 const input = document.createElement('input');
                 input.type = 'file'; input.accept = 'image/*';
                 input.onchange = e => {
@@ -10617,18 +10611,17 @@ function App() {
                   if (!file) return;
                   import('./avatar-helper.js').then(function (mod) {
                     mod.compressAvatarImage(file, function (dataUrl) {
-                      if (!dataUrl) { appTip('头像读取失败，请换张图片重试。', '提示'); return; }
+                      if (!dataUrl) { appTip('头像读取失败', '提示'); return; }
                       setAvatarUrl(dataUrl);
                       mod.applyAvatar(dataUrl);
-                      appTip('头像已更换，重启后保留。', '已更新');
+                      appTip('头像已更换', '已更新');
                     });
-                  }).catch(function () { appTip('头像加载失败，请重试。', '提示'); });
+                  }).catch(function () { appTip('头像加载失败', '提示'); });
                 };
-                try { input.click(); } catch (e) { appTip('无法打开图片选择，请换个浏览器重试。', '提示'); }
+                try { input.click(); } catch (e) { appTip('无法打开相册', '提示'); }
               }}>
-              {/* v3.5.1：内置默认头像，点按可更换自己的图（网页版 / App 均可用） */}
-              <img src={avatarUrl || DEFAULT_AVATAR} alt="头像" className="meAvatarImg" />
-              <span className="meAvatarEdit" aria-label="更换头像">＋</span>
+              <img src={isExclusiveWeb ? (avatarUrl || DEFAULT_AVATAR) : DEFAULT_AVATAR} alt="头像" className="meAvatarImg" />
+              {isExclusiveWeb && <span className="meAvatarEdit">＋</span>}
             </div>
             <div className="meInfo">
               <h2>高考词汇学习</h2>
@@ -10762,15 +10755,27 @@ function App() {
             <h3>今日学习</h3>
             <div className="ringProgress">
               <svg viewBox="0 0 100 100" className="ringSvg">
-                {/* v3.5.1：网页版与 App 统一为爱心脏进度条（描边按完成度填充） */}
-                <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
-                  fill="none" stroke="#e5e7eb" strokeWidth="5" />
-                <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
-                  fill="none" stroke="#ef4444" strokeWidth="5"
-                  strokeDasharray="283"
-                  strokeDashoffset={283 * (1 - Math.min(todayCount / Math.max(settings.dailyGoal, 1), 1))}
-                  strokeLinecap="round" />
-                <text x="50" y="48" textAnchor="middle" dy="6" fontSize="18" fill="#111827" fontWeight="bold">{todayCount}</text>
+                {isExclusiveWeb ? (
+                  <>
+                    {/* v3.5.2：李群雁专属版（根路径网页版）保留爱心脏进度条（描边按完成度填充） */}
+                    <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
+                      fill="none" stroke="#e5e7eb" strokeWidth="5" />
+                    <path d="M50 88 C25 65 8 50 8 33 C8 20 18 12 30 12 C38 12 45 17 50 24 C55 17 62 12 70 12 C82 12 92 20 92 33 C92 50 75 65 50 88Z"
+                      fill="none" stroke="#ef4444" strokeWidth="5"
+                      strokeDasharray="283"
+                      strokeDashoffset={283 * (1 - Math.min(todayCount / Math.max(settings.dailyGoal, 1), 1))}
+                      strokeLinecap="round" />
+                  </>
+                ) : (
+                  <>
+                    {/* App 与 /app/ 普通网页版：恢复 v3.5.0 圆形进度条 */}
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#22c55e" strokeWidth="8"
+                      strokeDasharray={`${Math.min(todayCount / Math.max(settings.dailyGoal, 1), 1) * 264} 264`}
+                      strokeDashoffset="66" strokeLinecap="round" transform="rotate(-90 50 50)" />
+                  </>
+                )}
+                <text x="50" y={isExclusiveWeb ? 48 : 50} textAnchor="middle" dy="6" fontSize="18" fill="#111827" fontWeight="bold">{todayCount}</text>
               </svg>
               <div className="ringLabel">/ {settings.dailyGoal} 词</div>
             </div>
