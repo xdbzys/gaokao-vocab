@@ -380,10 +380,34 @@ jobs:
           mkdir -p dist/app
           cp -r dist-web/assets/. dist/assets/
           cp dist-web/index.html dist/index.html
-          # v3.5.3：/app/ 复用根路径 assets（改为 ../assets/），与专属版共享同一份 CDN 缓存。
+          # v3.5.4：/app/ 复用根路径 assets（改为 ../assets/），与专属版共享同一份 CDN 缓存。
           # 之前把 assets 完整拷到 /app/assets/，同一批文件因 URL 不同成为独立缓存条目，
           # 冷缓存回源要 40s+，普通网页版因此加载极慢/被启动守卫误判为打不开。
-          sed -e 's#\./assets/#../assets/#g' -e 's#\./legacy/#../legacy/#g' dist-web/index.html > dist/app/index.html
+          # 用 split/join 一次替换：旧写法 sed 会对 ../legacy/ 再匹配一次，产出 .../legacy/ 死链。
+          node - <<'NODE'
+          const fs = require('fs');
+          let h = fs.readFileSync('dist-web/index.html', 'utf8');
+          h = h.split('./assets/').join('../assets/').split('./legacy/').join('../legacy/');
+          fs.writeFileSync('dist/app/index.html', h);
+          NODE
+          # v3.5.4 门禁：兜底链接必须能从页面所在目录解析到真实产物，且不得出现 .../ 畸形路径。
+          # 这两条正是「打不开」的根因，必须由 CI 拦住，不能再靠人工点测。
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const cases = [['dist/index.html', './legacy/index.html'], ['dist/app/index.html', '../legacy/index.html']];
+          for (const [file, want] of cases) {
+            const h = fs.readFileSync(file, 'utf8');
+            if (h.indexOf('.../') >= 0) { console.error(file + ': 出现 .../ 畸形路径'); process.exit(1); }
+            const hits = h.split(want).length - 1;
+            if (hits < 2) { console.error(file + ': 兜底链接数量异常 ' + want + ' x' + hits); process.exit(1); }
+            const target = path.resolve(path.dirname(path.resolve(file)), want);
+            if (!fs.existsSync(target)) { console.error(file + ': 兜底目标不存在 ' + target); process.exit(1); }
+          }
+          const appHtml = fs.readFileSync('dist/app/index.html', 'utf8');
+          if (appHtml.indexOf('"../assets/') < 0) { console.error('dist/app/index.html 未复用 ../assets/'); process.exit(1); }
+          console.log('[legacy-link] PASS: 根路径与 /app/ 兜底链接均可解析');
+          NODE
           # /app/ 也要有一份更新清单，否则页面内的 app-update.json 探测会 404
           cp dist/app-update.json dist/app/app-update.json
           # 确认清单没被覆盖（缺 apkSha256 直接失败）

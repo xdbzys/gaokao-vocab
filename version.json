@@ -1,11 +1,11 @@
 {
-  "version": "3.5.3",
-  "versionCode": 347,
+  "version": "3.5.4",
+  "versionCode": 348,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "apkSize": 4709504,
   "apkSha256": "cb34c430d3edab1485c7ed2cefe4c7b12e90e8fce23a6c89367a70d73a433438",
-  "changelog": "【v3.5.3】启动与速度优化\n· 修复 · 部分网络环境下「应用没能正常启动」面板弹出后不消失、专属版网页打不开的问题\n· 优化 · 网页版启动速度：慢网下延长加载等待，页面就绪后自动收起提示，首屏更快可交互\n· 修复 · 官网图标更新为软件同款图标（更高手机浏览器兼容性）\n更新方式：我的 → 版本更新 → 下载安装"
+  "changelog": "【v3.5.4】网页版修复与提速\n· 修复 · 专属版网页「打不开」：旧内核兜底链接写错了目录，根路径会解析成 /legacy/ 死链；现按页面所在目录自动生成，并加发布门禁拦截\n· 修复 · 普通网页版 /app/ 的兜底链接被构建脚本二次替换成 .../legacy/，同样打不开；改为一次性精确改写\n· 修复 · 官网与网页版的浏览器标签、页头图标仍显示占位「文档」图标，统一换成软件版同款图标\n· 优化 · 普通网页版启动更快：入口脚本预加载 + 默认词库分片预取；慢网下加载等待从 12 秒放宽到 20 秒，不再误报「加载失败」\n更新方式：我的 → 版本更新 → 下载安装"
 }

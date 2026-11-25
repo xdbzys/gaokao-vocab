@@ -4,3 +4,4 @@ dist/
 .uploads/
 .trae/
 *.apk
+dist-web/

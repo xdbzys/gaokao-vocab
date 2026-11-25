@@ -130,16 +130,40 @@ function nodePaths() {
   const entryRel = path.relative(OUTDIR, path.resolve(process.cwd(), entryOutput)).split(path.sep).join('/');
 
   if (template.indexOf('<!--APP_BOOT_GUARD-->') < 0) throw new Error('index.web.html 缺少 APP_BOOT_GUARD 占位');
-  // v3.5.3：多文件版图标改用独立 PNG 文件（不再内联 base64），
-  // 既省首屏体积（base64 4KB+），也让手机浏览器正确识别/缓存软件图标。
-  const ICON_SRC = path.join(ROOT, 'assets-src', 'icon.png');
+  if (template.indexOf('__LEGACY_LINK__') < 0) throw new Error('index.web.html 缺少 __LEGACY_LINK__ 占位');
+  if (template.indexOf('<!--APP_PRELOAD-->') < 0) throw new Error('index.web.html 缺少 APP_PRELOAD 占位');
+
+  /* v3.5.4：兜底链接由构建期注入，不再在模板里手写相对路径。
+     根路径产物写 ./legacy/index.html；/app/ 产物由 CI 用同一份 HTML 改写成 ../legacy/index.html。
+     历史 bug：模板里写死 ../legacy/（根路径解析成 /legacy/ → 404），CI 的 sed 又对 /app/
+     二次替换成 .../legacy/（同样 404），导致「打不开」时兜底反而进死链。 */
+  template = template.replace(/__LEGACY_LINK__/g, './legacy/index.html');
+
+  /* v3.5.4：图标与软件版（APK）一致，不再用占位「文档」图标。
+     用真实 PNG 文件 + 版本号入文件名，避免手机浏览器长期缓存旧 favicon。 */
+  let version = '0';
+  try { version = String(JSON.parse(fs.readFileSync(path.join(ROOT, 'app-update.json'), 'utf8')).version || '0'); } catch (e) {}
+  const ICON_SRC = path.join(ROOT, 'public', 'icon-192.png');
   if (fs.existsSync(ICON_SRC)) {
-    fs.mkdirSync(path.join(OUTDIR, 'assets'), { recursive: true });
-    fs.copyFileSync(ICON_SRC, path.join(OUTDIR, 'assets', 'icon.png'));
-    template = template.replace(/href="data:image\/png;base64,[^"]*"/, 'href="./assets/icon.png"');
+    const iconName = 'icon-' + version + '.png';
+    fs.copyFileSync(ICON_SRC, path.join(OUTDIR, 'assets', iconName));
+    template = template.replace(/href="data:image\/png;base64,[^"]*"/, 'href="./assets/' + iconName + '"');
+  } else {
+    console.error('[WARN] 未找到 public/icon-192.png，网页版图标保持内联占位图');
   }
+  /* v3.5.4：预取默认词库分片（低优先级 prefetch）。
+     首屏 React 挂载后才请求 gaokao-3500 的 400KB 分片，那时才开始下载；提前用 prefetch
+     让浏览器在空闲带宽上先拉进 HTTP 缓存，弱网下「第一道题」能更早出现。
+     用 prefetch 而非 preload，避免和入口 main.js 抢带宽。 */
+  let bookPrefetch = '';
+  try {
+    const seeds = fs.readdirSync(path.join(OUTDIR, 'assets')).filter(function (f) { return /^chunk-seeds-3500\..*\.js$/.test(f); });
+    if (seeds.length) bookPrefetch = '<link rel="prefetch" href="./assets/' + seeds[0] + '">';
+  } catch (e) {}
+
   template = template
     .replace('<!--APP_BOOT_GUARD-->', '<script>' + BOOT_GUARD + '</script>')
+    .replace('<!--APP_PRELOAD-->', '<link rel="modulepreload" href="./' + entryRel + '">' + bookPrefetch)
     .replace('<!--APP_CSS-->', '<style>' + css + '</style>')
     .replace('<!--APP_SCRIPT-->', '<script type="module" src="./' + entryRel + '"></script>');
 

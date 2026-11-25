@@ -5,22 +5,13 @@
 <!--APP_BOOT_GUARD-->
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#2563eb">
+<!-- v3.5.4：入口脚本预加载，与 HTML 解析并行 -->
+<!--APP_PRELOAD-->
 <title>背群英</title>
-<!-- 内联 data-URI 图标：浏览器不再自动请求 /favicon.ico，避免 404；不新增二进制文件 -->
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
 <!--APP_CSS-->
 <style>
-  /* ============================================================
-     v2.79.0 首屏骨架（纯 CSS，零 JS 依赖）
-     背景：网页版原来是 3.37MB 单文件，github.io 上要 40s 才出画面，
-     用户看到的就是「打不开」。现在页面先出这块静态骨架，
-     React 挂载后由 __removeSkeleton() 移除；即使 JS 挂了也有明确反馈。
-     三段文案互斥显示，切换靠 animation-delay，不需要定时器脚本：
-       0~3s   → 「正在加载词库…」
-       3~12s  → 「网络较慢，正在加载…」
-       12s 起 → 「加载失败」+ 重试按钮
-     隐藏用 visibility 而不只是 opacity，保证 innerText 里也只剩当前这一段。
-     ============================================================ */
+  /* 首屏骨架（纯 CSS）：React 挂载后移除，JS 失败也有反馈 */
   html, body {
     margin: 0;
     padding: 0;
@@ -86,11 +77,11 @@
     100% { transform: translateX(0); }
   }
   /* 三段状态互斥：同一时刻只有一段可见（visibility:hidden 会同时从 innerText 里消失）。
-     同属性上后声明的 animation 在结束后优先，因此 12s 起 skStageOut 会覆盖 3s 的 skStageIn。 */
+     同属性上后声明的 animation 在结束后优先，因此 20s 起 skStageOut 会覆盖 5s 的 skStageIn。 */
   #skLoading, #skSlow, #skFail { visibility: hidden; opacity: 0; }
-  #skLoading { visibility: visible; opacity: 1; animation: skStageOut 0s linear 3s forwards; }
-  #skSlow { animation: skStageIn 0s linear 3s forwards, skStageOut 0s linear 12s forwards; }
-  #skFail { animation: skStageIn 0s linear 12s forwards; }
+  #skLoading { visibility: visible; opacity: 1; animation: skStageOut 0s linear 5s forwards; }
+  #skSlow { animation: skStageIn 0s linear 5s forwards, skStageOut 0s linear 20s forwards; }
+  #skFail { animation: skStageIn 0s linear 20s forwards; }
   @keyframes skStageIn { to { visibility: visible; opacity: 1; } }
   @keyframes skStageOut { to { visibility: hidden; opacity: 0; } }
   #skFail { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 16px; }
@@ -100,11 +91,11 @@
     color: #2563eb;
     text-decoration: underline;
     pointer-events: none;
-    animation: skEnable 0s linear 12s forwards;
+    animation: skEnable 0s linear 20s forwards;
   }
   #skFail button {
     pointer-events: none;
-    animation: skEnable 0s linear 12s forwards;
+    animation: skEnable 0s linear 20s forwards;
     padding: 9px 22px;
     font-size: 14px;
     font-weight: 600;
@@ -151,7 +142,7 @@
   <div id="skFail">
     <div class="skSub">加载失败，请检查网络后重试</div>
     <button type="button" onclick="location.reload()">重新加载</button>
-    <a class="skLegacy" href="./legacy/index.html">打不开？试试单文件完整版</a>
+    <a class="skLegacy" href="__LEGACY_LINK__">打不开？试试单文件完整版</a>
     <a class="skLegacy" href="https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html">从 CDN 打开完整版（弱网更稳）</a>
     <a class="skLegacy" href="https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk">App 闪退打不开？下载最新版安装包覆盖安装</a>
   </div>
@@ -161,7 +152,9 @@
 <script nomodule>
   /* 0) 老浏览器兜底：不支持 ES module 的 WebView（部分 Android 7/8 定制机、
         翻译扫描笔）拿不到 type=module 的入口包，直接跳单文件旧版，避免白屏。 */
-  (function () { try { location.replace('../legacy/index.html'); } catch (e) {} })();
+  /* v3.5.4：兜底路径由构建按页面目录注入；旧模板写死上级相对路径，在根路径会 404，
+     CI 的 sed 又对 /app/ 二次替换，同样得到死链。 */
+  (function () { try { location.replace('__LEGACY_LINK__'); } catch (e) {} })();
 </script>
 <script>
 /* 1) 骨架退场（main.jsx 在 createRoot().render() 之后调用） */
@@ -212,8 +205,8 @@ window.__removeSkeleton = function () {
   window.__reportBootError = report;
 })();
 
-/* 3) 12s 兜底：CSS 动画在旧 WebView 上不一定生效，这里再用 JS 兜一层，
-      保证「加载失败」出现时前两段一定不在，三段文案永远互斥。 */
+/* 3) 20s 兜底：旧 WebView 上 CSS 动画不一定生效，这里再用 JS 兜一层，三段文案永远互斥。
+      v3.5.4：12s → 20s，弱网下入口包常要 15s+，过早判失败会被当成「打不开」。 */
 setTimeout(function () {
   var sk = document.getElementById('appSkeleton');
   if (!sk || sk.className === 'skGone') return;
@@ -231,7 +224,7 @@ setTimeout(function () {
     var links = fail.querySelectorAll('.skLegacy');
     for (var li = 0; li < links.length; li++) links[li].style.pointerEvents = 'auto';
   }
-}, 12000);
+}, 20000);
 </script>
 
 <!--APP_SCRIPT-->

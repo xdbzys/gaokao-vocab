@@ -103,11 +103,11 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '3.5.3';
+const APP_VERSION = '3.5.4';
 
 // v3.1.0 内置更新日志改为按需加载（离线兜底），见挂载时的动态 import
 let BUILTIN_CHANGELOG = [];
-const CHANGELOG_TOTAL = 75;
+const CHANGELOG_TOTAL = 76;
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
 // v3.4.1 根因修复：此前 CI 每版只把 Bump 后的版本号写进构建产物（APK/清单），
