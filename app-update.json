@@ -1,11 +1,11 @@
 {
   "version": "3.6.0",
-  "versionCode": 347,
+  "versionCode": 348,
   "changelog": "【v3.6.0】短语归类、作文素材与体验优化\n· 新增 · 扩展页新增「高考短语」，同一介词、同一单词的不同介词搭配归类在一起，逐条标注考频，方便成组背诵\n· 新增 · 扩展页新增「作文素材」：节日英文名、新历/农历日期表达、衔接词与高分句型，写作直接套用\n· 新增 · 答题后每个选项都可点击查看该词考点，并标注英文单词\n· 优化 · 背诵页常驻自动发音按钮；护眼模式改为专业绿色，长时间阅读更舒适\n· 优化 · 精简单词详情与设置里的技术说明，界面更简介；扩展词库下载移到学习数据下方；修复词库选择被状态栏遮挡、长按复制与详情页横向滑动的显示问题\n更新方式：我的 → 版本更新 → 下载安装（覆盖安装，学习记录保留）。",
   "devNotes": "v3.4.0：①CORE_BOOK_IDS 默认四本，OPTIONAL_EXTRA_BOOK_DEFS 从 BOOK_DEFS 派生9本可选，builtInBooks 只映射核心（_allDefBooks 仍为全部建映射保证 ensureBookData 可用）。②我的页下载区 downloadOptionalBook/removeOptionalBook 复用 ensureBookData，下载状态存 OPTIONAL_EXTRA_STORAGE_KEY，启动空闲期恢复 applyNameOverride。③重命名 renameBookById：自定义存 customBooks，内置/可选存 BOOK_NAME_OVERRIDE_KEY，原地改运行时对象保持引用一致；词库管理页加重命名按钮。④删除可选词库同步清下载标记避免重启恢复。⑤后台只加载核心+已下载。验证：20项源码断言+12项流程模拟+首屏249.1KB+ES5+Chromium37+CI门禁全过。\nv3.4.1: 修复「检查不到新版本」根因。(a) 真因: CI 的 Bump 步骤只在构建工作区把版本号写入 APK/web/app-update.json，Gitee/mirror 提交步骤从未把 main.jsx 的 APP_VERSION_CODE、build.gradle 的 versionCode/versionName 提交回仓库，导致源码版本长期停在 v2.96/328、gradle 停在 286/2.74.0，与线上清单永久脱节。(b) 客户端 checkCloudUpdate 用 localCode=Math.max(APP_VERSION_CODE, nativeCode) 作基线，页面常量被抬高时会掩盖旧 APK，误判已最新；改为原生 App 只以本机安装包真实 versionCode 为基线，页面常量仅在读不到真实版本时回退。(c) 网页版更新检查增加 versionCode 数值比较，避免只比版本字符串时漏检。(d) CI mirror 步骤把 Bump 后的源码三处一并回写 master；新增 Version baseline consistency gate，源码/gradle/清单任一版本不一致即让流水线失败，从机制上杜绝复发。版本 3.4.1 / versionCode 339。",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
   "webHtmlUrl": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html",
-  "apkSize": 4712147,
-  "apkSha256": "1529420ecf1c861fc07fad8942836cb174a475c01b1a473d22dc605022581b1c"
+  "apkSize": 4712134,
+  "apkSha256": "3e141eed37099bedc3e47a90cd5c07f9cc08ca4eee9e4ed290aa9271ff56fa46"
 }
