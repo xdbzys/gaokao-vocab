@@ -179,7 +179,7 @@
 <meta name="theme-color" content="#2563eb">
 <title>背群英</title>
 <!-- 内联 data-URI 图标：浏览器不再自动请求 /favicon.ico，避免 404；不新增二进制文件 -->
-<link rel="icon" type="image/png" href="./assets/icon.png">
+<link rel="icon" type="image/png" href="../assets/icon.png">
 <style>:root {
   --primary: #3b82f6;
   --primary-dark: #2563eb;
@@ -4253,7 +4253,7 @@ body.eye-care .mfEvMeta { color: #b91c1c; }
   <div id="skFail">
     <div class="skSub">加载失败，请检查网络后重试</div>
     <button type="button" onclick="location.reload()">重新加载</button>
-    <a class="skLegacy" href="./legacy/index.html">打不开？试试单文件完整版</a>
+    <a class="skLegacy" href="../legacy/index.html">打不开？试试单文件完整版</a>
     <a class="skLegacy" href="https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/web/index.html">从 CDN 打开完整版（弱网更稳）</a>
     <a class="skLegacy" href="https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk">App 闪退打不开？下载最新版安装包覆盖安装</a>
   </div>
@@ -4263,7 +4263,7 @@ body.eye-care .mfEvMeta { color: #b91c1c; }
 <script nomodule>
   /* 0) 老浏览器兜底：不支持 ES module 的 WebView（部分 Android 7/8 定制机、
         翻译扫描笔）拿不到 type=module 的入口包，直接跳单文件旧版，避免白屏。 */
-  (function () { try { location.replace('../legacy/index.html'); } catch (e) {} })();
+  (function () { try { location.replace('.../legacy/index.html'); } catch (e) {} })();
 </script>
 <script>
 /* 1) 骨架退场（main.jsx 在 createRoot().render() 之后调用） */
@@ -4336,6 +4336,6 @@ setTimeout(function () {
 }, 12000);
 </script>
 
-<script type="module" src="./assets/main.TMWCXJP7.js"></script>
+<script type="module" src="../assets/main.SPRMTXNW.js"></script>
 </body>
 </html>
