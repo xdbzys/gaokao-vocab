@@ -1,11 +1,11 @@
 {
-  "version": "3.5.4",
-  "versionCode": 349,
+  "version": "3.6.0",
+  "versionCode": 347,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4709822,
-  "apkSha256": "9e3642ff21d5cbe7043a85e40f8ec30711875e30b733e406b21f9b93e8223a9e",
-  "changelog": "【v3.5.4】网页版修复与提速\n· 修复 · 专属版网页「打不开」：旧内核兜底链接写错了目录，根路径会解析成 /legacy/ 死链；现按页面所在目录自动生成，并加发布门禁拦截\n· 修复 · 普通网页版 /app/ 的兜底链接被构建脚本二次替换成 .../legacy/，同样打不开；改为一次性精确改写\n· 修复 · "
+  "apkSize": 4712147,
+  "apkSha256": "1529420ecf1c861fc07fad8942836cb174a475c01b1a473d22dc605022581b1c",
+  "changelog": "【v3.6.0】短语归类、作文素材与体验优化\n· 新增 · 扩展页新增「高考短语」，同一介词、同一单词的不同介词搭配归类在一起，逐条标注考频，方便成组背诵\n· 新增 · 扩展页新增「作文素材」：节日英文名、新历/农历日期表达、衔接词与高分句型，写作直接套用\n· 新增 · 答题后每个选项都可点击查看该词考点，并标注英文单"
 }

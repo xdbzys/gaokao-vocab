@@ -178,9 +178,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#2563eb">
 <!-- v3.5.4：入口脚本预加载，与 HTML 解析并行 -->
-<link rel="modulepreload" href="../assets/main.ZDVJUBZQ.js"><link rel="prefetch" href="../assets/chunk-seeds-3500.UBBJHQ3G.js">
+<link rel="modulepreload" href="../assets/main.OQNL7OLH.js"><link rel="prefetch" href="../assets/chunk-seeds-3500.UBBJHQ3G.js">
 <title>背群英</title>
-<link rel="icon" type="image/png" href="../assets/icon-3.5.4.png">
+<link rel="icon" type="image/png" href="../assets/icon-3.6.0.png">
 <style>:root {
   --primary: #3b82f6;
   --primary-dark: #2563eb;
@@ -235,7 +235,8 @@ button:active { transform: scale(0.97); }
   max-width: 520px;
   min-height: 100vh;
   margin: 0 auto;
-  padding: max(18px, env(safe-area-inset-top)) 16px 100px;
+  /* v3.6.0：顶部留白保底，避免沉浸式状态栏压住顶部词库选择按钮/下拉 */
+  padding: max(26px, calc(env(safe-area-inset-top) + 6px)) 16px 100px;
 }
 
 /* ===== 顶部栏 ===== */
@@ -2149,7 +2150,7 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 /* ===== 翻译笔等窄长屏适配（宽度≤360px） ===== */
 @media (max-width: 360px) {
   body { min-width: 0; }
-  .app { padding: max(12px, env(safe-area-inset-top)) 8px 90px; max-width: 100%; }
+  .app { padding: max(20px, calc(env(safe-area-inset-top) + 6px)) 8px 90px; max-width: 100%; }
   h1 { font-size: 19px; }
   h2 { font-size: 20px; }
   h3 { font-size: 15px; }
@@ -4111,6 +4112,119 @@ body.eye-care .mfEvMeta { color: #b91c1c; }
   background: transparent; color: var(--text-secondary); border-color: var(--border);
 }
 .optionalBookRow .smallBtn:disabled { opacity: .5; cursor: default; }
+
+/* ==========================================================================
+   v3.6.0 样式
+   ========================================================================== */
+
+/* --- 高考短语：按介词/动词分组，成组背诵，逐条考频 --- */
+.phraseGroupCard { margin-bottom: 12px; padding: 12px; }
+.phraseGroupHead {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1.5px solid var(--border-light);
+}
+.phraseGroupTitle { font-size: 1.05em; font-weight: 800; color: var(--primary-dark); }
+.phraseGroupCount { font-size: 12px; color: var(--text-tertiary); font-weight: 600; }
+.phraseRow {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  padding: 6px 2px; border-bottom: 1px solid var(--border-light); cursor: pointer;
+}
+.phraseRow:last-child { border-bottom: none; }
+.phraseRow:active { opacity: .6; }
+.phraseEn { font-weight: 700; font-size: 14px; color: var(--text); min-width: 0; }
+.phraseCn { font-size: 13px; color: var(--text-secondary); flex: 1 1 auto; }
+.phraseFreq { flex: 0 0 auto; font-size: 11px; font-weight: 700; white-space: nowrap; }
+
+/* --- 作文素材 --- */
+.essayDateLine { font-size: 12px; color: var(--text-tertiary); margin: 2px 0 0; }
+.essaySentenceEn { font-size: 14px; font-weight: 600; color: var(--primary-dark); line-height: 1.5; word-break: break-word; }
+
+/* --- 修复：长按单词复制出现系统选区/放大镜导致 UI 错乱。
+       正文文本不弹原生选区，长按由应用内「发音/详情」承接；输入框仍可正常选择。 --- */
+.card, .detailSection, .phraseRow, .mfList, .mfItem, .listItem, h1, h2, h3, h4, p, span {
+  -webkit-touch-callout: none;
+}
+
+/* --- 修复：点开单词详情后内容可左右滑动（横向溢出）。
+       弹窗内容与长串英文强制不溢出，纵向仍可滚动。 --- */
+.modalContent { overflow-x: hidden; overscroll-behavior-x: contain; }
+.modalContent h2, .modalContent h3, .detailMeaning, .mfText,
+.phraseEn, .essaySentenceEn, .detailCollocationItem, .exampleEn, .mfEvQuote {
+  overflow-wrap: anywhere; word-break: break-word;
+}
+
+/* --- 修复：词库选择下拉在部分手机被状态栏遮挡/展开过高溢出屏幕 --- */
+.bookPickerDropdown {
+  max-height: min(52vh, 420px);
+  overscroll-behavior: contain;
+}
+@media (max-width: 360px) {
+  .bookPickerDropdown { max-height: 46vh; }
+}
+
+/* --- 绿色护眼模式：低饱和豆绿背景 + 深灰绿文字 + 沉稳绿主色 + 极淡绿滤镜，
+       低蓝紫光、低对比；放在末尾覆盖 v2.81.2 暖色定义 --- */
+body.eye-care {
+  --primary: #3f7d52;
+  --primary-dark: #2c5c3b;
+  --primary-light: #d9ecdd;
+  --primary-bg: #e6f2e8;
+  --danger: #b4472f;
+  --danger-light: #f3ded7;
+  --warning: #8a7318;
+  --warning-light: #efe9c9;
+  --text: #2f4034;
+  --text-secondary: #5d7263;
+  --text-tertiary: #8aa08e;
+  --bg: #e6efe4;
+  --bg-card: #f4f8f1;
+  --bg-secondary: #dfeade;
+  --bg-tertiary: #e9f1e6;
+  --border: #cadcc9;
+  --border-light: #dbe9d8;
+  --shadow-sm: 0 1px 3px rgba(47,64,52,0.06);
+  --shadow: 0 4px 16px rgba(47,64,52,0.09);
+  --shadow-lg: 0 8px 30px rgba(47,64,52,0.11);
+  background: #e6efe4;
+}
+body.eye-care .app { background: transparent; }
+body.eye-care::after {
+  background: rgba(86, 150, 96, 0.045);
+}
+/* 覆盖前文散落的暖色硬编码，改用绿色系 */
+body.eye-care .examFreqNote,
+body.eye-care .meOverview,
+body.eye-care .settingsEntry,
+body.eye-care .juniorPack,
+body.eye-care .juniorPackIcon,
+body.eye-care .settingsEntryIcon,
+body.eye-care .settingsPage,
+body.eye-care .settingsPageBar,
+body.eye-care .settingsPageBody,
+body.eye-care .passageArticle { background: #e6f2e8; border-color: #cadcc9; }
+body.eye-care .examFreqNote strong,
+body.eye-care .settingsPageTitle,
+body.eye-care .settingsSubTitle { color: #2c5c3b; }
+body.eye-care .settingsBackBtn,
+body.eye-care .juniorPackIcon,
+body.eye-care .settingsEntryIcon { color: #3f7d52; }
+body.eye-care .passageBadge { background: #d9ecdd; border-color: #cadcc9; color: #2c5c3b; }
+body.eye-care .passageBlankMark { background: #cfe4d2; color: #2c5c3b; }
+body.eye-care .examFreqNet,
+body.eye-care .netRelatedSection,
+body.eye-care .netEnrichNote { border-color: #cadcc9; }
+body.eye-care .netRelatedTag,
+body.eye-care .netRelatedBadge { background: #e6f2e8; color: #2c5c3b; border-color: #cadcc9; }
+body.eye-care .examFreqTag.examFreqPending { color: #4a6b50; background: rgba(63,125,82,.10); }
+body.eye-care .webUpdateBar { color: #2c5c3b; background: rgba(63,125,82,.10); border-color: #a9ccb2; }
+body.eye-care .tipActions .tipCancel { background: #e2ede0; color: #3f5a45; border-color: #cadcc9; }
+body.eye-care .tipInput { background: #eef5eb; color: #2f4034; border-color: #cadcc9; }
+body.eye-care .fullLogCard { background: #eef5eb; color: #2f4034; }
+body.eye-care .juniorPackBtn.smallBtn.ghost { color: #3f6b48; border-color: #cadcc9; }
+body.eye-care .juniorPackState.on { color: #2c5c3b; background: rgba(63,125,82,.16); }
+body.eye-care .mfTag-core, body.eye-care .mfCount, body.eye-care .mfEvMeta { color: #b4472f; }
+body.eye-care .mfTag-familiar { color: #7e22ce; }
+body.eye-care .phraseFreq { filter: saturate(.85); }
 </style>
 <style>
   /* 首屏骨架（纯 CSS）：React 挂载后移除，JS 失败也有反馈 */
@@ -4329,6 +4443,6 @@ setTimeout(function () {
 }, 20000);
 </script>
 
-<script type="module" src="../assets/main.ZDVJUBZQ.js"></script>
+<script type="module" src="../assets/main.OQNL7OLH.js"></script>
 </body>
 </html>
