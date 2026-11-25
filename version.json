@@ -1,11 +1,11 @@
 {
-  "version": "3.5.0",
-  "versionCode": 340,
+  "version": "3.5.1",
+  "versionCode": 342,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4707415,
-  "apkSha256": "6d463a86ff05067659bbf28f157613eb6e2823f009d8a3072aec397f987a5d7e",
-  "changelog": "【v3.5.0】扩展页精简 + 情景记忆升级\n① 删除「易错词」「拼写纠错」两个入口，扩展页更聚焦\n② 情景记忆改版：中文逐句紧挨英文原文显示，清晰明了；新增「显示/隐藏中文」按钮，可一键切换阅读与自测模式，设置本机记忆\n更新方式：我的 → 版本更新 → 下载安装（覆盖安装，学习记录保留）。"
+  "apkSize": 4708994,
+  "apkSha256": "aee2f46f468a54e150f3f87ab856e293046f6d39453ea68f658965541b1198f9",
+  "changelog": "【v3.5.1】头像更换 + 爱心脏进度 + 官网同步\n① 头像点击更换现在网页版和手机 App 都能用：选图自动压缩后保存，大图不再因超限丢失；头像右下角加了更换标记\n② 今日学习进度条在网页版与 App 统一为爱心脏形状，按完成度填充\n③ 官网版本信息同步到最新版，图标统一为软件同款（书本＋对勾）\n更新方式：我的 "
 }

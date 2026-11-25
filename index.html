@@ -152,7 +152,7 @@
 <meta name="theme-color" content="#2563eb">
 <title>背群英</title>
 <!-- 内联 data-URI 图标：浏览器不再自动请求 /favicon.ico，避免 404；不新增二进制文件 -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTYiIGZpbGw9IiMyNTYzZWIiLz48dGV4dCB4PSIzMiIgeT0iNDQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJQaW5nRmFuZyBTQyxNaWNyb3NvZnQgWWFIZWksc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzNiIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iI2ZmZiI+6IuxPC90ZXh0Pjwvc3ZnPg==">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTgyNyIvPgogIDxyZWN0IHg9IjExOCIgeT0iOTYiIHdpZHRoPSIyNzYiIGhlaWdodD0iMzIwIiByeD0iMzQiIGZpbGw9IiNmZmZmZmYiLz4KICA8cGF0aCBkPSJNMTYwIDE2MGgxOTJNMTYwIDIxNGgxMzBNMTYwIDI2OGgxOTJNMTYwIDMyMmgxMDYiIHN0cm9rZT0iIzExMTgyNyIgc3Ryb2tlLXdpZHRoPSIyOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGNpcmNsZSBjeD0iMzQ2IiBjeT0iMzQyIiByPSIzOCIgZmlsbD0iIzI1NjNlYiIvPgogIDxwYXRoIGQ9Ik0zMzQgMzQybDEwIDEwIDIyLTI2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMTIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=">
 <style>:root {
   --primary: #3b82f6;
   --primary-dark: #2563eb;
@@ -1632,6 +1632,27 @@ textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
   font-size: 28px;
   flex-shrink: 0;
   box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  position: relative;
+  cursor: pointer;
+}
+
+/* v3.5.1：头像右下角更换标记，明确提示可点击 */
+.meAvatarEdit {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  line-height: 18px;
+  text-align: center;
+  font-weight: 700;
+  border: 2px solid var(--bg);
+  box-sizing: content-box;
+  pointer-events: none;
 }
 
 .meInfo { flex: 1; }
@@ -4288,6 +4309,6 @@ setTimeout(function () {
 }, 12000);
 </script>
 
-<script type="module" src="./assets/main.LYOFOEMF.js"></script>
+<script type="module" src="./assets/main.IC7DFFYU.js"></script>
 </body>
 </html>
