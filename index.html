@@ -177,9 +177,10 @@
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#2563eb">
+<!-- v3.5.4：入口脚本预加载，与 HTML 解析并行 -->
+<link rel="modulepreload" href="./assets/main.ZDVJUBZQ.js"><link rel="prefetch" href="./assets/chunk-seeds-3500.UBBJHQ3G.js">
 <title>背群英</title>
-<!-- 内联 data-URI 图标：浏览器不再自动请求 /favicon.ico，避免 404；不新增二进制文件 -->
-<link rel="icon" type="image/png" href="./assets/icon.png">
+<link rel="icon" type="image/png" href="./assets/icon-3.5.4.png">
 <style>:root {
   --primary: #3b82f6;
   --primary-dark: #2563eb;
@@ -4112,17 +4113,7 @@ body.eye-care .mfEvMeta { color: #b91c1c; }
 .optionalBookRow .smallBtn:disabled { opacity: .5; cursor: default; }
 </style>
 <style>
-  /* ============================================================
-     v2.79.0 首屏骨架（纯 CSS，零 JS 依赖）
-     背景：网页版原来是 3.37MB 单文件，github.io 上要 40s 才出画面，
-     用户看到的就是「打不开」。现在页面先出这块静态骨架，
-     React 挂载后由 __removeSkeleton() 移除；即使 JS 挂了也有明确反馈。
-     三段文案互斥显示，切换靠 animation-delay，不需要定时器脚本：
-       0~3s   → 「正在加载词库…」
-       3~12s  → 「网络较慢，正在加载…」
-       12s 起 → 「加载失败」+ 重试按钮
-     隐藏用 visibility 而不只是 opacity，保证 innerText 里也只剩当前这一段。
-     ============================================================ */
+  /* 首屏骨架（纯 CSS）：React 挂载后移除，JS 失败也有反馈 */
   html, body {
     margin: 0;
     padding: 0;
@@ -4188,11 +4179,11 @@ body.eye-care .mfEvMeta { color: #b91c1c; }
     100% { transform: translateX(0); }
   }
   /* 三段状态互斥：同一时刻只有一段可见（visibility:hidden 会同时从 innerText 里消失）。
-     同属性上后声明的 animation 在结束后优先，因此 12s 起 skStageOut 会覆盖 3s 的 skStageIn。 */
+     同属性上后声明的 animation 在结束后优先，因此 20s 起 skStageOut 会覆盖 5s 的 skStageIn。 */
   #skLoading, #skSlow, #skFail { visibility: hidden; opacity: 0; }
-  #skLoading { visibility: visible; opacity: 1; animation: skStageOut 0s linear 3s forwards; }
-  #skSlow { animation: skStageIn 0s linear 3s forwards, skStageOut 0s linear 12s forwards; }
-  #skFail { animation: skStageIn 0s linear 12s forwards; }
+  #skLoading { visibility: visible; opacity: 1; animation: skStageOut 0s linear 5s forwards; }
+  #skSlow { animation: skStageIn 0s linear 5s forwards, skStageOut 0s linear 20s forwards; }
+  #skFail { animation: skStageIn 0s linear 20s forwards; }
   @keyframes skStageIn { to { visibility: visible; opacity: 1; } }
   @keyframes skStageOut { to { visibility: hidden; opacity: 0; } }
   #skFail { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 16px; }
@@ -4202,11 +4193,11 @@ body.eye-care .mfEvMeta { color: #b91c1c; }
     color: #2563eb;
     text-decoration: underline;
     pointer-events: none;
-    animation: skEnable 0s linear 12s forwards;
+    animation: skEnable 0s linear 20s forwards;
   }
   #skFail button {
     pointer-events: none;
-    animation: skEnable 0s linear 12s forwards;
+    animation: skEnable 0s linear 20s forwards;
     padding: 9px 22px;
     font-size: 14px;
     font-weight: 600;
@@ -4263,7 +4254,9 @@ body.eye-care .mfEvMeta { color: #b91c1c; }
 <script nomodule>
   /* 0) 老浏览器兜底：不支持 ES module 的 WebView（部分 Android 7/8 定制机、
         翻译扫描笔）拿不到 type=module 的入口包，直接跳单文件旧版，避免白屏。 */
-  (function () { try { location.replace('../legacy/index.html'); } catch (e) {} })();
+  /* v3.5.4：兜底路径由构建按页面目录注入；旧模板写死上级相对路径，在根路径会 404，
+     CI 的 sed 又对 /app/ 二次替换，同样得到死链。 */
+  (function () { try { location.replace('./legacy/index.html'); } catch (e) {} })();
 </script>
 <script>
 /* 1) 骨架退场（main.jsx 在 createRoot().render() 之后调用） */
@@ -4314,8 +4307,8 @@ window.__removeSkeleton = function () {
   window.__reportBootError = report;
 })();
 
-/* 3) 12s 兜底：CSS 动画在旧 WebView 上不一定生效，这里再用 JS 兜一层，
-      保证「加载失败」出现时前两段一定不在，三段文案永远互斥。 */
+/* 3) 20s 兜底：旧 WebView 上 CSS 动画不一定生效，这里再用 JS 兜一层，三段文案永远互斥。
+      v3.5.4：12s → 20s，弱网下入口包常要 15s+，过早判失败会被当成「打不开」。 */
 setTimeout(function () {
   var sk = document.getElementById('appSkeleton');
   if (!sk || sk.className === 'skGone') return;
@@ -4333,9 +4326,9 @@ setTimeout(function () {
     var links = fail.querySelectorAll('.skLegacy');
     for (var li = 0; li < links.length; li++) links[li].style.pointerEvents = 'auto';
   }
-}, 12000);
+}, 20000);
 </script>
 
-<script type="module" src="./assets/main.SPRMTXNW.js"></script>
+<script type="module" src="./assets/main.ZDVJUBZQ.js"></script>
 </body>
 </html>
