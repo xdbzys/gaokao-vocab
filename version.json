@@ -1,11 +1,11 @@
 {
-  "version": "3.5.1",
-  "versionCode": 342,
+  "version": "3.5.2",
+  "versionCode": 344,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4708994,
-  "apkSha256": "aee2f46f468a54e150f3f87ab856e293046f6d39453ea68f658965541b1198f9",
-  "changelog": "【v3.5.1】头像更换 + 爱心脏进度 + 官网同步\n① 头像点击更换现在网页版和手机 App 都能用：选图自动压缩后保存，大图不再因超限丢失；头像右下角加了更换标记\n② 今日学习进度条在网页版与 App 统一为爱心脏形状，按完成度填充\n③ 官网版本信息同步到最新版，图标统一为软件同款（书本＋对勾）\n更新方式：我的 "
+  "apkSize": 4708345,
+  "apkSha256": "774c759420588e6cb8e68223d313771fc39d6518ca676bd16da092dfff3b9926",
+  "changelog": "【v3.5.2】专属版功能区分\n· 调整 · 头像更换与爱心脏进度条仅「李群雁专属版」网页版保留，手机 App 与 App 同款网页版恢复为不可更换头像、圆形学习进度\n· 调整 · 手机 App 与 App 同款网页版的头像恢复为应用内置默认头像\n更新方式：我的 → 版本更新 → 下载安装（覆盖安装，学习记录保留）。"
 }
