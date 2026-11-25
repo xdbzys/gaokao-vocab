@@ -1255,7 +1255,7 @@ public class MainActivity extends Activity {
             mAvatarFilePathCallback = null;
             if (result != null && result.length > 0) {
                 try {
-                    android.graphics.Bitmap src = android.media.MediaStore.Images.Media.getBitmap(getContentResolver(), result[0]);
+                    android.graphics.Bitmap src = android.provider.MediaStore.Images.Media.getBitmap(getContentResolver(), result[0]);
                     // 居中裁剪成正方形再缩放到 160×160，避免头像变形与大图超存储配额
                     int side = Math.min(src.getWidth(), src.getHeight());
                     int sx = (src.getWidth() - side) / 2, sy = (src.getHeight() - side) / 2;
