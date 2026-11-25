@@ -1,11 +1,11 @@
 {
   "version": "3.5.1",
-  "versionCode": 340,
+  "versionCode": 341,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4707200,
-  "apkSha256": "85aa61094af78be5e093ce50179c4d4a2f1fea41e908fd0eadce85841822ebec",
+  "apkSize": 4708681,
+  "apkSha256": "d8e38aee989f33cb8414a0826bded647fe471cef259cafb6f8d7c6b633642638",
   "changelog": "【v3.5.1】头像更换 + 爱心脏进度 + 官网同步\n① 头像点击更换现在网页版和手机 App 都能用：选图自动压缩后保存，大图不再因超限丢失；头像右下角加了更换标记\n② 今日学习进度条在网页版与 App 统一为爱心脏形状，按完成度填充\n③ 官网版本信息同步到最新版，图标统一为软件同款（书本＋对勾）\n更新方式：我的 "
 }
