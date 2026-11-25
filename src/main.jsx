@@ -1520,50 +1520,9 @@ let _avatarLoading = false;
 let _avatarReady = false;
 
 /**
- * v3.5.1：可靠的头像更换。
- * 旧实现直接把相册原图 readAsDataURL 存 localStorage，手机大图常超 5MB 配额，
- * setItem 静默失败、刷新即丢失，用户感觉「换了没效果」。现在先压到 160×160 JPEG，
- * 体积降到几十 KB，网页端与 App 端都能稳定保存。
+ * v3.5.1：头像更换逻辑（compressAvatarImage / applyAvatar）已拆到
+ * src/avatar-helper.js 懒加载，点击头像时才加载，避免占用首屏体积预算。
  */
-function compressAvatarImage(file, cb) {
-  try {
-    var reader = new FileReader();
-    reader.onload = function (ev) {
-      try {
-        var img = new Image();
-        img.onload = function () {
-          try {
-            var size = 160;
-            var canvas = document.createElement('canvas');
-            canvas.width = size; canvas.height = size;
-            var ctx = canvas.getContext('2d');
-            // 居中裁剪成正方形再缩放，避免头像变形
-            var iw = img.width || size, ih = img.height || size;
-            var side = Math.min(iw, ih);
-            var sx = (iw - side) / 2, sy = (ih - side) / 2;
-            ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
-            var dataUrl = canvas.toDataURL('image/jpeg', 0.82);
-            cb(dataUrl);
-          } catch (e) { cb(String(ev.target.result || '')); }
-        };
-        img.onerror = function () { cb(String(ev.target.result || '')); };
-        img.src = String(ev.target.result || '');
-      } catch (e) { cb(''); }
-    };
-    reader.onerror = function () { cb(''); };
-    reader.readAsDataURL(file);
-  } catch (e) { cb(''); }
-}
-
-/** 真正把头像 dataURL 落盘并更新界面（两平台共用）。 */
-function applyAvatar(dataUrl) {
-  if (!dataUrl || typeof dataUrl !== 'string') return;
-  try { localStorage.setItem('gaokao_avatar', dataUrl); } catch (e) {}
-  try {
-    var ev = new CustomEvent('gaokao-avatar-changed', { detail: dataUrl });
-    window.dispatchEvent(ev);
-  } catch (e) {}
-}
 
 /** 后台加载内置头像图片（我的页用），到货后重渲染替换占位图。 */
 function loadDefaultAvatar() {
@@ -5824,27 +5783,14 @@ function App() {
     try { return localStorage.getItem('gaokao_avatar') || ''; }
     catch { return ''; }
   });
-  // v3.5.1：接收原生选图回调 / 网页端压缩后的头像，统一更新界面
+  // v3.5.1：头像桥接（原生选图回调 / 网页端变更）懒加载注册，不占首屏体积
   useEffect(() => {
-    function onAvatar(e) {
-      var url = (e && e.detail) || '';
-      if (!url) return;
-      try { localStorage.setItem('gaokao_avatar', url); } catch (err) {}
-      setAvatarUrl(url);
-    }
-    try { window.addEventListener('gaokao-avatar-changed', onAvatar); } catch (e) {}
-    // 原生图片选择完成后回调：window.__avatarBridge(dataUrl)
-    try {
-      window.__avatarBridge = function (dataUrl) {
-        if (!dataUrl) return;
-        try { localStorage.setItem('gaokao_avatar', dataUrl); } catch (err) {}
-        setAvatarUrl(dataUrl);
-        try { appTip('头像已更换，重启后仍会保留。', '已更新'); } catch (e) {}
-      };
-    } catch (e) {}
-    return function () {
-      try { window.removeEventListener('gaokao-avatar-changed', onAvatar); } catch (e) {}
-    };
+    var cleanup = null, disposed = false;
+    import('./avatar-helper.js').then(function (m) {
+      if (disposed) return;
+      cleanup = m.initAvatarBridge(setAvatarUrl, appTip);
+    }).catch(function () {});
+    return function () { disposed = true; if (cleanup) cleanup(); };
   }, []);
   // 首次使用日期
   const [firstUseDate] = useState(() => {
@@ -10662,20 +10608,21 @@ function App() {
           <div className="meHeader">
             <div className="meAvatar" style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
               onClick={() => {
-                // v3.5.1：网页端与 App 端统一走隐藏 file input。
-                // App 内由 WebView 的 onShowFileChooser 弹出系统相册；网页端用浏览器文件框。
-                // 选到的图先压缩再存，避免大图超 localStorage 配额。
+                // v3.5.1：网页端与 App 端统一走隐藏 file input（App 内由 WebView 的
+                // onShowFileChooser 弹相册）。压缩逻辑懒加载，选到的图先压到 160×160 再存。
                 const input = document.createElement('input');
                 input.type = 'file'; input.accept = 'image/*';
                 input.onchange = e => {
                   const file = e.target.files && e.target.files[0];
                   if (!file) return;
-                  compressAvatarImage(file, dataUrl => {
-                    if (!dataUrl) { appTip('头像读取失败，请换一张图片重试。', '提示'); return; }
-                    setAvatarUrl(dataUrl);
-                    applyAvatar(dataUrl);
-                    appTip('头像已更换，重启后仍会保留。', '已更新');
-                  });
+                  import('./avatar-helper.js').then(function (mod) {
+                    mod.compressAvatarImage(file, function (dataUrl) {
+                      if (!dataUrl) { appTip('头像读取失败，请换张图片重试。', '提示'); return; }
+                      setAvatarUrl(dataUrl);
+                      mod.applyAvatar(dataUrl);
+                      appTip('头像已更换，重启后保留。', '已更新');
+                    });
+                  }).catch(function () { appTip('头像加载失败，请重试。', '提示'); });
                 };
                 try { input.click(); } catch (e) { appTip('无法打开图片选择，请换个浏览器重试。', '提示'); }
               }}>
