@@ -178,9 +178,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#2563eb">
 <!-- v3.5.4：入口脚本预加载，与 HTML 解析并行 -->
-<link rel="modulepreload" href="../assets/main.WSZK4RKL.js"><link rel="prefetch" href="../assets/chunk-seeds-3500.UBBJHQ3G.js">
+<link rel="modulepreload" href="../assets/main.Z3VERFSB.js"><link rel="prefetch" href="../assets/chunk-seeds-3500.UBBJHQ3G.js">
 <title>背群英</title>
-<link rel="icon" type="image/png" href="../assets/icon-3.6.0.png">
+<link rel="icon" type="image/png" href="../assets/icon-3.6.1.png">
 <style>:root {
   --primary: #3b82f6;
   --primary-dark: #2563eb;
@@ -4140,18 +4140,9 @@ body.eye-care .mfEvMeta { color: #b91c1c; }
 .essaySentenceEn { font-size: 14px; font-weight: 600; color: var(--primary-dark); line-height: 1.5; word-break: break-word; }
 
 /* --- 修复：长按单词复制出现系统选区/放大镜导致 UI 错乱。
-       正文文本彻底关闭原生选区与长按菜单（只加 touch-callout 在安卓 WebView 无效，
-       长按仍会弹系统放大镜 + 浮动工具条，盖住底部导航）；
-       长按复制改由应用内处理（见 useLongPressCopy），输入框/文本域仍可正常选择粘贴。 --- */
-.card, .modalContent, .detailSection, .phraseRow, .mfList, .mfItem, .listItem, h1, h2, h3, h4, p, span {
+       正文文本不弹原生选区，长按由应用内「发音/详情」承接；输入框仍可正常选择。 --- */
+.card, .detailSection, .phraseRow, .mfList, .mfItem, .listItem, h1, h2, h3, h4, p, span {
   -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-textarea, input, select, .selectable, .selectable * {
-  -webkit-touch-callout: default;
-  -webkit-user-select: text;
-  user-select: text;
 }
 
 /* --- 修复：点开单词详情后内容可左右滑动（横向溢出）。
@@ -4234,6 +4225,28 @@ body.eye-care .juniorPackState.on { color: #2c5c3b; background: rgba(63,125,82,.
 body.eye-care .mfTag-core, body.eye-care .mfCount, body.eye-care .mfEvMeta { color: #b4472f; }
 body.eye-care .mfTag-familiar { color: #7e22ce; }
 body.eye-care .phraseFreq { filter: saturate(.85); }
+
+/* v3.6.1 三步导入 / 中文考频 / 总汇词库标注 */
+.importSteps{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0 12px}
+.impStep{font-size:12px;font-weight:600;padding:4px 9px;border-radius:999px;background:var(--bg-tertiary,#eef1f6);color:var(--text-tertiary,#94a3b8)}
+.impStep.active{background:var(--primary,#2563eb);color:#fff}
+.impStep.done{background:var(--primary-light,#dbeafe);color:var(--primary-dark,#1e40af)}
+.impStepArrow{color:var(--text-tertiary,#94a3b8);font-size:14px}
+.importPreviewList{max-height:46vh;overflow-y:auto;border:1px solid var(--border-light,#e5e7eb);border-radius:10px;margin:8px 0 12px;overscroll-behavior:contain}
+.importPreviewRow{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;padding:7px 10px;border-bottom:1px solid var(--border-light,#e5e7eb);font-size:14px}
+.importPreviewRow:last-child{border-bottom:none}
+.importPreviewRow b{color:var(--primary-dark,#1e40af)}
+.importPreviewRow small{color:var(--text-tertiary,#94a3b8)}
+.importPreviewRow>span{color:var(--text-secondary,#4b5563);flex:1 1 auto}
+.impFilledBadge,.totalBookBadge{font-size:10px!important;font-weight:700;border-radius:999px;padding:1px 6px}
+.impFilledBadge{flex:0 0 auto!important;color:#0f766e!important;background:#ccfbf1;border:1px solid #99f6e4}
+.totalBookBadge{display:inline-block;color:#4a6b5e!important;background:#d6e4de;border:1px solid #b8ccc3;margin-left:4px}
+.examFreqInline{display:flex;align-items:center;gap:5px;margin:2px 0 6px;font-size:12.5px;font-weight:600;color:var(--primary-dark,#1e40af)}
+.examFreqInline .ic{width:14px;height:14px}
+.importDoneMsg{font-size:15px;font-weight:700;color:#15803d;margin:12px 0}
+.importNameInput{flex:1;min-width:140px;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-elev,#fff);color:var(--text,var(--text-primary,#222))}
+body.eye-care .impFilledBadge,body.eye-care .totalBookBadge{color:#2c5c3b!important;background:#d9ecdd;border-color:#b8d4bf}
+body.eye-care .importDoneMsg{color:#2c5c3b}
 </style>
 <style>
   /* 首屏骨架（纯 CSS）：React 挂载后移除，JS 失败也有反馈 */
@@ -4452,6 +4465,6 @@ setTimeout(function () {
 }, 30000);
 </script>
 
-<script type="module" src="../assets/main.WSZK4RKL.js"></script>
+<script type="module" src="../assets/main.Z3VERFSB.js"></script>
 </body>
 </html>

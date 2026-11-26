@@ -1,11 +1,11 @@
 {
-  "version": "3.6.0",
-  "versionCode": 350,
+  "version": "3.6.1",
+  "versionCode": 348,
   "webUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html",
   "webGzUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/index.html.gz",
   "apkUrl": "https://github.com/xdbzys/gaokao-vocab/releases/latest/download/app-release.apk",
   "apkUrlCdn": "https://cdn.jsdelivr.net/gh/xdbzys/gaokao-vocab@master/gaokao-vocab.apk",
-  "apkSize": 4714558,
-  "apkSha256": "f821f28f5e851d225c3bf922faeebf6ca750cb2089d419cfba8b180553b0eeec",
-  "changelog": "【v3.6.0】短语归类、作文素材与体验优化\n· 新增 · 扩展页新增「高考短语」，同一介词、同一单词的不同介词搭配归类在一起，逐条标注考频，方便成组背诵\n· 新增 · 扩展页新增「作文素材」：节日英文名、新历/农历日期表达、衔接词与高分句型，写作直接套用\n· 新增 · 答题后每个选项都可点击查看该词考点，并标注英文单"
+  "apkSize": 4714522,
+  "apkSha256": "e50a7a86b718164ea1523795e28f6ba79199773c1086caa2c76981a8d1b1b182",
+  "changelog": "【v3.6.1】导入词库三步重构与全面修复\n· 新增 · 导入词库改为三步：给出数据 → 内置算法解析预览 → 确认命名创建，中文缺失自动按内置词库补全\n· 新增 · 背诵页答题后显示中文考频（等级 + 真题次数）；关联词属高考总汇词库的标注「总汇词库」\n· 优化 · 修复导入词库点击崩溃、乱码，TXT/图片/PDF/"
 }
