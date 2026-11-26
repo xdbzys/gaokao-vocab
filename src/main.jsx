@@ -103,11 +103,11 @@ async function getTesseractCreateWorker() {
 /* ============================
    APP 版本常量
    ============================ */
-const APP_VERSION = '3.6.0';
+const APP_VERSION = '3.6.1';
 
 // v3.1.0 内置更新日志改为按需加载（离线兜底），见挂载时的动态 import
 let BUILTIN_CHANGELOG = [];
-const CHANGELOG_TOTAL = 78;
+const CHANGELOG_TOTAL = 79;
 // v2.91.0：页面基线版本号对齐线上清单（此前长期停留在 318，导致网页版
 // 永远把远端判成「有新版本」）。真正装机版本仍以 NativeVersion 为准。
 // v3.4.1 根因修复：此前 CI 每版只把 Bump 后的版本号写进构建产物（APK/清单），
@@ -115,7 +115,7 @@ const CHANGELOG_TOTAL = 78;
 // 现与 APP_VERSION 严格对齐到同一版本；CI 新增「源码/清单版本一致性」门禁，
 // 此后任何发版都必须三处（本文件 APP_VERSION_CODE、build.gradle、app-update.json）同步，
 // 否则流水线直接失败，杜绝再次脱节。
-const APP_VERSION_CODE = 346;
+const APP_VERSION_CODE = 347;
 // v2.43.0 更新渠道修复：Gitee raw 大文件经常被 WAF/302 签名拦截导致"无法更新"
 // 改为 GitHub Releases 直链优先（CI 每次构建自动上传），Gitee 与 Pages 作后备
 // v2.72.1 下载主源修正：实测 jsDelivr 的 @master APK 会滞后（缓存最长 12 小时，
@@ -1873,8 +1873,8 @@ function ensureBookData(id) {
     delete BOOK_DATA_ERRORS[id];
     /* 词数对不上说明「改了 data/seeds-*.js 但没同步 BOOK_DEFS.total」，
        界面上的 (词数) 会显示旧数字，这里留一条明确的告警方便排查。 */
-    if (book.total > 0 && book.items.length !== book.total) {
-      console.warn('[book-data] 词数与 BOOK_DEFS.total 不一致: ' + id + ' items=' + book.items.length + ' total=' + book.total);
+    if (book.total > 0 && (book.items || []).length !== book.total) {
+      console.warn('[book-data] 词数与 BOOK_DEFS.total 不一致: ' + id + ' items=' + (book.items || []).length + ' total=' + book.total);
     }
     _emitBookData();
     return book;
@@ -2401,11 +2401,8 @@ function getStudyDays(log) {
 const POS_WORDS = ['modal v', 'phrasal v', 'vt', 'vi', 'n', 'v', 'a', 'ad', 'adj', 'adv', 'prep', 'conj', 'pron', 'num', 'art', 'interj', 'aux', 'pl', 'abbr'];
 const POS_ALIASES = { a: 'adj', ad: 'adv' };
 const POS_REGEX_SOURCE = '(?:modal\\s*v|phrasal\\s*v|vt|vi|adj|adv|prep|conj|pron|num|art|interj|aux|abbr|pl|ad|a|n|v)';
-/* v3.6.1：词性必须与后面的字母断开，否则会把单词首字母误当词性：
-   「apple」的 a、「name」的 n、「very」的 v、「plan」的 pl 都被当成词性，
-   导致 term 为空、整条词被丢弃（用户导入后条目莫名变少）。 */
-const POS_REGEX = new RegExp(`(?:^|[\\s,，;；|/])((?:${POS_REGEX_SOURCE})(?:\\s*[/&、]\\s*(?:${POS_REGEX_SOURCE}))*)(?![A-Za-z])`, 'i');
-const POS_GLOBAL_REGEX = new RegExp(`(?:^|[\\s,，;；|/])(${POS_REGEX_SOURCE})(?![A-Za-z])`, 'gi');
+const POS_REGEX = new RegExp(`(?:^|[\\s,，;；|/])((?:${POS_REGEX_SOURCE})(?:\\s*[/&、]\\s*(?:${POS_REGEX_SOURCE}))*)`, 'i');
+const POS_GLOBAL_REGEX = new RegExp(`(?:^|[\\s,，;；|/])(${POS_REGEX_SOURCE})`, 'gi');
 const LABEL_REGEX = /(考点|重点|核心|用法|搭配|短语|例句|易错|辨析|派生|同义|反义|词组|固定搭配|语法)\s*[:：]?/g;
 
 /* 词性分类标签 */
@@ -2463,26 +2460,8 @@ function normalizePos(posText, isPhrase) {
     .filter((v, i, arr) => arr.indexOf(v) === i).join('/') || '';
 }
 
-/* v3.6.1：旧 WebView（Chromium < 73）没有 String.prototype.matchAll；更关键的是
-   单文件 App 产物会经过 Babel ES5 转译，[...str.matchAll(re)] 会被错误转成
-   [].concat(str.matchAll(re))（迭代器被当成单个元素），运行期直接抛
-   「Cannot read properties of undefined (reading 'length')」，导入解析全部失败。
-   统一改用 exec 循环，语义与 matchAll 一致，且新旧 WebView 都能跑。 */
-function matchAllSafe(re, text) {
-  var out = [];
-  var s = String(text == null ? '' : text);
-  if (!re || !re.global) return out;
-  re.lastIndex = 0;
-  var m;
-  while ((m = re.exec(s)) !== null) {
-    out.push(m);
-    if (m[0] === '') re.lastIndex++;
-  }
-  return out;
-}
-
 function collectPosText(text) {
-  return matchAllSafe(POS_GLOBAL_REGEX, text).map(m => m[1]).filter(Boolean).join('/');
+  return [...text.matchAll(POS_GLOBAL_REGEX)].map(m => m[1]).filter(Boolean).join('/');
 }
 
 function cleanOcrText(text) {
@@ -3494,16 +3473,19 @@ function extractMeaning(text) {
 
 function extractPoints(text, meaning) {
   const points = [];
-  const matches = matchAllSafe(LABEL_REGEX, text);
+  const src = String(text || '');
+  const mean = String(meaning || '');
+  const matches = [...src.matchAll(LABEL_REGEX)];
   matches.forEach((match, i) => {
     const s = match.index + match[0].length;
-    const e = matches[i + 1]?.index ?? text.length;
-    const v = text.slice(s, e).trim().replace(/[;,，；]+$/g, '');
+    const e = matches[i + 1]?.index ?? src.length;
+    const v = src.slice(s, e).trim().replace(/[;,，；]+$/g, '');
     if (v) points.push(`${match[1]}：${v}`);
   });
-  const mi = text.indexOf(meaning.replace(/；/g, ''));
-  const tail = mi >= 0 ? text.slice(mi + meaning.length) : text;
-  tail.split(/[;；]/).map(p => p.trim()).filter(p => p && !p.includes(meaning) && p.length > 3 && /[A-Za-z\u4e00-\u9fa5]/.test(p)).forEach(p => { if (!points.includes(p)) points.push(p); });
+  const key = mean.replace(/；/g, '');
+  const mi = key ? src.indexOf(key) : -1;
+  const tail = mi >= 0 ? src.slice(mi + mean.length) : src;
+  tail.split(/[;；]/).map(p => p.trim()).filter(p => p && (!key || p.indexOf(key) < 0) && p.length > 3 && /[A-Za-z\u4e00-\u9fa5]/.test(p)).forEach(p => { if (points.indexOf(p) < 0) points.push(p); });
   return points;
 }
 
@@ -3665,8 +3647,11 @@ function extractExamples(text) {
 function parseOneRecord(line, index, defaultType) {
   const frequency = /(高频|中频|低频)/.exec(line)?.[1] || '自定义';
 
-  // 尝试匹配词性
-  const posMatch = line.match(POS_REGEX);
+  // 尝试匹配词性。注意：词性永远跟在英文单词之后（abandon v. 放弃），
+  // POS_REGEX 的行首锚点会把 "abandon/ability" 首字母 a 误判成形容词 a.，
+  // 导致 term 被截空、整条丢弃。因此行首匹配一律不算词性。
+  const posMatchRaw = line.match(POS_REGEX);
+  const posMatch = posMatchRaw && posMatchRaw.index > 0 ? posMatchRaw : null;
   let term = '', pos = '', rest = line;
 
   if (posMatch) {
@@ -3723,7 +3708,8 @@ const IMPORT_NOISE_TERMS = /^(word|words|vocab|vocabulary|list|unit|units|page|p
 
 function parseImportedText(text, defaultType = 'word') {
   const parsed = splitImportRecords(text).map((line, i) => parseOneRecord(line, i, defaultType)).filter(item => {
-    const t = item.term.trim();
+    if (!item || !item.term) return false;
+    const t = String(item.term).trim();
     if (!/[A-Za-z]/.test(t) || /^[A-Z]$/i.test(t) || t.length <= 1) return false;
     if (IMPORT_NOISE_TERMS.test(t) && (!item.meaning || item.meaning === '请补充中文意思')) return false;
     return true;
@@ -3756,76 +3742,42 @@ function parseImportedText(text, defaultType = 'word') {
    用户不需要配置任何服务商或模型。
    ============================ */
 
-/* v3.6.1 文本编码自动识别。
-   旧实现对所有 txt/csv 直接 file.text()（只按 UTF-8 解码），而 Windows 记事本、
-   安卓文件管理器导出的中文文本大量是 GBK/GB18030，解出来就是成片的「�」乱码。
-   这里先按 BOM → 严格 UTF-8 → GB18030 的顺序识别；
-   老 WebView（Chromium < 38，没有 TextDecoder）用 FileReader 指定编码做兜底。 */
-function _replacementCount(s) {
-  var m = String(s || '').match(/\uFFFD/g);
-  return m ? m.length : 0;
-}
-
-function readAsTextWithEncoding(file, encoding) {
+/* v3.6.1：老 WebView 无 File.text()/arrayBuffer()，统一用 FileReader 读取。
+   mode: text | buffer | url；enc 仅 text 有效。 */
+function readFileFR(file, mode, enc) {
   return new Promise(function (resolve, reject) {
+    if (!file) return resolve(mode === 'buffer' ? null : '');
     try {
-      var fr = new FileReader();
-      fr.onload = function () { resolve(String(fr.result || '')); };
-      fr.onerror = function () { reject(fr.error || new Error('文件读取失败')); };
-      fr.readAsText(file, encoding);
+      var r = new FileReader();
+      r.onload = function () { resolve(r.result); };
+      r.onerror = function () { reject(r.error || new Error('文件读取失败')); };
+      if (mode === 'buffer') r.readAsArrayBuffer(file);
+      else if (mode === 'url') r.readAsDataURL(file);
+      else r.readAsText(file, enc || 'UTF-8');
     } catch (e) { reject(e); }
   });
 }
-
-async function decodeTextFile(file) {
-  if (typeof TextDecoder !== 'undefined' && typeof file.arrayBuffer === 'function') {
-    var bytes = new Uint8Array(await file.arrayBuffer());
-    // BOM 优先
-    if (bytes.length >= 3 && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
-      return new TextDecoder('utf-8').decode(bytes.subarray(3));
-    }
-    if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xFE) {
-      try { return new TextDecoder('utf-16le').decode(bytes.subarray(2)); } catch (e) {}
-    }
-    if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) {
-      try { return new TextDecoder('utf-16be').decode(bytes.subarray(2)); } catch (e) {}
-    }
-    try {
-      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-    } catch (e) {
-      // UTF-8 非法 → 大概率是 GBK/GB18030 中文文本
-    }
-    try {
-      return new TextDecoder('gb18030').decode(bytes);
-    } catch (e) {}
+async function readTextSmart(file) {
+  var t = await readFileFR(file, 'text', 'UTF-8');
+  if (t && /\uFFFD/.test(t)) {
+    try { var g = await readFileFR(file, 'text', 'GBK'); if (g && !/\uFFFD/.test(g)) return g; } catch (e) {}
   }
-  // 老 WebView 兜底：按 UTF-8 与 GB18030 各读一次，取乱码更少的
-  var utf8 = await readAsTextWithEncoding(file, 'utf-8');
-  if (_replacementCount(utf8) === 0) return utf8;
-  try {
-    var gbk = await readAsTextWithEncoding(file, 'gb18030');
-    if (_replacementCount(gbk) < _replacementCount(utf8)) return gbk;
-  } catch (e) {}
-  return utf8;
+  return t;
 }
 
 async function readFileText(file) {
-  if (!file) throw new Error('没有选择文件');
-  if (file.size === 0) throw new Error('文件内容为空');
+  if (!file) return '';
   const ext = String(file.name || '').split('.').pop().toLowerCase();
   try {
-    let text;
-    if (ext === 'txt' || ext === 'csv') text = await decodeTextFile(file);
-    else if (ext === 'pptx') text = await extractPptxText(file);
-    else if (ext === 'pdf') text = await extractPdfText(file);
-    else if (ext === 'docx') text = await extractDocxText(file);
-    else if (ext === 'doc') throw new Error('不支持旧版 .doc 格式，请用 Word 另存为 .docx 或将内容复制为文本后粘贴导入');
-    else if (['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'].includes(ext)) text = await extractImageText(file);
-    else text = await decodeTextFile(file);
-    // 去掉 BOM，避免首个单词粘连不可见字符
-    return String(text == null ? '' : text).replace(/^\uFEFF/, '');
+    if (ext === 'txt' || ext === 'csv') return await readTextSmart(file);
+    if (ext === 'pptx') return await extractPptxText(file);
+    if (ext === 'pdf') return await extractPdfText(file);
+    if (ext === 'docx') return await extractDocxText(file);
+    if (ext === 'doc') throw new Error('不支持旧版 .doc 格式，请用 Word 另存为 .docx 或将内容复制为文本后粘贴导入');
+    if (['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'].includes(ext)) return await extractImageText(file);
+    return await readTextSmart(file);
   } catch (e) {
-    throw new Error(`解析文件失败：${e.message}。建议将文件内容复制后粘贴到文本框中导入。`);
+    throw new Error(`解析失败：${e.message}，可改用粘贴`);
   }
 }
 
@@ -3846,12 +3798,12 @@ function loadJSZip() {
 async function extractPptxText(file) {
   try {
     const JSZip = await loadJSZip();
-    const zip = await JSZip.loadAsync(await file.arrayBuffer());
+    const zip = await JSZip.loadAsync(await readFileFR(file, 'buffer'));
     const slides = Object.keys(zip.files).filter(n => n.startsWith('ppt/slides/slide') && n.endsWith('.xml'));
     const chunks = [];
     for (const name of slides) {
       const xml = await zip.files[name].async('text');
-      chunks.push(matchAllSafe(/<a:t>(.*?)<\/a:t>/g, xml).map(m => m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')).join(' '));
+      chunks.push([...xml.matchAll(/<a:t>(.*?)<\/a:t>/g)].map(m => m[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')).join(' '));
     }
     return cleanOcrText(chunks.join('\n'));
   } catch (e) { throw new Error('PPTX 解析失败: ' + e.message); }
@@ -3861,7 +3813,7 @@ async function extractPdfText(file) {
   try {
     const pdfjs = await getPdfjs();
     if (!pdfjs) throw new Error('PDF 解析库加载失败，请检查网络');
-    const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+    const doc = await pdfjs.getDocument({ data: await readFileFR(file, 'buffer') }).promise;
     const pages = [];
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
@@ -3877,7 +3829,7 @@ async function extractPdfText(file) {
 async function extractDocxText(file) {
   try {
     const JSZip = await loadJSZip();
-    const zip = await JSZip.loadAsync(await file.arrayBuffer());
+    const zip = await JSZip.loadAsync(await readFileFR(file, 'buffer'));
     const xml = await zip.files['word/document.xml']?.async('text');
     if (!xml) throw new Error('DOCX 文件结构异常');
     return cleanOcrText(xml.replace(/<\/w:p>/g, '\n').replace(/<w:tab\/>/g, '\t').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'"));
@@ -3885,20 +3837,36 @@ async function extractDocxText(file) {
 }
 
 async function extractImageText(file) {
+  var worker = null;
   try {
     setImportStatus('正在识别图片文字，可能需要十几秒...');
     const createWorker = await getTesseractCreateWorker();
     if (!createWorker) throw new Error('OCR 库加载失败，请检查网络');
-    const worker = await createWorker('eng+chi_sim', 1, {
-      workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
-      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5',
-      langPath: 'https://cdn.jsdelivr.net/npm/tesseract.js-lang@5',
-    });
-    await worker.setParameters({ tessedit_pageseg_mode: '4', preserve_interword_spaces: '1' });
-    const result = await worker.recognize(file);
-    await worker.terminate();
-    return cleanOcrText(result.data.text);
-  } catch (e) { throw new Error('图片识别失败: ' + e.message + '。建议手动粘贴词表，或改用 TXT / PDF / DOCX 文件导入。'); }
+    // v5 签名失败回退 v2
+    try {
+      worker = await createWorker('eng+chi_sim', 1, {
+        workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+        corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5',
+        langPath: 'https://cdn.jsdelivr.net/npm/tessdata@4.0.0/',
+      });
+    } catch (e1) {
+      worker = await createWorker();
+      await worker.loadLanguage('eng+chi_sim');
+      await worker.initialize('eng+chi_sim');
+    }
+    if (worker.setParameters) {
+      try { await worker.setParameters({ tessedit_pageseg_mode: '4', preserve_interword_spaces: '1' }); } catch (e2) {}
+    }
+    // 用 dataURL 识别，兼容老 WebView 对 File 对象的处理差异
+    const dataUrl = await readFileFR(file, 'url');
+    const result = await worker.recognize(dataUrl);
+    const text = result && result.data && result.data.text ? result.data.text : '';
+    return cleanOcrText(text);
+  } catch (e) {
+    throw new Error('图片识别失败: ' + (e && e.message ? e.message : e) + '，请改用粘贴或 TXT');
+  } finally {
+    if (worker && worker.terminate) { try { await worker.terminate(); } catch (e3) {} }
+  }
 }
 
 /* ============================
@@ -4105,66 +4073,6 @@ function copyTextToClipboard(text) {
     document.body.removeChild(ta);
     return !!ok;
   } catch (e) { return false; }
-}
-
-// v3.6.1 读取剪贴板：原生桥接 → 浏览器 API → 空字符串（调用方提示手动长按粘贴）
-async function readClipboardText() {
-  try {
-    if (window.NativeClipboard && typeof window.NativeClipboard.read === 'function') {
-      var t = window.NativeClipboard.read();
-      if (t) return String(t);
-    }
-  } catch (e) {}
-  try {
-    if (navigator.clipboard && navigator.clipboard.readText) {
-      var b = await navigator.clipboard.readText();
-      if (b) return String(b);
-    }
-  } catch (e) {}
-  return '';
-}
-
-// v3.6.1 应用内长按复制：
-// 阅读区关闭了系统选区/放大镜（避免长按弹系统菜单盖住底部导航），
-// 长按单词改为应用内复制，并给出轻提示，保证「长按复制」仍然可用。
-function useLongPressCopy(getText) {
-  const timerRef = useRef(null);
-  const movedRef = useRef(false);
-  const clear = useCallback(function () {
-    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
-  }, []);
-  const onTouchStart = useCallback(function (e) {
-    movedRef.current = false;
-    const t = (e.touches && e.touches[0]) ? e.touches[0] : e;
-    const x0 = t ? t.clientX : 0, y0 = t ? t.clientY : 0;
-    clear();
-    timerRef.current = setTimeout(function () {
-      timerRef.current = null;
-      if (movedRef.current) return;
-      const text = String(getText() || '').trim();
-      if (!text) return;
-      const ok = copyTextToClipboard(text);
-      appTip(ok ? ('已复制：' + text) : '复制失败，请到「词库 → 导出词库」使用复制按钮', '长按复制', 1600);
-    }, 520);
-    const onMove = function (ev) {
-      const p = (ev.touches && ev.touches[0]) ? ev.touches[0] : ev;
-      if (p && (Math.abs(p.clientX - x0) > 10 || Math.abs(p.clientY - y0) > 10)) {
-        movedRef.current = true;
-        clear();
-      }
-    };
-    const onEnd = function () {
-      clear();
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onEnd);
-      document.removeEventListener('touchcancel', onEnd);
-    };
-    document.addEventListener('touchmove', onMove, { passive: true });
-    document.addEventListener('touchend', onEnd);
-    document.addEventListener('touchcancel', onEnd);
-  }, [getText, clear]);
-  const onContextMenu = useCallback(function (e) { e.preventDefault(); }, []);
-  return { onTouchStart: onTouchStart, onContextMenu: onContextMenu };
 }
 
 // 触发浏览器 / 系统下载
@@ -5820,12 +5728,6 @@ function App() {
   const [libraryLimit, setLibraryLimit] = useState(60); // 词库页懒加载条数
   const [importText, setImportText] = useState('');
   const [importStatus, setImportStatus] = useState('');
-  const [importBusy, setImportBusy] = useState(false);
-  // v3.6.1 导入文件入口改为 button + 隐藏 input（旧结构把 textarea 塞进 button 里，
-  // 且 label 在部分 WebView 上点不到真正的 input），统一用 ref 触发并允许重复选择同一文件
-  const txtFileRef = useRef(null);
-  const docFileRef = useRef(null);
-  const imgFileRef = useRef(null);
   // v3.3.0 按考频汇编新词库：可选具体词库 + 用户自定义命名
   const [freqThreshold, setFreqThreshold] = useState('100');
   const [freqScope, setFreqScope] = useState('all'); // all | study | custom 全部/背诵/自选具体词库
@@ -5835,6 +5737,11 @@ function App() {
   const [freqCompileMsg, setFreqCompileMsg] = useState('');
   const [lastFile, setLastFile] = useState(null);
   const [importTargetBookId, setImportTargetBookId] = useState(null); // 导入目标词库
+  /* v3.6.1 三步导入：①给出数据 ②内置算法解析预览（缺中文按内置词库补全）③确认命名创建 */
+  const [importStep, setImportStep] = useState('input'); // input | preview | confirm
+  const [importParsed, setImportParsed] = useState([]);   // 解析预览结果
+  const [importFilled, setImportFilled] = useState(0);    // 由内置词库补全中文的条数
+  const [importName, setImportName] = useState('');       // 用户命名的新词库名
   const [progress, setProgress] = useState(loadProgress);
   // progress 的 ref，用于在事件处理函数中同步访问最新值
   const progressRef = useRef(progress);
@@ -6219,7 +6126,7 @@ function App() {
 
   // 听读统计（当前词库维度）
   const listenStats = useMemo(() => {
-    const total = listenActiveBook.items.length;
+    const total = (listenActiveBook.items || []).length;
     let mastered = 0;
     listenActiveBook.items.forEach(item => {
       if (progress[termKey(item.term)] === 'mastered') mastered += 1;
@@ -6999,7 +6906,7 @@ function App() {
     wordBookMapRef.current = map;
     wordPointsMapRef.current = pointsMap;
     // v2.96.0：词库内容变化时刷新指纹 → 让词族/易混词/词干缓存整体失效，杜绝跨词库串数据
-    setVocabFingerprint(books.map(b => b.id + ':' + b.items.length).join('|'));
+    setVocabFingerprint(books.map(b => b.id + ':' + (b.items || []).length).join('|'));
     return items;
   }, [books]);
 
@@ -7046,6 +6953,15 @@ function App() {
     // 只属于一个词库，且该词库是高考总汇词库
     if (bookList.length !== 1) return false;
     return bookList[0].startsWith('高考总汇词库');
+  }
+
+  // v3.6.1：判断关联词是否存在于高考总汇词库（用于关联词来源标注，对齐「内置」标注）
+  function isInTotalBook(word) {
+    const w = String(word || '').trim().toLowerCase();
+    if (!w) return false;
+    const list = wordBookMapRef.current[w];
+    if (!list || !list.length) return false;
+    return list.some(function (n) { return /^高考总汇词库/.test(String(n)); });
   }
 
   // v2.43.0 词库外单词的词性+中文：优先当前词库，其次高考总汇词库
@@ -7229,9 +7145,6 @@ function App() {
   const [forceShowItem, setForceShowItem] = useState(null);
   // 显示用的当前单词：答题后或闪卡展示释义后使用锁定的单词，防止 toggleProgress 改变 current 导致显示不匹配
   const displayCurrent = forceShowItem || ((selected || showBack) && lockedCurrent.current) || current;
-  // v3.6.1 长按复制：卡片与详情弹窗的单词由应用内处理，不再弹系统选区/放大镜
-  const studyLongPress = useLongPressCopy(function () { return displayCurrent && displayCurrent.term; });
-  const detailLongPress = useLongPressCopy(function () { return detailItem && detailItem.term; });
   // v3.1.0 背诵中文义项范围：highfreq 高考频中文 / familiar 熟词生义 / random 随机。
   // 统一入口，题目、选项、判分三处共用同一答案，保证一致。
   const meaningScopeNow = settings.meaningScope || 'highfreq';
@@ -8142,42 +8055,6 @@ function App() {
     setIndex(0);
   }
 
-  function addImportedItems(items) {
-    if (!items.length) { setImportStatus('没有识别到有效词条'); return; }
-    // 优先使用用户选择的目标词库，否则用当前词库
-    const targetId = importTargetBookId || activeBook.id;
-    const targetBook = books.find(b => b.id === targetId);
-    if (!targetBook || !targetBook.editable) {
-      // 自动创建一个新词库
-      const name = `导入词库-${new Date().toLocaleDateString()}`;
-      const nb = { id: `book-${Date.now()}`, name, editable: true, items };
-      updateBooks([...books, nb]);
-      setImportTargetBookId(nb.id);
-      setImportStatus(`自动新建"${name}"并导入 ${items.length} 条`);
-    } else {
-      // v2.63.0：与目标词库已有词条比对，重复单词自动跳过，不再灌入重复项
-      const existKeys = {};
-      targetBook.items.forEach(it => { existKeys[String(it.term || '').toLowerCase()] = 1; });
-      const fresh = [];
-      let skipped = 0;
-      items.forEach(it => {
-        const k = String(it.term || '').toLowerCase();
-        if (existKeys[k]) { skipped++; return; }
-        existKeys[k] = 1;
-        fresh.push(it);
-      });
-      if (!fresh.length) {
-        setImportStatus(`没有新增：${items.length} 条都已存在于「${targetBook.name}」`);
-        return;
-      }
-      updateBooks(books.map(b => b.id === targetId ? { ...b, items: [...b.items, ...fresh] } : b));
-      setImportStatus(`导入成功：新增 ${fresh.length} 条 → ${targetBook.name}` + (skipped ? `（已跳过重复 ${skipped} 条）` : ''));
-      items = fresh;
-    }
-    // 导入后：内置算法检索同源词族/易混词 + 免密钥联网补全考频与语义关联（异步、不阻塞）
-    autoCheckFamilyAfterImport(items);
-  }
-
   // v3.1.0 按考频汇编新词库：扫描全部词库（内置 + 用户导入），按自定义真题次数阈值筛选，
   // 生成一本新词库。阈值无档位限制，纯数字输入；次数为真实语料统计，未收录词（联网参考/0次）不纳入。
   function compileFreqBook() {
@@ -8338,45 +8215,66 @@ function App() {
   }
 
   async function handleFile(file) {
-    if (!file) { setImportStatus('未选择文件，请重新点击按钮选择'); return; }
-    setImportBusy(true);
+    if (!file) { setImportStatus('未选文件'); return; }
     try {
-      setLastFile(file || null); setImportStatus('正在识别...');
-      const text = await readFileText(file); setImportText(text);
-      let items = null;
-      try { items = parseImportedText(text, 'word'); } catch (e2) { items = null; }
-      if (items) {
-        const _dup = parseImportedText.lastDupCount || 0;
-        setImportStatus(`识别完成：${items.length} 条` + (_dup ? `（自动合并重复 ${_dup} 条）` : '') + '。请确认后导入。');
-      } else {
-        setImportStatus(`已读取 ${text.length} 个字符，但自动识别未成功，请检查文本格式后直接点击「导入到词库」。`);
-      }
-    } catch (e) { setImportStatus(`失败：${e.message}`); }
-    setImportBusy(false);
+      setLastFile(file);
+      setImportStatus('读取中…');
+      setImportStep('input');
+      const text = await readFileText(file);
+      setImportText(text);
+      if (!text || !String(text).trim()) { setImportStatus('未读到内容'); return; }
+      setImportStatus(`已读取 ${file.name}，点「解析词表」查看。`);
+    } catch (e) { setImportStatus(`读取失败：${e && e.message ? e.message : e}`); }
   }
 
-  // v3.6.1 粘贴按钮：读取系统剪贴板并追加到文本框（旧实现只 .click() 一个空 textarea，什么都没发生）
-  async function pasteFromClipboard() {
-    if (importBusy) return;
-    setImportBusy(true);
-    setImportStatus('正在读取剪贴板...');
-    try {
-      const text = await readClipboardText();
-      if (!text || !text.trim()) {
-        setImportStatus('剪贴板为空或系统不允许读取。请在下方文本框内长按，选择「粘贴」即可。');
-        return;
+  /* 步骤②：内置算法解析 + 缺中文按内置词库补全，展示给用户确认 */
+  function previewImport() {
+    const src = String(importText || '');
+    if (!src.trim()) { setImportStatus('请先给出数据'); return; }
+    let items = [];
+    try { items = parseImportedText(src, 'word') || []; }
+    catch (e) { setImportStatus('解析失败：' + e.message); return; }
+    if (!items.length) { setImportStatus('未识别到单词，请按「英文 中文」分行'); return; }
+    // 中文缺失 → 用内置词库补全，并标注来源
+    let filled = 0;
+    const enriched = items.map(function (it) {
+      const item = Object.assign({}, it);
+      const miss = !item.meaning || item.meaning === '请补充中文意思';
+      if (miss) {
+        const hit = findWordInBank(item.term);
+        const extra = hit ? getShortMeaning(hit.meaning) : extraWordInfo(item.term);
+        if (extra) {
+          item.meaning = typeof extra === 'string' ? extra : (extra.meaning || '');
+          item._filled = true;
+          filled++;
+        }
       }
-      setImportText(function (prev) { return prev ? (prev.replace(/\s+$/, '') + '\n' + text) : text; });
-      let items = null;
-      try { items = parseImportedText(text, 'word'); } catch (e2) { items = null; }
-      setImportStatus(items
-        ? `已粘贴 ${text.length} 个字符，识别 ${items.length} 条。请确认后导入。`
-        : `已粘贴 ${text.length} 个字符，但自动识别未成功，请检查文本格式后直接点击「导入到词库」。`);
-    } catch (e) {
-      setImportStatus('读取剪贴板失败：' + ((e && e.message) || '未知错误') + '。请在下方文本框内长按，选择「粘贴」。');
-    } finally {
-      setImportBusy(false);
-    }
+      return item;
+    });
+    setImportParsed(enriched);
+    setImportFilled(filled);
+    setImportStep('preview');
+    const dup = parseImportedText.lastDupCount || 0;
+    setImportStatus(`解析 ${enriched.length} 词${filled ? `，${filled} 个补全中文` : ''}${dup ? `，合并重复 ${dup}` : ''}`);
+  }
+
+  /* 步骤③：确认创建词库（用户命名）并写入 */
+  function confirmImport() {
+    const items = (importParsed || []).map(function (it) {
+      const copy = Object.assign({}, it);
+      delete copy._filled; // 去掉预览临时标记，不写进词库
+      return copy;
+    });
+    if (!items.length) { setImportStatus('无可导入单词'); return; }
+    const name = String(importName || '').trim() || `导入词库-${new Date().toLocaleDateString()}`;
+    // 始终按用户确认创建新词库
+    const nb = { id: `book-${Date.now()}`, name, editable: true, items };
+    updateBooks([...books, nb]);
+    setImportTargetBookId(nb.id);
+    setImportStep('done');
+    setImportStatus(`已建「${name}」导入 ${items.length} 词`);
+    autoCheckFamilyAfterImport(items);
+    appTip(`已建「${name}」导入 ${items.length} 词`, '成功');
   }
 
   // 反馈通过 Gitee Issues 提交（仅APP使用）
@@ -8963,7 +8861,7 @@ function App() {
                     <label key={b.id} className="bookPickerItem">
                       <input type="checkbox" checked={studyBookIds.includes(b.id)} onChange={() => switchStudyBook(b.id)} />
                       <span>{b.name}</span>
-                      <span className="bookCount">({b.items.length || b.total || 0})</span>
+                      <span className="bookCount">({(b.items || []).length || b.total || 0})</span>
                     </label>
                   ))}
                 </div>
@@ -9126,7 +9024,7 @@ function App() {
                 {progress[termKey(displayCurrent.term)] === 'mastered' && <span className="masteredTag">已掌握</span>}
               </div>
 
-              <div className="questionArea" {...studyLongPress}>
+              <div className="questionArea">
               {practiceMode === 'sentence' ? (() => {
                 const sent = sentenceMap[String(displayCurrent.term).toLowerCase()];
                 if (sent) {
@@ -9237,6 +9135,14 @@ function App() {
                   })()}
                   <h3>{displayCurrent.term} &middot; {showDetail ? <Meanings text={displayCurrent.meaningFull || displayCurrent.meaning} /> : quizAnswer(displayCurrent)}</h3>
                   {showDetail && <p className="muted">{displayCurrent.pos} &middot; {displayCurrent.source}</p>}
+                  {/* v3.6.1：背诵页答题后直接显示中文考频（等级 + 真题次数） */}
+                  {(selected || showBack) && (() => {
+                    const f = getExamFreq(displayCurrent.term);
+                    if (!f) return null;
+                    const lv = EXAM_LEVEL_LABEL[f.level] || '';
+                    const cnt = f.basis === 'corpus' && f.count > 0 ? `真题 ${f.count} 次` : (f.basis === 'net' ? '联网参考' : '');
+                    return <p className="examFreqInline"><Icon name="target" />中文考频：{lv}{cnt ? ' · ' + cnt : ''}</p>;
+                  })()}
                   {showDetail && <div className="points">
                     {/* v2.56.0: 跨词库整合考点——同一单词在所有词库的考点一并展示 */}
                     {(showAll ? mergedPoints.allPoints : mergedPoints.corePoints.slice(0, 2)).map(p => <p key={p}>• {p}</p>)}
@@ -9311,11 +9217,13 @@ function App() {
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                               {family.map(item => {
                                 const inBank = !!findWordInBank(item.term);
+                                const inTotal = isInTotalBook(item.term);
                                 return (
-                                <span key={item.id} style={{ display: 'inline-block', background: 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }}
+                                <span key={item.id} style={{ display: 'inline-block', background: inTotal ? '#d6e4de' : 'var(--primary-light)', borderRadius: 8, padding: '2px 8px', fontSize: 13, cursor: 'pointer' }}
                                   onClick={() => { if (inBank) openDetailItem(item); }}>
                                   {item.term} <small style={{ opacity: 0.7 }}>{item.pos}</small>
-                                  {!inBank && item.meaning && <small style={{ opacity: 0.75 }}>（{getShortMeaning(item.meaning) || item.meaning}）</small>}
+                                  {inTotal && <small className="totalBookBadge">总汇词库</small>}
+                                  {!inBank && !inTotal && item.meaning && <small style={{ opacity: 0.75 }}>（{getShortMeaning(item.meaning) || item.meaning}）</small>}
                                 </span>
                                 );
                               })}
@@ -9342,7 +9250,7 @@ function App() {
                       </>
                     );
                   })()}
-                  {(showAll || isFlashcard) && displayCurrent.examples.length > 0 && (
+                  {(showAll || isFlashcard) && (displayCurrent.examples || []).length > 0 && (
                     <div className="examples">{displayCurrent.examples.map((e, i) => {
                       const [en, zh] = e.split('|||');
                       return (
@@ -9419,7 +9327,7 @@ function App() {
                     <label key={b.id} className="bookPickerItem">
                       <input type="checkbox" checked={listenBookIds.includes(b.id)} onChange={() => toggleListenBook(b.id)} />
                       <span>{b.name}</span>
-                      <span className="bookCount">({b.items.length || b.total || 0})</span>
+                      <span className="bookCount">({(b.items || []).length || b.total || 0})</span>
                     </label>
                   ))}
                 </div>
@@ -9804,7 +9712,7 @@ function App() {
                     <label key={b.id} className="bookPickerItem">
                       <input type="checkbox" checked={libraryBookIds.includes(b.id)} onChange={() => switchLibraryBook(b.id)} />
                       <span>{b.name}</span>
-                      <span className="bookCount">({b.items.length || b.total || 0})</span>
+                      <span className="bookCount">({(b.items || []).length || b.total || 0})</span>
                     </label>
                   ))}
                 </div>
@@ -10047,7 +9955,7 @@ function App() {
                           {reviewItem.pos && <p className="muted">{reviewItem.pos} &middot; {reviewItem.source || ''}</p>}
                           {(() => {
                             const mp = getMergedPoints(reviewItem); // v2.56.0 跨词库考点整合
-                            return mp.corePoints.length > 0 ? (
+                            return (mp.corePoints || []).length > 0 ? (
                               <div className="points">
                                 {mp.corePoints.map((p, i) => <p key={i}>• {p}</p>)}
                               </div>
@@ -10668,41 +10576,80 @@ function App() {
         <section className="panel">
           <div className="importBox">
             <h2>导入词库</h2>
-            <p className="muted">支持 TXT、复制粘贴、图片、PDF、PPTX、DOCX，全部使用内置解析与内置算法，无需任何配置。</p>
-            {/* v2.70.0 百词斩同步已并入「词库 → 导出词库」面板，导出入口唯一 */}
-
-            {/* 上方4个按钮（v3.6.1：button + ref 触发隐藏 input，修复点击无反应） */}
-            <div className="importBtnRow">
-              <button className="fileButton" disabled={importBusy} onClick={pasteFromClipboard}>
-                <Icon name="clipboard" />{importBusy ? '处理中' : '粘贴'}
-              </button>
-              <button className="fileButton" disabled={importBusy} onClick={() => txtFileRef.current && txtFileRef.current.click()}>
-                <Icon name="file" />TXT
-              </button>
-              <button className="fileButton" disabled={importBusy} onClick={() => docFileRef.current && docFileRef.current.click()}>
-                <Icon name="file" />PDF/DOCX
-              </button>
-              <button className="fileButton" disabled={importBusy} onClick={() => imgFileRef.current && imgFileRef.current.click()}>
-                <Icon name="image" />图片
-              </button>
-              <input ref={txtFileRef} type="file" accept=".txt,.csv,text/plain"
-                style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); }} />
-              <input ref={docFileRef} type="file" accept=".pdf,.docx,.pptx"
-                style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); }} />
-              <input ref={imgFileRef} type="file" accept=".png,.jpg,.jpeg,.webp"
-                style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); }} />
+            {/* 三步进度指示 */}
+            <div className="importSteps">
+              <span className={'impStep' + (importStep === 'input' ? ' active' : ' done')}>① 给数据</span><span className="impStepArrow">›</span>
+              <span className={'impStep' + (importStep === 'preview' ? ' active' : (importStep === 'confirm' || importStep === 'done' ? ' done' : ''))}>② 解析预览</span><span className="impStepArrow">›</span>
+              <span className={'impStep' + (importStep === 'confirm' || importStep === 'done' ? ' active' : '')}>③ 命名创建</span>
             </div>
 
-            <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder="在此粘贴词表文本..." />
-            <div className="importActions">
-              <InlineSelect style={{ flex: 1, marginRight: 8 }} value={importTargetBookId || ''} onChange={v => setImportTargetBookId(v || null)}
-                options={[{ value: '', label: '自动创建新词库' }].concat(books.filter(b => b.editable).map(b => ({ value: b.id, label: b.name + ' (' + b.items.length + '条)' })))} />
-              <button className="primary" onClick={() => addImportedItems(parseImportedText(importText, 'word'))}>导入到词库</button>
-            </div>
-            <p className="status">{importStatus || '粘贴或上传文件后点击导入，未选词库时自动创建新词库'}</p>
+            {/* ===== 步骤①：给出数据 ===== */}
+            {importStep === 'input' && (
+              <>
+                <p className="muted">支持 TXT / 粘贴 / 图片 / PDF / DOCX，内置解析无需配置。</p>
+                <div className="importBtnRow">
+                  <button className="fileButton" onClick={() => document.getElementById('paste-btn')?.click()}>
+                    <Icon name="clipboard" />粘贴
+                    <textarea id="paste-btn" style={{position:'absolute',opacity:0,width:0,height:0}} autoFocus onChange={e => setImportText(e.target.value)} />
+                  </button>
+                  <label className="fileButton">
+                    <Icon name="file" />TXT
+                    <input type="file" accept=".txt,.csv" style={{display:'none'}} onChange={e => handleFile(e.target.files[0])} />
+                  </label>
+                  <label className="fileButton">
+                    <Icon name="file" />PDF/DOCX
+                    <input type="file" accept=".pdf,.docx,.pptx" style={{display:'none'}} onChange={e => handleFile(e.target.files[0])} />
+                  </label>
+                  <label className="fileButton">
+                    <Icon name="image" />图片
+                    <input type="file" accept=".png,.jpg,.jpeg,.webp" style={{display:'none'}} onChange={e => handleFile(e.target.files[0])} />
+                  </label>
+                </div>
+                <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder="每行一个：英文 中文" />
+                <div className="importActions">
+                  <button className="primary" style={{ flex: 1 }} onClick={previewImport}>解析词表 →</button>
+                </div>
+              </>
+            )}
+
+            {/* ===== 步骤②：内置算法解析预览 ===== */}
+            {importStep === 'preview' && (
+              <>
+                <div className="importPreviewList">
+                  {importParsed.map((it, i) => (
+                    <div className="importPreviewRow" key={it.id || i}>
+                      <b>{it.term}</b>
+                      {it.pos ? <small>（{it.pos}）</small> : null}
+                      <span>{it.meaning || '—'}</span>
+                      {it._filled && <span className="impFilledBadge">内置补全</span>}
+                    </div>
+                  ))}
+                </div>
+                <div className="importActions">
+                  <button onClick={() => setImportStep('input')}>← 返回修改</button>
+                  <button className="primary" onClick={() => { setImportName(`导入词库-${new Date().toLocaleDateString()}`); setImportStep('confirm'); }}>下一步：命名 →</button>
+                </div>
+              </>
+            )}
+
+            {/* ===== 步骤③：确认命名并创建 ===== */}
+            {importStep === 'confirm' && (
+              <>
+                <p className="muted">共 {importParsed.length} 词，确认词库名：</p>
+                <div className="importActions">
+                  <input type="text" className="importNameInput" value={importName}
+                    onChange={e => setImportName(e.target.value)} placeholder="输入词库名称" />
+                </div>
+                <div className="importActions">
+                  <button onClick={() => setImportStep('preview')}>← 返回预览</button>
+                  <button className="primary" onClick={confirmImport}>确认创建词库</button>
+                </div>
+              </>
+            )}
+
+            {importStep === 'done' && <button className="primary" onClick={() => { setImportStep('input'); setImportText(''); setImportParsed([]); }}>继续导入其他词表</button>}
+
+            <p className="status">{importStatus || '给数据 → 解析预览 → 命名创建'}</p>
 
             {/* v3.3.0 按考频汇编新词库：可选具体词库 + 用户自定义命名 + 成功提示 */}
             <div className="familyCheckBox freqCompileBox">
@@ -10744,12 +10691,12 @@ function App() {
                     </span>
                   </div>
                   <div className="freqBookPickerList">
-                    {books.filter(b => (b.items.length || 0) > 0).map(b => (
+                    {books.filter(b => ((b.items || []).length || 0) > 0).map(b => (
                       <label key={b.id} className="freqBookPickerItem">
                         <input type="checkbox" checked={freqSelectedIds.indexOf(b.id) >= 0}
                           onChange={() => setFreqSelectedIds(prev => prev.indexOf(b.id) >= 0 ? prev.filter(x => x !== b.id) : [...prev, b.id])} />
                         <span>{b.name}</span>
-                        <span className="bookCount">({b.items.length || 0})</span>
+                        <span className="bookCount">({(b.items || []).length || 0})</span>
                       </label>
                     ))}
                   </div>
@@ -10836,7 +10783,7 @@ function App() {
             <div className="meOverviewItem"><span>首次使用</span><b>{firstUseDate}</b></div>
             <div className="meOverviewItem"><span>今日日期</span><b>{todayKey}</b></div>
             <div className="meOverviewItem"><span>总词库</span><b>{books.length} 个</b></div>
-            <div className="meOverviewItem"><span>总词汇量</span><b>{books.reduce((s, b) => s + (b.items.length || b.total || 0), 0)} 条</b></div>
+            <div className="meOverviewItem"><span>总词汇量</span><b>{books.reduce((s, b) => s + ((b.items || []).length || b.total || 0), 0)} 条</b></div>
           </div>
 
           {/* v2.93.0：点「设置」打开独立设置界面（整屏切换），不再在本页内联展开 */}
@@ -11276,7 +11223,7 @@ function App() {
                   <div key={b.id} className="listItem">
                     <div>
                       <h3>{b.name}</h3>
-                      <small>已掌握 {mastered}/{b.items.length || b.total || 0}</small>
+                      <small>已掌握 {mastered}/{(b.items || []).length || b.total || 0}</small>
                     </div>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       <button className="smallBtn dangerGhost" onClick={() => resetBookProgress(b.id)}>重置</button>
@@ -11477,7 +11424,7 @@ function App() {
             return (
             <div className="modal" style={{ zIndex: 1100 }} onClick={() => { setDetailHistory([]); setDetailItem(null); }}>
               <div className="modalContent" onClick={e => e.stopPropagation()}>
-                <div className="modalHeader" {...detailLongPress}>
+                <div className="modalHeader">
                   <h2>{detailItem.term}</h2>
                   {detailItem.phonetic && <p className="phoneticText">{detailItem.phonetic}</p>}
                   <button className="closeBtn" onClick={() => closeDetailItem()} title={detailHistory.length > 0 ? '返回上一个（' + detailHistory.length + '层）' : '关闭'}>{detailHistory.length > 0 ? <Icon name="chevronLeft" /> : <Icon name="close" />}</button>
@@ -11520,9 +11467,9 @@ function App() {
 
                 {/* 考点提示 */}
                 {/* v2.56.0: 跨词库整合——无论从哪个词库点开，都展示该单词在所有词库的考点 */}
-                {mergedPoints.corePoints.length > 0 && (
+                {(mergedPoints.corePoints || []).length > 0 && (
                   <div className="detailSection detailExamPoints">
-                    <p className="detailSectionTitle"><Icon name="target" />核心考点{mergedPoints.corePoints.length > (detailItem.corePoints || []).length ? '（含其他词库）' : ''}</p>
+                    <p className="detailSectionTitle"><Icon name="target" />核心考点{(mergedPoints.corePoints || []).length > (detailItem.corePoints || []).length ? '（含其他词库）' : ''}</p>
                     {mergedPoints.corePoints.map((p, i) => <p key={i} className="detailPointItem">{p}</p>)}
                   </div>
                 )}
@@ -11537,7 +11484,7 @@ function App() {
 
                 {/* 知识点 */}
                 {/* v2.56.0: 跨词库整合知识点 */}
-                {mergedPoints.allPoints.length > 0 && (
+                {(mergedPoints.allPoints || []).length > 0 && (
                   <div className="detailSection">
                     <p className="detailSectionTitle"><Icon name="bulb" />知识点</p>
                     <div className="points">
@@ -11656,7 +11603,8 @@ function App() {
                               if (dash >= 0) meaning = meaning.slice(dash + 2).trim();
                               if (meaning.length > 18) meaning = meaning.slice(0, 18) + '…';
                               const dual = familyKeys.has(w.toLowerCase());
-                              return <span key={i} className="netRelatedTag" onClick={() => { if (hit) { openDetailItem(hit); if (settings.navAutoSpeak !== false) speak(w, settings.speakRate); } else { speak(w, settings.speakRate); } }}>{w}{meaning && <small style={{ opacity: 0.75 }}> {meaning}</small>}{hit && <small style={{ opacity: 0.6 }}> · 词库</small>}{dual && <small style={{ opacity: 0.85 }}> · 同源</small>}</span>;
+                              const inTotal = isInTotalBook(w);
+                              return <span key={i} className="netRelatedTag" onClick={() => { if (hit) { openDetailItem(hit); if (settings.navAutoSpeak !== false) speak(w, settings.speakRate); } else { speak(w, settings.speakRate); } }}>{w}{meaning && <small style={{ opacity: 0.75 }}> {meaning}</small>}{inTotal ? <small className="totalBookBadge">总汇词库</small> : (hit && <small style={{ opacity: 0.6 }}> · 词库</small>)}{dual && <small style={{ opacity: 0.85 }}> · 同源</small>}</span>;
                             })}
                           </div>
                         </div>
@@ -11677,14 +11625,15 @@ function App() {
                       <div className="detailTagWrap">
                         {family.map(item => {
                           const inBank = !!findWordInBank(item.term);
-                          const masterOnly = inBank && isMasterOnlyWord(item.term);
-                          const familyBtnStyle = masterOnly ? { background: '#d6e4de', color: '#4a6b5e', borderColor: '#b8ccc3' } : {};
+                          const inTotal = isInTotalBook(item.term);
+                          const familyBtnStyle = inTotal ? { background: '#d6e4de', color: '#4a6b5e', borderColor: '#b8ccc3' } : {};
                           return (
                             <button key={item.id} className="detailFamilyBtn"
                               style={familyBtnStyle}
                               onClick={() => { if (inBank) openDetailItem(item); }}>
                               {item.term} <small>{item.pos}</small>
-                              {!inBank && item.meaning && <small style={{ opacity: 0.8 }}>（{getShortMeaning(item.meaning) || item.meaning}）</small>}
+                              {inTotal && <small className="totalBookBadge">总汇词库</small>}
+                              {!inBank && !inTotal && item.meaning && <small style={{ opacity: 0.8 }}>（{getShortMeaning(item.meaning) || item.meaning}）</small>}
                             </button>
                           );
                         })}
